@@ -56,7 +56,7 @@
     {
         $conn = connect();
 
-        $sql = "CREATE TABLE employee(
+        $sql = "CREATE TABLE employee (
                 EmployeeID INT(10) PRIMARY KEY,
                 EmployeeName VARCHAR(100),
                 EmployeePicture LONGBLOB,
@@ -123,19 +123,45 @@
         $conn->close();
         return $genID;
     }
+
+    // Check Id Duplication
+
+    function checkDuplication($id, $checkQuery) {
+        $conn = connect();
+        // Function to check for duplicate ID
+        while (true) {
+            // Prepare the query to check for the duplicate ID
+            $stmt = $conn->prepare($checkQuery);
+            $stmt->bind_param("i", $id);
+            $stmt->execute();
+            $stmt->store_result();
+    
+            if ($stmt->num_rows == 0) {
+                break;
+            }
+            $id++;
+    
+            $stmt->close();
+        }
+        $stmt->close();
+        $conn->close();
+        return $id;
+    }
 ?>
 
 <?php
+    // Check if the database exists
      $conn = new mysqli('localhost','root','');
      $db_check_query = "SHOW DATABASES LIKE 'SantosOpticals'";
  
-     $result = mysqli_query($conn, $db_check_query);
-    // Check if the database exists
+     $result = mysqli_query($conn, $db_check_query);    
      if (mysqli_num_rows($result) == 0) 
     {
         createDB();
+
         $conn->close();        
     }
+    $conn = connect();
     // Check if employee table exists
     $table_check_query = "SHOW TABLES LIKE 'employee'";
     $result = mysqli_query($conn, $table_check_query);
