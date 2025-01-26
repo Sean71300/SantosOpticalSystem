@@ -101,6 +101,45 @@
         $conn->close();
     }
 
+    //Create Customer Table
+
+    function create_CustomersTable()
+    {
+        $conn = connect();
+
+        $sql = "CREATE TABLE customer (
+                CustomerID INT(10) PRIMARY KEY,
+                CustomerName VARCHAR(100),
+                CustomerAddress VARCHAR(100),
+                CustomerContact VARCHAR(11),
+                CustomerInfo VARCHAR(500),
+                Notes VARCHAR(500),
+                Upd_by VARCHAR(50),
+                Upd_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )";
+
+        if (mysqli_query($conn, $sql))
+        {           
+            $id = generate_CustomerID();           
+            $sql = "INSERT INTO customer 
+                    (CustomerID,CustomerName,CustomerAddress,CustomerContact,
+                    CustomerInfo,Notes,Upd_by) 
+                    VALUES
+                    ('$id','SeanGenesis','231 Visayas Street, Malabon City', 
+                    '09864325874', '60 Years old \n185cm \nMale', 
+                    'Round Face Shape','Bien Ven P. Santos')
+                    ";
+            
+            mysqli_query($conn, $sql);
+        }
+        else
+        {
+            echo "<br>There is an error in creating the table: " . $conn->connect_error;
+        }
+
+        $conn->close();
+    }
+
     //Generate Employee ID
 
     function generate_EmployeeID()
@@ -119,6 +158,29 @@
         $genID = (int)($currentYear . str_pad(5, 2, "0", STR_PAD_LEFT) . str_pad($rowCount, 4, "0", STR_PAD_LEFT));
         
         $checkQuery = "SELECT EmployeeID FROM employee WHERE EmployeeID = ?";
+        $genID = checkDuplication($genID,$checkQuery);
+        $conn->close();
+        return $genID;
+    }
+
+    //Generate Customer ID
+
+    function generate_CustomerID()
+    {
+        $conn = connect();
+
+        $query = "SELECT COUNT(*) as count FROM customer";
+        $result = $conn->query($query);
+        $row = $result->fetch_assoc();
+        $rowCount = $row["count"];
+
+        // Get the current year
+        $currentYear = date("Y");
+
+        // Generate the ID
+        $genID = (int)($currentYear . str_pad(5, 2, "0", STR_PAD_LEFT) . str_pad($rowCount, 4, "0", STR_PAD_LEFT));
+        
+        $checkQuery = "SELECT CustomerID FROM customer WHERE CustomerID = ?";
         $genID = checkDuplication($genID,$checkQuery);
         $conn->close();
         return $genID;
@@ -162,6 +224,7 @@
         $conn->close();        
     }
     $conn = connect();
+
     // Check if employee table exists
     $table_check_query = "SHOW TABLES LIKE 'employee'";
     $result = mysqli_query($conn, $table_check_query);
@@ -171,4 +234,12 @@
         create_EmployeesTable();
     }
 
+    // Check if customer table exists
+    $table_check_query = "SHOW TABLES LIKE 'customer'";
+    $result = mysqli_query($conn, $table_check_query);
+
+    if (mysqli_num_rows($result) == 0) 
+    {
+        create_CustomersTable();
+    }
 ?>
