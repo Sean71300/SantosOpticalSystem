@@ -86,13 +86,44 @@
         $conn->close();
     }
 
-    // Generate Brand ID
+    // Create Branch Master Table
 
-    function generate_ProductBrnchMstrID()
+    function create_BranchMasterTable()
+    {
+        $conn = connect();
+        $sql = "CREATE TABLE BranchMaster (
+                BranchCode INT(10),
+                BranchName VARCHAR(100),
+                BranchLocation VARCHAR(500),
+                ContactNo INT(11)
+                )";
+
+        if (mysqli_query($conn, $sql))
+        {
+            
+            $id = generate_BranchCode();            
+            $sql = "INSERT INTO BranchMaster
+                    (BranchCode,BranchName,BranchLocation,ContactNo)
+                    VALUES
+                    ('$id','Malabon Branch','12 Balabon Tinajeros, Rizal Street', '09658798565')";
+
+            mysqli_query($conn, $sql);
+        }
+        else
+        {
+            echo "<br>There is an error in creating the table: " . $conn->connect_error;
+        }
+
+        $conn->close();
+    }
+
+    // Generate Product
+
+    function generate_BranchCode()
     {
         $conn = connect();
 
-        $query = "SELECT COUNT(*) as count FROM ProductBranchMaster";
+        $query = "SELECT COUNT(*) as count FROM BranchMaster";
         $result = $conn->query($query);
         $row = $result->fetch_assoc();
         $rowCount = $row["count"];
@@ -101,9 +132,9 @@
         $currentYear = date("Y");
 
         // Generate the ID
-        $genID = (int)($currentYear . str_pad(5, 2, "1", STR_PAD_LEFT) . str_pad($rowCount, 4, "0", STR_PAD_LEFT));
+        $genID = (int)($currentYear . str_pad(6, 2, "1", STR_PAD_LEFT) . str_pad($rowCount, 4, "0", STR_PAD_LEFT));
         
-        $checkQuery = "SELECT ProductBranchID FROM ProductBranchMaster WHERE ProductBranchID = ?";
+        $checkQuery = "SELECT BranchCode FROM BranchMaster WHERE BranchCode = ?";
         $genID = checkDuplication($genID,$checkQuery);
         $conn->close();
         return $genID;
@@ -546,6 +577,14 @@
     if (mysqli_num_rows($result) == 0) 
     {
         create_ProductBrnchMstrTable();
+    }
+    // Check if Branch Master Table exists
+    $table_check_query = "SHOW TABLES LIKE 'BranchMaster'";
+    $result = mysqli_query($conn, $table_check_query);
+
+    if (mysqli_num_rows($result) == 0) 
+    {
+        create_BranchMasterTable();
     }
     
 ?>
