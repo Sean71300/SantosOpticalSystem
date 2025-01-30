@@ -52,6 +52,35 @@
 
     // Create Product Branch Master Table
 
+    function create_ActivityhMstrTable()
+    {
+        $conn = connect();
+        $sql = "CREATE TABLE activityMaster (
+                ActivityCode INT(10),
+                Description VARCHAR(30)
+                )";
+
+        if (mysqli_query($conn, $sql))
+        {
+            
+            $sql = "INSERT INTO activityMaster
+                    (ActivityCode, Description)
+                    VALUES
+                    ('2','Purchased'
+                    )";
+
+            mysqli_query($conn, $sql);
+        }
+        else
+        {
+            echo "<br>There is an error in creating the table: " . $conn->connect_error;
+        }
+
+        $conn->close();
+    }
+
+    // Create Product Branch Master Table
+
     function create_ProductBrnchMstrTable()
     {
         $conn = connect();
@@ -86,6 +115,110 @@
         $conn->close();
     }
 
+    // Generate ProductBrnchMstrID
+
+    function generate_ProductBrnchMstrID()
+    {
+        $conn = connect();
+
+        $query = "SELECT COUNT(*) as count FROM ProductBranchMaster";
+        $result = $conn->query($query);
+        $row = $result->fetch_assoc();
+        $rowCount = $row["count"];
+
+        // Get the current day
+        $currentYear = date("Y");
+
+        // Generate the ID
+        $genID = (int)($currentYear . str_pad(6, 2, "1", STR_PAD_LEFT) . str_pad($rowCount, 4, "0", STR_PAD_LEFT));
+        
+        $checkQuery = "SELECT ProductBranchID FROM ProductBranchMaster WHERE ProductBranchID = ?";
+        $genID = checkDuplication($genID,$checkQuery);
+        $conn->close();
+        return $genID;
+    }
+
+    // Create Order Details Table
+
+    function create_orderDetailsTable()
+    {
+        $conn = connect();
+        $sql = "CREATE TABLE orderDetails (
+                OrderHdr_id INT(10) PRIMARY KEY, 
+                OrderDtlID INT(10),
+                ProductBranchID INT(10),
+                Quantity INT(100),
+                ActivityCode INT(10),
+                Status VARCHAR(10)
+                )";
+
+        if (mysqli_query($conn, $sql))
+        {            
+            $id = generate_OrderHdr_id();       
+            $id1 = generate_OrderDtlID();            
+            $sql = "INSERT INTO orderDetails
+                    (OrderHdr_id, OrderDtlID, ProductBranchID, Quantity, 
+                    ActivityCode, Status)
+                    VALUES
+                    ('$id','$id1', '2025150000', '5' , '2', 'Available'
+                    )";
+
+            mysqli_query($conn, $sql);
+        }
+        else
+        {
+            echo "<br>There is an error in creating the table: " . $conn->connect_error;
+        }
+
+        $conn->close();
+    }
+
+    // Generate orderDetails
+
+    function generate_OrderHdr_id()
+    {
+        $conn = connect();
+
+        $query = "SELECT COUNT(*) as count FROM orderDetails";
+        $result = $conn->query($query);
+        $row = $result->fetch_assoc();
+        $rowCount = $row["count"];
+
+        // Get the current day
+        $currentYear = date("Y");
+
+        // Generate the ID
+        $genID = (int)($currentYear . str_pad(7, 2, "1", STR_PAD_LEFT) . str_pad($rowCount, 4, "0", STR_PAD_LEFT));
+        
+        $checkQuery = "SELECT OrderHdr_id FROM orderDetails WHERE OrderHdr_id = ?";
+        $genID = checkDuplication($genID,$checkQuery);
+        $conn->close();
+        return $genID;
+    }
+
+     // Generate OrderDtlID
+
+     function generate_OrderDtlID()
+     {
+         $conn = connect();
+ 
+         $query = "SELECT COUNT(*) as count FROM orderDetails";
+         $result = $conn->query($query);
+         $row = $result->fetch_assoc();
+         $rowCount = $row["count"];
+ 
+         // Get the current day
+         $currentYear = date("Y");
+ 
+         // Generate the ID
+         $genID = (int)($currentYear . str_pad(8, 2, "1", STR_PAD_LEFT) . str_pad($rowCount, 4, "0", STR_PAD_LEFT));
+         
+         $checkQuery = "SELECT OrderDtlID FROM orderDetails WHERE OrderDtlID = ?";
+         $genID = checkDuplication($genID,$checkQuery);
+         $conn->close();
+         return $genID;
+     }
+
     // Create Branch Master Table
 
     function create_BranchMasterTable()
@@ -117,7 +250,7 @@
         $conn->close();
     }
 
-    // Generate Product
+    // Generate BranchCode
 
     function generate_BranchCode()
     {
@@ -585,6 +718,22 @@
     if (mysqli_num_rows($result) == 0) 
     {
         create_BranchMasterTable();
+    }
+    // Check if Branch Master Table exists
+    $table_check_query = "SHOW TABLES LIKE 'orderDetails'";
+    $result = mysqli_query($conn, $table_check_query);
+
+    if (mysqli_num_rows($result) == 0) 
+    {
+        create_orderDetailsTable();
+    }
+    // Check if Activity Master Table exists
+    $table_check_query = "SHOW TABLES LIKE 'activityMaster'";
+    $result = mysqli_query($conn, $table_check_query);
+
+    if (mysqli_num_rows($result) == 0) 
+    {
+        create_ActivityhMstrTable();
     }
     
 ?>
