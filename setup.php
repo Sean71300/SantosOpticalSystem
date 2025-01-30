@@ -50,6 +50,146 @@
         $conn->close();
     }
 
+    // Create Role Master Table
+
+    function create_RoleMasterTable()
+    {
+        $conn = connect();
+        $sql = "CREATE TABLE roleMaster (
+                RoleID INT(10),
+                Description VARCHAR(30)
+                )";
+
+        if (mysqli_query($conn, $sql))
+        {
+            
+            $sql = "INSERT INTO roleMaster
+                    (RoleID, Description)
+                    VALUES
+                    ('1','Admin'
+                    )";
+
+            mysqli_query($conn, $sql);
+        }
+        else
+        {
+            echo "<br>There is an error in creating the table: " . $conn->connect_error;
+        }
+
+        $conn->close();
+    }
+
+    // Create Order_hdr Table
+
+    function create_Order_hdrTable()
+    {
+        $conn = connect();
+        $sql = "CREATE TABLE Order_hdr (
+                Orderhdr_id INT(10) PRIMARY KEY,
+                CustomerID INT(10),
+                BranchCode INT(10),
+                Created_by VARCHAR(50),
+                Created_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )";
+
+        if (mysqli_query($conn, $sql))
+        {
+            $id = generate_Order_hdr_ID();  
+            $sql = "INSERT INTO Order_hdr
+                    (Orderhdr_id,CustomerID,BranchCode,Created_by)
+                    VALUES
+                    ('$id', '2025010000', '2025160000', 'Bien Ven P. Santos'
+                    )";
+
+            mysqli_query($conn, $sql);
+        }
+        else
+        {
+            echo "<br>There is an error in creating the table: " . $conn->connect_error;
+        }
+
+        $conn->close();
+    }
+
+    // Generate Order_hdr_ID
+
+    function generate_Order_hdr_ID()
+    {
+        $conn = connect();
+
+        $query = "SELECT COUNT(*) as count FROM Order_hdr";
+        $result = $conn->query($query);
+        $row = $result->fetch_assoc();
+        $rowCount = $row["count"];
+
+        // Get the current day
+        $currentYear = date("Y");
+
+        // Generate the ID
+        $genID = (int)($currentYear . str_pad(1, 2, "2", STR_PAD_LEFT) . str_pad($rowCount, 4, "0", STR_PAD_LEFT));
+        
+        $checkQuery = "SELECT Orderhdr_id FROM Order_hdr WHERE Orderhdr_id = ?";
+        $genID = checkDuplication($genID,$checkQuery);
+        $conn->close();
+        return $genID;
+    }
+
+    // Create Logs Table
+
+    function create_LogsTable()
+    {
+        $conn = connect();
+        $sql = "CREATE TABLE Logs (
+                LogsID INT(10) PRIMARY KEY,
+                EmployeeID INT(10),
+                ProductBranchID INT(10),
+                ActivityCode INT(10),
+                Count INT(10),
+                Upd_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )";
+
+        if (mysqli_query($conn, $sql))
+        {
+            $id = generate_LogsID();  
+            $sql = "INSERT INTO Logs
+                    (LogsID,EmployeeID,ProductBranchID,ActivityCode,Count)
+                    VALUES
+                    ('$id', '2025130000', '2025160000', '2','1'
+                    )";
+
+            mysqli_query($conn, $sql);
+        }
+        else
+        {
+            echo "<br>There is an error in creating the table: " . $conn->connect_error;
+        }
+
+        $conn->close();
+    }
+
+    // Generate LogsID
+
+    function generate_LogsID()
+    {
+        $conn = connect();
+
+        $query = "SELECT COUNT(*) as count FROM Logs";
+        $result = $conn->query($query);
+        $row = $result->fetch_assoc();
+        $rowCount = $row["count"];
+
+        // Get the current day
+        $currentYear = date("Y");
+
+        // Generate the ID
+        $genID = (int)($currentYear . str_pad(0, 2, "2", STR_PAD_LEFT) . str_pad($rowCount, 4, "0", STR_PAD_LEFT));
+        
+        $checkQuery = "SELECT LogsID FROM Logs WHERE LogsID = ?";
+        $genID = checkDuplication($genID,$checkQuery);
+        $conn->close();
+        return $genID;
+    }
+
     // Create Product Branch Master Table
 
     function create_ActivityhMstrTable()
@@ -130,7 +270,7 @@
         $currentYear = date("Y");
 
         // Generate the ID
-        $genID = (int)($currentYear . str_pad(6, 2, "1", STR_PAD_LEFT) . str_pad($rowCount, 4, "0", STR_PAD_LEFT));
+        $genID = (int)($currentYear . str_pad(9, 2, "1", STR_PAD_LEFT) . str_pad($rowCount, 4, "0", STR_PAD_LEFT));
         
         $checkQuery = "SELECT ProductBranchID FROM ProductBranchMaster WHERE ProductBranchID = ?";
         $genID = checkDuplication($genID,$checkQuery);
@@ -734,6 +874,30 @@
     if (mysqli_num_rows($result) == 0) 
     {
         create_ActivityhMstrTable();
+    }
+    // Check if Logs Table exists
+    $table_check_query = "SHOW TABLES LIKE 'Logs'";
+    $result = mysqli_query($conn, $table_check_query);
+
+    if (mysqli_num_rows($result) == 0) 
+    {
+        create_LogsTable();
+    }
+    // Check if Logs Table exists
+    $table_check_query = "SHOW TABLES LIKE 'Order_hdr'";
+    $result = mysqli_query($conn, $table_check_query);
+
+    if (mysqli_num_rows($result) == 0) 
+    {
+        create_Order_hdrTable();
+    }
+    // Check if Role Master Table exists
+    $table_check_query = "SHOW TABLES LIKE 'roleMaster'";
+    $result = mysqli_query($conn, $table_check_query);
+
+    if (mysqli_num_rows($result) == 0) 
+    {
+        create_RoleMasterTable();
     }
     
 ?>
