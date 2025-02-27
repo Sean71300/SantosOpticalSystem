@@ -1,6 +1,5 @@
 <?php
-session_start();
-include_once 'setup.php';
+  session_start();
 ?>
 
 <html>
