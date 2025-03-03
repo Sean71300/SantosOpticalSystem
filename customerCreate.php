@@ -6,7 +6,23 @@ $phone = "";
 $info = "";
 $notes = "";
 
+$errorMessage = "";
 
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $name = $_POST["name"];
+    $address = $_POST["address"];
+    $phone = $_POST["phone"];
+    $info = $_POST["info"];
+    $notes = $_POST["notes"];
+
+    do {
+        if (empty($name) || empty($address) || empty($phone) || empty($info) || empty($notes)) {
+            $errorMessage = 'All the fields are required';
+            break;
+        }
+
+    } while (false);
+}
 ?>
 
 <html>
@@ -45,7 +61,7 @@ $notes = "";
                 <div class="row mb-3">
                     <label class="col-sm-3 col-form-label">Customer Info</label>
                     <div class="col-sm-6">
-                    <textarea class="form-control" name="customerinfo" rows="3" value="<?php echo $info;?>"></textarea>
+                    <textarea class="form-control" name="info" rows="3" value="<?php echo $info;?>"></textarea>
                     </div>
                 </div>
                 <div class="row mb-3">
