@@ -9,25 +9,25 @@
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav ps-5 fs-5 fw-bold ms-2 mb-lg-0 col d-flex justify-content-end">                  
                 <li class="nav-item m-2">
-                <a class="nav-link" href="index.php">Home</a>
+                <a class="nav-link" href="">Home</a>
                 </li>                 
                 <li class="nav-item m-2">
-                <a class="nav-link" href="About.php">About</a>
+                <a class="nav-link" href="">About</a>
                 </li>                 
                 <li class="nav-item m-2">
-                <a class="nav-link"  href="Menu.php">Menu</a>
+                <a class="nav-link"  href="">Menu</a>
                 </li>                 
                 <li class="nav-item m-2">
-                <a class="nav-link"  href="Pages.php">Personnel</a>
+                <a class="nav-link"  href="">Personnel</a>
                 </li>                 
                 <li class="nav-item m-2">
-                <a class="nav-link" href="Contact.php">Contact</a>
+                <a class="nav-link" href="">Contact</a>
                 </li>                 
                 <li class="nav-item m-2">
-                <a class="nav-link" href="posted-rate.php">Rating</a>
+                <a class="nav-link" href="">Rating</a>
                 </li>                         
                 <li class="nav-item m-2">
-                <a class="nav-link" href="Client_Gallery.php">Gallery</a>
+                <a class="nav-link" href="customerPage.php">Gallery</a>
                 </li>                             
                 <li class="nav-item m-2">
                 <a class="nav-link" href="#">&nbsp;|&nbsp;</a>
