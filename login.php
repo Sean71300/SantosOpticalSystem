@@ -49,9 +49,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
                             if($roleid == 1) {
                                 header("location: admin.php");
                             } else if($roleid == 2) {
-                                header("location: welcome.php");
-                            } else {
-                            header("location: welcome.php");
+                                header("location: employee.php");
                             }
                         } else {
                             $login_err = "The password you entered was not valid.";
