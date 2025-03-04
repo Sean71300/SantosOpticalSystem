@@ -75,6 +75,8 @@
             
             mysqli_query($conn, $sql);
         }
-
+    function getID(){
+        
+    }
 
 ?>
