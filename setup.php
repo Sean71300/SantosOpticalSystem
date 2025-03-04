@@ -56,7 +56,7 @@
     {
         $conn = connect();
         $sql = "CREATE TABLE roleMaster (
-                RoleID INT(10),
+                RoleID INT(10) PRIMARY KEY,
                 Description VARCHAR(30)
                 )";
 
@@ -89,16 +89,19 @@
                 CustomerID INT(10),
                 BranchCode INT(10),
                 Created_by VARCHAR(50),
-                Created_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                Created_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (CustomerID) REFERENCES customer(CustomerID)
                 )";
 
         if (mysqli_query($conn, $sql))
         {
-            $id = generate_Order_hdr_ID();  
+            $id = generate_Order_hdr_ID();
+            $id2 = generate_CustomerID();  
+            --$id2;
             $sql = "INSERT INTO Order_hdr
                     (Orderhdr_id,CustomerID,BranchCode,Created_by)
                     VALUES
-                    ('$id', '2025010000', '2025160000', 'Bien Ven P. Santos'
+                    ('$id', '$id2', '2025160000', 'Bien Ven P. Santos'
                     )";
 
             mysqli_query($conn, $sql);
@@ -145,16 +148,23 @@
                 ProductBranchID INT(10),
                 ActivityCode INT(10),
                 Count INT(10),
-                Upd_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                Upd_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (EmployeeID) REFERENCES employee(EmployeeID),                
+                FOREIGN KEY (ProductBranchID) REFERENCES ProductBranchMaster(ProductBranchID),
+                FOREIGN KEY (ActivityCode) REFERENCES activityMaster(ActivityCode)
                 )";
 
         if (mysqli_query($conn, $sql))
         {
-            $id = generate_LogsID();  
+            $id = generate_LogsID(); 
+            $id2 = generate_EmployeeID(); 
+            $id3 = generate_ProductBrnchMstrID();  
+            --$id2;
+            --$id3;
             $sql = "INSERT INTO Logs
                     (LogsID,EmployeeID,ProductBranchID,ActivityCode,Count)
                     VALUES
-                    ('$id', '2025130000', '2025160000', '2','1'
+                    ('$id', '$id2', '$id3', '2','1'
                     )";
 
             mysqli_query($conn, $sql);
@@ -190,13 +200,13 @@
         return $genID;
     }
 
-    // Create Product Branch Master Table
+    // Create Activity Master Table
 
     function create_ActivityhMstrTable()
     {
         $conn = connect();
         $sql = "CREATE TABLE activityMaster (
-                ActivityCode INT(10),
+                ActivityCode INT(10) PRIMARY KEY,
                 Description VARCHAR(30)
                 )";
 
@@ -239,11 +249,15 @@
         if (mysqli_query($conn, $sql))
         {
             
-            $id = generate_ProductBrnchMstrID();            
+            $id = generate_ProductBrnchMstrID();    
+            $id2 = generate_ProductMstrID(); 
+            $id3 = generate_BranchCode();
+            --$id2;
+            --$id3;       
             $sql = "INSERT INTO ProductBranchMaster
                     (ProductBranchID,ProductID,BranchCode,Count,Avail_FL,Upd_by)
                     VALUES
-                    ('$id', '2025140000', '2025160000', '5', 'Available',
+                    ('$id', '$id2', '$id3', '5', 'Available',
                     'Bien Ven P. Santos'
                     )";
 
@@ -286,23 +300,29 @@
     {
         $conn = connect();
         $sql = "CREATE TABLE orderDetails (
-                OrderHdr_id INT(10) PRIMARY KEY, 
-                OrderDtlID INT(10),
+                OrderDtlID INT(10) PRIMARY KEY, 
+                OrderHdr_id INT(10),
                 ProductBranchID INT(10),
                 Quantity INT(100),
                 ActivityCode INT(10),
-                Status VARCHAR(10)
+                Status VARCHAR(10),
+                FOREIGN KEY (OrderHdr_id) REFERENCES Order_hdr(OrderHdr_id),
+                FOREIGN KEY (ProductBranchID) REFERENCES ProductBranchMaster(ProductBranchID),
+                FOREIGN KEY (ActivityCode) REFERENCES activityMaster(ActivityCode)
                 )";
 
         if (mysqli_query($conn, $sql))
         {            
-            $id = generate_OrderHdr_id();       
-            $id1 = generate_OrderDtlID();            
+            $id = generate_OrderDtlID(); 
+            $id2 = generate_Order_hdr_ID(); 
+            $id3 = generate_ProductBrnchMstrID(); 
+            --$id2;  
+            --$id3;         
             $sql = "INSERT INTO orderDetails
-                    (OrderHdr_id, OrderDtlID, ProductBranchID, Quantity, 
+                    (OrderDtlID, OrderHdr_id , ProductBranchID, Quantity, 
                     ActivityCode, Status)
                     VALUES
-                    ('$id','$id1', '2025150000', '5' , '2', 'Available'
+                    ('$id','$id2', '$id3', '5' , '2', 'Available'
                     )";
 
             mysqli_query($conn, $sql);
@@ -641,7 +661,9 @@
                 BranchCode int(10),
                 Status VARCHAR(50),
                 Upd_by VARCHAR(50),
-                Upd_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                Upd_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (RoleID) REFERENCES roleMaster(RoleID),
+                FOREIGN KEY (BranchCode) REFERENCES BranchMaster(BranchCode)
                 )";
 
         if (mysqli_query($conn, $sql))
@@ -650,6 +672,8 @@
             $img_clean= file_get_contents($img_path);
             $employee_pic = mysqli_real_escape_string($conn, $img_clean);
             $id = generate_EmployeeID();
+            $id2 = generate_BranchCode();
+            --$id2;
             $password = "JPSantos123";
             $email = "BVPSantosOptical@gmail.com";
 
@@ -661,7 +685,7 @@
                     Upd_by)
                     VALUES
                     ($id, 'Bien Ven P. Santos', '$employee_pic', '$email', 
-                    '09864571325', '1', 'BVSantos1', '$hashed_pw', '1', 'Active',
+                    '09864571325', '1', 'BVSantos1', '$hashed_pw', '$id2', 'Active',
                      'Admin')";
 
             mysqli_query($conn, $sql);
@@ -797,16 +821,7 @@
         $conn->close();        
     }
     $conn = connect();
-
-    // Check if employee table exists
-    $table_check_query = "SHOW TABLES LIKE 'employee'";
-    $result = mysqli_query($conn, $table_check_query);
-
-    if (mysqli_num_rows($result) == 0) 
-    {
-        create_EmployeesTable();
-    }
-
+    
     // Check if customer table exists
     $table_check_query = "SHOW TABLES LIKE 'customer'";
     $result = mysqli_query($conn, $table_check_query);
@@ -814,8 +829,7 @@
     if (mysqli_num_rows($result) == 0) 
     {
         create_CustomersTable();
-    }
-    
+    }    
     // Check if Product Master Table exists
     $table_check_query = "SHOW TABLES LIKE 'CategoryType'";
     $result = mysqli_query($conn, $table_check_query);
@@ -847,15 +861,7 @@
     if (mysqli_num_rows($result) == 0) 
     {
         create_BranchMasterTable();
-    }
-    // Check if Branch Master Table exists
-    $table_check_query = "SHOW TABLES LIKE 'orderDetails'";
-    $result = mysqli_query($conn, $table_check_query);
-
-    if (mysqli_num_rows($result) == 0) 
-    {
-        create_orderDetailsTable();
-    }
+    }    
     // Check if Activity Master Table exists
     $table_check_query = "SHOW TABLES LIKE 'activityMaster'";
     $result = mysqli_query($conn, $table_check_query);
@@ -863,16 +869,8 @@
     if (mysqli_num_rows($result) == 0) 
     {
         create_ActivityhMstrTable();
-    }
-    // Check if Logs Table exists
-    $table_check_query = "SHOW TABLES LIKE 'Logs'";
-    $result = mysqli_query($conn, $table_check_query);
-
-    if (mysqli_num_rows($result) == 0) 
-    {
-        create_LogsTable();
-    }
-    // Check if Logs Table exists
+    }    
+    // Check if Order_hdr Table exists
     $table_check_query = "SHOW TABLES LIKE 'Order_hdr'";
     $result = mysqli_query($conn, $table_check_query);
 
@@ -903,5 +901,29 @@
     if (mysqli_num_rows($result) == 0) 
     {
         create_ProductBrnchMstrTable();
+    }
+    // Check if Order Details Table exists
+    $table_check_query = "SHOW TABLES LIKE 'orderDetails'";
+    $result = mysqli_query($conn, $table_check_query);
+
+    if (mysqli_num_rows($result) == 0) 
+    {
+        create_orderDetailsTable();
+    }    
+    // Check if employee table exists
+    $table_check_query = "SHOW TABLES LIKE 'employee'";
+    $result = mysqli_query($conn, $table_check_query);
+
+    if (mysqli_num_rows($result) == 0) 
+    {
+        create_EmployeesTable();
+    }
+    // Check if Logs Table exists
+    $table_check_query = "SHOW TABLES LIKE 'Logs'";
+    $result = mysqli_query($conn, $table_check_query);
+
+    if (mysqli_num_rows($result) == 0) 
+    {
+        create_LogsTable();
     }
 ?>
