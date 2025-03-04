@@ -4,8 +4,7 @@ session_start();
 ?>
 
 <?php
-
-connect(); //Connect to the database
+require_once 'connect.php'; //Connect to the database
 
 $username = $password = ""; //Initialize the username and password variables
 $username_err = $password_err = ""; //Initialize the username and password error variables
@@ -67,7 +66,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
             mysqli_stmt_close($stmt);
         }
     }
-    mysqli_close($conn);
+    mysqli_close($link);
 }
 
 ?>
