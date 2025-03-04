@@ -23,6 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     } while (false);
 }
+
 ?>
 
 <html>
@@ -39,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <?php include "Navigation.php"?> 
         <div class="container category-container">
             <h1>New Customer</h1>
-            <form method="post">
+            <form method="post" id="customerCreate">
                 <div class="row mb-3">
                     <label class="col-sm-3 col-form-label">Name</label>
                     <div class="col-sm-6">
@@ -77,8 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <button type="submit" class="btn btn-primary">Submit</button>
                     </div>
                     <div class="col-sm-3 d-grid">
-                        <button class="btn btn-outline-primary" href="customerPage.php" role="button">Cancel</button>
-                    </div>
+                    <button class="btn btn-outline-primary" role="button">Cancel</button>                    </div>
                 </div>
             </form>
         </div>
