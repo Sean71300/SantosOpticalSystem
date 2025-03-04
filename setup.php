@@ -231,7 +231,9 @@
                 Count INT(100),
                 Avail_FL VARCHAR(50), 
                 Upd_by VARCHAR(50),
-                Upd_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                Upd_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (ProductID) REFERENCES productMstr(ProductID),
+                FOREIGN KEY (BranchCode) REFERENCES BranchMaster(BranchCode)
                 )";
 
         if (mysqli_query($conn, $sql))
@@ -241,7 +243,7 @@
             $sql = "INSERT INTO ProductBranchMaster
                     (ProductBranchID,ProductID,BranchCode,Count,Avail_FL,Upd_by)
                     VALUES
-                    ('$id', '2025140000', '1', '5', 'Available',
+                    ('$id', '2025140000', '2025160000', '5', 'Available',
                     'Bien Ven P. Santos'
                     )";
 
@@ -365,7 +367,7 @@
     {
         $conn = connect();
         $sql = "CREATE TABLE BranchMaster (
-                BranchCode INT(10),
+                BranchCode INT(10) PRIMARY KEY,
                 BranchName VARCHAR(100),
                 BranchLocation VARCHAR(500),
                 ContactNo INT(11)
@@ -838,14 +840,6 @@
     {
         create_BrandMasterTable();
     }
-    // Check if Product Branch Master Table exists
-    $table_check_query = "SHOW TABLES LIKE 'ProductBranchMaster'";
-    $result = mysqli_query($conn, $table_check_query);
-
-    if (mysqli_num_rows($result) == 0) 
-    {
-        create_ProductBrnchMstrTable();
-    }
     // Check if Branch Master Table exists
     $table_check_query = "SHOW TABLES LIKE 'BranchMaster'";
     $result = mysqli_query($conn, $table_check_query);
@@ -902,5 +896,12 @@
     {
         create_ProductMstrTable();
     }
+    // Check if Product Branch Master Table exists
+    $table_check_query = "SHOW TABLES LIKE 'ProductBranchMaster'";
+    $result = mysqli_query($conn, $table_check_query);
 
+    if (mysqli_num_rows($result) == 0) 
+    {
+        create_ProductBrnchMstrTable();
+    }
 ?>
