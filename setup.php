@@ -421,7 +421,7 @@
         $conn = connect();
 
         $sql = "CREATE TABLE brandMaster (
-                BrandID INT(10),
+                BrandID INT(10) PRIMARY KEY,
                 BrandName VARCHAR(500)
                 )";
        
@@ -559,13 +559,14 @@
                 ProductID INT(10) PRIMARY KEY,
                 CategoryType VARCHAR(50),
                 ShapeID INT(1),
-                BrandID INT(10),
+                BrandID INT ,                              
                 Model VARCHAR(50),
                 Remarks VARCHAR(500),
                 ProductImage LONGBLOB,
                 Avail_FL VARCHAR (50),  
                 Upd_by VARCHAR(50),
-                Upd_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                Upd_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (BrandID) REFERENCES brandMaster(BrandID)
                 )";
 
         if (mysqli_query($conn, $sql))
@@ -579,7 +580,7 @@
                     (ProductID,CategoryType,ShapeID,BrandID,Model,Remarks,
                     ProductImage,Avail_FL,Upd_by)
                     VALUES
-                    ('$id', 'Frame', '1', '2025070011', 
+                    ('$id', 'Frame', '1', '2025150000', 
                     'Model1', 'New Model', '$product_pic', 'Available', 
                     'Bien Ven P. Santos'
                     )";
@@ -809,16 +810,7 @@
     {
         create_CustomersTable();
     }
-
-    // Check if Product Master Table exists
-    $table_check_query = "SHOW TABLES LIKE 'productMstr'";
-    $result = mysqli_query($conn, $table_check_query);
-
-    if (mysqli_num_rows($result) == 0) 
-    {
-        create_ProductMstrTable();
-    }
-
+    
     // Check if Product Master Table exists
     $table_check_query = "SHOW TABLES LIKE 'CategoryType'";
     $result = mysqli_query($conn, $table_check_query);
@@ -899,5 +891,13 @@
     {
         create_RoleMasterTable();
     }
-    
+    // Check if Product Master Table exists
+    $table_check_query = "SHOW TABLES LIKE 'productMstr'";
+    $result = mysqli_query($conn, $table_check_query);
+
+    if (mysqli_num_rows($result) == 0) 
+    {
+        create_ProductMstrTable();
+    }
+
 ?>

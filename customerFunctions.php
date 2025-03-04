@@ -1,22 +1,6 @@
 <?php
-    //Connection
-    function connect() 
-        {
-            $db_host = 'localhost';
-            $db_username = 'root';
-            $db_password = '';
-            $db_name = 'SantosOpticals';
-
-            $conn = new mysqli($db_host, $db_username, $db_password, $db_name);
-
-            if ($conn->connect_error) {
-                die("Connection failed: " . $conn->connect_error);
-            }
-
-            return $conn;
-            
-        }
-        
+    include_once 'setup.php'; 
+  
     //read all row from database table
     function customerData()
 
@@ -47,6 +31,50 @@
             }
             return $customerData;
         }
+    function handleCustomerForm() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $name = $_POST["name"];
+            $address = $_POST["address"];
+            $phone = $_POST["phone"];
+            $info = $_POST["info"];
+            $notes = $_POST["notes"];
     
+            // Initialize messages
+            $errorMessage = "";
+            $successMessage = "";
+    
+            // Validate inputs
+            if (empty($name) || empty($address) || empty($phone) || empty($info) || empty($notes)) {
+                $errorMessage = 'All the fields are required';
+            } else {
+                // Call the function to insert data
+                insertData($name, $address, $phone, $info, $notes);
+                $successMessage = "Customer added successfully"; 
+    
+                // Clear the form fields after submission
+                $name = "";
+                $address = "";
+                $phone = "";
+                $info = "";
+                $notes = "";
+            }
+    
+            // Return messages for further handling (e.g., displaying in the original page)
+            return [$errorMessage, $successMessage];
+        }
+    }
+    function insertData($name,$address,$phone,$info,$notes)
+        {
+            $conn = connect(); 
+            $id = generate_CustomerID();           
+            $sql = "INSERT INTO customer 
+                    (CustomerID,CustomerName,CustomerAddress,CustomerContact,
+                    CustomerInfo,Notes,Upd_by) 
+                    VALUES
+                    ('$id','$name','$address','$phone','$info','$notes','Bien Ven P. Santos')";
+            
+            mysqli_query($conn, $sql);
+        }
+
 
 ?>
