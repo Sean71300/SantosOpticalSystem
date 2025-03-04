@@ -474,7 +474,7 @@
         $conn = connect();
 
         $sql = "CREATE TABLE shapeMaster (
-                ShapeID INT(1),
+                ShapeID INT(1) PRIMARY KEY,
                 Description VARCHAR(30)
                 )";
        
@@ -527,7 +527,7 @@
         $conn = connect();
 
         $sql = "CREATE TABLE categoryType (
-                CategoryType VARCHAR(50),
+                CategoryType VARCHAR(50) PRIMARY KEY,
                 Description VARCHAR(500)
                 )";
         $desc="Frames that will be used for the 
@@ -557,16 +557,19 @@
         $conn = connect();
         $sql = "CREATE TABLE productMstr (
                 ProductID INT(10) PRIMARY KEY,
-                CategoryType VARCHAR(50),
-                ShapeID INT(1),
-                BrandID INT ,                              
+                CategoryType VARCHAR (50),
+                ShapeID INT (1),
+                BrandID INT (10),                              
                 Model VARCHAR(50),
                 Remarks VARCHAR(500),
                 ProductImage LONGBLOB,
                 Avail_FL VARCHAR (50),  
                 Upd_by VARCHAR(50),
                 Upd_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (CategoryType) REFERENCES categoryType(CategoryType),
+                FOREIGN KEY (ShapeID) REFERENCES shapeMaster(ShapeID),
                 FOREIGN KEY (BrandID) REFERENCES brandMaster(BrandID)
+                
                 )";
 
         if (mysqli_query($conn, $sql))
