@@ -1,0 +1,22 @@
+.navbar {
+    padding: 10px 20px;
+}
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    font-size: 1.5rem;
+    margin-left: 0;
+}
+.navbar-brand img {
+    height: 50px;
+    margin-right: 10px;
+}
+.navbar-nav {
+    margin-right: auto;
+}
+.nav-link {
+    font-weight: 400;
+    letter-spacing: 1px;
+    font-size: 15px;
+}
