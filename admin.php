@@ -1,5 +1,6 @@
 <?php
 include_once 'setup.php'; // Include the setup.php file
+require_once 'connect.php'; //Connect to the database
 session_start();
 
 if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
@@ -38,55 +39,90 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
             justify-content: center;
             align-items: center;
         }
+
+        h1 {
+            margin-bottom: 2.5rem;
+        }
+
+        /* CONTAINERS */
+        .container {
+            padding: 10rem;
+        }
     </style>
 
     <body>
         <div class="container">
-            
             <?php
             $username = $_SESSION["username"];
             echo "<h1 style='text-align: center;'>Welcome $username</h1>";
             ?>
+            <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" method="post">
+                <label for = "chooseBranch">Choose Branch:</label>
+                <select name="chooseBranch" id="chooseBranch">
+                    <?php
+                        $sql = "SELECT BranchName from branchmaster";
+                        $result = mysqli_query($link, $sql);
+                        while($row = mysqli_fetch_array($result)){
+                            echo "<option value = '".$row['BranchName']."'>".$row['BranchName']."</option>";
+                        }
+                    ?>
+                </select>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
 
             <?php
-            require_once 'connect.php';
-            $sql = "SELECT bm.* FROM branchmaster bm JOIN employee e ON bm.BranchCode = e.BranchCode WHERE e.BranchCode = ?";
-
-            if($stmt = mysqli_prepare($link, $sql)){
-                mysqli_stmt_bind_param($stmt, "s", $param_branchcode);
-                $param_branchcode = $_SESSION["branchcode"];
-
-                if(mysqli_stmt_execute($stmt)){
+                if ($_SERVER["REQUEST_METHOD"] == "POST") {
+                    $branchName = $_POST['chooseBranch'];
+                    $sql = "SELECT bm.BranchCode, pbm.productID, pm.* 
+                            FROM branchmaster bm
+                            JOIN productbranchmaster pbm ON bm.BranchCode = pbm.BranchCode
+                            JOIN productmstr pm ON pbm.productID = pm.productID 
+                            WHERE bm.BranchName = ?"; //bm is branchmaster, pbm is productbranchmaster, pm is productmstr
+                    
+                    $stmt = mysqli_prepare($link, $sql);
+                    mysqli_stmt_bind_param($stmt, "s", $branchName);
+                    mysqli_stmt_execute($stmt);
                     $result = mysqli_stmt_get_result($stmt);
-                    if(mysqli_num_rows($result) > 0){
-                        while($row = mysqli_fetch_array($result, MYSQLI_ASSOC)){
-                            echo "<table class='table table-bordered'>";
-                            echo "<thead>";
-                                echo "<tr>";
-                                    echo "<th>Branch Code</th>";
-                                    echo "<th>Branch Name</th>";
-                                    echo "<th>Branch Location</th>";
-                                    echo "<th>Contact No</th>";
-                                echo "</tr>";
-                            echo "</thead>";
-                            echo "<tbody>";
-                                echo "<tr>";
-                                    echo "<td>" . $row["BranchCode"] . "</td>";
-                                    echo "<td>" . $row["BranchName"] . "</td>";
-                                    echo "<td>" . $row["BranchLocation"] . "</td>";
-                                    echo "<td>" . $row["ContactNo"] . "</td>";
-                                echo "</tr>";
-                            echo "</tbody>";
-                            echo "</table>";
-                        }
-                        mysqli_free_result($result);
-                    } else{
-                        echo "<p class='lead'><em>No records were found.</em></p>";
+
+                    // display table
+                    echo "<table border='1'>
+                            <tr>
+                                <th>Product ID</th>
+                                <th>Category Type</th>
+                                <th>Shape ID</th>
+                                <th>Brand ID</th>
+                                <th>Model</th>
+                                <th>Remarks</th>
+                                <th>Product Image</th>
+                                <th>Availability</th>
+                                <th>Updated by</th>
+                                <th>Updated Date</th>
+                            </tr>";
+
+                    // fetch and display results
+                    while ($row = mysqli_fetch_assoc($result)) {
+                        $imageData = base64_encode($row['ProductImage']);
+                        $src = 'data:image/jpeg;base64,' . $imageData;
+
+                        echo "<tr>
+                                <td>" . htmlspecialchars($row['ProductID']) . "</td>
+                                <td>" . htmlspecialchars($row['CategoryType']) . "</td>
+                                <td>" . htmlspecialchars($row['ShapeID']) . "</td>
+                                <td>" . htmlspecialchars($row['BrandID']) . "</td>
+                                <td>" . htmlspecialchars($row['Model']) . "</td>
+                                <td>" . htmlspecialchars($row['Remarks']) . "</td>
+                                <td><img src='" . $src . "' alt='Product Image' style='width:100px; height:auto;'/></td>
+                                <td>" . htmlspecialchars($row['Avail_FL']) . "</td>
+                                <td>" . htmlspecialchars($row['Upd_by']) . "</td>
+                                <td>" . htmlspecialchars($row['Upd_dt']) . "</td>
+                            </tr>";
                     }
-                } else{
-                    echo "ERROR: Could not able to execute $sql. " . mysqli_error($link);
+
+                    echo "</table>";
+
+                    // Close the statement
+                    mysqli_stmt_close($stmt);
                 }
-            }
             ?>
         </div>
     </body>
