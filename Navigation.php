@@ -2,7 +2,7 @@
     <nav class="navbar navbar-expand-lg bg-body-tertiary ">
         <div class="container-fluid ">
         <a href="index.php"><img src="Images/Logo.jpg" class="logo ms-4 ms-lg-5 "></a>
-        <a class="navbar-brand fs-3 " href="index.php">&nbsp;<b>Santos Optical</b></a>
+        <a class="navbar-brand fs-3 " href="index.php">&nbsp;<b>Santos Opticals</b></a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>

@@ -53,6 +53,8 @@
                 CustomerContact = '$phone', CustomerInfo = '$info',
                 Notes = '$notes', Upd_by = 'Bien Ven P. Santos' 
                 WHERE CustomerID = {$id}";
+
+                
         } while(false);
     }
 ?>
