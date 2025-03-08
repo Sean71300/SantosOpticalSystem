@@ -31,44 +31,44 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
     </head>
 
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
         h1 {
             margin-bottom: 2.5rem;
         }
-
-        /* CONTAINERS */
-        .container {
-            padding: 10rem;
-        }
     </style>
+
+    <header class="mb-5">
+        <?php
+            include "nav-bar.html";
+        ?>
+    </header>
 
     <body>
         <div class="container">
-            <?php
-            $username = $_SESSION["username"];
-            echo "<h1 style='text-align: center;'>Welcome $username</h1>";
-            ?>
-            <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" method="post">
-                <label for = "chooseBranch">Choose Branch:</label>
-                <select name="chooseBranch" id="chooseBranch">
-                    <?php
-                        $sql = "SELECT BranchName from branchmaster";
-                        $result = mysqli_query($link, $sql);
-                        while($row = mysqli_fetch_array($result)){
-                            echo "<option value = '".$row['BranchName']."'>".$row['BranchName']."</option>";
-                        }
-                    ?>
-                </select>
-                <button type="submit" class="btn btn-primary">Submit</button>
-            </form>
+            <div class="container">
+                <?php
+                $username = $_SESSION["username"];
+                echo "<h1 style='text-align: center;'>Welcome $username</h1>";
+                ?>
+            </div>
+
+            <div class="container d-flex justify-content-evenly">
+                <form style="width:85%;" class="me-1" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" method="post">
+                    <div class="form-floating">
+                        <select name="chooseBranch" id="chooseBranch" class="form-select form-select-lg">
+                            <option value="" disabled selected> </option>
+                            <?php
+                                $sql = "SELECT BranchName from branchmaster";
+                                $result = mysqli_query($link, $sql);
+                                while($row = mysqli_fetch_array($result)){
+                                    echo "<option class='form-select-sm' value='".$row['BranchName']."'>".$row['BranchName']."</option>";
+                                }
+                            ?>
+                        </select>   
+                        <label for="chooseBranch">Choose Branch:</label>
+                    </div>               
+                </form>
+                <button type="submit" class="btn btn-primary w-25 mx-1">Submit</button>
+            </div>          
 
             <?php
                 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -85,7 +85,7 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
                     $result = mysqli_stmt_get_result($stmt);
 
                     // display table
-                    echo "<table border='1'>
+                    echo "<table class='table mt-3' border='1'>
                             <tr>
                                 <th>Product ID</th>
                                 <th>Category Type</th>
