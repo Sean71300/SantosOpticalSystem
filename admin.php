@@ -19,12 +19,6 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
 }
 ?>
 
-<?php
-$sql = "SELECT bm.* FROM branchmaster bm JOIN employee e ON bm.BranchCode = e.BranchCode WHERE e.BranchCode = ?"
-
-
-?>
-
 <!DOCTYPE html>
 <html>
     <head>
@@ -48,7 +42,52 @@ $sql = "SELECT bm.* FROM branchmaster bm JOIN employee e ON bm.BranchCode = e.Br
 
     <body>
         <div class="container">
-            <h1 style="text-align: center;">burnik</h1>
+            
+            <?php
+            $username = $_SESSION["username"];
+            echo "<h1 style='text-align: center;'>Welcome $username</h1>";
+            ?>
+
+            <?php
+            require_once 'connect.php';
+            $sql = "SELECT bm.* FROM branchmaster bm JOIN employee e ON bm.BranchCode = e.BranchCode WHERE e.BranchCode = ?";
+
+            if($stmt = mysqli_prepare($link, $sql)){
+                mysqli_stmt_bind_param($stmt, "s", $param_branchcode);
+                $param_branchcode = $_SESSION["branchcode"];
+
+                if(mysqli_stmt_execute($stmt)){
+                    $result = mysqli_stmt_get_result($stmt);
+                    if(mysqli_num_rows($result) > 0){
+                        while($row = mysqli_fetch_array($result, MYSQLI_ASSOC)){
+                            echo "<table class='table table-bordered'>";
+                            echo "<thead>";
+                                echo "<tr>";
+                                    echo "<th>Branch Code</th>";
+                                    echo "<th>Branch Name</th>";
+                                    echo "<th>Branch Location</th>";
+                                    echo "<th>Contact No</th>";
+                                echo "</tr>";
+                            echo "</thead>";
+                            echo "<tbody>";
+                                echo "<tr>";
+                                    echo "<td>" . $row["BranchCode"] . "</td>";
+                                    echo "<td>" . $row["BranchName"] . "</td>";
+                                    echo "<td>" . $row["BranchLocation"] . "</td>";
+                                    echo "<td>" . $row["ContactNo"] . "</td>";
+                                echo "</tr>";
+                            echo "</tbody>";
+                            echo "</table>";
+                        }
+                        mysqli_free_result($result);
+                    } else{
+                        echo "<p class='lead'><em>No records were found.</em></p>";
+                    }
+                } else{
+                    echo "ERROR: Could not able to execute $sql. " . mysqli_error($link);
+                }
+            }
+            ?>
         </div>
     </body>
 </html>
