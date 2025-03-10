@@ -134,9 +134,12 @@ body {
     color: #333;
     padding-top: 50px;
     padding-bottom: 50px;
+    padding-right: 30px;
+    text-align: justify;
 }
 .about img {
     padding-bottom: 200px;
+    padding-top: 30px;
 }
 .btn-see-all {
     border: 2px solid black;
