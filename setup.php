@@ -246,22 +246,21 @@
                 FOREIGN KEY (BranchCode) REFERENCES BranchMaster(BranchCode)
                 )";
 
-        if (mysqli_query($conn, $sql))
-        {
-            
-            $id = generate_ProductBrnchMstrID();    
-            $id2 = generate_ProductMstrID(); 
-            $id3 = generate_BranchCode();
-            --$id2;
-            --$id3;       
-            $sql = "INSERT INTO ProductBranchMaster
-                    (ProductBranchID,ProductID,BranchCode,Count,Avail_FL,Upd_by)
-                    VALUES
-                    ('$id', '$id2', '$id3', '5', 'Available',
-                    'Bien Ven P. Santos'
-                    )";
+        if (mysqli_query($conn, $sql)) {
+            for ($i = 0; $i < 12; $i++) {
+                $id = generate_ProductBrnchMstrID();    
+                $id2 = 2025140000 + $i; 
+                $id3 = generate_BranchCode();
+                --$id3;
 
-            mysqli_query($conn, $sql);
+                $count = rand(3, 50); // Generate a random count between 3 and 50
+                
+                $sql = "INSERT INTO ProductBranchMaster
+                        (ProductBranchID, ProductID, BranchCode, Count, Avail_FL, Upd_by)
+                        VALUES
+                        ('$id', '$id2', '$id3', '$count', 'Available', 'Bien Ven P. Santos')";
+                mysqli_query($conn, $sql);             
+            }
         }
         else
         {
@@ -453,9 +452,56 @@
             $sql = "INSERT INTO brandMaster
                     (BrandID,BrandName)
                     VALUES
-                    ('$genID','Adensco'
+                    ('$genID','Minima'
                     )";
+            mysqli_query($conn, $sql);
 
+            $genID = generate_BrandID();
+            $sql = "INSERT INTO brandMaster
+                    (BrandID,BrandName)
+                    VALUES
+                    ('$genID','IMAX'
+                    )";
+            mysqli_query($conn, $sql);
+
+            $genID = generate_BrandID();
+            $sql = "INSERT INTO brandMaster
+                    (BrandID,BrandName)
+                    VALUES
+                    ('$genID','Paul Hueman'
+                    )";
+            mysqli_query($conn, $sql);
+
+            $genID = generate_BrandID();
+            $sql = "INSERT INTO brandMaster
+                    (BrandID,BrandName)
+                    VALUES
+                    ('$genID','Caradin'
+                    )";
+            mysqli_query($conn, $sql);
+
+            $genID = generate_BrandID();
+            $sql = "INSERT INTO brandMaster
+                    (BrandID,BrandName)
+                    VALUES
+                    ('$genID','Lee Cooper'
+                    )";
+            mysqli_query($conn, $sql);
+
+            $genID = generate_BrandID();
+            $sql = "INSERT INTO brandMaster
+                    (BrandID,BrandName)
+                    VALUES
+                    ('$genID','Bobby Jones'
+                    )";
+            mysqli_query($conn, $sql);
+
+            $genID = generate_BrandID();
+            $sql = "INSERT INTO brandMaster
+                    (BrandID,BrandName)
+                    VALUES
+                    ('$genID','Light Tech'
+                    )";
             mysqli_query($conn, $sql);
         }
         else
@@ -573,54 +619,99 @@
     }
 
     // Create Product Master Table
-
-    function create_ProductMstrTable()
-    {
+    function create_ProductMstrTable() {
         $conn = connect();
         $sql = "CREATE TABLE productMstr (
-                ProductID INT(10) PRIMARY KEY,
-                CategoryType VARCHAR (50),
-                ShapeID INT (1),
-                BrandID INT (10),                              
-                Model VARCHAR(50),
-                Remarks VARCHAR(500),
-                ProductImage LONGBLOB,
-                Avail_FL VARCHAR (50),  
-                Upd_by VARCHAR(50),
-                Upd_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (CategoryType) REFERENCES categoryType(CategoryType),
-                FOREIGN KEY (ShapeID) REFERENCES shapeMaster(ShapeID),
-                FOREIGN KEY (BrandID) REFERENCES brandMaster(BrandID)
-                
-                )";
+            ProductID INT(10) PRIMARY KEY,
+            CategoryType VARCHAR (50),
+            ShapeID INT (1),
+            BrandID INT (10),                              
+            Model VARCHAR(50),
+            Remarks VARCHAR(500),
+            ProductImage LONGBLOB,
+            Avail_FL VARCHAR (50),  
+            Upd_by VARCHAR(50),
+            Upd_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (CategoryType) REFERENCES categoryType(CategoryType),
+            FOREIGN KEY (ShapeID) REFERENCES shapeMaster(ShapeID),
+            FOREIGN KEY (BrandID) REFERENCES brandMaster(BrandID)
+            )";
 
-        if (mysqli_query($conn, $sql))
-        {
-            $img_path = "Images/Frame1.jpg";
-            $img_clean= file_get_contents($img_path);
-            $product_pic = mysqli_real_escape_string($conn, $img_clean);
-            $id = generate_ProductMstrID();
-            
-            $sql = "INSERT INTO productMstr
-                    (ProductID,CategoryType,ShapeID,BrandID,Model,Remarks,
-                    ProductImage,Avail_FL,Upd_by)
-                    VALUES
-                    ('$id', 'Frame', '1', '2025150000', 
-                    'Model1', 'New Model', '$product_pic', 'Available', 
-                    'Bien Ven P. Santos'
-                    )";
+        if (mysqli_query($conn, $sql)) {
+        
+            for ($i = 0; $i <= 11; $i++) {
+                $img_path = "Images/" . str_pad(69 + $i, 5, '0', STR_PAD_LEFT) . ".jpg";
+                $img_clean = file_get_contents($img_path);
+                $product_pic = mysqli_real_escape_string($conn, $img_clean);
+                $id = generate_ProductMstrID();
+                $model = '';
 
-            mysqli_query($conn, $sql);
-        }
-        else
-        {
+                switch ($i) {
+                    case 0: 
+                        $model = 'Minima M-508C _144 867';
+                        $brandID = 2025150000;
+                        break;
+                    case 1: 
+                        $model = 'IMAX 5565 54-17-140'; 
+                        $brandID = 2025150001;
+                        break;
+                    case 2: 
+                        $model = 'Paul Hueman';
+                        $brandID = 2025150002; 
+                        break;
+                    case 3: 
+                        $model = 'PAUL HUEMAN PHF-300A Col.5 50-201-42';
+                        $brandID = 2025150002;
+                        break;
+                    case 4: 
+                        $model = 'Caradin'; 
+                        $brandID = 2025150003;
+                        break;
+                    case 5: 
+                        $model = 'Lee Cooper'; 
+                        $brandID = 2025150004;
+                        break;
+                    case 6: 
+                        $model = 'Bobby Jones'; 
+                        $brandID = 2025150005;
+                        break;
+                    case 7: 
+                        $model = 'LIGHT TECH 3PC 7783L 54-16-140 BB 072'; 
+                        $brandID = 2025150006;
+                        break;
+                    case 8: 
+                        $model = 'LIGHT TECH 3PC 7775LBG 007'; 
+                        $brandID = 2025150006;
+                        break;
+                    case 9: 
+                        $model = 'LIGHT TECH'; 
+                        $brandID = 2025150006;
+                        break;
+                    case 10: 
+                        $model = 'LIGHT TECH';
+                        $brandID = 2025150006; 
+                        break;
+                    case 11: 
+                        $model = 'LIGHT TECH';
+                        $brandID = 2025150006; 
+                        break;
+                }
+
+                $sql = "INSERT INTO productMstr
+                            (ProductID, CategoryType, ShapeID, BrandID, Model, Remarks,
+                            ProductImage, Avail_FL, Upd_by)
+                            VALUES
+                            ('$id', 'Frame', '1', '$brandID', 
+                            '$model', 'New Model', '$product_pic', 'Available', 
+                            'Bien Ven P. Santos')";
+
+                mysqli_query($conn, $sql);
+            }
+        } else {
             echo "<br>There is an error in creating the table: " . $conn->connect_error;
         }
-
         $conn->close();
     }
-
-    //Generate Product Master ID
 
     function generate_ProductMstrID()
     {
