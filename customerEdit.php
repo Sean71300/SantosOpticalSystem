@@ -7,12 +7,10 @@
     $info = "";
     $notes = "";   
 
-    [$errorMessage, $successMessage]=handleCustomerForm();
-
     if ( $_SERVER['REQUEST_METHOD'] == 'GET') {
         
         if (!isset($_GET["CustomerID"])) {
-            header("location: customerPage.php");
+            header("location:customerPage.php");
             exit;
         }
 
@@ -20,23 +18,23 @@
 
         $conn = connect();
         $sql = "SELECT * FROM customer where CustomerID=$id";
-        $result = $conn->($sql);
+        $result = $conn->query($sql);
         $row = $result->fetch_assoc();
 
         if (!$row) {
-            header ("location: customerPage.php");
+            header ("location:customerPage.php");
             exit;
         }
 
-        $name = $row["name"];
-        $address = $row["address"];
-        $phone = $row["phone"];
-        $info = $row["info"];
-        $notes = $row["notes"];
+        $name = $row["CustomerName"];
+        $address = $row["CustomerAddress"];
+        $phone = $row["CustomerContact"];
+        $info = $row["CustomerInfo"];
+        $notes = $row["Notes"];
     }
     
     else {
-        $id = $_POST["CustomerID"];
+        $id = $_POST["id"];
         $name = $_POST["name"];
         $address = $_POST["address"];
         $phone = $_POST["phone"];
@@ -54,6 +52,18 @@
                 Notes = '$notes', Upd_by = 'Bien Ven P. Santos' 
                 WHERE CustomerID = {$id}";
 
+            $conn = connect();
+            $result = $conn->query($sql);
+
+            if (!$result) {
+                $errorMessage = "Invalid query: " . $conn->error;
+                break;
+            }
+
+            $successMessage = "Client updated correctly";
+
+            header("location:customerPage.php");
+            exit;
                 
         } while(false);
     }
@@ -82,11 +92,9 @@
                 ";
             }
             ?>
-            
-            
            
             <form method="post" id="customerCreate">
-                <input type="hidden" value = "<?php echo $id;?>">
+                <input type="hidden" name="id" value ="<?php echo $id;?>">
                 <div class="row mb-3">
                     <label class="col-sm-3 col-form-label">Name</label>
                     <div class="col-sm-6">
@@ -108,13 +116,13 @@
                 <div class="row mb-3">
                     <label class="col-sm-3 col-form-label">Customer Info</label>
                     <div class="col-sm-6">
-                    <textarea class="form-control" name="info" rows="3" value="<?php echo $info;?>" ></textarea>
+                    <input class="form-control" name="info" rows="3" value="<?php echo $info;?>" ></input>
                     </div>
                 </div>
                 <div class="row mb-3">
                     <label class="col-sm-3 col-form-label">Notes</label>
                     <div class="col-sm-6">
-                    <textarea class="form-control" name="notes" rows="3" value="<?php echo $notes;?>" ></textarea>
+                    <input class="form-control" name="notes" rows="3" value="<?php echo $notes;?>" ></input>
                     </div>
                 </div>
 
@@ -136,7 +144,8 @@
                         <button type="submit" class="btn btn-primary">Submit</button>
                     </div>
                     <div class="col-sm-3 d-grid">
-                    <button class="btn btn-outline-primary" role="button">Cancel</button>                    </div>
+                        <button class="btn btn-outline-primary" role="button">Cancel</button>                    
+                    </div>
                 </div>
             </form>
         </div>

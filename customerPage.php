@@ -1,7 +1,7 @@
 <?php
   session_start();
   include_once 'customerFunctions.php'; 
-  $customerData = customerData();
+  
 ?>
     
 <html>
@@ -18,7 +18,7 @@
                 <div class="row">
                 <h1>Customer Records</h1>
                 <a class="col-2 mt-2 btn btn-primary" href="customerCreate.php" role="button">New Customer</a>                
-                <table class="mt-2">
+                <table class="mt-2 table">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -29,7 +29,7 @@
                         </tr>
                     </thead>
                     <tbody>                      
-                        <?php echo $customerData; ?>                      
+                        <?php customerData(); ?>                      
                     </tbody>
                 </table>
                 </div>

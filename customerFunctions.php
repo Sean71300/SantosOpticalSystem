@@ -17,19 +17,18 @@
 
             // read data of each row
             while ($row = $result->fetch_assoc()){
-                $customerData.=
+                echo
                 "<tr>
                     <td>$row[CustomerID]</td>
                     <td>$row[CustomerName]</td>
                     <td>$row[CustomerAddress]</td>
                     <td>$row[CustomerContact]</td>
                     <td>
-                        <a class='btn btn-primary btn-sm' href=''>Edit</a>
-                        <a class='btn btn-danger btn-sm' href=''>Delete</a>
+                        <a class='btn btn-primary btn-sm' href='customerEdit.php?CustomerID=$row[CustomerID]' >Edit</a>
+                        <a class='btn btn-danger btn-sm' href='customerDelete.php?CustomerID=$row[CustomerID]'>Delete</a>
                     </td>
                 </tr>";
-            }
-            return $customerData;
+            }            
         }
     function handleCustomerForm() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -75,8 +74,10 @@
             
             mysqli_query($conn, $sql);
         }
-    function getID(){
-        
-    }
-
+    function cancel()
+        {
+            header("location:customerPage.php");
+            exit;
+        }
+    
 ?>
