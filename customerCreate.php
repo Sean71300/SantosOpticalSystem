@@ -1,4 +1,5 @@
 <?php
+session_start();
 include_once 'customerFunctions.php'; 
 $name = "";
 $address = "";
@@ -10,19 +11,14 @@ $notes = "";
 ?>
 
 <?php
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_cancel'])) {
-    // Execute your cancellation logic here
-    // For example, call your cancellation function
-    cancelFunction();
-
-    // Redirect to another page or display a message
-    header('Location: customerPage.php');
-    exit();
-}
-
-function cancelFunction() {
-    // Your cancellation logic goes here
-}
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_cancel'])) {
+        // Execute your cancellation logic here
+        // For example, call your cancellation function   
+        // Redirect to another page or display a message
+        header('Location: customerRecords.php');
+        exit();
+    }    
+    
 ?>
 
 <html>
@@ -30,8 +26,9 @@ function cancelFunction() {
     Customer Page
 </title>
 <head>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="customCodes/custom.css">
 </head>
 <body class="bg-body-tertiary">
     <?php include "Navigation.php"?> 
@@ -93,7 +90,7 @@ function cancelFunction() {
             ?>
             <div class="row mb-3">
                 <div class="offset-mb-3 col-sm-3 d-grid">
-                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="submit" class="btn btn-primary" name="submit">Submit</button>
                 </div>
                 <div class="col-sm-3 d-grid">
                     <!-- Button to trigger modal -->

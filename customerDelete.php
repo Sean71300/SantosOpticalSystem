@@ -10,7 +10,7 @@ if (isset($_GET["CustomerID"])) {
     $conn->query($sql);
 }
 
-header("location: customerPage.php");
+header("location: customerRecords.php");
 exit;
 
 ?>

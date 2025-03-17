@@ -10,7 +10,7 @@
     if ( $_SERVER['REQUEST_METHOD'] == 'GET') {
         
         if (!isset($_GET["CustomerID"])) {
-            header("location:customerPage.php");
+            header("location:customerRecords.php");
             exit;
         }
 
@@ -22,7 +22,7 @@
         $row = $result->fetch_assoc();
 
         if (!$row) {
-            header ("location:customerPage.php");
+            header ("location:customerRecords.php");
             exit;
         }
 
@@ -62,11 +62,20 @@
 
             $successMessage = "Client updated correctly";
 
-            header("location:customerPage.php");
+            header("location:customerRecords.php");
             exit;
                 
         } while(false);
     }
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_cancel'])) {
+        // Execute your cancellation logic here
+        // For example, call your cancellation function   
+        // Redirect to another page or display a message
+        header('Location: customerRecords.php');
+        exit();
+    }
+
 ?>
 
 <html>
@@ -74,8 +83,9 @@
         Customer Page
     </title>
     <head>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+        <link rel="stylesheet" href="customCodes/custom.css">
     </head>
     <body class="bg-body-tertiary">
         <?php include "Navigation.php"?> 
@@ -144,10 +154,32 @@
                         <button type="submit" class="btn btn-primary">Submit</button>
                     </div>
                     <div class="col-sm-3 d-grid">
-                        <button class="btn btn-outline-primary" role="button">Cancel</button>                    
-                    </div>
+                    <!-- Button to trigger modal -->
+                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#cancelModal">Cancel</button>                    
+                </div>
                 </div>
             </form>
         </div>
+        <!-- Modal -->
+    <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cancelModalLabel">Confirm Cancellation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to cancel? You will lose any unsaved changes.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <form  method="post" style="display: inline;">
+                    <input type="hidden" name="confirm_cancel" value="1">
+                    <button type="submit" class="btn btn-primary">Yes, Cancel</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    </div>
     </body>
 </html>

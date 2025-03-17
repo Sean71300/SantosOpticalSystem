@@ -2,13 +2,13 @@
     include_once 'setup.php'; 
   
     //read all row from database table
-    function customerData()
+    function employeeData()
 
         {
             $customerData = "";
             $connection = connect();
 
-            $sql = "SELECT * FROM customer";
+            $sql = "SELECT * FROM employee";
             $result = $connection->query($sql);
 
             if(!$result) {
@@ -17,15 +17,30 @@
 
             // read data of each row
             while ($row = $result->fetch_assoc()){
+                $role="";
+
+                if ($row['RoleID'] == 1){
+                    $role = "Admin";
+                }
+                else {
+                    $role = "Staff";
+                }
+                
+                $image = base64_encode($row["EmployeePicture"]);               
+                
                 echo
                 "<tr>
-                    <td>$row[CustomerID]</td>
-                    <td>$row[CustomerName]</td>
-                    <td>$row[CustomerAddress]</td>
-                    <td>$row[CustomerContact]</td>
-                    <td>
-                        <a class='btn btn-primary btn-sm' href='customerEdit.php?CustomerID=$row[CustomerID]' >Edit</a>
-                        <a class='btn btn-danger btn-sm' href='customerDelete.php?CustomerID=$row[CustomerID]'>Delete</a>
+                    <td class='align-middle'>$row[EmployeeID]</td>
+                    <td class='align-middle'>$row[EmployeeName]</td>
+                    <td class='align-middle'>$row[EmployeeEmail]</td>
+                    <td class='align-middle'>$row[EmployeeNumber]</td>
+                    <td class='align-middle'>$role</td>
+                    <td>";
+                    echo  '<img src="data:image/jpeg;base64,' . $image . '"class="icons">';
+                    echo "</td>
+                    <td class='align-middle'>
+                        <a class='btn btn-primary btn-sm' href='employeeEdit.php?EmployeeID=$row[EmployeeID]' >Edit</a>
+                        <a class='btn btn-danger btn-sm' href='employeeDelete.php?EmployeeID=$row[EmployeeID]'>Delete</a>
                     </td>
                 </tr>";
             }            
@@ -65,13 +80,12 @@
     function insertData($name,$address,$phone,$info,$notes)
         {
             $conn = connect(); 
-            $id = generate_CustomerID();   
-            $upd_by = $_SESSION["full_name"] ;
+            $id = generate_CustomerID();           
             $sql = "INSERT INTO customer 
                     (CustomerID,CustomerName,CustomerAddress,CustomerContact,
                     CustomerInfo,Notes,Upd_by) 
                     VALUES
-                    ('$id','$name','$address','$phone','$info','$notes','$upd_by')";
+                    ('$id','$name','$address','$phone','$info','$notes','Bien Ven P. Santos')";
             
             mysqli_query($conn, $sql);
         }
