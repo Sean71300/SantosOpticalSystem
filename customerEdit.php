@@ -1,5 +1,5 @@
 <?php
-    include_once 'customerFunctions.php'; 
+    include 'customerFunctions.php'; 
     $id = "";
     $name = "";
     $address = "";
@@ -46,10 +46,11 @@
                 $errorMessage = 'All the fields are required';
                 break;
             }
+            $upd_by = $_SESSION["full_name"];
             $sql = "UPDATE customer 
                 SET CustomerName = '$name', CustomerAddress = '$address', 
                 CustomerContact = '$phone', CustomerInfo = '$info',
-                Notes = '$notes', Upd_by = 'Bien Ven P. Santos' 
+                Notes = '$notes', Upd_by = '$upd_by' 
                 WHERE CustomerID = {$id}";
 
             $conn = connect();
@@ -62,19 +63,11 @@
 
             $successMessage = "Client updated correctly";
 
-            header("location:customerRecords.php");
-            exit;
                 
         } while(false);
     }
 
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_cancel'])) {
-        // Execute your cancellation logic here
-        // For example, call your cancellation function   
-        // Redirect to another page or display a message
-        header('Location: customerRecords.php');
-        exit();
-    }
+    handleCancellation();
 
 ?>
 
@@ -155,7 +148,7 @@
                     </div>
                     <div class="col-sm-3 d-grid">
                     <!-- Button to trigger modal -->
-                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#cancelModal">Cancel</button>                    
+                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#cancelModal">Return</button>                    
                 </div>
                 </div>
             </form>
@@ -169,13 +162,13 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                Are you sure you want to cancel? You will lose any unsaved changes.
+                Are you sure you want to Return? You will lose any unsaved changes.
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 <form  method="post" style="display: inline;">
                     <input type="hidden" name="confirm_cancel" value="1">
-                    <button type="submit" class="btn btn-primary">Yes, Cancel</button>
+                    <button type="submit" class="btn btn-primary">Yes, Return</button>
                 </form>
             </div>
         </div>

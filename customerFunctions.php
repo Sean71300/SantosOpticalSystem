@@ -62,11 +62,12 @@
             return [$errorMessage, $successMessage];
         }
     }
+    
     function insertData($name,$address,$phone,$info,$notes)
         {
             $conn = connect(); 
             $id = generate_CustomerID();   
-            $upd_by = $_SESSION["full_name"] ;
+            $upd_by = $_SESSION["full_name"];
             $sql = "INSERT INTO customer 
                     (CustomerID,CustomerName,CustomerAddress,CustomerContact,
                     CustomerInfo,Notes,Upd_by) 
@@ -76,5 +77,15 @@
             mysqli_query($conn, $sql);
         }
     
+    function handleCancellation() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_cancel'])) {
+            // Execute your cancellation logic here
+            // For example, you might want to remove a record from the database
+    
+            // Redirect to another page
+            header('Location: customerRecords.php');
+            exit();
+        }
+    }
     
 ?>

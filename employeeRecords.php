@@ -18,7 +18,7 @@
             <div class="container category-container">
                 <div class="row">
                 <h1>Employee Records</h1>
-                <a class="col-2 mt-2 btn btn-primary" href="customerCreate.php" role="button">New Employee</a>                
+                <a class="col-2 mt-2 btn btn-primary" href="employeeCreate.php" role="button">New Employee</a>                
                 <table class="mt-2 table text-center">
                     <thead>
                         <tr>
@@ -28,6 +28,8 @@
                             <th>Contact Number</th>
                             <th>Role</th>
                             <th>Image</th>
+                            <th>Status</th>
+                            <th>Branch</th>
                             <th>Action</th>
                         </tr>
                     </thead>
