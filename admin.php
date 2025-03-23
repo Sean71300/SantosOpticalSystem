@@ -24,7 +24,7 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
 <html>
     <head>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-
+        <link rel="shortcut icon" type="image/x-icon" href="images/logo.png"/>
         <title>Admin | Dashboard</title>
     </head>
 
@@ -34,14 +34,14 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
         }
     </style>
 
-    <header class="mb-5">
+    <header>
         <?php
             include "nav-bar.html";
         ?>
     </header>
 
     <body>
-        <div class="container">
+        <div class="container" style="margin-top: 8.5rem;">
             <div class="container">
                 <?php
                 $username = $_SESSION["username"];
@@ -49,7 +49,7 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
                 ?>
             </div>
 
-            <div class="container">
+            <div class="container" style="margin-bottom: 3.5rem;">
                 <form class="d-flex justify-content-evenly" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" method="post">
                     <div class="form-floating w-100 me-3">
                         <select name="chooseBranch" id="chooseBranch" class="form-select form-select-lg">

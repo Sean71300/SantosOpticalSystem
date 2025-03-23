@@ -8,145 +8,144 @@ include_once 'setup.php';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Navbar Example</title>
+    <title>BVP Santos Optical</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="s1.css">
-
+    <link rel="shortcut icon" type="image/x-icon" href="images/logo.png"/>
     <style>
         body {
-    background-color: #f0ebea;
-}
-.navbar {
-    padding: 10px 20px;
-    position: fixed;
-    background-color: white;
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 1000;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-}
-.navbar-brand {
-    display: flex;
-    align-items: center;
-    font-weight: bold;
-    font-size: 1.5rem;
-    margin-left: 0;
-}
-.navbar-brand img {
-    height: 50px;
-    margin-right: 10px;
-}
-.navbar-nav {
-    margin-right: auto;
-}
-.nav-link {
-    font-weight: 400;
-    letter-spacing: 1px;
-    font-size: 15px;
-}
-.carousel {
-    margin-top: 70px;
-    padding-bottom: 80px;
-}
-.carousel-item img {
-    width: 100%;
-    height: auto;
-}
-.category-btn {
-    border: none;
-    padding: 10px 20px;
-    font-weight: 20px;
-    border-radius: 10px;
-    width: 180px;
-}
+            background-color: #f0ebea;
+        }
+        .navbar {
+            padding: 10px 20px;
+            position: fixed;
+            background-color: white;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.5rem;
+            margin-left: 0;
+        }
+        .navbar-brand img {
+            height: 50px;
+            margin-right: 10px;
+        }
+        .navbar-nav {
+            margin-right: auto;
+        }
+        .nav-link {
+            font-weight: 400;
+            letter-spacing: 1px;
+            font-size: 15px;
+        }
+        .carousel {
+            margin-top: 70px;
+            padding-bottom: 80px;
+        }
+        .carousel-item img {
+            width: 100%;
+            height: auto;
+        }
+        .category-btn {
+            border: none;
+            padding: 10px 20px;
+            font-weight: 20px;
+            border-radius: 10px;
+            width: 180px;
+        }
 
-.best-sellers {
-    background-color: #f8a8a8;
-}
+        .best-sellers {
+            background-color: #f8a8a8;
+        }
 
-.new-arrivals {
-    background-color: #f8f3a8;
-}
+        .new-arrivals {
+            background-color: #f8f3a8;
+        }
 
-.product-img {
-    width: 100%;
-    height: auto;
-    border-radius: 5px;
-    transition: transform 0.3s ease;
-    padding-top: 30px;
-    padding-bottom: 30px;
-}
+        .product-img {
+            width: 100%;
+            height: auto;
+            border-radius: 5px;
+            transition: transform 0.3s ease;
+            padding-top: 30px;
+            padding-bottom: 30px;
+        }
 
-.product-img:hover {
-    transform: scale(1.05);
-}
+        .product-img:hover {
+            transform: scale(1.05);
+        }
 
-.see-more-btn {
-    border: 2px solid black;
-    padding: 10px 20px;
-    font-weight: bold;
-    background: none;
-    cursor: pointer;
-    width: 170px;
-}
+        .see-more-btn {
+            border: 2px solid black;
+            padding: 10px 20px;
+            font-weight: bold;
+            background: none;
+            cursor: pointer;
+            width: 170px;
+        }
 
-.see-more-btn:hover {
-    background: black;
-    color: white;
-}
+        .see-more-btn:hover {
+            background: black;
+            color: white;
+        }
 
-.services-section {
-    padding: 50px 0;
-}
+        .services-section {
+            padding: 50px 0;
+        }
 
-.service-img {
-    width: 90%;
-    border-radius: 10px;
-}
+        .service-img {
+            width: 90%;
+            border-radius: 10px;
+        }
 
-.text-content {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    height: 100%;
-}
+        .text-content {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 100%;
+        }
 
-.service-title {
-    font-size: 24px;
-    font-weight: bold;
-    text-align: right;
-}
+        .service-title {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: right;
+        }
 
-.service-text {
-    font-size: 16px;
-    color: #333;
-    margin-bottom: 20px;
-    text-align: right;
-    padding-bottom: 50px;
-}
+        .service-text {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: right;
+            padding-bottom: 50px;
+        }
 
-.btn-know-more {
-    border: 2px solid black;
-    padding: 10px 20px;
-    font-weight: bold;
-    background: none;
-    transition: 0.3s ease;
-    width: 200px;
-}
+        .btn-know-more {
+            border: 2px solid black;
+            padding: 10px 20px;
+            font-weight: bold;
+            background: none;
+            transition: 0.3s ease;
+            width: 200px;
+        }
 
-.btn-know-more:hover {
-    background: black;
-    color: white;
-}
+        .btn-know-more:hover {
+            background: black;
+            color: white;
+        }
     </style>
 </head>
 <body>
-
     <nav class="navbar navbar-expand-lg bg-white shadow-sm">
         <div class="container">
-            <a class="navbar-brand" href="demo1.html">
-                <img src="logo.png" alt="Logo"> BVP Santos Optical
+            <a class="navbar-brand" href="pdmain.html">
+                <img src="images/logo.png" alt="Logo"> BVP Santos Optical
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -154,7 +153,7 @@ include_once 'setup.php';
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <a class="nav-link" href="#">PRODUCTS</a>
+                    <a class="nav-link" href="product-gallery.php">PRODUCTS</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#">COLLECTIONS</a>
