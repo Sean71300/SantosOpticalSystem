@@ -17,19 +17,18 @@
 
             // read data of each row
             while ($row = $result->fetch_assoc()){
-                $customerData.=
+                echo
                 "<tr>
                     <td>$row[CustomerID]</td>
                     <td>$row[CustomerName]</td>
                     <td>$row[CustomerAddress]</td>
                     <td>$row[CustomerContact]</td>
                     <td>
-                        <a class='btn btn-primary btn-sm' href=''>Edit</a>
-                        <a class='btn btn-danger btn-sm' href=''>Delete</a>
+                        <a class='btn btn-primary btn-sm' href='customerEdit.php?CustomerID=$row[CustomerID]' >Edit</a>
+                        <a class='btn btn-danger btn-sm' href='customerDelete.php?CustomerID=$row[CustomerID]'>Delete</a>
                     </td>
                 </tr>";
-            }
-            return $customerData;
+            }            
         }
     function handleCustomerForm() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -63,20 +62,30 @@
             return [$errorMessage, $successMessage];
         }
     }
+    
     function insertData($name,$address,$phone,$info,$notes)
         {
             $conn = connect(); 
-            $id = generate_CustomerID();           
+            $id = generate_CustomerID();   
+            $upd_by = $_SESSION["full_name"];
             $sql = "INSERT INTO customer 
                     (CustomerID,CustomerName,CustomerAddress,CustomerContact,
                     CustomerInfo,Notes,Upd_by) 
                     VALUES
-                    ('$id','$name','$address','$phone','$info','$notes','Bien Ven P. Santos')";
+                    ('$id','$name','$address','$phone','$info','$notes','$upd_by')";
             
             mysqli_query($conn, $sql);
         }
-    function getID(){
-        
+    
+    function handleCancellation() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_cancel'])) {
+            // Execute your cancellation logic here
+            // For example, you might want to remove a record from the database
+    
+            // Redirect to another page
+            header('Location: customerRecords.php');
+            exit();
+        }
     }
-
+    
 ?>

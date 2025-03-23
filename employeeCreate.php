@@ -1,13 +1,16 @@
 <?php
 session_start();
-include 'customerFunctions.php'; 
+include 'employeeFunctions.php'; 
 $name = "";
-$address = "";
+$username = "";
+$password = "";
+$email = "";
 $phone = "";
-$info = "";
-$notes = "";   
+$role = "";
+$branch = ""; 
+$image = "";  
 
-[$errorMessage, $successMessage] = handleCustomerForm();
+[$errorMessage, $successMessage] = handleEmployeeForm();
 
 handleCancellation();
 ?>
@@ -24,7 +27,7 @@ handleCancellation();
 <body class="bg-body-tertiary">
     <?php include "Navigation.php"?> 
     <div class="container category-container">
-        <h1>New Customer</h1>
+        <h1>New Employee</h1>
 
         <?php
          if (!empty($errorMessage)) {
@@ -45,27 +48,48 @@ handleCancellation();
                 </div>
             </div>
             <div class="row mb-3">
-                <label class="col-sm-3 col-form-label">Address</label>
+                <label class="col-sm-3 col-form-label">Username</label>
                 <div class="col-sm-6">
-                    <input type="text" class="form-control" name="address" value="<?php echo $address;?>" >
+                    <input type="text" class="form-control" name="username" value="<?php echo $username;?>" >
                 </div>
             </div>
             <div class="row mb-3">
-                <label class="col-sm-3 col-form-label">Phone</label>
+                <label class="col-sm-3 col-form-label">Password</label>
+                <div class="col-sm-6">
+                    <input type="password" class="form-control" name="password" value="<?php echo $password;?>" >
+                </div>
+            </div>
+            <div class="row mb-3">
+                <label class="col-sm-3 col-form-label">Email</label>
+                <div class="col-sm-6">
+                    <input type="text" class="form-control" name="email" value="<?php echo $email;?>" >
+                </div>
+            </div>
+            <div class="row mb-3">
+                <label class="col-sm-3 col-form-label">Contact Number</label>
                 <div class="col-sm-6">
                     <input type="text" class="form-control" name="phone" value="<?php echo $phone;?>" >
                 </div>
-            </div>
+            </div>  
             <div class="row mb-3">
-                <label class="col-sm-3 col-form-label">Customer Info</label>
+                <label class="col-sm-3 col-form-label">Branch</label>
                 <div class="col-sm-6">
-                    <textarea class="form-control" name="info" rows="3"><?php echo $info;?></textarea>
+                    <input type="text" class="form-control" name="branch" value="<?php echo $branch;?>" >
+                </div>
+            </div>        
+            <div class="row mb-3">
+                <label class="col-sm-3 col-form-label">Role</label>
+                <div class="col-sm-6">
+                    <select class="form-control" name="role" required>                        
+                        <option value="Employee" <?php echo ($role == 'Employee') ? 'selected' : ''; ?>>Employee</option>
+                        <option value="Admin" <?php echo ($role == 'Admin') ? 'selected' : ''; ?>>Admin</option>
+                    </select>
                 </div>
             </div>
             <div class="row mb-3">
-                <label class="col-sm-3 col-form-label">Notes</label>
+                <label class="col-sm-3 col-form-label">Image</label>
                 <div class="col-sm-6">
-                    <textarea class="form-control" name="notes" rows="3"><?php echo $notes;?></textarea>
+                    <textarea class="form-control" name="image" rows="3"></textarea>
                 </div>
             </div>
 

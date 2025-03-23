@@ -11,7 +11,13 @@ include_once 'setup.php';
     <title>BVP Santos Optical</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="s1.css">
+<<<<<<< HEAD
     <link rel="shortcut icon" type="image/x-icon" href="images/logo.png"/>
+=======
+    <link rel="stylesheet" href="customCodes/custom.css">
+
+
+>>>>>>> f03f6b39a4d31cce36bf52fd4de417b19fb869ec
     <style>
         body {
             background-color: #f0ebea;
@@ -142,6 +148,7 @@ include_once 'setup.php';
     </style>
 </head>
 <body>
+<<<<<<< HEAD
     <nav class="navbar navbar-expand-lg bg-white shadow-sm">
         <div class="container">
             <a class="navbar-brand" href="pdmain.html">
@@ -169,6 +176,9 @@ include_once 'setup.php';
     </div>
     </div>
 </nav>
+=======
+    <?php include "Navigation.php"?> 
+>>>>>>> f03f6b39a4d31cce36bf52fd4de417b19fb869ec
 
 <div id="eyeglassCarousel" class="carousel slide" data-bs-ride="carousel">
     <div class="carousel-inner">
@@ -275,6 +285,6 @@ include_once 'setup.php';
 
 
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
