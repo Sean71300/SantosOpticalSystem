@@ -80,4 +80,35 @@
     width: auto;
     height: auto; 
   }
+
+  /* Nav Bar Design*/
+
+  .navbar {
+    padding: 10px 20px;
+    background-color: white;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    font-size: 1.5rem;
+    margin-left: 0;
+}
+.navbar-brand img {
+    height: 50px;
+    margin-right: 10px;
+}
+.navbar-nav {
+    margin-right: auto;
+}
+.nav-link {
+    font-weight: 400;
+    letter-spacing: 1px;
+    font-size: 15px;
+}
    

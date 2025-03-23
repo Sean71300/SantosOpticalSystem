@@ -31,16 +31,17 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
             if(mysqli_stmt_execute($stmt)) {
                 mysqli_stmt_store_result($stmt);
                 if(mysqli_stmt_num_rows($stmt) == 1) {
-                    mysqli_stmt_bind_result($stmt, $id, $username, $img, $email, $number, $roleid, $username, $hashed_password, $branchcode, $status, $upd_by, $upd_dt);
+                    mysqli_stmt_bind_result($stmt, $id, $full_name, $img, $email, $number, $roleid, $username, $hashed_password, $branchcode, $status, $upd_by, $upd_dt);
                     if(mysqli_stmt_fetch($stmt)) {
                         if(password_verify($password, $hashed_password)) {
                             $_SESSION["loggedin"] = true;
                             $_SESSION["id"] = $id;
-                            $_SESSION["username"] = $username;
+                            $_SESSION["full_name"] = $full_name;
                             $_SESSION["img"] = $img;
                             $_SESSION["email"] = $email;
                             $_SESSION["number"] = $number;
                             $_SESSION["roleid"] = $roleid;
+                            $_SESSION["username"] = $username;
                             $_SESSION["branchcode"] = $branchcode;
                             $_SESSION["status"] = $status;
                             $_SESSION["upd_by"] = $upd_by;

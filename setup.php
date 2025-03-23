@@ -70,6 +70,14 @@
                     )";
 
             mysqli_query($conn, $sql);
+
+            $sql = "INSERT INTO roleMaster
+                    (RoleID, Description)
+                    VALUES
+                    ('2','Employee'
+                    )";
+
+            mysqli_query($conn, $sql);
         }
         else
         {
@@ -767,7 +775,7 @@
             --$id2;
             $password = "JPSantos123";
             $email = "BVPSantosOptical@gmail.com";
-
+            
             $hashed_pw = password_hash($password, PASSWORD_DEFAULT);
 
             $sql = "INSERT INTO employee
