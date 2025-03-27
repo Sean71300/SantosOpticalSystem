@@ -57,8 +57,10 @@
                 </tr>";
             }            
         }
+        
+    
     function handleEmployeeForm() {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                
             $name = $_POST["name"];
             $username = $_POST["username"];
             $password = $_POST["password"];
@@ -66,7 +68,12 @@
             $phone = $_POST["phone"];
             $role = $_POST["role"];
             $branch = $_POST["branch"]; 
+            $filename = $_FILES["image"]["name"];
+            $tempname = $_FILES["image"]["tmp_name"];
+            $folder = "Images/" . $filename; 
+            echo "abc".$image;
             
+            //$image = handleImage();
 
             // Initialize messages
             $errorMessage = "";
@@ -77,7 +84,7 @@
                 $errorMessage = 'All the fields are required';
             } else {
                 // Call the function to insert data
-                insertData($name, $username,$password,$email, $phone, $role,$branch);
+                insertData($name ,$username ,$password ,$email, $phone, $role ,$branch ,$image );
                 $successMessage = "Customer added successfully"; 
     
                 // Clear the form fields after submission
@@ -94,22 +101,26 @@
             // Return messages for further handling (e.g., displaying in the original page)
             return [$errorMessage, $successMessage];
         }
-    }
-    function insertData($name, $username, $password, $email, $phone, $role, $branch)
+    
+    function insertData($name, $username, $password, $email, $phone, $role, $branch, $image)
         {
             $conn = connect();
             $hashed_pw = password_hash($password, PASSWORD_DEFAULT);
 
-            $img_path = "Images/default.jpg"; //place holder
-            $img_clean= file_get_contents($img_path);
-            $employee_pic = mysqli_real_escape_string($conn, $img_clean);
-
+            
             if ($role == "Admin"){
                 $roleID = 1;
             }
             else if ($role == "Employee" ){
                 $roleID = 2;
             }
+                $img_path = "Images/default.jpg";
+                $img_clean= file_get_contents($img_path);
+                $image = mysqli_real_escape_string($conn, $img_clean);
+            /*
+            
+            */
+            
 
             $conn = connect(); 
             $id = generate_EmployeeID();  
@@ -119,7 +130,7 @@
                     EmployeeNumber,RoleID,LoginName,Password,BranchCode,
                     Status,Upd_by) 
                     VALUES
-                    ('$id','$name','$employee_pic','$email','$phone',
+                    ('$id','$name','$image','$email','$phone',
                     '$roleID','$username','$hashed_pw','2025160000','Active','$upd_by')";
             
             mysqli_query($conn, $sql);

@@ -10,7 +10,14 @@ $role = "";
 $branch = ""; 
 $image = "";  
 
-[$errorMessage, $successMessage] = handleEmployeeForm();
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        
+        [$errorMessage, $successMessage] = handleEmployeeForm();
+        
+    } 
+  
+    
+
 
 handleCancellation();
 ?>
@@ -40,7 +47,7 @@ handleCancellation();
         }
         ?>
         
-        <form method="post" id="customerCreate">
+        <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>"  method="post" id="customerCreate">
             <div class="row mb-3">
                 <label class="col-sm-3 col-form-label">Name</label>
                 <div class="col-sm-6">
@@ -86,13 +93,10 @@ handleCancellation();
                     </select>
                 </div>
             </div>
+            
             <div class="row mb-3">
-                <label class="col-sm-3 col-form-label">Image</label>
-                <div class="col-sm-6">
-                    <textarea class="form-control" name="image" rows="3"></textarea>
-                </div>
+                <input type="file" name="image" id="image" class="form-control" required>
             </div>
-
             <?php
             if (!empty($successMessage)) {
                 echo "
