@@ -11,13 +11,9 @@ include_once 'setup.php';
     <title>BVP Santos Optical</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="s1.css">
-<<<<<<< HEAD
-    <link rel="shortcut icon" type="image/x-icon" href="images/logo.png"/>
-=======
     <link rel="stylesheet" href="customCodes/custom.css">
 
 
->>>>>>> f03f6b39a4d31cce36bf52fd4de417b19fb869ec
     <style>
         body {
     background-color: #f0ebea;
