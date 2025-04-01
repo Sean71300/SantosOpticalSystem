@@ -8,13 +8,20 @@ $email = "";
 $phone = "";
 $role = "";
 $branch = ""; 
-$image = "";  
 
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST["image"])){
         
-        [$errorMessage, $successMessage] = handleEmployeeForm();
+        $filename = $_FILES["image"]["name"];
+        echo $filename;
+
+        /*if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
-    } 
+            [$errorMessage, $successMessage] = handleEmployeeForm();
+            
+        } */
+    }
+
+    
   
     
 
@@ -47,7 +54,7 @@ handleCancellation();
         }
         ?>
         
-        <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>"  method="post" id="customerCreate">
+        <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>"  method="POST" id="customerCreate">
             <div class="row mb-3">
                 <label class="col-sm-3 col-form-label">Name</label>
                 <div class="col-sm-6">
@@ -95,7 +102,7 @@ handleCancellation();
             </div>
             
             <div class="row mb-3">
-                <input type="file" name="image" id="image" class="form-control" required>
+                <input class='form-control' type='file' name='image' value="" />
             </div>
             <?php
             if (!empty($successMessage)) {

@@ -68,10 +68,6 @@
             $phone = $_POST["phone"];
             $role = $_POST["role"];
             $branch = $_POST["branch"]; 
-            $filename = $_FILES["image"]["name"];
-            $tempname = $_FILES["image"]["tmp_name"];
-            $folder = "Images/" . $filename; 
-            echo "abc".$image;
             
             //$image = handleImage();
 
