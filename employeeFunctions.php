@@ -64,53 +64,44 @@
         $errorMessage = "";
         $successMessage = "";
 
+        
+
         $conn = connect();
         if ($_SERVER['REQUEST_METHOD'] === 'POST'){   
-            if ($_FILES["IMAGE"]["size"] < 5000000) {
-                $filename = $_FILES["IMAGE"]["name"];
-                $tempname = $_FILES["IMAGE"]["tmp_name"];
-                $folder = "Uploads/" . $filename;    
-                if ($filename != null && $tempname != null)
-                {
-                    $img_clean = file_get_contents($tempname);
-                    $image = mysqli_real_escape_string($conn, $img_clean);
-                    move_uploaded_file($tempname, $folder);
-                }   else {
-                    $img_path = "Images/default.jpg";
-                    $img_clean= file_get_contents($img_path);
-                    $image = mysqli_real_escape_string($conn, $img_clean);   
-                }    
-                $name = $_POST["name"];
-                $username = $_POST["username"];
-                $password = $_POST["password"];
-                $email = $_POST["email"];
-                $phone = $_POST["phone"];
-                $role = $_POST["role"];
-                $branch = $_POST["branch"];     
-            } else {
-                $errorMessage = $errorMessage .'Image File size is too big. \n';   
-            }
-
-            // Initialize messages
             
+            
+
+            $name = $_POST["name"];
+            $username = $_POST["username"];
+            $password = $_POST["password"];
+            $email = $_POST["email"];
+            $phone = $_POST["phone"];
+            $role = $_POST["role"];
+            $branch = $_POST["branch"];   
     
             // Validate inputs
             if (empty($name) || empty($username) || empty($password) || empty($email) || empty($phone) || empty($role) || empty($branch) ) {
-                $errorMessage = $errorMessage .'Fill up all the fields';                
+                $errorMessage = $errorMessage .'Fill up all the fields.';                
             } else {
-                // Call the function to insert data
-                insertData($name ,$username ,$password ,$email, $phone, $role ,$branch ,$image );
-                $successMessage = "Customer added successfully"; 
-    
-                // Clear the form fields after submission
-                $name = "";
-                $username = "";
-                $password = "";
-                $email = "";
-                $phone = "";
-                $role = "";
-                $branch = ""; 
-                $image = "";  
+                if ($_FILES["IMAGE"]["size"] < 1000000) {
+                    $filename = $_FILES["IMAGE"]["name"];
+                    $tempname = $_FILES["IMAGE"]["tmp_name"];
+                    $folder = "Uploads/" . $filename;    
+                    if ($filename != null && $tempname != null)
+                    {
+                        $img_clean = file_get_contents($tempname);
+                        $image = mysqli_real_escape_string($conn, $img_clean);
+                        move_uploaded_file($tempname, $folder);
+                    }   else {
+                        $img_path = "Images/default.jpg";
+                        $img_clean= file_get_contents($img_path);
+                        $image = mysqli_real_escape_string($conn, $img_clean);   
+                    }    
+                    insertData($name ,$username ,$password ,$email, $phone, $role ,$branch ,$image );
+                    $successMessage = "Customer added successfully"; 
+                } else {
+                    $errorMessage = $errorMessage .'Image File size is too big. <br>';   
+                }                
             }
     
             // Return messages for further handling (e.g., displaying in the original page)

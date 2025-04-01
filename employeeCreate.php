@@ -11,7 +11,6 @@ $branch = "";
 
 [$errorMessage, $successMessage] = handleEmployeeForm();
 handleCancellation();
-
 ?>
 
 <html>
