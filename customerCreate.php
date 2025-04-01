@@ -106,7 +106,7 @@ handleCancellation();
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 <form  method="post" style="display: inline;">
                     <input type="hidden" name="confirm_cancel" value="1">
-                    <button type="submit" class="btn btn-primary">Yes, Return</button>
+                    <button type="return" class="btn btn-primary">Yes, Return</button>
                 </form>
             </div>
         </div>

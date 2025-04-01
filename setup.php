@@ -636,7 +636,7 @@
             BrandID INT (10),                              
             Model VARCHAR(50),
             Remarks VARCHAR(500),
-            ProductImage LONGBLOB,
+            ProductImage LONGBLOB NOT NULL,
             Avail_FL VARCHAR (50),  
             Upd_by VARCHAR(50),
             Upd_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

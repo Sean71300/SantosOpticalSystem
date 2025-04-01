@@ -78,7 +78,7 @@
         }
     
     function handleCancellation() {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_cancel'])) {
+        if (isset($_POST['confirm_cancel'])) {
             // Execute your cancellation logic here
             // For example, you might want to remove a record from the database
     

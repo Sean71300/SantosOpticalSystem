@@ -7,26 +7,11 @@ $password = "";
 $email = "";
 $phone = "";
 $role = "";
-$branch = ""; 
+$branch = "";   
 
-    if (isset($_POST["image"])){
-        
-        $filename = $_FILES["image"]["name"];
-        echo $filename;
-
-        /*if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        
-            [$errorMessage, $successMessage] = handleEmployeeForm();
-            
-        } */
-    }
-
-    
-  
-    
-
-
+[$errorMessage, $successMessage] = handleEmployeeForm();
 handleCancellation();
+
 ?>
 
 <html>
@@ -37,6 +22,7 @@ handleCancellation();
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="customCodes/custom.css">
+    
 </head>
 <body class="bg-body-tertiary">
     <?php include "Navigation.php"?> 
@@ -54,7 +40,7 @@ handleCancellation();
         }
         ?>
         
-        <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>"  method="POST" id="customerCreate">
+        <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" method="post" enctype="multipart/form-data">
             <div class="row mb-3">
                 <label class="col-sm-3 col-form-label">Name</label>
                 <div class="col-sm-6">
@@ -100,9 +86,8 @@ handleCancellation();
                     </select>
                 </div>
             </div>
-            
             <div class="row mb-3">
-                <input class='form-control' type='file' name='image' value="" />
+                <input class='form-control' type="file" name="IMAGE">
             </div>
             <?php
             if (!empty($successMessage)) {
@@ -141,7 +126,7 @@ handleCancellation();
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 <form  method="post" style="display: inline;">
                     <input type="hidden" name="confirm_cancel" value="1">
-                    <button type="submit" class="btn btn-primary">Yes, Return</button>
+                    <button type="return" class="btn btn-primary">Yes, Return</button>
                 </form>
             </div>
         </div>
