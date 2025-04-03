@@ -1,5 +1,6 @@
 <?php
     include 'customerFunctions.php'; 
+    session_start();
     $id = "";
     $name = "";
     $address = "";
@@ -95,7 +96,6 @@
                 ";
             }
             ?>
-           
             <form method="post" id="customerCreate">
                 <input type="hidden" name="id" value ="<?php echo $id;?>">
                 <div class="row mb-3">

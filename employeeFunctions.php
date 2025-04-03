@@ -3,7 +3,6 @@
   
     //read all row from database table
     function employeeData()
-
         {            
             $connection = connect();
             $sql = "SELECT * FROM employee";
@@ -35,9 +34,6 @@
                 else {
                     $role = "Staff";
                 }
-                
-                $image = base64_encode($row["EmployeePicture"]);               
-                
                 echo
                 "<tr>
                     <td class='align-middle'>$row[EmployeeID]</td>
@@ -46,7 +42,7 @@
                     <td class='align-middle'>$row[EmployeeNumber]</td>
                     <td class='align-middle'>$role</td>
                     <td>";
-                    echo  '<img src="data:image/jpeg;base64,' . $image . '"class="icons">';
+                    echo '<img src="' . $row['EmployeePicture'] . '" alt="Image" style="max-width: 200px; margin: 10px;">';
                     echo "</td>
                     <td class='align-middle'>$row[Status]</td>
                     <td class='align-middle'>$Branch</td>
@@ -59,7 +55,8 @@
         }
         
     
-    function handleEmployeeForm() {
+    function handleEmployeeFormC() 
+    {
 
         $errorMessage = "";
         $successMessage = "";
@@ -83,21 +80,15 @@
             if (empty($name) || empty($username) || empty($password) || empty($email) || empty($phone) || empty($role) || empty($branch) ) {
                 $errorMessage = $errorMessage .'Fill up all the fields.';                
             } else {
-                if ($_FILES["IMAGE"]["size"] < 1000000) {
-                    $filename = $_FILES["IMAGE"]["name"];
-                    $tempname = $_FILES["IMAGE"]["tmp_name"];
-                    $folder = "Uploads/" . $filename;    
-                    if ($filename != null && $tempname != null)
+                if ($_FILES["IMAGE"]["size"] < 100000000) {                    
+                    $imagePath = 'uploads/' . basename($_FILES['IMAGE']['name']);
+                    if (($_FILES["IMAGE"]["name"]) != null)
                     {
-                        $img_clean = file_get_contents($tempname);
-                        $image = mysqli_real_escape_string($conn, $img_clean);
-                        move_uploaded_file($tempname, $folder);
+                        move_uploaded_file($_FILES['IMAGE']['tmp_name'], $imagePath);
                     }   else {
-                        $img_path = "Images/default.jpg";
-                        $img_clean= file_get_contents($img_path);
-                        $image = mysqli_real_escape_string($conn, $img_clean);   
+                        $imagePath  = "Images/default.jpg";                        
                     }    
-                    insertData($name ,$username ,$password ,$email, $phone, $role ,$branch ,$image );
+                    insertData($name ,$username ,$password ,$email, $phone, $role ,$branch ,$imagePath );
                     $successMessage = "Customer added successfully"; 
                 } else {
                     $errorMessage = $errorMessage .'Image File size is too big. <br>';   
@@ -109,8 +100,71 @@
             }                
           
     }
+    function handleEmployeeFormE(){
+        if ( $_SERVER['REQUEST_METHOD'] == 'GET') {
+        
+            if (!isset($_GET["CustomerID"])) {
+                header("location:employeeRecords.php");
+                exit;
+            }
     
-    function insertData($name, $username, $password, $email, $phone, $role, $branch, $image)
+            $id = $_GET["CustomerID"];
+    
+            $conn = connect();
+            $sql = "SELECT * FROM employee where EmployeeID=$id";
+            $result = $conn->query($sql);
+            $row = $result->fetch_assoc();
+    
+            if (!$row) {
+                header ("location:employeeRecords.php");
+                exit;
+            }
+            
+            $name = $row["EmployeeName"];
+            $username = $row["LoginName"];
+            $email = $row["EmployeeEmail"];
+            $phone = $row["EmployeeNumber"];
+            $role = $row["RoleID"];
+            $branch = $row["BranchCode"]; 
+        }
+        
+        else {
+            $name = $_POST["name"];
+            $username = $_POST["username"];
+            $email = $_POST["email"];
+            $phone = $_POST["phone"];
+            $role = $_POST["role"];
+            $branch = $_POST["branch"];
+    
+            do {
+                if (empty($id) || empty($name) || empty($address) || empty($phone) || empty($info) || empty($notes)) {
+                    $errorMessage = 'All the fields are required';
+                    break;
+                }
+                $upd_by = $_SESSION["full_name"];
+                $sql = "UPDATE customer 
+                    SET CustomerName = '$name', CustomerAddress = '$address', 
+                    CustomerContact = '$phone', CustomerInfo = '$info',
+                    Notes = '$notes', Upd_by = '$upd_by' 
+                    WHERE CustomerID = {$id}";
+    
+                $conn = connect();
+                $result = $conn->query($sql);
+    
+                if (!$result) {
+                    $errorMessage = "Invalid query: " . $conn->error;
+                    break;
+                }
+    
+                $successMessage = "Client updated correctly";
+    
+                    
+            } while(false);
+            return [$errorMessage, $successMessage];
+        }
+    }
+    
+    function insertData($name, $username, $password, $email, $phone, $role, $branch, $imagePath)
         {
             $conn = connect();
             $hashed_pw = password_hash($password, PASSWORD_DEFAULT);
@@ -130,12 +184,13 @@
                     EmployeeNumber,RoleID,LoginName,Password,BranchCode,
                     Status,Upd_by) 
                     VALUES
-                    ('$id','$name','$image','$email','$phone',
+                    ('$id','$name','$imagePath','$email','$phone',
                     '$roleID','$username','$hashed_pw','2025160000','Active','$upd_by')";
             
             mysqli_query($conn, $sql);
         }
-    function handleCancellation() {
+    function handleCancellation() 
+    {
         if (isset($_POST['confirm_cancel'])) {
             // Execute your cancellation logic here
             // For example, you might want to remove a record from the database

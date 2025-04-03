@@ -1,6 +1,6 @@
 <?php
-    session_start();
     include 'employeeFunctions.php'; 
+    session_start();
     $name = "";
     $username = "";
     $password = "";
@@ -12,24 +12,21 @@
     
     [$errorMessage, $successMessage] = handleEmployeeFormC();
     handleCancellation();
-    
-    
 
 ?>
 
 <html>
-<title>
-    Customer Page
-</title>
-<head>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="customCodes/custom.css">
-    
-</head>
-<body class="bg-body-tertiary">
-    <?php include "Navigation.php"?> 
-    <div class="container category-container">
+    <title>
+        Employee Page
+    </title>
+    <head>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+        <link rel="stylesheet" href="customCodes/custom.css">
+    </head>
+    <body class="bg-body-tertiary">
+        <?php include "Navigation.php"?> 
+        <div class="container category-container">
         <h1>New Employee</h1>
 
         <?php
@@ -44,6 +41,7 @@
         ?>
         
         <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="id" value ="<?php echo $id;?>">
             <div class="row mb-3">
                 <label class="col-sm-3 col-form-label">Name</label>
                 <div class="col-sm-6">
@@ -114,7 +112,7 @@
         </form>
     </div>
 
-    <!-- Modal -->
+        <!-- Modal -->
     <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -134,7 +132,6 @@
             </div>
         </div>
     </div>
-</div>
-
-</body>
+    </div>
+    </body>
 </html>

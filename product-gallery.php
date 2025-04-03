@@ -11,10 +11,9 @@
 
         if(mysqli_num_rows($result) > 0) {
             while($row = mysqli_fetch_assoc($result)) {
-                $ProductImage = base64_encode($row['ProductImage']);
                 echo "<div class='col g-3'>";
                     echo "<div class='card' style='width: 18.5rem; height: 28rem;'>";
-                        echo '<img src="data:image/png;base64,' . $ProductImage. '"class="card-img-top" style="height: 300px;" alt="'. $row['Model'] .'">';
+                        echo '<img src="' . $row['ProductImage']. '"class="card-img-top" style="height: 300px;" alt="'. $row['Model'] .'">';
                             echo "<div class='card-body'>";
                                 echo "<h5 class='card-title overflow-hidden'>".$row['Model']."</h5>";
                                 echo "<p class='card-text'>".$row['Avail_FL']."</p>";

@@ -636,7 +636,7 @@
             BrandID INT (10),                              
             Model VARCHAR(50),
             Remarks VARCHAR(500),
-            ProductImage LONGBLOB NOT NULL,
+            ProductImage VARCHAR(255),
             Avail_FL VARCHAR (50),  
             Upd_by VARCHAR(50),
             Upd_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -648,9 +648,7 @@
         if (mysqli_query($conn, $sql)) {
         
             for ($i = 0; $i <= 11; $i++) {
-                $img_path = "Images/" . str_pad(69 + $i, 5, '0', STR_PAD_LEFT) . ".jpg";
-                $img_clean = file_get_contents($img_path);
-                $product_pic = mysqli_real_escape_string($conn, $img_clean);
+                $img_path = "Images/" . str_pad(69 + $i, 5, '0', STR_PAD_LEFT) . ".jpg";                
                 $id = generate_ProductMstrID();
                 $model = '';
 
@@ -710,7 +708,7 @@
                             ProductImage, Avail_FL, Upd_by)
                             VALUES
                             ('$id', 'Frame', '1', '$brandID', 
-                            '$model', 'New Model', '$product_pic', 'Available', 
+                            '$model', 'New Model', '$img_path', 'Available', 
                             'Bien Ven P. Santos')";
 
                 mysqli_query($conn, $sql);
@@ -751,7 +749,7 @@
         $sql = "CREATE TABLE employee (
                 EmployeeID INT(10) PRIMARY KEY,
                 EmployeeName VARCHAR(100),
-                EmployeePicture LONGBLOB,
+                EmployeePicture VARCHAR(255),
                 EmployeeEmail VARCHAR(100),
                 EmployeeNumber VARCHAR(11),
                 RoleID INT(10),
@@ -767,9 +765,7 @@
 
         if (mysqli_query($conn, $sql))
         {
-            $img_path = "Images/default.jpg";
-            $img_clean= file_get_contents($img_path);
-            $employee_pic = mysqli_real_escape_string($conn, $img_clean);
+            $img_path = "Images/default.jpg";           
             $id = generate_EmployeeID();
             $id2 = generate_BranchCode();
             --$id2;
@@ -783,7 +779,7 @@
                     EmployeeNumber,RoleID,LoginName,Password,BranchCode,Status,
                     Upd_by)
                     VALUES
-                    ($id, 'Bien Ven P. Santos', '$employee_pic', '$email', 
+                    ($id, 'Bien Ven P. Santos', '$img_path', '$email', 
                     '09864571325', '1', 'BVSantos1', '$hashed_pw', '$id2', 'Active',
                      'Admin')";
 
