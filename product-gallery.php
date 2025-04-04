@@ -3,30 +3,59 @@
     require_once 'connect.php';
     session_start();
 
-    function pullProducts() {
+    function pagination() {
         $conn = connect();
 
-        $sql = "SELECT * FROM `productmstr`";
+        $perPage = 12; 
+        $page = (isset($_GET['page'])) ? (int)$_GET['page'] : 1;
+        $start = ($page - 1) * $perPage;
+
+        $sql = "SELECT * FROM `productmstr` LIMIT $start, $perPage";
         $result = mysqli_query($conn, $sql);
 
-        if(mysqli_num_rows($result) > 0) {
-            while($row = mysqli_fetch_assoc($result)) {
-                echo "<div class='col g-3'>";
-                    echo "<div class='card' style='width: 18.5rem; height: 28rem;'>";
+        $total = mysqli_num_rows(mysqli_query($conn, "SELECT * FROM `productmstr`"));
+        $totalPages = ceil($total / $perPage);
+
+        while($row = mysqli_fetch_assoc($result)) {
+            echo "<div class='col g-3'>";
+                    echo "<div class='card' style='width: 18.5rem; height: 29.5rem;'>";
                         echo '<img src="' . $row['ProductImage']. '"class="card-img-top" style="height: 300px;" alt="'. $row['Model'] .'">';
                             echo "<div class='card-body'>";
-                                echo "<h5 class='card-title overflow-hidden'>".$row['Model']."</h5>";
-                                echo "<p class='card-text'>".$row['Avail_FL']."</p>";
-                                
+                                echo "<h5 class='card-title overflow-hidden' style='height:3.5rem;'>".$row['Model']."</h5>";
+                                echo "<p class='card-text'>".$row['Avail_FL']."</p>";                                
                             echo "</div>";
-                            echo "<a href='#' class='btn btn-primary'>Go somewhere</a>";
-                    echo "</div>";
+                        echo "<a href='#' class='btn btn-primary'>Go somewhere</a>";
                 echo "</div>";
-            }
-        } else {
-            echo "No products found.";
+            echo "</div>";
         }
-    }
+        echo "<div class='col-12'>";
+            echo "<div class='d-flex justify-content-center mt-5'>";
+                echo "<ul class='pagination'>";
+                if ($page > 1) {
+                    echo "<li class='page-item'><a class='page-link' href='?page=" . ($page - 1) . "'>Previous</a></li>";
+                } else {
+                    echo "<li class='page-item disabled'><a class='page-link'>Previous</a></li>";
+                }
+
+                for ($i = 1; $i <= $totalPages; $i++) {                       
+                    if ($i == $page) {
+                        
+                        echo "<li class='page-item active' aria-current='page'><a class='page-link disabled'>$i</a></li>"; 
+                    } else {
+                        echo "<li class='page-item'><a class='page-link' href='?page=$i'>$i</a></li>";
+                    }
+                }
+
+                if ($page < $totalPages) {
+                    echo "<li class='page-item'><a class='page-link' href='?page=" . ($page + 1) . "'>Next</a></li>";
+                } else {
+                    echo "<li class='page-item disabled'><a class='page-link'>Next</a></li>";
+                }
+                echo "</ul>";
+                }
+            echo "</div>";
+        echo "</div>"; 
+    
 ?>
 
 
@@ -54,7 +83,7 @@
             <div class="grid" style="margin-bottom: 3.5rem;">
                 <div class="row align-items-start">
                     <?php
-                        pullProducts();
+                        pagination();
                     ?>
                 </div>
             </div>          
