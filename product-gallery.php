@@ -46,7 +46,7 @@
     </header>
 
     <body>
-        <div class="container" style="margin-top: 8.5rem;">
+        <div class="container" style="margin-top: 2rem;">
             <div class="container mb-4">
                 <h1 style='text-align: center;'>Gallery</h1>
             </div>
