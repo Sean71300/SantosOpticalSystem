@@ -37,10 +37,18 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
 
     <body>
         <div class="container">
-            <div class="container mb-4">
-                <a class="col-2 mt-2 btn btn-primary" href="customerRecords.php" role="button">Customer Information</a>                
-                <a class="col-2 mt-2 btn btn-primary" href="EmployeeRecords.php" role="button">Manage Employees</a>
-                <a class="col-2 mt-2 btn btn-primary" href="admin-inventory.php" role="button">Manage Inventories</a>
+            <div class="container mb-5">
+                <?php
+                    $username = $_SESSION["username"];
+                    echo "<h1 class='mb-5' style='text-align: center;'>Welcome $username</h1>";
+                ?>
+                <h2 style='text-align: center;'>Admin Dashboard</h2>
+                <hr>
+                <div class="d-flex justify-content-evenly">
+                    <a class="col-2 mt-2 btn btn-primary" href="customerRecords.php" role="button">Customer Information</a>                
+                    <a class="col-2 mt-2 btn btn-primary" href="EmployeeRecords.php" role="button">Manage Employees</a>
+                    <a class="col-2 mt-2 btn btn-primary" href="admin-inventory.php" role="button">Manage Inventories</a>
+                </div>
             </div>
             
             <div class="container" style="margin-bottom: 3.5rem;">
@@ -70,7 +78,7 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
                     } 
                     else {
                         $branchName = $_POST['chooseBranch'];
-                        $sql = "SELECT bm.BranchCode, pbm.productID, pm.* 
+                        $sql = "SELECT bm.BranchCode, pbm.*, pm.* 
                                 FROM branchmaster bm
                                 JOIN productbranchmaster pbm ON bm.BranchCode = pbm.BranchCode
                                 JOIN productmstr pm ON pbm.productID = pm.productID 
@@ -91,16 +99,13 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
                                     <th>Model</th>
                                     <th>Remarks</th>
                                     <th>Product Image</th>
-                                    <th>Availability</th>
+                                    <th>Count</th>
                                     <th>Updated by</th>
                                     <th>Updated Date</th>
                                 </tr>";
 
                         // fetch and display results
                         while ($row = mysqli_fetch_assoc($result)) {
-                            $imageData = base64_encode($row['ProductImage']);
-                            $src = 'data:image/jpeg;base64,' . $imageData;
-
                             echo "<tr>
                                     <td>" . htmlspecialchars($row['ProductID']) . "</td>
                                     <td>" . htmlspecialchars($row['CategoryType']) . "</td>
@@ -108,8 +113,8 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
                                     <td>" . htmlspecialchars($row['BrandID']) . "</td>
                                     <td>" . htmlspecialchars($row['Model']) . "</td>
                                     <td>" . htmlspecialchars($row['Remarks']) . "</td>
-                                    <td><img src='" . $src . "' alt='Product Image' style='width:100px; height:auto;'/></td>
-                                    <td>" . htmlspecialchars($row['Avail_FL']) . "</td>
+                                    <td><img src='" . htmlspecialchars($row['ProductImage']) . "' alt='Product Image' style='width:100px; height:auto;'/></td>
+                                    <td>" . htmlspecialchars($row['Count']) . "</td>
                                     <td>" . htmlspecialchars($row['Upd_by']) . "</td>
                                     <td>" . htmlspecialchars($row['Upd_dt']) . "</td>
                                 </tr>";

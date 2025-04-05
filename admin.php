@@ -29,12 +29,6 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
         <title>Admin | Dashboard</title>
     </head>
 
-    <style>
-        h1 {
-            margin-bottom: 2.5rem;
-        }
-    </style>
-
     <header class="mb-5">
         <?php
             include "Navigation.php";
@@ -45,10 +39,10 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
         <div class="container"> 
             <?php
                 $username = $_SESSION["username"];
-                echo "<h1 style='text-align: center;'>Welcome $username</h1>";
+                echo "<h1 class='mb-5' style='text-align: center;'>Welcome $username</h1>";
             ?>
             <h2 style='text-align: center;'>Admin Dashboard</h2>
-            <hr class="">
+            <hr>
             <div class="d-flex justify-content-evenly">
                 <a class="col-2 mt-2 btn btn-primary" href="customerRecords.php" role="button">Customer Information</a>                
                 <a class="col-2 mt-2 btn btn-primary" href="EmployeeRecords.php" role="button">Manage Employees</a>

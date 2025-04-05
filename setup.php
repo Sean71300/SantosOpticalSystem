@@ -648,7 +648,7 @@
         if (mysqli_query($conn, $sql)) {
         
             for ($i = 0; $i <= 11; $i++) {
-                $img_path = "Images/" . str_pad(69 + $i, 5, '0', STR_PAD_LEFT) . ".jpg";                
+                $img_path = 'Images/' . str_pad(69 + $i, 5, '0', STR_PAD_LEFT) . '.jpg';                
                 $id = generate_ProductMstrID();
                 $model = '';
 
