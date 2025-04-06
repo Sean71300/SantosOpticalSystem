@@ -41,8 +41,8 @@ function getInventory($link, $branchName) { // Function to get inventory based o
         $result = mysqli_stmt_get_result($stmt);
 
         // display table
-        echo "<table class='table table-bordered mt-3' border='1'>
-                <tr>
+        echo "<table class='table table-bordered table-fixed mt-3' border='1'>
+                <tr class = 'text-center'>
                     <th>Product ID</th>
                     <th>Category Type</th>
                     <th>Shape ID</th>
@@ -60,7 +60,7 @@ function getInventory($link, $branchName) { // Function to get inventory based o
         // fetch and display results
         while ($row = mysqli_fetch_assoc($result)) {
             echo 
-                "<tr>
+                "<tr class='text-center'>
                     <td>" . htmlspecialchars($row['ProductID']) . "</td>
                     <td>" . htmlspecialchars($row['CategoryType']) . "</td>
                     <td>" . htmlspecialchars($row['ShapeID']) . "</td>
@@ -89,6 +89,13 @@ function getInventory($link, $branchName) { // Function to get inventory based o
         <link rel="stylesheet" href="customCodes/custom.css">
         <title>Admin | Inventories</title>
         <link rel="shortcut icon" type="image/x-icon" href="images/logo.png"/>
+
+        <style>
+            .table-fixed {
+                width: 100%;
+                vertical-align: middle;
+            }
+        </style>
     </head>
 
     <header class="mb-5">
@@ -124,7 +131,9 @@ function getInventory($link, $branchName) { // Function to get inventory based o
                         </select>   
                         <label for="chooseBranch">Choose Branch:</label>
                     </div>
-                    <button type="submit" class="btn btn-primary w-25">Submit</button>               
+                    <button type="submit" class="btn btn-primary" style="width:20%">Search</button>
+                    <button type="button" class="btn bg-success" style="width:20%; margin-left: 1rem"><a href='#' class="text-light text-decoration-none">Add</a></button>
+                    
                 </form>
             </div>          
 
