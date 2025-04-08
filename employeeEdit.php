@@ -1,6 +1,7 @@
 <?php
     include 'employeeFunctions.php'; 
     session_start();
+    $id = "";
     $name = "";
     $username = "";
     $password = "";
@@ -10,7 +11,69 @@
     $branch = "";   
 
     
-    [$errorMessage, $successMessage] = handleEmployeeFormC();
+    if ( $_SERVER['REQUEST_METHOD'] == 'GET') {
+        
+        if (!isset($_GET["EmployeeID"])) {
+            header("location:employeeRecords.php");
+            exit;
+        }
+
+        $id = $_GET["EmployeeID"];
+
+        $conn = connect();
+        $sql = "SELECT * FROM employee where EmployeeID=$id";
+        $result = $conn->query($sql);
+        $row = $result->fetch_assoc();
+
+        if (!$row) {
+            header ("location:employeeRecords.php");
+            exit;
+        }            
+        
+        $name = $row["EmployeeName"];
+        $username = $row["LoginName"];
+        $email = $row["EmployeeEmail"];
+        $phone = $row["EmployeeNumber"];
+        $role = $row["RoleID"];
+        $branch = $row["BranchCode"]; 
+    }
+    
+    else {
+
+        $id = $_POST["id"];
+        $name = $_POST["name"];
+        $username = $_POST["username"];
+        $email = $_POST["email"];
+        $phone = $_POST["phone"];
+        $role = $_POST["role"];
+        $branch = $_POST["branch"];
+
+        do {
+            if (empty($id) ||empty($name) || empty($username) || empty($email) || empty($phone) || empty($role) || empty($branch)) {
+                $errorMessage = 'All the fields are required';
+                break;
+            }
+            $upd_by = $_SESSION["full_name"];
+            $sql = "UPDATE employee 
+                SET EmployeeName = '$name', EmployeePicture = '$address', 
+                EmployeeEmail = '$email', EmployeeNumber = '$info',
+                Notes = '$notes', Upd_by = '$upd_by' 
+                WHERE EmployeeID = {$id}";
+
+            $conn = connect();
+            $result = $conn->query($sql);
+
+            if (!$result) {
+                $errorMessage = "Invalid query: " . $conn->error;
+                break;
+            }
+
+            $successMessage = "Client updated correctly";
+
+                
+        } while(false);
+    }
+
     handleCancellation();
 
 ?>
@@ -40,7 +103,7 @@
         }
         ?>
         
-        <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" method="post" enctype="multipart/form-data">
+        <form id="employeeCreate" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" method="post" enctype="multipart/form-data">
             <input type="hidden" name="id" value ="<?php echo $id;?>">
             <div class="row mb-3">
                 <label class="col-sm-3 col-form-label">Name</label>
