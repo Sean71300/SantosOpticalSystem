@@ -1,7 +1,6 @@
 <?php
-include 'setup.php'; // Include the setup.php file
-require 'connect.php'; //Connect to the database
 session_start();
+include 'admin-inventory-funcs.php'; // Include the functions file
 
 if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){ //Check if the user is logged in
     // If not logged in, redirect to login page
@@ -18,67 +17,6 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){ //Check if 
     echo '</html>';
     header("Refresh: 2; url=login.php");
     exit;
-}
-function getBranches($link) { // Function to get branches from the database
-    $sql = "SELECT BranchName from branchmaster";
-    $result = mysqli_query($link, $sql);
-    while($row = mysqli_fetch_array($result)){
-        echo "<option class='form-select-sm' value='".$row['BranchName']."'>".$row['BranchName']."</option>";
-    }
-}
-
-function getInventory($link, $branchName) { // Function to get inventory based on the selected branch
-    $branchName = $_POST['chooseBranch'];
-        $sql = "SELECT bm.BranchCode, pbm.*, pm.* 
-                FROM branchmaster bm
-                JOIN productbranchmaster pbm ON bm.BranchCode = pbm.BranchCode
-                JOIN productmstr pm ON pbm.productID = pm.productID 
-                WHERE bm.BranchName = ?"; //bm is branchmaster, pbm is productbranchmaster, pm is productmstr
-        
-        $stmt = mysqli_prepare($link, $sql);
-        mysqli_stmt_bind_param($stmt, "s", $branchName);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-
-        // display table
-        echo "<table class='table table-bordered table-fixed mt-3' border='1'>
-                <tr class = 'text-center'>
-                    <th>Product ID</th>
-                    <th>Category Type</th>
-                    <th>Shape ID</th>
-                    <th>Brand ID</th>
-                    <th>Model</th>
-                    <th>Remarks</th>
-                    <th>Product Image</th>
-                    <th>Count</th>
-                    <th>Updated by</th>
-                    <th>Updated Date</th>
-                </tr>
-                
-                <tbody class='table-group-divider'>";
-
-        // fetch and display results
-        while ($row = mysqli_fetch_assoc($result)) {
-            echo 
-                "<tr class='text-center'>
-                    <td>" . htmlspecialchars($row['ProductID']) . "</td>
-                    <td>" . htmlspecialchars($row['CategoryType']) . "</td>
-                    <td>" . htmlspecialchars($row['ShapeID']) . "</td>
-                    <td>" . htmlspecialchars($row['BrandID']) . "</td>
-                    <td>" . htmlspecialchars($row['Model']) . "</td>
-                    <td>" . htmlspecialchars($row['Remarks']) . "</td>
-                    <td><img src='" . htmlspecialchars($row['ProductImage']) . "' alt='Product Image' style='width:100px; height:auto;'/></td>
-                    <td>" . htmlspecialchars($row['Count']) . "</td>
-                    <td>" . htmlspecialchars($row['Upd_by']) . "</td>
-                    <td>" . htmlspecialchars($row['Upd_dt']) . "</td>
-                </tr>";
-        }
-
-        echo " </tbody>
-            </table>";
-
-        // Close the statement
-        mysqli_stmt_close($stmt);
 }
 ?>
 
@@ -121,20 +59,21 @@ function getInventory($link, $branchName) { // Function to get inventory based o
             </div>
             
             <div class="container" style="margin-bottom: 3.5rem;">
-                <form class="d-flex justify-content-evenly" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
+                <form class="d-flex justify-content-evenly" action="" method="post">
                     <div class="form-floating w-100 me-3">
                         <select name="chooseBranch" id="chooseBranch" class="form-select form-select-lg">
                             <option value="" disabled selected> </option>
                             <?php
-                                getBranches($link); // Call the function to get branches
+                                getBranches(); // Call the function to get branches
                             ?>
                         </select>   
                         <label for="chooseBranch">Choose Branch:</label>
                     </div>
                     <button type="submit" class="btn btn-primary" style="width:20%">Search</button>
-                    <button type="button" class="btn bg-success" style="width:20%; margin-left: 1rem"><a href='#' class="text-light text-decoration-none">Add</a></button>
-                    
                 </form>
+                <div class="d-flex w-100 align-items-center mt-4">
+                <button onclick="document.location='admin-inventory-add.php'" class="btn bg-success text-light">Add</button>
+                </div>
             </div>          
 
             <?php                            
@@ -144,7 +83,7 @@ function getInventory($link, $branchName) { // Function to get inventory based o
                         exit;
                     } 
                     else {
-                        getInventory($link, $_POST['chooseBranch']); // Call the function to get inventory
+                        getInventory($_POST['chooseBranch']); // Call the function to get inventory
                     }
                 }
             ?>

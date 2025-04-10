@@ -1,0 +1,132 @@
+<?php
+session_start();
+include 'admin-inventory-funcs.php'; // Include the functions file
+
+if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){ //Check if the user is logged in
+    // If not logged in, redirect to login page
+    echo '<html>';
+    echo '<head>';
+    echo '<title>INVALID ACCESS</title>';
+    echo '<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">';
+    echo '</head>';
+    echo '<body>';
+    echo '<div class="h-100 container d-flex flex-column justify-content-center align-items-center">';
+    echo '<div class="mt-4 alert alert-danger"> Please login to continue. </div>';
+    echo '</div>';
+    echo '</body>';
+    echo '</html>';
+    header("Refresh: 2; url=login.php");
+    exit;
+}
+
+?>
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+        <link rel="stylesheet" href="customCodes/custom.css">
+        <title>Admin | Inventories</title>
+        <link rel="shortcut icon" type="image/x-icon" href="images/logo.png"/>
+
+        <style>
+            .table-fixed {
+                width: 100%;
+                vertical-align: middle;
+            }
+
+            /* Spinner for input number */
+            input::-webkit-outer-spin-button,
+            input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;            
+            }
+
+            input[type=number] {
+                -moz-appearance: textfield;
+            }
+        </style>
+    </head>
+
+    <header class="mb-5">
+        <?php
+            include "Navigation.php";
+        ?>
+    </header>
+
+    <body>
+        <div class="container">
+            <div class="container mb-5">
+                <?php
+                    $username = $_SESSION["username"];
+                    echo "<h1 class='mb-5' style='text-align: center;'>Welcome $username</h1>";
+                ?>
+                <h2 style='text-align: center;'>Admin Dashboard</h2>
+                <hr>
+                <div class="d-flex justify-content-evenly">
+                    <a class="col-2 mt-2 btn btn-primary" href="customerRecords.php" role="button">Customer Information</a>                
+                    <a class="col-2 mt-2 btn btn-primary" href="EmployeeRecords.php" role="button">Manage Employees</a>
+                    <a class="col-2 mt-2 btn btn-primary" href="admin-inventory.php" role="button">Manage Inventories</a>
+                </div>
+            </div>
+            
+            <div class="container" style="margin-bottom: 3.5rem;">
+                <form class="d-flex justify-content-evenly" method="post">
+                    <div class="form-floating w-100 me-3">
+                        <select name="chooseBranch" id="chooseBranch" class="form-select form-select-lg">
+                            <option value="" disabled selected> </option>
+                            <?php
+                                getBranches();
+                            ?>
+                        </select>   
+                        <label for="chooseBranch">Choose Branch:</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width:20%">Search</button>                                      
+                </form>
+            </div>      
+
+            <div class="container">
+                <form method="post" enctype="multipart/form-data">
+                    <div class="row g-3 align-items-center mb-3">
+                        <div class="col-auto" style="width: 5rem"> 
+                            <label for="productName" class="col-form-label">Name:</label>
+                        </div>
+                        <div class="col-3">
+                            <input type="text" name="productName" id="productName" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="row g-3 align-items-center mb-3">
+                        <div class="col-auto" style="width: 5rem">
+                            <label for="productQty" class="col-form-label">Quantity:</label>
+                        </div>
+                        <div class="col-3">
+                            <input type="number" name="productQty" id="productQty" class="form-control" min="0" required>
+                        </div>
+                    </div>
+                    <div class="row g-3 align-items-center mb-3">
+                        <div class="col-auto" style="width: 5rem">
+                            <label for="productCategory" class="col-form-label">Category:</label>
+                        </div>
+                        <div class="col-3">
+                            <select name="productCategory" id="productCategory" class="form-select">
+                                <option value="Frame">Eye Frames</option>
+                                <option value="Lens">Lens</option>
+                                <option value="Contact">Contact Lens</option>
+                            </select>
+                        </div>                        
+                    </div>
+                    <div class="row g-3 align-items-center mb-3">
+                        <div class="col-auto" style="width: 5rem">
+                            <label for="productImg" class="col-form-label">Image:</label>
+                        </div>
+                        <div class="col-3">
+                            <input class="form-control" type="file" id="productImg" accept="image/png, image/jpeg" name="productImg" required>
+                        </div>                        
+                    </div>
+                    <button type="submit" class="btn btn-success" style="width: 10%">Add</button> 
+                    <button type="reset" class="btn btn-danger" style="width: 10%">Reset</button> 
+                </form>
+            </div>
+        </div>
+    </body>
+</html>

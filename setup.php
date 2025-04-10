@@ -1021,4 +1021,34 @@
     {
         create_LogsTable();
     }
+
+    // Generate Product ID
+    function generateProductID() { 
+        $conn = connect();
+    
+        // Fetch the current count of products
+        $query = "SELECT COUNT(*) as count FROM productMstr";
+        $result = $conn->query($query);
+    
+        if ($result === false) {
+            // Handle query error
+            throw new Exception("Database query failed: " . $conn->error);
+        }
+    
+        $row = $result->fetch_assoc();
+        $rowCount = $row["count"];
+    
+        // Get the current year
+        $currentYear = date("Y");
+    
+        // Generate the ID
+        $productID = sprintf("%s%02d%04d", $currentYear, 1, $rowCount);
+    
+        // Check for duplication
+        $checkQuery = "SELECT ProductID FROM productMstr WHERE ProductID = ?";
+        $productID = checkDuplication($productID, $checkQuery);
+    
+        $conn->close();
+        return $productID;
+    }
 ?>
