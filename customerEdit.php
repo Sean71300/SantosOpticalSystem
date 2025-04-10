@@ -16,7 +16,7 @@
         }
 
         $id = $_GET["CustomerID"];
-
+        
         $conn = connect();
         $sql = "SELECT * FROM customer where CustomerID=$id";
         $result = $conn->query($sql);

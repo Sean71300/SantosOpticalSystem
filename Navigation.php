@@ -29,11 +29,11 @@
                 echo '</li>';
                 }
                 else{     
-                $image = base64_encode($_SESSION["img"]);
+                $image = $_SESSION["img"];
                 echo  '<div class="dropdown">';
                 echo  '<button class="btn dropdown-toggle fs-5 fw-bold" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">';
                 echo  '|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'. htmlspecialchars($_SESSION["full_name"]) . '  ';   
-                echo  '<img src="data:image/jpeg;base64,' . $image . '"class="logo">';
+                echo  '<img src="' . $image . '"class="logo">';
                 echo  '</button>';
                 echo  '<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">';
                 echo  '<li><a class="dropdown-item" href="edit.php">Account Settings</a></li>';

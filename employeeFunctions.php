@@ -100,69 +100,11 @@
             }                
           
     }
-    function handleEmployeeFormE(){
-        if ( $_SERVER['REQUEST_METHOD'] == 'GET') {
-        
-            if (!isset($_GET["CustomerID"])) {
-                header("location:employeeRecords.php");
-                exit;
-            }
-    
-            $id = $_GET["CustomerID"];
-    
-            $conn = connect();
-            $sql = "SELECT * FROM employee where EmployeeID=$id";
-            $result = $conn->query($sql);
-            $row = $result->fetch_assoc();
-    
-            if (!$row) {
-                header ("location:employeeRecords.php");
-                exit;
-            }
-            
-            $name = $row["EmployeeName"];
-            $username = $row["LoginName"];
-            $email = $row["EmployeeEmail"];
-            $phone = $row["EmployeeNumber"];
-            $role = $row["RoleID"];
-            $branch = $row["BranchCode"]; 
-        }
-        
-        else {
-            $name = $_POST["name"];
-            $username = $_POST["username"];
-            $email = $_POST["email"];
-            $phone = $_POST["phone"];
-            $role = $_POST["role"];
-            $branch = $_POST["branch"];
-    
-            do {
-                if (empty($id) || empty($name) || empty($address) || empty($phone) || empty($info) || empty($notes)) {
-                    $errorMessage = 'All the fields are required';
-                    break;
-                }
-                $upd_by = $_SESSION["full_name"];
-                $sql = "UPDATE customer 
-                    SET CustomerName = '$name', CustomerAddress = '$address', 
-                    CustomerContact = '$phone', CustomerInfo = '$info',
-                    Notes = '$notes', Upd_by = '$upd_by' 
-                    WHERE CustomerID = {$id}";
-    
-                $conn = connect();
-                $result = $conn->query($sql);
-    
-                if (!$result) {
-                    $errorMessage = "Invalid query: " . $conn->error;
-                    break;
-                }
-    
-                $successMessage = "Client updated correctly";
-    
-                    
-            } while(false);
+    function handleEmployeeFormE()
+        {
             return [$errorMessage, $successMessage];
         }
-    }
+    
     
     function insertData($name, $username, $password, $email, $phone, $role, $branch, $imagePath)
         {
