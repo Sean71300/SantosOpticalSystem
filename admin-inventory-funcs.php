@@ -75,9 +75,65 @@ function getInventory($branchName) { // Function to get inventory based on the s
 }
 
 function addProduct(){
+    include 'setup.php';
+    $link = connect();
+
+    $newProductID = generate_ProductMstrID();
+    $newProductBranchID = generate_ProductBrnchMstrID();
+    $newProductBranch = $_POST['productBranch'];
+    $newProductName = $_POST['productName'];
+    $newProductQty = $_POST['productQty'];
+    $newProductCategory = $_POST['productCategory'];
+    $newProductRemarks = $_POST['productRemarks'];
+    $newProductImg = $_FILES['productImg'];
+
+    
     if (isset($_POST['addProduct'])) {
-        echo "<script type='text/javascript'>alert('WAHOO');</script>";
+        // Validate and upload the product image
+        $targetDir = "uploads/";
+        $targetFile = $targetDir . basename($newProductImg["name"]);
+        $uploadOk = 1;
+        $imageFileType = strtolower(pathinfo($targetFile, PATHINFO_EXTENSION));
+
+        // Check if image file is a valid image
+        $check = getimagesize($newProductImg["tmp_name"]);
+        if ($check === false) {
+            echo "File is not an image.";
+            $uploadOk = 0;
+        }
+
+        // Check file size (limit to 2MB)
+        if ($newProductImg["size"] > 2000000) {
+            echo "Sorry, your file is too large.";
+            $uploadOk = 0;
+        }
+
+        // Allow certain file formats
+        if (!in_array($imageFileType, ["jpg", "png", "jpeg", "gif"])) {
+            echo "Sorry, only JPG, JPEG, PNG & GIF files are allowed.";
+            $uploadOk = 0;
+        }
+
+        // Attempt to upload file
+        if ($uploadOk && move_uploaded_file($newProductImg["tmp_name"], $targetFile)) {
+            // Insert product details into the database
+            $sql = "INSERT INTO productmstr (ProductID, ProductName, CategoryType, Remarks, ProductImage) 
+                    VALUES (?, ?, ?, ?, ?)";
+            $stmt = mysqli_prepare($link, $sql);
+            mysqli_stmt_bind_param($stmt, "sssss", $newProductID, $newProductName, $newProductCategory, $newProductRemarks, $targetFile);
+            mysqli_stmt_execute($stmt);
+
+            // Insert product-branch mapping into the database
+            $sqlBranch = "INSERT INTO productbranchmaster (ProductBranchID, BranchCode, ProductID, Count) 
+                          VALUES (?, ?, ?, ?)";
+            $stmtBranch = mysqli_prepare($link, $sqlBranch);
+            mysqli_stmt_bind_param($stmtBranch, "sssi", $newProductBranchID, $newProductBranch, $newProductID, $newProductQty);
+            mysqli_stmt_execute($stmtBranch);
+
+            echo "Product added successfully.";
+        } else {
+            echo "Sorry, there was an error uploading your file.";
+        }
     }
 }
-
 ?>

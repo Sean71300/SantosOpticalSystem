@@ -79,10 +79,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <form method="post" enctype="multipart/form-data">
                     <div class="row g-3 align-items-center mb-3">
                         <div class="col-auto" style="width: 5rem">
-                            <label for="productID" class="col-form-label">Branch:</label>
+                            <label for="productBranch" class="col-form-label">Branch:</label>
                         </div>
                         <div class="col-3">
-                            <select name="productCategory" id="productCategory" class="form-select">
+                            <select name="productBranch" id="productBranch" class="form-select">
                                 <?php getBranches(); ?>
                             </select>
                         </div>
