@@ -19,6 +19,11 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){ //Check if 
     exit;
 }
 
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    addProduct(); 
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -68,25 +73,20 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){ //Check if 
                     <a class="col-2 mt-2 btn btn-primary" href="EmployeeRecords.php" role="button">Manage Employees</a>
                     <a class="col-2 mt-2 btn btn-primary" href="admin-inventory.php" role="button">Manage Inventories</a>
                 </div>
-            </div>
-            
-            <div class="container" style="margin-bottom: 3.5rem;">
-                <form class="d-flex justify-content-evenly" method="post">
-                    <div class="form-floating w-100 me-3">
-                        <select name="chooseBranch" id="chooseBranch" class="form-select form-select-lg">
-                            <option value="" disabled selected> </option>
-                            <?php
-                                getBranches();
-                            ?>
-                        </select>   
-                        <label for="chooseBranch">Choose Branch:</label>
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="width:20%">Search</button>                                      
-                </form>
-            </div>      
+            </div>   
 
             <div class="container">
                 <form method="post" enctype="multipart/form-data">
+                    <div class="row g-3 align-items-center mb-3">
+                        <div class="col-auto" style="width: 5rem">
+                            <label for="productID" class="col-form-label">Branch:</label>
+                        </div>
+                        <div class="col-3">
+                            <select name="productCategory" id="productCategory" class="form-select">
+                                <?php getBranches(); ?>
+                            </select>
+                        </div>
+                    </div>
                     <div class="row g-3 align-items-center mb-3">
                         <div class="col-auto" style="width: 5rem"> 
                             <label for="productName" class="col-form-label">Name:</label>
@@ -117,13 +117,21 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){ //Check if 
                     </div>
                     <div class="row g-3 align-items-center mb-3">
                         <div class="col-auto" style="width: 5rem">
+                            <label for="productImg" class="col-form-label">Remarks:</label>
+                        </div>
+                        <div class="col-3">
+                            <input class="form-control" type="text" id="productRemarks" name="productRemarks" required>
+                        </div>
+                    </div>
+                    <div class="row g-3 align-items-center mb-3">
+                        <div class="col-auto" style="width: 5rem">
                             <label for="productImg" class="col-form-label">Image:</label>
                         </div>
                         <div class="col-3">
                             <input class="form-control" type="file" id="productImg" accept="image/png, image/jpeg" name="productImg" required>
                         </div>                        
                     </div>
-                    <button type="submit" class="btn btn-success" style="width: 10%">Add</button> 
+                    <button type="submit" class="btn btn-success" style="width: 10%" name="addProduct" value="addProduct">Add</button>
                     <button type="reset" class="btn btn-danger" style="width: 10%">Reset</button> 
                 </form>
             </div>

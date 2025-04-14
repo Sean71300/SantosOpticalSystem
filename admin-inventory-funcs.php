@@ -39,6 +39,7 @@ function getInventory($branchName) { // Function to get inventory based on the s
                     <th>Count</th>
                     <th>Updated by</th>
                     <th>Updated Date</th>
+                    <th colspan=2>Action</th>
                 </tr>
                 
                 <tbody class='table-group-divider'>";
@@ -57,6 +58,12 @@ function getInventory($branchName) { // Function to get inventory based on the s
                     <td>" . htmlspecialchars($row['Count']) . "</td>
                     <td>" . htmlspecialchars($row['Upd_by']) . "</td>
                     <td>" . htmlspecialchars($row['Upd_dt']) . "</td>
+                    <td>
+                        <button type='submit' class='btn btn-success' style='font-size:12px'><i class='fa-solid fa-pen'></i></button>                        
+                    </td>
+                    <td>
+                        <button type='submit' class='btn btn-danger' style='font-size:12px'><i class='fa-solid fa-trash'></i></button>                        
+                    </td>
                 </tr>";
         }
 
@@ -68,10 +75,8 @@ function getInventory($branchName) { // Function to get inventory based on the s
 }
 
 function addProduct(){
-    $link = connect();
-    
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
-        echo "<div class='alert alert-success'>Product added successfully!</div>";
+    if (isset($_POST['addProduct'])) {
+        echo "<script type='text/javascript'>alert('WAHOO');</script>";
     }
 }
 

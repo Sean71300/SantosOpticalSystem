@@ -24,10 +24,10 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){ //Check if 
 <html>
     <head>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
         <link rel="stylesheet" href="customCodes/custom.css">
         <title>Admin | Inventories</title>
         <link rel="shortcut icon" type="image/x-icon" href="images/logo.png"/>
-
         <style>
             .table-fixed {
                 width: 100%;
@@ -69,11 +69,12 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){ //Check if 
                         </select>   
                         <label for="chooseBranch">Choose Branch:</label>
                     </div>
-                    <button type="submit" class="btn btn-primary" style="width:20%">Search</button>
+                    <button type="submit" class="btn btn-primary" style="width:5%"><i class="fa-solid fa-arrow-right"></i></button>
                 </form>
                 <div class="d-flex w-100 align-items-center mt-4">
                 <button onclick="document.location='admin-inventory-add.php'" class="btn bg-success text-light">Add</button>
                 </div>
+                
             </div>          
 
             <?php                            
