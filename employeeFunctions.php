@@ -97,15 +97,30 @@
     
             // Return messages for further handling (e.g., displaying in the original page)
             return [$errorMessage, $successMessage];
-            }                
-          
-    }
-    function handleEmployeeFormE()
-        {
-            return [$errorMessage, $successMessage];
+            }                         
+    }       
+
+    function handleImage ($id){
+        $errorMessage = "";        
+        $conn = connect();
+        $sql = "SELECT EmployeePicture FROM employee where EmployeeID=$id";
+        $result = $conn->query($sql);
+        $row = $result->fetch_assoc();
+        $imagePath =  $row["EmployeePicture"]; 
+        
+        if ($_FILES["IMAGE"]["size"] < 100000000) {                    
+            
+            if (($_FILES["IMAGE"]["name"]) != null)
+            {
+                $imagePath = 'uploads/' . basename($_FILES['IMAGE']['name']);
+                move_uploaded_file($_FILES['IMAGE']['tmp_name'], $imagePath);
+            }   
+        } else {
+            $errorMessage = $errorMessage .'Image File size is too big. <br>';   
         }
-    
-    
+        return [$errorMessage, $imagePath];
+    }
+
     function insertData($name, $username, $password, $email, $phone, $role, $branch, $imagePath)
         {
             $conn = connect();
@@ -118,6 +133,7 @@
             else if ($role == "Employee" ){
                 $roleID = 2;
             }
+            
             $conn = connect(); 
             $id = generate_EmployeeID();  
             $upd_by = $_SESSION["full_name"];         

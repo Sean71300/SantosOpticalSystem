@@ -4,11 +4,11 @@
     $id = "";
     $name = "";
     $username = "";
-    $password = "";
     $email = "";
     $phone = "";
     $role = "";
-    $branch = "";   
+    $branch = "";
+    $imagePath = "";  
 
     
     if ( $_SERVER['REQUEST_METHOD'] == 'GET') {
@@ -36,6 +36,7 @@
         $phone = $row["EmployeeNumber"];
         $role = $row["RoleID"];
         $branch = $row["BranchCode"]; 
+        $imagePath =  $row["EmployeePicture"]; 
     }
     
     else {
@@ -53,11 +54,22 @@
                 $errorMessage = 'All the fields are required';
                 break;
             }
+
+            [$errorMessage, $imagePath] = handleImage($id);
+
+            if ($role == "Admin"){
+                $roleID = 1;
+            }
+            else if ($role == "Employee" ){
+                $roleID = 2;
+            }
+
             $upd_by = $_SESSION["full_name"];
+
             $sql = "UPDATE employee 
-                SET EmployeeName = '$name', EmployeePicture = '$address', 
-                EmployeeEmail = '$email', EmployeeNumber = '$info',
-                Notes = '$notes', Upd_by = '$upd_by' 
+                SET EmployeeName = '$name', EmployeePicture = '$imagePath', 
+                EmployeeEmail = '$email', EmployeeNumber = '$phone',
+                RoleID = '$roleID',LoginName = '$username', Upd_by = '$upd_by' 
                 WHERE EmployeeID = {$id}";
 
             $conn = connect();
@@ -116,13 +128,7 @@
                 <div class="col-sm-6">
                     <input type="text" class="form-control" name="username" value="<?php echo $username;?>" >
                 </div>
-            </div>
-            <div class="row mb-3">
-                <label class="col-sm-3 col-form-label">Password</label>
-                <div class="col-sm-6">
-                    <input type="password" class="form-control" name="password" value="<?php echo $password;?>" >
-                </div>
-            </div>
+            </div>            
             <div class="row mb-3">
                 <label class="col-sm-3 col-form-label">Email</label>
                 <div class="col-sm-6">
@@ -151,7 +157,7 @@
                 </div>
             </div>
             <div class="row mb-3">
-                <input class='form-control' type="file" name="IMAGE">
+                <input class='form-control' type="file" name="IMAGE" value="<?php echo htmlspecialchars($imagePath); ?>">
             </div>
             <?php
             if (!empty($successMessage)) {
