@@ -574,19 +574,16 @@
                         break;    
                     case 5:                        
                         $shape = 'Square';
-                        break; 
-                    case 6:                        
-                        $shape = 'Square';
-                        break; 
+                        break;  
                     default:                    
                     break;                
                 }
                 $sql = "INSERT INTO shapeMaster
-                (ShapeID,Description)
+                (ShapeID, Description)
                 VALUES
                 ('$i','$shape')";
                 mysqli_query($conn, $sql);
-            } while ($i < 6);
+            } while ($i < 5);
         }
         else
         {

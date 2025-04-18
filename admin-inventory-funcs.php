@@ -12,6 +12,56 @@ function getBranches() { // Function to get branches from the database
     }
 }
 
+function getBranch() { // Function to get branches from the database
+    $link = connect();
+    $sql = "SELECT * from branchmaster";
+    $result = mysqli_query($link, $sql);
+    while($row = mysqli_fetch_array($result)){
+        echo "<option class='form-select-sm' value='".$row['BranchCode']."'>".$row['BranchName']."</option>";
+    }
+}
+
+function getShapes() { // Function to get shapes from the database
+    $link = connect();
+    $sql = "SELECT * from shapemaster";
+    $result = mysqli_query($link, $sql);
+    while($row = mysqli_fetch_array($result)){
+        echo "<option class='form-select-sm' value='".$row['ShapeID']."'>".$row['Description']."</option>";
+    }
+}
+
+function getBrands() {
+    $link = connect();
+    $sql = "SELECT * from brandmaster";
+    $result = mysqli_query($link, $sql);
+    while($row = mysqli_fetch_array($result)){
+        echo "<option class='form-select-sm' value='".$row['BrandID']."'>".$row['BrandName']."</option>";
+    }
+}
+
+function getCategory() {
+    $link = connect();
+    $sql = "SELECT * from categorytype";
+    $result = mysqli_query($link, $sql);
+    while($row = mysqli_fetch_array($result)){
+        echo "<option class='form-select-sm' value='".$row['CategoryType']."'>".$row['CategoryType']."</option>";
+    }
+}
+
+function getEmployeeName() { // Function to get employee names from the database
+    global $employeeName;
+    $link = connect();
+    $sql = "SELECT EmployeeName from employee WHERE LoginName = ?";
+    $stmt = mysqli_prepare($link, $sql);
+    mysqli_stmt_bind_param($stmt, "s", $_SESSION['username']);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    if ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
+        $employeeName = $row['EmployeeName'];
+    }
+    mysqli_stmt_close($stmt);
+}
+
 function getInventory($branchName) { // Function to get inventory based on the selected branch
     $link = connect();
     $branchName = $_POST['chooseBranch'];
@@ -74,18 +124,26 @@ function getInventory($branchName) { // Function to get inventory based on the s
         mysqli_stmt_close($stmt);
 }
 
-function addProduct(){
-    include 'setup.php';
+function addProduct(){ //Add function to add a new product to the database
     $link = connect();
+    global $employeeName;
+    getEmployeeName();
 
     $newProductID = generate_ProductMstrID();
-    $newProductBranchID = generate_ProductBrnchMstrID();
-    $newProductBranch = $_POST['productBranch'];
+    $newProductBranchCode = $_POST['productBranch'];
     $newProductName = $_POST['productName'];
     $newProductQty = $_POST['productQty'];
+    $newProductShape = $_POST['productShape'];
     $newProductCategory = $_POST['productCategory'];
     $newProductRemarks = $_POST['productRemarks'];
     $newProductImg = $_FILES['productImg'];
+    $avail_FL = 'Available';
+    $upd_by = $employeeName;
+    $date = new DateTime();
+    $upd_dt = $date->format('Y-m-d H:i:s');
+    $newProductBrand = $_POST['productBrand'];
+    $newProductBranchID = generate_ProductBrnchMstrID();
+    
 
     
     if (isset($_POST['addProduct'])) {
@@ -117,20 +175,37 @@ function addProduct(){
         // Attempt to upload file
         if ($uploadOk && move_uploaded_file($newProductImg["tmp_name"], $targetFile)) {
             // Insert product details into the database
-            $sql = "INSERT INTO productmstr (ProductID, ProductName, CategoryType, Remarks, ProductImage) 
-                    VALUES (?, ?, ?, ?, ?)";
+            $sql = "INSERT INTO productmstr (ProductID, CategoryType, ShapeID, BrandID, Model, Remarks, ProductImage, Avail_FL, Upd_by, Upd_dt) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $stmt = mysqli_prepare($link, $sql);
-            mysqli_stmt_bind_param($stmt, "sssss", $newProductID, $newProductName, $newProductCategory, $newProductRemarks, $targetFile);
+            mysqli_stmt_bind_param($stmt, "ssssssssss", $newProductID, $newProductCategory, $newProductShape, $newProductBrand, $newProductName, $newProductRemarks, $targetFile, $avail_FL, $upd_by, $upd_dt);            
             mysqli_stmt_execute($stmt);
-
+            mysqli_stmt_close($stmt);
+            
             // Insert product-branch mapping into the database
-            $sqlBranch = "INSERT INTO productbranchmaster (ProductBranchID, BranchCode, ProductID, Count) 
-                          VALUES (?, ?, ?, ?)";
-            $stmtBranch = mysqli_prepare($link, $sqlBranch);
-            mysqli_stmt_bind_param($stmtBranch, "sssi", $newProductBranchID, $newProductBranch, $newProductID, $newProductQty);
-            mysqli_stmt_execute($stmtBranch);
+            $sql = "INSERT INTO productbranchmaster (ProductBranchID, ProductID, BranchCode, Count, Avail_FL, Upd_by, Upd_dt)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)"; 
+            $stmt = mysqli_prepare($link, $sql);
+            mysqli_stmt_bind_param($stmt, "sssssss", $newProductBranchID, $newProductID, $newProductBranchCode, $newProductQty, $avail_FL, $upd_by, $upd_dt);
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_close($stmt);
 
-            echo "Product added successfully.";
+            echo '<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="successModalLabel">Success</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        The product has been added to the database successfully!
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>';
         } else {
             echo "Sorry, there was an error uploading your file.";
         }

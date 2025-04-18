@@ -83,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                         <div class="col-3">
                             <select name="productBranch" id="productBranch" class="form-select">
-                                <?php getBranches(); ?>
+                                <?php getBranch(); ?>
                             </select>
                         </div>
                     </div>
@@ -93,6 +93,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                         <div class="col-3">
                             <input type="text" name="productName" id="productName" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="row g-3 align-items-center mb-3">
+                        <div class="col-auto" style="width: 5rem"> 
+                            <label for="productBrand" class="col-form-label">Brand:</label>
+                        </div>
+                        <div class="col-3">
+                            <select name="productBrand" id="productBrand" class="form-select">
+                                <?php getBrands(); ?>
+                            </select>
                         </div>
                     </div>
                     <div class="row g-3 align-items-center mb-3">
@@ -109,11 +119,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                         <div class="col-3">
                             <select name="productCategory" id="productCategory" class="form-select">
-                                <option value="Frame">Eye Frames</option>
-                                <option value="Lens">Lens</option>
-                                <option value="Contact">Contact Lens</option>
+                                <?php getCategory(); ?>
                             </select>
                         </div>                        
+                    </div>
+                    <div class="row g-3 align-items-center mb-3">
+                        <div class="col-auto" style="width: 5rem">
+                            <label for="productShape" class="col-form-label">Shape:</label>
+                        </div>
+                        <div class="col-3">
+                            <select name="productShape" id="productShape" class="form-select">
+                                <?php getShapes(); ?>
+                            </select>
+                        </div>
                     </div>
                     <div class="row g-3 align-items-center mb-3">
                         <div class="col-auto" style="width: 5rem">
@@ -136,5 +154,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </form>
             </div>
         </div>
+        
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+
+        <script>
+            // Show the modal when the page loads
+            var myModal = new bootstrap.Modal(document.getElementById("successModal"));
+            myModal.show();
+        </script>
     </body>
 </html>
