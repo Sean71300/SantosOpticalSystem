@@ -87,6 +87,10 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){ //Check if 
                     elseif (isset($_POST['editProductBtn'])) {
                         getInventory();
                         editProduct();
+                    }
+                    elseif (isset($_POST['deleteProductBtn'])) {                     
+                        deleteProduct();
+                        getInventory();
                     }                 
                 }
             ?>
@@ -106,7 +110,13 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){ //Check if 
             if (errorSearchModalElement) {
                 var errorSearchModal = new bootstrap.Modal(errorSearchModalElement);
                 errorSearchModal.show();
-            }           
+            }
+            
+            var deleteProductModalElement = document.getElementById("deleteProductModal");
+            if (deleteProductModalElement) {
+                var deleteProductModal = new bootstrap.Modal(deleteProductModalElement);
+                deleteProductModal.show();
+            }
         </script>
     </body>
 </html>

@@ -141,6 +141,7 @@ function getInventory() { // Show inventory of the selected branch
                 </td>
                 <td>
                     <form method='post'>
+                        <input type='hidden' name='chooseBranch' value='" . htmlspecialchars($branchName) . "' />
                         <input type='hidden' name='productID' value='" . htmlspecialchars($row['ProductID']) . "' />
                         <button type='submit' class='btn btn-danger' name='deleteProductBtn' value='deleteProductBtn' style='font-size:12px'><i class='fa-solid fa-trash'></i></button>
                     </form>
@@ -239,7 +240,7 @@ function addProduct(){ //Add function to add a new product to the database
                                 The product has been added to the database successfully!
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <a href="admin-inventory.php" class="btn btn-secondary" data-bs-dismiss="modal">Close</a>
                             </div>
                         </div>
                     </div>
@@ -284,9 +285,9 @@ function editProduct(){ //Edit function to edit an existing product in the datab
                     <div class="modal-header">
                         <h5 class="modal-title" id="editProductModalLabel">Edit Product</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
+                    </div>      
+                    <div class="modal-body" style="margin-top: -1.5rem;">
                     <hr>
-                    <div class="modal-body">
                         <form method="post">
                             <input type="hidden" name="productID" value="' . htmlspecialchars($productID) . '" />
                             <div class="mb-3">
@@ -313,11 +314,51 @@ function editProduct(){ //Edit function to edit an existing product in the datab
                                 <label for="count" class="form-label">Count</label>
                                 <input type="number" class="form-control" id="count" name="count" value="' . htmlspecialchars($count) . '" required>
                             </div>
-                            <button type="submit" class="btn btn-primary" name="saveProductBtn">Save Changes</button>
+                            <hr>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-success w-25" name="saveProductBtn">Save</button>
+                                <button type="button" class="btn btn-danger w-25" data-bs-dismiss="modal">Cancel</button>
+                            </div>
                         </form>
                     </div>
                 </div>
             </div>
         </div>';
 }
+
+function deleteProduct() { //Delete function to delete a product from the database
+    $link = connect();
+    $productID = $_POST['productID'] ?? '';
+
+    $sql = "DELETE FROM productbranchmaster WHERE ProductID = ?";
+    $stmt = mysqli_prepare($link, $sql);
+    mysqli_stmt_bind_param($stmt, "s", $productID);
+    mysqli_stmt_execute($stmt);
+    mysqli_stmt_close($stmt);
+
+    $sql = "DELETE FROM productmstr WHERE ProductID = ?";
+    $stmt = mysqli_prepare($link, $sql);
+    mysqli_stmt_bind_param($stmt, "s", $productID);
+    mysqli_stmt_execute($stmt);
+    mysqli_stmt_close($stmt);
+
+    echo 
+        '<div class="modal fade" id="deleteProductModal" tabindex="-1" aria-labelledby="deleteProductModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteProductModalLabel">Success</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        The product has been deleted from the database successfully!
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>';
+    }
+    mysqli_close($link);
 ?>
