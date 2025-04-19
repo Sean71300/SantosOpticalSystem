@@ -73,7 +73,7 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){ //Check if 
                 </form>
 
                 <div class="d-flex w-100 align-items-center mt-4">
-                    <button onclick="document.location='admin-inventory-add.php'" class="btn bg-success text-light">Add</button>
+                    <a href="admin-inventory-add.php" class="btn bg-success text-light">Add</a>
                 </div>               
             </div>          
         </div>
@@ -81,36 +81,32 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){ //Check if 
         <div class="container">
             <?php                          
                 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-                    if (empty($_POST['chooseBranch'])) {
-                        echo '<div class="modal fade" id="errorSearchModal" tabindex="-1" aria-labelledby="errorSearchModalLabel" aria-hidden="true">
-                                <div class="modal-dialog modal-dialog-centered" role="document">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="errorSearchModalLabel">Error</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            Please choose a branch before proceeding.
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>';                           
-                    } else {
-                    getInventory();
-                    } 
+                    if (isset($_POST['searchProduct'])) {                                                         
+                        getInventory();
+                    }
+                    elseif (isset($_POST['editProductBtn'])) {
+                        getInventory();
+                        editProduct();
+                    }                 
                 }
             ?>
         </div>
 
-        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.min.js" integrity="sha384-VQqxDN0EQCkWoxt/0vsQvZswzTHUVOImccYmSyhJTp7kGtPed0Qcx8rK9h9YEgx+" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.min.js"></script>
 
         <script>
-            var errorSearchModal = new bootstrap.Modal(document.getElementById("errorSearchModal")); 
-            errorSearchModal.show();
+            var editProductModalElement = document.getElementById("editProductModal");
+            if (editProductModalElement) {
+                var editProductModal = new bootstrap.Modal(editProductModalElement);
+                editProductModal.show();
+            }
+
+            var errorSearchModalElement = document.getElementById("errorSearchModal");
+            if (errorSearchModalElement) {
+                var errorSearchModal = new bootstrap.Modal(errorSearchModalElement);
+                errorSearchModal.show();
+            }           
         </script>
     </body>
 </html>

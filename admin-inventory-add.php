@@ -18,10 +18,6 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){ //Check if 
     header("Refresh: 2; url=login.php");
     exit;
 }
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    addProduct(); 
-}
 ?>
 
 <!DOCTYPE html>
@@ -149,6 +145,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                     <button type="submit" class="btn btn-success" style="width: 10%" name="addProduct" value="addProduct">Add</button>
                     <button type="reset" class="btn btn-danger" style="width: 10%">Reset</button> 
+                    <?php 
+                    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                        addProduct(); 
+                    }
+                    ?>
                 </form>
             </div>
         </div>

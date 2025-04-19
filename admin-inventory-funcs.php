@@ -62,68 +62,102 @@ function getEmployeeName() { // Function to get employee names from the database
 }
 
 function getInventory() { // Show inventory of the selected branch    
-    $link = connect();
-    if (isset($_POST['searchProduct'])) {         
-        $branchName = $_POST['chooseBranch'];
-        $sql = "SELECT bm.BranchCode, pbm.*, pm.* 
-                FROM branchmaster bm
-                JOIN productbranchmaster pbm ON bm.BranchCode = pbm.BranchCode
-                JOIN productmstr pm ON pbm.productID = pm.productID 
-                WHERE bm.BranchName = ?"; //bm is branchmaster, pbm is productbranchmaster, pm is productmstr
-        
-        $stmt = mysqli_prepare($link, $sql);
-        mysqli_stmt_bind_param($stmt, "s", $branchName);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
+    $link = connect();      
+    $branchName = $_POST['chooseBranch'] ?? '';
+    if (empty($branchName)) {
+        echo '<div class="modal fade" id="errorSearchModal" tabindex="-1" aria-labelledby="errorSearchModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content bg-danger p-3 text-white">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="errorSearchModalLabel">Error <i class="fa-solid fa-exclamation"></i></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Please choose a branch before proceeding.
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>';
+        return;
+    }
 
-        // display table
-        echo "<table class='table table-bordered table-fixed mt-3' border='1'>
-                <thead class = 'text-center'>
-                    <th>Product ID</th>
-                    <th>Category Type</th>
-                    <th>Shape ID</th>
-                    <th>Brand ID</th>
-                    <th>Model</th>
-                    <th>Remarks</th>
-                    <th>Product Image</th>
-                    <th>Count</th>
-                    <th>Updated by</th>
-                    <th>Updated Date</th>
-                    <th colspan=2>Action</th>
-                </thead>
-                
-                <tbody class='table-group-divider'>";
+    $sql = "SELECT bm.BranchCode, pbm.*, pm.* 
+            FROM branchmaster bm
+            JOIN productbranchmaster pbm ON bm.BranchCode = pbm.BranchCode
+            JOIN productmstr pm ON pbm.productID = pm.productID 
+            WHERE bm.BranchName = ?"; //bm is branchmaster, pbm is productbranchmaster, pm is productmstr
+    
+    $stmt = mysqli_prepare($link, $sql);
+    mysqli_stmt_bind_param($stmt, "s", $branchName);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
 
-        // fetch and display results
-        while ($row = mysqli_fetch_assoc($result)) {
-            echo 
-                "<tr class='text-center'>
-                    <td>" . htmlspecialchars($row['ProductID']) . "</td>
-                    <td>" . htmlspecialchars($row['CategoryType']) . "</td>
-                    <td>" . htmlspecialchars($row['ShapeID']) . "</td>
-                    <td>" . htmlspecialchars($row['BrandID']) . "</td>
-                    <td>" . htmlspecialchars($row['Model']) . "</td>
-                    <td>" . htmlspecialchars($row['Remarks']) . "</td>
-                    <td><img src='" . htmlspecialchars($row['ProductImage']) . "' alt='Product Image' style='width:100px; height:auto;'/></td>
-                    <td>" . htmlspecialchars($row['Count']) . "</td>
-                    <td>" . htmlspecialchars($row['Upd_by']) . "</td>
-                    <td>" . htmlspecialchars($row['Upd_dt']) . "</td>
-                    <form method='post' enctype='multipart/form-data'>
-                        <td>
-                            <button type='submit' class='btn btn-success' name='editProduct' value='editProduct' style='font-size:12px'><i class='fa-solid fa-pen'></i></button>                        
-                        </td>
-                        <td>
-                            <button type='submit' class='btn btn-danger' style='font-size:12px'><i class='fa-solid fa-trash'></i></button>                        
-                        </td>
+    // display table
+    echo "<table class='table table-bordered table-fixed mt-3' border='1'>
+            <thead class = 'text-center'>
+                <th>Product ID</th>
+                <th>Category Type</th>
+                <th>Shape ID</th>
+                <th>Brand ID</th>
+                <th>Model</th>
+                <th>Remarks</th>
+                <th>Product Image</th>
+                <th>Count</th>
+                <th>Updated by</th>
+                <th>Updated Date</th>
+                <th colspan=2>Action</th>
+            </thead>
+            
+            <tbody class='table-group-divider'>";
+
+    // fetch and display results
+    while ($row = mysqli_fetch_assoc($result)) {
+        echo "<tr class='text-center'>
+                <td>" . htmlspecialchars($row['ProductID']) . "</td>
+                <td>" . htmlspecialchars($row['CategoryType']) . "</td>
+                <td>" . htmlspecialchars($row['ShapeID']) . "</td>
+                <td>" . htmlspecialchars($row['BrandID']) . "</td>
+                <td>" . htmlspecialchars($row['Model']) . "</td>
+                <td>" . htmlspecialchars($row['Remarks']) . "</td>
+                <td><img src='" . htmlspecialchars($row['ProductImage']) . "' alt='Product Image' style='width:100px; height:auto;'/></td>
+                <td>" . htmlspecialchars($row['Count']) . "</td>
+                <td>" . htmlspecialchars($row['Upd_by']) . "</td>
+                <td>" . htmlspecialchars($row['Upd_dt']) . "</td>
+                <td>
+                    <form method='post'>
+                        <input type='hidden' name='chooseBranch' value='" . htmlspecialchars($branchName) . "' />
+                        <input type='hidden' name='productID' value='" . htmlspecialchars($row['ProductID']) . "' />
+                        <input type='hidden' name='categoryType' value='" . htmlspecialchars($row['CategoryType']) . "' />
+                        <input type='hidden' name='shapeID' value='" . htmlspecialchars($row['ShapeID']) . "' />
+                        <input type='hidden' name='brandID' value='" . htmlspecialchars($row['BrandID']) . "' />
+                        <input type='hidden' name='model' value='" . htmlspecialchars($row['Model']) . "' />
+                        <input type='hidden' name='remarks' value='" . htmlspecialchars($row['Remarks']) . "' />
+                        <input type='hidden' name='count' value='" . htmlspecialchars($row['Count']) . "' />
+                        <button type='submit' class='btn btn-success' name='editProductBtn' value='editProductBtn' style='font-size:12px'><i class='fa-solid fa-pen'></i></button>
                     </form>
-                </tr>";
+                </td>
+                <td>
+                    <form method='post'>
+                        <input type='hidden' name='productID' value='" . htmlspecialchars($row['ProductID']) . "' />
+                        <button type='submit' class='btn btn-danger' name='deleteProductBtn' value='deleteProductBtn' style='font-size:12px'><i class='fa-solid fa-trash'></i></button>
+                    </form>
+                </td>
+            </tr>";
+    }
+
+    echo " </tbody>
+        </table>";
+
+    // Close the statement
+    mysqli_stmt_close($stmt);
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if (isset($_POST['editProductBtn'])) {
+            editProduct(); // Call the edit function
         }
-
-        echo " </tbody>
-            </table>";
-
-        // Close the statement
-        mysqli_stmt_close($stmt);
     }
 }
 
@@ -175,7 +209,7 @@ function addProduct(){ //Add function to add a new product to the database
 
         // Attempt to upload file
         if ($uploadOk && move_uploaded_file($newProductImg["tmp_name"], $targetFile)) {
-            // Insert product details into the database
+            // Insert product details into the product master database
             $sql = "INSERT INTO productmstr (ProductID, CategoryType, ShapeID, BrandID, Model, Remarks, ProductImage, Avail_FL, Upd_by, Upd_dt) 
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $stmt = mysqli_prepare($link, $sql);
@@ -183,7 +217,7 @@ function addProduct(){ //Add function to add a new product to the database
             mysqli_stmt_execute($stmt);
             mysqli_stmt_close($stmt);
             
-            // Insert product-branch mapping into the database
+            // Insert product-branch mapping into the product branch master database
             $sql = "INSERT INTO productbranchmaster (ProductBranchID, ProductID, BranchCode, Count, Avail_FL, Upd_by, Upd_dt)
                     VALUES (?, ?, ?, ?, ?, ?, ?)"; 
             $stmt = mysqli_prepare($link, $sql);
@@ -191,11 +225,11 @@ function addProduct(){ //Add function to add a new product to the database
             mysqli_stmt_execute($stmt);
             mysqli_stmt_close($stmt);
 
-            //Logs
+            //Insert Logs into logs database
 
             echo 
                 '<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
-                    <div class="modal-dialog">
+                    <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content">
                             <div class="modal-header">
                                 <h5 class="modal-title" id="successModalLabel">Success</h5>
@@ -236,24 +270,54 @@ function editProduct(){ //Edit function to edit an existing product in the datab
     global $employeeName;
     getEmployeeName(); 
 
-    if (isset($_POST['editProduct'])) {
+    $productID = $_POST['productID'] ?? '';
+    $categoryType = $_POST['categoryType'] ?? '';
+    $shapeID = $_POST['shapeID'] ?? '';
+    $brandID = $_POST['brandID'] ?? '';
+    $model = $_POST['model'] ?? '';
+    $remarks = $_POST['remarks'] ?? '';
+    $count = $_POST['count'] ?? '';
 
-    echo '<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
+    echo '<div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content bg-secondary-subtle">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="editModalLabel">Success</h5>
+                        <h5 class="modal-title" id="editProductModalLabel">Edit Product</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
+                    <hr>
                     <div class="modal-body">
-                        The product has been added to the database successfully!
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <form method="post">
+                            <input type="hidden" name="productID" value="' . htmlspecialchars($productID) . '" />
+                            <div class="mb-3">
+                                <label for="categoryType" class="form-label">Category Type</label>
+                                <input type="text" class="form-control" id="categoryType" name="categoryType" value="' . htmlspecialchars($categoryType) . '" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="shapeID" class="form-label">Shape ID</label>
+                                <input type="text" class="form-control" id="shapeID" name="shapeID" value="' . htmlspecialchars($shapeID) . '" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="brandID" class="form-label">Brand ID</label>
+                                <input type="text" class="form-control" id="brandID" name="brandID" value="' . htmlspecialchars($brandID) . '" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="model" class="form-label">Model</label>
+                                <input type="text" class="form-control" id="model" name="model" value="' . htmlspecialchars($model) . '" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="remarks" class="form-label">Remarks</label>
+                                <input type="text" class="form-control" id="remarks" name="remarks" value="' . htmlspecialchars($remarks) . '" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="count" class="form-label">Count</label>
+                                <input type="number" class="form-control" id="count" name="count" value="' . htmlspecialchars($count) . '" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary" name="saveProductBtn">Save Changes</button>
+                        </form>
                     </div>
                 </div>
             </div>
         </div>';
-    }
 }
 ?>
