@@ -23,7 +23,7 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){ //Check if 
 <!DOCTYPE html>
 <html>
     <head>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
         <link rel="stylesheet" href="customCodes/custom.css">
         <title>Admin | Inventories</title>
@@ -59,7 +59,7 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){ //Check if 
             </div>
             
             <div class="container" style="margin-bottom: 3.5rem;">
-                <form class="d-flex justify-content-evenly" action="" method="post">
+                <form class="d-flex justify-content-evenly" method="post" enctype="multipart/form-data">
                     <div class="form-floating w-100 me-3">
                         <select name="chooseBranch" id="chooseBranch" class="form-select form-select-lg">
                             <option value="" disabled selected> </option>
@@ -69,25 +69,48 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){ //Check if 
                         </select>   
                         <label for="chooseBranch">Choose Branch:</label>
                     </div>
-                    <button type="submit" class="btn btn-primary" style="width:5%"><i class="fa-solid fa-arrow-right"></i></button>
+                    <button type="submit" class="btn btn-primary" style="width:5%" name="searchProduct" value="searchProduct" data-bs-toggle="modal" data-bs-target="#errorSearchModal"><i class="fa-solid fa-arrow-right"></i></button>
                 </form>
-                <div class="d-flex w-100 align-items-center mt-4">
-                <button onclick="document.location='admin-inventory-add.php'" class="btn bg-success text-light">Add</button>
-                </div>
-                
-            </div>          
 
-            <?php                            
-                if ($_SERVER["REQUEST_METHOD"] == "POST") { // Submit then display inventory
-                    if (empty($_POST['chooseBranch'])) { //error handler
-                        echo "<div class='alert alert-danger mt-3'>Please select a branch.</div>";
-                        exit;
+                <div class="d-flex w-100 align-items-center mt-4">
+                    <button onclick="document.location='admin-inventory-add.php'" class="btn bg-success text-light">Add</button>
+                </div>               
+            </div>          
+        </div>
+
+        <div class="container">
+            <?php                          
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    if (empty($_POST['chooseBranch'])) {
+                        echo '<div class="modal fade" id="errorSearchModal" tabindex="-1" aria-labelledby="errorSearchModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="errorSearchModalLabel">Error</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            Please choose a branch before proceeding.
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>';                           
+                    } else {
+                    getInventory();
                     } 
-                    else {
-                        getInventory($_POST['chooseBranch']); // Call the function to get inventory
-                    }
                 }
             ?>
         </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.min.js" integrity="sha384-VQqxDN0EQCkWoxt/0vsQvZswzTHUVOImccYmSyhJTp7kGtPed0Qcx8rK9h9YEgx+" crossorigin="anonymous"></script>
+
+        <script>
+            var errorSearchModal = new bootstrap.Modal(document.getElementById("errorSearchModal")); 
+            errorSearchModal.show();
+        </script>
     </body>
 </html>

@@ -2,8 +2,7 @@
 include 'setup.php'; // Include the setup.php file
 require_once 'connect.php'; //Connect to the database
 
-
-function getBranches() { // Function to get branches from the database
+function getBranches() { // For inventory show
     $link = connect();
     $sql = "SELECT BranchName from branchmaster";
     $result = mysqli_query($link, $sql);
@@ -62,9 +61,10 @@ function getEmployeeName() { // Function to get employee names from the database
     mysqli_stmt_close($stmt);
 }
 
-function getInventory($branchName) { // Function to get inventory based on the selected branch
+function getInventory() { // Show inventory of the selected branch    
     $link = connect();
-    $branchName = $_POST['chooseBranch'];
+    if (isset($_POST['searchProduct'])) {         
+        $branchName = $_POST['chooseBranch'];
         $sql = "SELECT bm.BranchCode, pbm.*, pm.* 
                 FROM branchmaster bm
                 JOIN productbranchmaster pbm ON bm.BranchCode = pbm.BranchCode
@@ -78,7 +78,7 @@ function getInventory($branchName) { // Function to get inventory based on the s
 
         // display table
         echo "<table class='table table-bordered table-fixed mt-3' border='1'>
-                <tr class = 'text-center'>
+                <thead class = 'text-center'>
                     <th>Product ID</th>
                     <th>Category Type</th>
                     <th>Shape ID</th>
@@ -90,7 +90,7 @@ function getInventory($branchName) { // Function to get inventory based on the s
                     <th>Updated by</th>
                     <th>Updated Date</th>
                     <th colspan=2>Action</th>
-                </tr>
+                </thead>
                 
                 <tbody class='table-group-divider'>";
 
@@ -108,12 +108,14 @@ function getInventory($branchName) { // Function to get inventory based on the s
                     <td>" . htmlspecialchars($row['Count']) . "</td>
                     <td>" . htmlspecialchars($row['Upd_by']) . "</td>
                     <td>" . htmlspecialchars($row['Upd_dt']) . "</td>
-                    <td>
-                        <button type='submit' class='btn btn-success' style='font-size:12px'><i class='fa-solid fa-pen'></i></button>                        
-                    </td>
-                    <td>
-                        <button type='submit' class='btn btn-danger' style='font-size:12px'><i class='fa-solid fa-trash'></i></button>                        
-                    </td>
+                    <form method='post' enctype='multipart/form-data'>
+                        <td>
+                            <button type='submit' class='btn btn-success' name='editProduct' value='editProduct' style='font-size:12px'><i class='fa-solid fa-pen'></i></button>                        
+                        </td>
+                        <td>
+                            <button type='submit' class='btn btn-danger' style='font-size:12px'><i class='fa-solid fa-trash'></i></button>                        
+                        </td>
+                    </form>
                 </tr>";
         }
 
@@ -122,6 +124,7 @@ function getInventory($branchName) { // Function to get inventory based on the s
 
         // Close the statement
         mysqli_stmt_close($stmt);
+    }
 }
 
 function addProduct(){ //Add function to add a new product to the database
@@ -143,8 +146,6 @@ function addProduct(){ //Add function to add a new product to the database
     $upd_dt = $date->format('Y-m-d H:i:s');
     $newProductBrand = $_POST['productBrand'];
     $newProductBranchID = generate_ProductBrnchMstrID();
-    
-
     
     if (isset($_POST['addProduct'])) {
         // Validate and upload the product image
@@ -190,11 +191,58 @@ function addProduct(){ //Add function to add a new product to the database
             mysqli_stmt_execute($stmt);
             mysqli_stmt_close($stmt);
 
-            echo '<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+            //Logs
+
+            echo 
+                '<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="successModalLabel">Success</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                The product has been added to the database successfully!
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>';
+        } else {
+            echo 
+            '<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="successModalLabel">Error</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                The product has not been added to the database, please try again or contact tech support.
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+            </div>';
+        }
+    }
+}
+function editProduct(){ //Edit function to edit an existing product in the database
+    $link = connect();
+    global $employeeName;
+    getEmployeeName(); 
+
+    if (isset($_POST['editProduct'])) {
+
+    echo '<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="successModalLabel">Success</h5>
+                        <h5 class="modal-title" id="editModalLabel">Success</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
@@ -206,9 +254,6 @@ function addProduct(){ //Add function to add a new product to the database
                 </div>
             </div>
         </div>';
-        } else {
-            echo "Sorry, there was an error uploading your file.";
-        }
     }
 }
 ?>

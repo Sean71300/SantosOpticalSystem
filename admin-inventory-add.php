@@ -19,11 +19,9 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){ //Check if 
     exit;
 }
 
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     addProduct(); 
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -156,10 +154,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
         
         <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
 
         <script>
-            // Show the modal when the page loads
             var myModal = new bootstrap.Modal(document.getElementById("successModal"));
             myModal.show();
         </script>
