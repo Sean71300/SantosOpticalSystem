@@ -89,6 +89,10 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){ //Check if 
                         editProduct();
                     }
                     elseif (isset($_POST['deleteProductBtn'])) {                     
+                        confirmDeleteProduct();
+                        getInventory();
+                    }
+                    elseif (isset($_POST['confirmDeleteBtn'])) {
                         deleteProduct();
                         getInventory();
                     }                 
@@ -116,6 +120,12 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){ //Check if 
             if (deleteProductModalElement) {
                 var deleteProductModal = new bootstrap.Modal(deleteProductModalElement);
                 deleteProductModal.show();
+            }
+
+            var confirmDeleteProductModal = document.getElementById("confirmDeleteProductModal");
+            if (confirmDeleteProductModal) {
+                var confirmDeleteProductModal = new bootstrap.Modal(confirmDeleteProductModal);
+                confirmDeleteProductModal.show();
             }
         </script>
     </body>

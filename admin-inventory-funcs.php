@@ -84,10 +84,11 @@ function getInventory() { // Show inventory of the selected branch
         return;
     }
 
-    $sql = "SELECT bm.BranchCode, pbm.*, pm.* 
+    $sql = "SELECT bm.BranchCode, pbm.*, pm.*, sm.Description AS ShapeDescription
             FROM branchmaster bm
             JOIN productbranchmaster pbm ON bm.BranchCode = pbm.BranchCode
-            JOIN productmstr pm ON pbm.productID = pm.productID 
+            JOIN productmstr pm ON pbm.productID = pm.productID
+            JOIN shapemaster sm ON pm.ShapeID = sm.ShapeID
             WHERE bm.BranchName = ?"; //bm is branchmaster, pbm is productbranchmaster, pm is productmstr
     
     $stmt = mysqli_prepare($link, $sql);
@@ -118,7 +119,7 @@ function getInventory() { // Show inventory of the selected branch
         echo "<tr class='text-center'>
                 <td>" . htmlspecialchars($row['ProductID']) . "</td>
                 <td>" . htmlspecialchars($row['CategoryType']) . "</td>
-                <td>" . htmlspecialchars($row['ShapeID']) . "</td>
+                <td>" . htmlspecialchars($row['ShapeDescription']) . "</td>
                 <td>" . htmlspecialchars($row['BrandID']) . "</td>
                 <td>" . htmlspecialchars($row['Model']) . "</td>
                 <td>" . htmlspecialchars($row['Remarks']) . "</td>
@@ -131,7 +132,7 @@ function getInventory() { // Show inventory of the selected branch
                         <input type='hidden' name='chooseBranch' value='" . htmlspecialchars($branchName) . "' />
                         <input type='hidden' name='productID' value='" . htmlspecialchars($row['ProductID']) . "' />
                         <input type='hidden' name='categoryType' value='" . htmlspecialchars($row['CategoryType']) . "' />
-                        <input type='hidden' name='shapeID' value='" . htmlspecialchars($row['ShapeID']) . "' />
+                        <input type='hidden' name='shape' value='" . htmlspecialchars($row['ShapeDescription']) . "' />
                         <input type='hidden' name='brandID' value='" . htmlspecialchars($row['BrandID']) . "' />
                         <input type='hidden' name='model' value='" . htmlspecialchars($row['Model']) . "' />
                         <input type='hidden' name='remarks' value='" . htmlspecialchars($row['Remarks']) . "' />
@@ -266,6 +267,17 @@ function addProduct(){ //Add function to add a new product to the database
         }
     }
 }
+
+function editShape($currentShapeDescription = '') { // Function to edit shape
+    $link = connect();
+    $sql = "SELECT * FROM shapemaster";
+    $result = mysqli_query($link, $sql);
+    while ($row = mysqli_fetch_array($result)) {
+        $selected = ($row['Description'] === $currentShapeDescription) ? 'selected' : '';
+        echo "<option class='form-select-sm' value='" . htmlspecialchars($row['ShapeID']) . "' $selected>" . htmlspecialchars($row['Description']) . "</option>";
+    }
+}
+
 function editProduct(){ //Edit function to edit an existing product in the database
     $link = connect();
     global $employeeName;
@@ -273,7 +285,7 @@ function editProduct(){ //Edit function to edit an existing product in the datab
 
     $productID = $_POST['productID'] ?? '';
     $categoryType = $_POST['categoryType'] ?? '';
-    $shapeID = $_POST['shapeID'] ?? '';
+    $ShapeDescription = $_POST['shape'] ?? '';
     $brandID = $_POST['brandID'] ?? '';
     $model = $_POST['model'] ?? '';
     $remarks = $_POST['remarks'] ?? '';
@@ -295,8 +307,11 @@ function editProduct(){ //Edit function to edit an existing product in the datab
                                 <input type="text" class="form-control" id="categoryType" name="categoryType" value="' . htmlspecialchars($categoryType) . '" required>
                             </div>
                             <div class="mb-3">
-                                <label for="shapeID" class="form-label">Shape ID</label>
-                                <input type="text" class="form-control" id="shapeID" name="shapeID" value="' . htmlspecialchars($shapeID) . '" required>
+                                <label for="ShapeDescription" class="form-label">Shape</label>
+                                <select class="form-select" id="ShapeDescription" name="ShapeDescription" required>';
+                                    editShape($ShapeDescription);
+                                    echo '
+                                </select>
                             </div>
                             <div class="mb-3">
                                 <label for="brandID" class="form-label">Brand ID</label>
@@ -326,6 +341,31 @@ function editProduct(){ //Edit function to edit an existing product in the datab
         </div>';
 }
 
+function confirmDeleteProduct() {
+    echo 
+        '<div class="modal fade" id="confirmDeleteProductModal" tabindex="-1" aria-labelledby="confirmDeleteProductModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="confirmDeleteProductModalLabel">Confirm Delete</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form method="post">
+                        <input type="hidden" name="productID" value="' . htmlspecialchars($_POST['productID']) . '" />
+                        <input type="hidden" name="chooseBranch" value="' . htmlspecialchars($_POST['chooseBranch']) . '" />                      
+                        <div class="modal-body">
+                            Are you sure you want to delete this product?
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-danger" id="confirmDeleteBtn" name="confirmDeleteBtn">Confirm</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>                        
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>';
+}
+
 function deleteProduct() { //Delete function to delete a product from the database
     $link = connect();
     $productID = $_POST['productID'] ?? '';
@@ -342,8 +382,7 @@ function deleteProduct() { //Delete function to delete a product from the databa
     mysqli_stmt_execute($stmt);
     mysqli_stmt_close($stmt);
 
-    echo 
-        '<div class="modal fade" id="deleteProductModal" tabindex="-1" aria-labelledby="deleteProductModalLabel" aria-hidden="true">
+    echo '<div class="modal fade" id="deleteProductModal" tabindex="-1" aria-labelledby="deleteProductModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
