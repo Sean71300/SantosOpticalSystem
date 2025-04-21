@@ -398,6 +398,6 @@ function deleteProduct() { //Delete function to delete a product from the databa
                 </div>
             </div>
         </div>';
-    }
-    mysqli_close($link);
+        mysqli_close($link);
+}
 ?>
