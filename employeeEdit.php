@@ -140,13 +140,15 @@
                 <div class="col-sm-6">
                     <input type="text" class="form-control" name="phone" value="<?php echo $phone;?>" >
                 </div>
-            </div>  
+            </div>                      
             <div class="row mb-3">
                 <label class="col-sm-3 col-form-label">Branch</label>
                 <div class="col-sm-6">
-                    <input type="text" class="form-control" name="branch" value="<?php echo $branch;?>" >
+                    <select class="form-control" name="branch" required>                        
+                        <?php branchHandler();?>
+                    </select>
                 </div>
-            </div>        
+            </div>
             <div class="row mb-3">
                 <label class="col-sm-3 col-form-label">Role</label>
                 <div class="col-sm-6">
@@ -157,7 +159,10 @@
                 </div>
             </div>
             <div class="row mb-3">
-                <input class='form-control' type="file" name="IMAGE" value="<?php echo htmlspecialchars($imagePath); ?>">
+                <img src="<?php echo $imagePath?>" alt="Image" style="max-width: 200px; margin: 10px;" alt="picture" id="picture" class="picture">
+                <label for="IMAGE" class="btn btn-success add-picture-button mt-3">
+                    <input class='form-control' type="file" name="IMAGE" id="IMAGE" accept=".jpg, .png, .jpeg" onchange="profilePicture(this)" style="display:none;" value="<?php echo htmlspecialchars($imagePath); ?>">Add Picture
+                </label>    
             </div>
             <?php
             if (!empty($successMessage)) {
@@ -202,5 +207,18 @@
         </div>
     </div>
     </div>
+    <script>
+         function profilePicture(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById("picture").src = e.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                document.getElementById("picture").src = "#";
+            }
+        }
+    </script>
     </body>
 </html>

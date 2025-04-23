@@ -119,13 +119,13 @@
                 <div class="row mb-3">
                     <label class="col-sm-3 col-form-label">Customer Info</label>
                     <div class="col-sm-6">
-                    <input class="form-control" name="info" rows="3" value="<?php echo $info;?>" ></input>
+                    <textarea class="form-control" name="info" rows="3"><?php echo htmlspecialchars($info); ?></textarea>
                     </div>
                 </div>
                 <div class="row mb-3">
                     <label class="col-sm-3 col-form-label">Notes</label>
                     <div class="col-sm-6">
-                    <input class="form-control" name="notes" rows="3" value="<?php echo $notes;?>" ></input>
+                        <textarea class="form-control" name="notes" rows="3"><?php echo htmlspecialchars($notes); ?></textarea>
                     </div>
                 </div>
 
