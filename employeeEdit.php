@@ -1,6 +1,6 @@
 <?php
     include 'employeeFunctions.php'; 
-    session_start();
+    include 'ActivityTracker.php';
     $id = "";
     $name = "";
     $username = "";
@@ -40,7 +40,7 @@
     }
     
     else {
-
+        // Handle form submission
         $id = $_POST["id"];
         $name = $_POST["name"];
         $username = $_POST["username"];
@@ -48,42 +48,39 @@
         $phone = $_POST["phone"];
         $role = $_POST["role"];
         $branch = $_POST["branch"];
-
+    
         do {
-            if (empty($id) ||empty($name) || empty($username) || empty($email) || empty($phone) || empty($role) || empty($branch)) {
+            // Check for empty fields
+            if (empty($id) || empty($name) || empty($username) || empty($email) || empty($phone) || empty($role) || empty($branch)) {
                 $errorMessage = 'All the fields are required';
-                break;
+                break; // Stop processing if there are errors
             }
-
+    
+            // Handle image upload
             [$errorMessage, $imagePath] = handleImage($id);
-
-            if ($role == "Admin"){
-                $roleID = 1;
-            }
-            else if ($role == "Employee" ){
-                $roleID = 2;
-            }
-
+    
+            // Determine role ID
+            $roleID = ($role == "Admin") ? 1 : 2;
+    
+            // Update employee record
             $upd_by = $_SESSION["full_name"];
-
             $sql = "UPDATE employee 
-                SET EmployeeName = '$name', EmployeePicture = '$imagePath', 
-                EmployeeEmail = '$email', EmployeeNumber = '$phone',
-                RoleID = '$roleID',LoginName = '$username', Upd_by = '$upd_by' 
-                WHERE EmployeeID = {$id}";
-
+                    SET EmployeeName = '$name', EmployeePicture = '$imagePath', 
+                    EmployeeEmail = '$email', EmployeeNumber = '$phone',
+                    RoleID = '$roleID', LoginName = '$username', Upd_by = '$upd_by' 
+                    WHERE EmployeeID = {$id}";
+    
             $conn = connect();
             $result = $conn->query($sql);
-
+    
             if (!$result) {
                 $errorMessage = "Invalid query: " . $conn->error;
-                break;
+                break; // Stop processing if the query fails
             }
-
+    
             $successMessage = "Client updated correctly";
-
-                
-        } while(false);
+    
+        } while (false);    
     }
 
     handleCancellation();
@@ -152,9 +149,9 @@
             <div class="row mb-3">
                 <label class="col-sm-3 col-form-label">Role</label>
                 <div class="col-sm-6">
-                    <select class="form-control" name="role" required>                        
-                        <option value="Employee" <?php echo ($role == 'Employee') ? 'selected' : ''; ?>>Employee</option>
-                        <option value="Admin" <?php echo ($role == 'Admin') ? 'selected' : ''; ?>>Admin</option>
+                    <select class="form-control" name="role" required>                                                
+                        <option value="Admin" <?php echo ($role == '1') ? 'selected' : ''; ?>>Admin</option>
+                        <option value="Employee" <?php echo ($role == '2') ? 'selected' : ''; ?>>Employee</option>
                     </select>
                 </div>
             </div>

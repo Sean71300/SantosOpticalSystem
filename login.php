@@ -1,23 +1,6 @@
 <?php
 include_once 'setup.php'; // Include the setup.php file
-session_start();
-
-// Set session timeout duration (in seconds)
-$timeout_duration = 900; // 15 minutes
-
-// Check if the user is logged in
-if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
-    // Check if the session has timed out
-    if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $timeout_duration) {
-        // Session timed out, destroy the session
-        session_unset(); // Unset $_SESSION variables
-        session_destroy(); // Destroy the session
-        header("Location: login.php");
-        exit;
-    }
-    // Update last activity timestamp
-    $_SESSION['last_activity'] = time();
-}
+include 'ActivityTracker.php';
 
 require_once 'connect.php'; // Connect to the database
 

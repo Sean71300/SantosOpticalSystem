@@ -224,8 +224,11 @@
             $sql = "INSERT INTO activityMaster
                     (ActivityCode, Description)
                     VALUES
-                    ('2','Purchased'
-                    )";
+                    ('1','Purchased'),
+                    ('2','Added'),
+                    ('3','Archived'),
+                    ('4','Edited')
+                    ";
 
             mysqli_query($conn, $sql);
         }

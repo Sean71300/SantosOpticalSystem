@@ -1,7 +1,7 @@
 <?php
 include_once 'setup.php'; // Include the setup.php file
 require_once 'connect.php'; //Connect to the database
-session_start();
+include 'ActivityTracker.php';
 
 if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
     echo '<html>';

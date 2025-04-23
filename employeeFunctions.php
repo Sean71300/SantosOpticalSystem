@@ -66,6 +66,8 @@
             die ("Invalid query: " . $connection->error);
         }
 
+        $branch = "$row[BranchCode]";
+        
         // read data of each row
         while ($row = $result->fetch_assoc()){
             echo

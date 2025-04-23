@@ -1,5 +1,5 @@
 <?php
-session_start();
+include 'ActivityTracker.php';
 $_SESSION = array();
 session_destroy();
 

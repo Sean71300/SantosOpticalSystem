@@ -1,5 +1,5 @@
 <?php
-session_start();
+include 'ActivityTracker.php';
 include_once 'setup.php';
 ?>
 

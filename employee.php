@@ -1,6 +1,6 @@
 <?php
 include_once 'setup.php'; // Include the setup.php file
-session_start();
+include 'ActivityTracker.php';
 
 if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
     echo '<html>';

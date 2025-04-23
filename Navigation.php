@@ -36,7 +36,6 @@
                 echo  '<img src="' . $image . '"class="logo">';
                 echo  '</button>';
                 echo  '<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">';
-                echo  '<li><a class="dropdown-item" href="edit.php">Account Settings</a></li>';
                 if ($_SESSION["roleid"] == 1)
                 {
                     echo '<li><a class="dropdown-item" href="admin.php">Admin page</a></li>';

@@ -1,7 +1,7 @@
 <?php
     include_once 'setup.php';
     require_once 'connect.php';
-    session_start();
+    include 'ActivityTracker.php';
 
     function pagination() {
         $conn = connect();

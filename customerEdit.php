@@ -1,6 +1,6 @@
 <?php
     include 'customerFunctions.php'; 
-    session_start();
+    include 'ActivityTracker.php';
     $id = "";
     $name = "";
     $address = "";

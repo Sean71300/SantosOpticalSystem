@@ -1,5 +1,5 @@
 <?php
-session_start();
+include 'ActivityTracker.php';
 include 'admin-inventory-funcs.php'; // Include the functions file
 
 if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){ //Check if the user is logged in
