@@ -27,7 +27,7 @@
                         experience across all our branches, providing quality eyewear and professional optical 
                         services you can trust.</p>
                 </div>
-                <img src="os1.png" alt="Services Image" class="services-img">
+                <img src="Images/os1.png" alt="Services Image" class="services-img">
             </div>
         </div>
         
@@ -41,7 +41,7 @@
                         prescription glasses, or trendy sunglasses, now is the perfect time 
                         to upgrade your eyewear collection while enjoying great savings!</p>
                 </div>
-                <img src="os2.png" alt="Services Image" class="services-img">
+                <img src="Images/os2.png" alt="Services Image" class="services-img">
             </div>
         </div>
 
@@ -55,7 +55,7 @@
                         and precision, we ensure that your glasses are ready for you in no time 
                         after purchase.</p>
                 </div>
-                <img src="os3.png" alt="Services Image" class="services-img">
+                <img src="Images/os3.png" alt="Services Image" class="services-img">
             </div>
         </div>
 
@@ -70,7 +70,7 @@
                         With quality you can count on, you can wear your glasses with 
                         confidence every day.</p>
                 </div>
-                <img src="os4.png" alt="Services Image" class="services-img">
+                <img src="Images/os4.png" alt="Services Image" class="services-img">
             </div>
         </div>
 
@@ -84,7 +84,7 @@
                         and at no extra cost. With quality you can trust and support you can count on, you can 
                         see the world with confidence.</p>
                 </div>
-                <img src="os5.png" alt="Services Image" class="services-img">
+                <img src="Images/os5.png" alt="Services Image" class="services-img">
             </div>
         </div>
     </body>
