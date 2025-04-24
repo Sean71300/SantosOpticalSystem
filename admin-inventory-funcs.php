@@ -211,7 +211,57 @@ function addProduct(){ //Add function to add a new product to the database
         }
 
         // Attempt to upload file
-        if ($uploadOk && move_uploaded_file($newProductImg["tmp_name"], $targetFile)) {
+        if ($uploadOk) {
+            $sourceImage = null;
+            switch ($imageFileType) {
+                case 'jpg':
+                case 'jpeg':
+                    $sourceImage = imagecreatefromjpeg($newProductImg["tmp_name"]);
+                    break;
+                case 'png':
+                    $sourceImage = imagecreatefrompng($newProductImg["tmp_name"]);
+                    break;
+                case 'gif':
+                    $sourceImage = imagecreatefromgif($newProductImg["tmp_name"]);
+                    break;
+                default:
+                    echo "Unsupported image format.";
+                    $uploadOk = 0;
+            }
+
+            if ($sourceImage) {
+                $resizedImage = imagecreatetruecolor(600, 600);
+                $originalWidth = $check[0];
+                $originalHeight = $check[1];
+                imagecopyresampled(
+                    $resizedImage,
+                    $sourceImage,
+                    0, 0, 0, 0,
+                    600, 600,
+                    $originalWidth,
+                    $originalHeight
+                );
+
+                switch ($imageFileType) {
+                    case 'jpg':
+                    case 'jpeg':
+                        imagejpeg($resizedImage, $targetFile);
+                        break;
+                    case 'png':
+                        imagepng($resizedImage, $targetFile);
+                        break;
+                    case 'gif':
+                        imagegif($resizedImage, $targetFile);
+                        break;
+                }
+
+                // Free memory
+                imagedestroy($sourceImage);
+                imagedestroy($resizedImage);
+            }
+        }
+
+        if ($uploadOk && file_exists($targetFile)) {
             // Insert product details into the product master database
             $sql = "INSERT INTO productmstr (ProductID, CategoryType, ShapeID, BrandID, Model, Remarks, ProductImage, Avail_FL, Upd_by, Upd_dt) 
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
