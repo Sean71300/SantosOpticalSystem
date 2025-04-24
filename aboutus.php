@@ -12,11 +12,9 @@
     </head>
     <body>
       <?php include "Navigation.php"?>
-        
-
         <div class="button-container">
-            <a href="damoabtus.html" class="nav-button">About Us</a>
-            <a href="demoourservices.html" class="nav-button">Our Services</a>
+            <a href="aboutus.php" class="nav-button">About Us</a>
+            <a href="ourservices.php" class="nav-button">Our Services</a>
         </div>
         
         <div class="container-fluid position-relative">
