@@ -400,7 +400,7 @@
                 BranchCode INT(10) PRIMARY KEY,
                 BranchName VARCHAR(100),
                 BranchLocation VARCHAR(500),
-                ContactNo INT(12)
+                ContactNo VARCHAR(11)
                 )";
 
         if (mysqli_query($conn, $sql))
@@ -413,8 +413,8 @@
             $sql = "INSERT INTO BranchMaster
                     (BranchCode,BranchName,BranchLocation,ContactNo)
                     VALUES
-                    ('$id','Malabon Branch','Pascual St, Malabon', '0288183480'),
-                    ('$id1','Malabon Branch','Bayan, Malabon', '0286321972'),
+                    ('$id','Malabon Branch - Pascual St.','Pascual St, Malabon', '0288183480'),
+                    ('$id1','Malabon Branch - Bayan','Bayan, Malabon', '0286321972'),
                     ('$id2','Manila Branch','Quiapo, Manila', '9328447068'),
                     ('$id3','Navotas Branch','Tangos, Navotas', '9658798565')
                     ";

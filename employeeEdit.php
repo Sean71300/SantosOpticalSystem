@@ -11,10 +11,9 @@
     $role = "";
     $branch = "";
     $imagePath = "";  
-    $errorMessage = ""; // Initialize error message variable
-    $successMessage = ""; // Initialize success message variable
 
-    if ($_SERVER['REQUEST_METHOD'] == 'GET') {
+    
+    if ( $_SERVER['REQUEST_METHOD'] == 'GET') {
         
         if (!isset($_GET["EmployeeID"])) {
             header("location:employeeRecords.php");
@@ -70,7 +69,7 @@
             $sql = "UPDATE employee 
                     SET EmployeeName = '$name', EmployeePicture = '$imagePath', 
                     EmployeeEmail = '$email', EmployeeNumber = '$phone',
-                    RoleID = '$roleID', LoginName = '$username', Upd_by = '$upd_by' 
+                    RoleID = '$roleID', LoginName = '$username', Upd_by = '$upd_by', BranchCode = '$branch' 
                     WHERE EmployeeID = {$id}";
     
             $conn = connect();
@@ -79,10 +78,9 @@
             if (!$result) {
                 $errorMessage = "Invalid query: " . $conn->error;
                 break; // Stop processing if the query fails
-            }
-    
-            $successMessage = "Employee successfully updated";
-            header('Refresh: 2; url=employeeRecords.php');
+            }                        
+            $successMessage = "Employee succesfully updated";            
+            header('Refresh: 2, url=employeeRecords.php');   
 
         } while (false);    
     }
@@ -117,36 +115,36 @@
         ?>
         
         <form id="employeeCreate" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" method="post" enctype="multipart/form-data">
-            <input type="hidden" name="id" value ="<?php echo htmlspecialchars($id); ?>">
+            <input type="hidden" name="id" value ="<?php echo $id;?>">
             <div class="row mb-3">
                 <label class="col-sm-3 col-form-label">Name</label>
                 <div class="col-sm-6">
-                    <input type="text" class="form-control" name="name" value="<?php echo htmlspecialchars($name); ?>" >
+                    <input type="text" class="form-control" name="name" value="<?php echo $name;?>" >
                 </div>
             </div>
             <div class="row mb-3">
                 <label class="col-sm-3 col-form-label">Username</label>
                 <div class="col-sm-6">
-                    <input type="text" class="form-control" name="username" value="<?php echo htmlspecialchars($username); ?>" >
+                    <input type="text" class="form-control" name="username" value="<?php echo $username;?>" >
                 </div>
             </div>            
             <div class="row mb-3">
                 <label class="col-sm-3 col-form-label">Email</label>
                 <div class="col-sm-6">
-                    <input type="text" class="form-control" name="email" value="<?php echo htmlspecialchars($email); ?>" >
+                    <input type="text" class="form-control" name="email" value="<?php echo $email;?>" >
                 </div>
             </div>
             <div class="row mb-3">
                 <label class="col-sm-3 col-form-label">Contact Number</label>
                 <div class="col-sm-6">
-                    <input type="text" class="form-control" name="phone" value="<?php echo htmlspecialchars($phone); ?>" >
+                    <input type="text" class="form-control" name="phone" value="<?php echo $phone;?>" >
                 </div>
             </div>                      
             <div class="row mb-3">
                 <label class="col-sm-3 col-form-label">Branch</label>
                 <div class="col-sm-6">
                     <select class="form-control" name="branch" required>                        
-                        <?php branchHandler($branch); // Pass the selected branch ?>
+                        <?php branchHandler();?>
                     </select>
                 </div>
             </div>
@@ -160,9 +158,9 @@
                 </div>
             </div>
             <div class="row mb-3">
-                <img src="<?php echo htmlspecialchars($imagePath); ?>" alt="Image" style="max-width: 200px; margin: 10px;" id="picture" class="picture">
+                <img src="<?php echo $imagePath?>" alt="Image" style="max-width: 200px; margin: 10px;" alt="picture" id="picture" class="picture">
                 <label for="IMAGE" class="btn btn-success add-picture-button mt-3">
-                    <input class='form-control' type="file" name="IMAGE" id="IMAGE" accept=".jpg, .png, .jpeg" onchange="profilePicture(this)" style="display:none;">Add Picture
+                    <input class='form-control' type="file" name="IMAGE" id="IMAGE" accept=".jpg, .png, .jpeg" onchange="profilePicture(this)" style="display:none;" value="<?php echo htmlspecialchars($imagePath); ?>">Add Picture
                 </label>    
             </div>
             <?php
@@ -180,6 +178,7 @@
                     <button type="submit" class="btn btn-primary" name="submit">Submit</button>
                 </div>
                 <div class="col-sm-3 d-grid">
+                    <!-- Button to trigger modal -->
                     <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#cancelModal">Return</button>                    
                 </div>
             </div>
@@ -199,9 +198,9 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <form method="post" style="display: inline;">
+                <form  method="post" style="display: inline;">
                     <input type="hidden" name="confirm_cancel" value="1">
-                    <button type="return" class="btn btn-primary ">Yes, Return</button>
+                    <button type="return" class="btn btn-primary">Yes, Return</button>
                 </form>
             </div>
         </div>

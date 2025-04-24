@@ -64,15 +64,21 @@
 
         if(!$result) {
             die ("Invalid query: " . $connection->error);
-        }
+        }        
 
         $branch = "$row[BranchCode]";
 
         // read data of each row
         while ($row = $result->fetch_assoc()){
+            
+            
+            
             echo
-            "<option value='$row[BranchCode]' <?php echo ($branch == '$row[BranchCode]') ? 'selected' : ''; ?>$row[BranchName]</option>"
+            "
+                <option value='$row[BranchCode]' <?php echo ($branch == '$row[BranchCode]') ? 'selected' : ''; ?>$row[BranchName]</option>
+            "
             ;
+            
         }            
     }    
 
@@ -111,6 +117,7 @@
                     }    
                     insertData($name ,$username ,$password ,$email, $phone, $role ,$branch ,$imagePath );
                     $successMessage = "Employee succesfully added"; 
+                    header("Refresh: 2; url=employeeRecords.php");
                 } else {
                     $errorMessage = $errorMessage .'Image File size is too big. <br>';   
                 }                

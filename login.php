@@ -68,7 +68,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             } else {
                                 header("location: login.php");
                                 $login_err = "Error has occurred, please try again.";
-                                exit();
+                                
                             }
                         } else {
                             $login_err = "The password you entered was not valid.";

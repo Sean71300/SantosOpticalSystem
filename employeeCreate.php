@@ -2,6 +2,7 @@
     include 'ActivityTracker.php';
     include 'employeeFunctions.php'; 
     include 'loginChecker.php';
+    
     $name = "";
     $username = "";
     $password = "";
@@ -12,7 +13,7 @@
 
     
     [$errorMessage, $successMessage] = handleEmployeeFormC();    
-    header("Refresh: 2; url=employeeRecords.php");
+    
     handleCancellation();
     
     
