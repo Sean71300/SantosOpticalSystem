@@ -43,7 +43,7 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){ //Check if 
     </header>
 
     <body>
-        <div class="container">
+        <div class="container-fluid">
             <div class="container mb-5">
                 <?php
                     $username = $_SESSION["username"];
@@ -75,29 +75,33 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){ //Check if 
                 <div class="d-flex w-100 align-items-center mt-4">
                     <a href="admin-inventory-add.php" class="btn bg-success text-light">Add</a>
                 </div>               
-            </div>          
-        </div>
+            </div>               
 
-        <div class="container">
-            <?php                          
-                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-                    if (isset($_POST['searchProduct'])) {                                                         
-                        getInventory();
+            <div class="container">
+                <?php                          
+                    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                        if (isset($_POST['searchProduct'])) {                                                         
+                            getInventory();
+                        }
+                        elseif (isset($_POST['editProductBtn'])) {
+                            getInventory();
+                            editProduct();
+                        }
+                        elseif (isset($_POST['saveProductBtn'])) {
+                            confirmEditProduct();
+                            getInventory();
+                        }
+                        elseif (isset($_POST['deleteProductBtn'])) {                     
+                            confirmDeleteProduct();
+                            getInventory();
+                        }
+                        elseif (isset($_POST['confirmDeleteBtn'])) {
+                            deleteProduct();
+                            getInventory();
+                        }                 
                     }
-                    elseif (isset($_POST['editProductBtn'])) {
-                        getInventory();
-                        editProduct();
-                    }
-                    elseif (isset($_POST['deleteProductBtn'])) {                     
-                        confirmDeleteProduct();
-                        getInventory();
-                    }
-                    elseif (isset($_POST['confirmDeleteBtn'])) {
-                        deleteProduct();
-                        getInventory();
-                    }                 
-                }
-            ?>
+                ?>
+            </div>
         </div>
 
         <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
@@ -126,6 +130,12 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){ //Check if 
             if (confirmDeleteProductModal) {
                 var confirmDeleteProductModal = new bootstrap.Modal(confirmDeleteProductModal);
                 confirmDeleteProductModal.show();
+            }
+
+            var confirmEditModal = document.getElementById("confirmEditModal");
+            if (confirmEditModal) {
+                var confirmEditModal = new bootstrap.Modal(confirmEditModal);
+                confirmEditModal.show();
             }
         </script>
     </body>

@@ -98,7 +98,7 @@ function getInventory() { // Show inventory of the selected branch
 
     // display table
     echo "<table class='table table-bordered table-fixed mt-3' border='1'>
-            <thead class = 'text-center'>
+            <thead class='text-center' style='vertical-align:middle;'>
                 <th>Product ID</th>
                 <th>Category Type</th>
                 <th>Shape ID</th>
@@ -130,6 +130,7 @@ function getInventory() { // Show inventory of the selected branch
                 <td>
                     <form method='post'>
                         <input type='hidden' name='chooseBranch' value='" . htmlspecialchars($branchName) . "' />
+                        <input type='hidden' name='productBranchID' value='" . htmlspecialchars($row['ProductBranchID']) . "' />
                         <input type='hidden' name='productID' value='" . htmlspecialchars($row['ProductID']) . "' />
                         <input type='hidden' name='categoryType' value='" . htmlspecialchars($row['CategoryType']) . "' />
                         <input type='hidden' name='shape' value='" . htmlspecialchars($row['ShapeDescription']) . "' />
@@ -137,6 +138,7 @@ function getInventory() { // Show inventory of the selected branch
                         <input type='hidden' name='model' value='" . htmlspecialchars($row['Model']) . "' />
                         <input type='hidden' name='remarks' value='" . htmlspecialchars($row['Remarks']) . "' />
                         <input type='hidden' name='count' value='" . htmlspecialchars($row['Count']) . "' />
+                        <input type='hidden' name='productImg' value='" . htmlspecialchars($row['ProductImage']) . "' />
                         <button type='submit' class='btn btn-success' name='editProductBtn' value='editProductBtn' style='font-size:12px'><i class='fa-solid fa-pen'></i></button>
                     </form>
                 </td>
@@ -161,6 +163,8 @@ function getInventory() { // Show inventory of the selected branch
             editProduct(); // Call the edit function
         }
     }
+    mysqli_close($link);
+    return;
 }
 
 function addProduct(){ //Add function to add a new product to the database
@@ -176,7 +180,11 @@ function addProduct(){ //Add function to add a new product to the database
     $newProductCategory = $_POST['productCategory'];
     $newProductRemarks = $_POST['productRemarks'];
     $newProductImg = $_FILES['productImg'];
-    $avail_FL = 'Available';
+    if ($newProductQty > 0) {
+        $avail_FL = 'Available';
+    } else {
+        $avail_FL = 'Not Available';
+    }
     $upd_by = $employeeName;
     $date = new DateTime();
     $upd_dt = $date->format('Y-m-d H:i:s');
@@ -326,13 +334,25 @@ function editShape($currentShapeDescription = '') { // Function to edit shape
         $selected = ($row['Description'] === $currentShapeDescription) ? 'selected' : '';
         echo "<option class='form-select-sm' value='" . htmlspecialchars($row['ShapeID']) . "' $selected>" . htmlspecialchars($row['Description']) . "</option>";
     }
+    mysqli_free_result($result);
+    mysqli_close($link);
 }
 
-function editProduct(){ //Edit function to edit an existing product in the database
+function getBranchCode($currentBranch = '') {
     $link = connect();
-    global $employeeName;
-    getEmployeeName(); 
+    $sql = "SELECT BranchCode FROM branchmaster WHERE BranchName = ?";
+    $stmt = mysqli_prepare($link, $sql);
+    mysqli_stmt_bind_param($stmt, "s", $currentBranch);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    if ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
+        return $row['BranchCode'];
+    }
+    mysqli_stmt_close($stmt);
+    mysqli_close($link);
+}
 
+function editProduct(){ //Edit function to edit an existing product in the database 
     $productID = $_POST['productID'] ?? '';
     $categoryType = $_POST['categoryType'] ?? '';
     $ShapeDescription = $_POST['shape'] ?? '';
@@ -340,6 +360,9 @@ function editProduct(){ //Edit function to edit an existing product in the datab
     $model = $_POST['model'] ?? '';
     $remarks = $_POST['remarks'] ?? '';
     $count = $_POST['count'] ?? '';
+    $productImg = $_POST['productImg'] ?? '';
+    $branchName = $_POST['chooseBranch'] ?? '';
+    $productBranchID = $_POST['productBranchID'] ?? '';
 
     echo '<div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" role="document">
@@ -350,8 +373,11 @@ function editProduct(){ //Edit function to edit an existing product in the datab
                     </div>      
                     <div class="modal-body" style="margin-top: -1.5rem;">
                     <hr>
-                        <form method="post">
+                        <form method="post" enctype="multipart/form-data">
                             <input type="hidden" name="productID" value="' . htmlspecialchars($productID) . '" />
+                            <input type="hidden" name="chooseBranch" value="' . htmlspecialchars($branchName) . '" />
+                            <input type="hidden" name="productBranchID" value="' . htmlspecialchars($productBranchID) . '" />
+                            <input type="hidden" name="productImg" value="' . htmlspecialchars($productImg) . '" />
                             <div class="mb-3">
                                 <label for="categoryType" class="form-label">Category Type</label>
                                 <input type="text" class="form-control" id="categoryType" name="categoryType" value="' . htmlspecialchars($categoryType) . '" required>
@@ -379,6 +405,14 @@ function editProduct(){ //Edit function to edit an existing product in the datab
                                 <label for="count" class="form-label">Count</label>
                                 <input type="number" class="form-control" id="count" name="count" value="' . htmlspecialchars($count) . '" required>
                             </div>
+                            <div class="mb-3">
+                                <label for="productImg" class="form-label">Product Image</label>
+                                <div class="container d-flex align-items-center justify-content-center">
+                                    <img src="' . htmlspecialchars($productImg) . '" alt="Product Image" class="img-thumbnail"/>
+                                </div>
+                                <input type="file" class="form-control mt-3" id="newProductImg" name="newProductImg" accept="image/*">
+                            </div>
+
                             <hr>
                             <div class="modal-footer">
                                 <button type="submit" class="btn btn-success w-25" name="saveProductBtn">Save</button>
@@ -416,6 +450,170 @@ function confirmDeleteProduct() {
         </div>';
 }
 
+function confirmEditProduct() {
+    $link = connect();
+    global $employeeName;
+    getEmployeeName();
+
+    $productID = $_POST['productID'] ?? '';
+    $categoryType = $_POST['categoryType'] ?? '';
+    $shape = $_POST['ShapeDescription'] ?? '';
+    $brandID = $_POST['brandID'] ?? '';
+    $model = $_POST['model'] ?? '';
+    $remarks = $_POST['remarks'] ?? '';
+    $count = $_POST['count'] ?? '';
+    $avail_FL = ($count > 0) ? 'Available' : 'Not Available';
+    $NewProductImg = $_FILES['newProductImg'];
+    $productImg = $_POST['productImg'] ?? '';
+    $branchName = $_POST['chooseBranch'] ?? '';
+    $branchCode = getBranchCode($branchName);
+    $productBranchID = $_POST['productBranchID'] ?? '';
+    $date = new DateTime();
+    $upd_dt = $date->format('Y-m-d H:i:s');
+
+    $targetDir = "uploads/";
+    $targetFile = $productImg; // Default to existing image
+    $uploadOk = 1;
+
+    // Check if a new file is uploaded
+    if ($NewProductImg && isset($NewProductImg["tmp_name"]) && is_uploaded_file($NewProductImg["tmp_name"])) {
+        $targetFile = $targetDir . basename($NewProductImg["name"]);
+        $imageFileType = strtolower(pathinfo($targetFile, PATHINFO_EXTENSION));
+
+        // Validate the uploaded file
+        $check = getimagesize($NewProductImg["tmp_name"]);
+        if ($check === false) {
+            echo "File is not an image.";
+            $uploadOk = 0;
+        }
+
+        // Check file size (limit to 2MB)
+        if ($NewProductImg["size"] > 2000000) {
+            echo "Sorry, your file is too large.";
+            $uploadOk = 0;
+        }
+
+        // Allow certain file formats
+        if (!in_array($imageFileType, ["jpg", "png", "jpeg", "gif"])) {
+            echo "Sorry, only JPG, JPEG, PNG & GIF files are allowed.";
+            $uploadOk = 0;
+        }
+
+        // Resize and upload the file if valid
+        if ($uploadOk) {
+            $sourceImage = null;
+            switch ($imageFileType) {
+                case 'jpg':
+                case 'jpeg':
+                    $sourceImage = imagecreatefromjpeg($NewProductImg["tmp_name"]);
+                    break;
+                case 'png':
+                    $sourceImage = imagecreatefrompng($NewProductImg["tmp_name"]);
+                    break;
+                case 'gif':
+                    $sourceImage = imagecreatefromgif($NewProductImg["tmp_name"]);
+                    break;
+                default:
+                    echo "Unsupported image format.";
+                    $uploadOk = 0;
+            }
+
+            if ($sourceImage) {
+                $resizedImage = imagecreatetruecolor(600, 600);
+                $originalWidth = $check[0];
+                $originalHeight = $check[1];
+                imagecopyresampled(
+                    $resizedImage,
+                    $sourceImage,
+                    0, 0, 0, 0,
+                    600, 600,
+                    $originalWidth,
+                    $originalHeight
+                );
+
+                switch ($imageFileType) {
+                    case 'jpg':
+                    case 'jpeg':
+                        imagejpeg($resizedImage, $targetFile);
+                        break;
+                    case 'png':
+                        imagepng($resizedImage, $targetFile);
+                        break;
+                    case 'gif':
+                        imagegif($resizedImage, $targetFile);
+                        break;
+                }
+
+                // Free memory
+                imagedestroy($sourceImage);
+                imagedestroy($resizedImage);
+            }
+        }
+    }
+
+    // Proceed with database updates if the file upload is successful
+    if ($uploadOk) {
+        $success = true;
+
+        // Update productmstr table
+        $sql1 = "UPDATE productmstr SET CategoryType = ?, ShapeID = ?, BrandID = ?, Model = ?, Remarks = ?, ProductImage = ?, Upd_by = ?, Upd_dt = ? WHERE ProductID = ?";
+        $stmt1 = mysqli_prepare($link, $sql1);
+        mysqli_stmt_bind_param($stmt1, "sssssssss", $categoryType, $shape, $brandID, $model, $remarks, $targetFile, $employeeName, $upd_dt, $productID);
+        if (!mysqli_stmt_execute($stmt1)) {
+            $success = false;
+        }
+        mysqli_stmt_close($stmt1);
+
+        // Update productbranchmaster table
+        $sql2 = "UPDATE productbranchmaster SET ProductBranchID = ?, BranchCode = ?, Count = ?, Avail_FL = ?, Upd_by = ?, Upd_dt = ? WHERE ProductID = ?";
+        $stmt2 = mysqli_prepare($link, $sql2);
+        mysqli_stmt_bind_param($stmt2, "sssssss", $productBranchID, $branchCode, $count, $avail_FL, $employeeName, $upd_dt, $productID);
+        if (!mysqli_stmt_execute($stmt2)) {
+            $success = false;
+        }
+        mysqli_stmt_close($stmt2);
+
+        // Show success or error modal
+        if ($success) {
+            echo '<div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editProductModalLabel">Success</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                The product has been updated successfully!
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>';
+        } else {
+            echo '<div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editProductModalLabel">Error</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                An error occurred while updating the product. Please try again.
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>';
+        }
+    }
+
+    mysqli_close($link);
+}
+
 function deleteProduct() { //Delete function to delete a product from the database
     $link = connect();
     $productID = $_POST['productID'] ?? '';
@@ -448,6 +646,6 @@ function deleteProduct() { //Delete function to delete a product from the databa
                 </div>
             </div>
         </div>';
-        mysqli_close($link);
+    mysqli_close($link);
 }
 ?>
