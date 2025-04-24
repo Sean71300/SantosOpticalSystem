@@ -1,6 +1,8 @@
 <?php
     include 'ActivityTracker.php';
     include 'employeeFunctions.php'; 
+    include 'loginChecker.php';
+    
     $name = "";
     $username = "";
     $password = "";
@@ -10,7 +12,8 @@
     $branch = "";   
 
     
-    [$errorMessage, $successMessage] = handleEmployeeFormC();
+    [$errorMessage, $successMessage] = handleEmployeeFormC();    
+    
     handleCancellation();
     
     

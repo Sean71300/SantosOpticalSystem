@@ -1,5 +1,7 @@
 <?php
 include_once 'customerFunctions.php';  
+include 'ActivityTracker.php';
+include 'loginChecker.php';
 
 if (isset($_GET["CustomerID"])) {
     $id = $_GET ["CustomerID"];

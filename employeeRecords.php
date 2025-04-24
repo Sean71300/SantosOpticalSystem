@@ -1,6 +1,8 @@
 <?php
     include 'ActivityTracker.php';
     include_once 'employeeFunctions.php';   
+    include 'loginChecker.php';
+
 ?>
     
 <html>

@@ -53,30 +53,48 @@
                 </tr>";
             }            
         }
-    function branchHandler()
-
-    {
-        $customerData = "";
-        $connection = connect();
-
-        $sql = "SELECT * FROM branchmaster";
-        $result = $connection->query($sql);
-
-        if(!$result) {
-            die ("Invalid query: " . $connection->error);
-        }
-
-        $branch = "$row[BranchCode]";
+        function branchHandler($branch) {
+            $customerData = "";
+            $connection = connect();
         
-        // read data of each row
-        while ($row = $result->fetch_assoc()){
-            echo
-            "<option value='$row[BranchCode]' <?php echo ($branch == '$row[BranchCode]') ? 'selected' : ''; ?>$row[BranchName]</option>"
-            ;
-        }            
-    }    
-
-    
+            $sql = "SELECT * FROM branchmaster";
+            $result = $connection->query($sql);
+        
+            if (!$result) {
+                die("Invalid query: " . $connection->error);
+            }        
+        
+            // Read data of each row
+            while ($row = $result->fetch_assoc()) {
+                // Use double quotes for the option value and PHP echo
+                echo "
+                    <option value='{$row['BranchCode']}' " . (($branch == $row['BranchCode']) ? 'selected' : '') . ">
+                        {$row['BranchName']}
+                    </option>
+                ";
+            }            
+        }
+        function roleHandler($role) {
+            $customerData = "";
+            $connection = connect();
+        
+            $sql = "SELECT * FROM rolemaster";
+            $result = $connection->query($sql);
+        
+            if (!$result) {
+                die("Invalid query: " . $connection->error);
+            }        
+        
+            // Read data of each row
+            while ($row = $result->fetch_assoc()) {
+                // Use double quotes for the option value and PHP echo
+                echo "
+                    <option value='{$row['RoleID']}' " . (($role == $row['RoleID']) ? 'selected' : '') . ">
+                        {$row['Description']}
+                    </option>
+                ";
+            }            
+        }
 
     function handleEmployeeFormC() 
     {
@@ -87,9 +105,7 @@
         
 
         $conn = connect();
-        if ($_SERVER['REQUEST_METHOD'] === 'POST'){   
-            
-            
+        if ($_SERVER['REQUEST_METHOD'] === 'POST'){               
 
             $name = $_POST["name"];
             $username = $_POST["username"];
@@ -112,7 +128,8 @@
                         $imagePath  = "Images/default.jpg";                        
                     }    
                     insertData($name ,$username ,$password ,$email, $phone, $role ,$branch ,$imagePath );
-                    $successMessage = "Customer added successfully"; 
+                    $successMessage = "Employee succesfully added"; 
+                    header("Refresh: 2; url=employeeRecords.php");
                 } else {
                     $errorMessage = $errorMessage .'Image File size is too big. <br>';   
                 }                

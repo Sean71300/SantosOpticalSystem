@@ -1,6 +1,8 @@
 <?php
     include 'employeeFunctions.php'; 
     include 'ActivityTracker.php';
+    include 'loginChecker.php';
+
     $id = "";
     $name = "";
     $username = "";
@@ -67,7 +69,7 @@
             $sql = "UPDATE employee 
                     SET EmployeeName = '$name', EmployeePicture = '$imagePath', 
                     EmployeeEmail = '$email', EmployeeNumber = '$phone',
-                    RoleID = '$roleID', LoginName = '$username', Upd_by = '$upd_by' 
+                    RoleID = '$roleID', LoginName = '$username', Upd_by = '$upd_by', BranchCode = '$branch' 
                     WHERE EmployeeID = {$id}";
     
             $conn = connect();
@@ -76,10 +78,10 @@
             if (!$result) {
                 $errorMessage = "Invalid query: " . $conn->error;
                 break; // Stop processing if the query fails
-            }
-    
-            $successMessage = "Client updated correctly";
-    
+            }                        
+            $successMessage = "Employee succesfully updated";            
+            header('Refresh: 2, url=employeeRecords.php');   
+
         } while (false);    
     }
 
@@ -142,7 +144,7 @@
                 <label class="col-sm-3 col-form-label">Branch</label>
                 <div class="col-sm-6">
                     <select class="form-control" name="branch" required>                        
-                        <?php branchHandler();?>
+                        <?php branchHandler($branch);?>
                     </select>
                 </div>
             </div>
@@ -150,8 +152,7 @@
                 <label class="col-sm-3 col-form-label">Role</label>
                 <div class="col-sm-6">
                     <select class="form-control" name="role" required>                                                
-                        <option value="Admin" <?php echo ($role == '1') ? 'selected' : ''; ?>>Admin</option>
-                        <option value="Employee" <?php echo ($role == '2') ? 'selected' : ''; ?>>Employee</option>
+                        <?php roleHandler($role);?>
                     </select>
                 </div>
             </div>
