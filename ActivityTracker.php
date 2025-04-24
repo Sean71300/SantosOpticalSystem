@@ -1,5 +1,8 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    // Session has not started; start it
+    session_start();
+}
 
 
 // Set session timeout duration (e.g., 5 minutes)

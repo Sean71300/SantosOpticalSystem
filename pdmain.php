@@ -10,9 +10,11 @@ include_once 'setup.php';
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>BVP Santos Optical</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
     <link rel="stylesheet" href="s1.css">
     <link rel="stylesheet" href="customCodes/custom.css">
     <link rel="shortcut icon" type="image/x-icon" href="images/logo.png"/>
+    <link rel="stylesheet" href="customCodes/s2.css">
 
     <style>
         body {
@@ -177,17 +179,19 @@ include_once 'setup.php';
                 </div>
                 <div class="row justify-content-center">
                     <div class="col-md-4 col-sm-6 text-center">
-                        <img src="imgm1.png" alt="Minima M608" class="product-img" data-aos="fade-up">
+                        <img src="Images/imgm1.png" alt="Minima M608" class="product-img" data-aos="fade-up">
                     </div>
                     <div class="col-md-4 col-sm-6 text-center">
-                        <img src="imgm2.png" alt="Paul Hueman" class="product-img" data-aos="fade-up" data-aos-delay="200">
+                        <img src="Images/imgm2.png" alt="Paul Hueman" class="product-img" data-aos="fade-up" data-aos-delay="200">
                     </div>
                     <div class="col-md-4 col-sm-6 text-center">
-                        <img src="imgm3.png" alt="Paul Hueman PHF" class="product-img" data-aos="fade-up" data-aos-delay="400">
+                        <img src="Images/imgm3.png" alt="Paul Hueman PHF" class="product-img" data-aos="fade-up" data-aos-delay="400">
                     </div>
                 </div>
                 <div class="text-center my-4" data-aos="fade-up">
-                    <button class="see-more-btn">SEE MORE</button>
+                    
+                        <button class="see-more-btn">SEE MORE</button>
+                    
                 </div>
             </div>
         </div>
@@ -196,7 +200,7 @@ include_once 'setup.php';
             <div class="container">
                 <div class="row align-items-center">
                     <div class="col-lg-6" data-aos="fade-right">
-                        <img src="imgs.jpg" alt="Our Services" class="service-img">
+                        <img src="Images/imgs.jpg" alt="Our Services" class="service-img">
                     </div>
                     <div class="col-lg-6 text-content" data-aos="fade-left">
                         <h2 class="service-title">OUR SERVICES</h2>
@@ -205,7 +209,7 @@ include_once 'setup.php';
                             and stylish frames to match your personality. Explore our wide range of services today!
                         </p>
                         <div class="d-flex justify-content-end">
-                            <button class="btn-know-more">KNOW MORE</button>
+                            <a href="ourservices.php"><button class="btn-know-more">KNOW MORE</button></a>
                         </div>
                     </div>
                 </div>
@@ -221,10 +225,10 @@ include_once 'setup.php';
                             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam viverra fermentum mi, nec 
                             venenatis elit efficitur et. Duis convallis tincidunt libero. Nulla facilisi. Suspendisse potenti.
                         </p>
-                        <a href="#" class="btn-see-all">SEE ALL <span>></span></a>
+                        <a href="aboutus.php" class="btn-see-all">SEE ALL <span>></span></a>
                     </div>
                     <div class="col-lg-6 text-center" data-aos="fade-left">
-                        <img src="imgabt.jpg" alt="About Us Image" class="img-fluid rounded">
+                        <img src="Images/imgabt.jpg" alt="About Us Image" class="img-fluid rounded">
                     </div>
                 </div>
             </div>
@@ -247,7 +251,7 @@ include_once 'setup.php';
             <div class="container">
                 <div class="row text-center text-md-start">
                     <div class="col-md-3 mb-3 mb-md-0 text-center">
-                        <img src="logo.png" alt="Logo" width="200">
+                        <img src="Images/logo.png" alt="Logo" width="200">
                     </div>
 
                     <div class="col-md-3 mb-3 mb-md-0">

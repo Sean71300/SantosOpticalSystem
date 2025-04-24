@@ -1,3 +1,10 @@
+<?php
+include_once 'setup.php'; // Include the setup.php file
+include 'ActivityTracker.php';
+include 'loginChecker.php';
+?>
+
+<!DOCTYPE html>
 <html>
     <head>
         <meta charset="UTF-8">

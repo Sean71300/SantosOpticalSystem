@@ -1,8 +1,7 @@
 <?php
 include 'ActivityTracker.php';
-include 'admin-inventory-funcs.php'; // Include the functions file
 include 'loginChecker.php';
-
+include 'admin-inventory-funcs.php'; // Include the functions file
 ?>
 
 <!DOCTYPE html>
