@@ -1,5 +1,6 @@
 <?php
 include_once 'customerFunctions.php';  
+include 'loginChecker.php';
 
 if (isset($_GET["EmployeeID"])) {
     $id = $_GET ["EmployeeID"];

@@ -67,7 +67,7 @@
         }
 
         $branch = "$row[BranchCode]";
-        
+
         // read data of each row
         while ($row = $result->fetch_assoc()){
             echo
@@ -87,9 +87,7 @@
         
 
         $conn = connect();
-        if ($_SERVER['REQUEST_METHOD'] === 'POST'){   
-            
-            
+        if ($_SERVER['REQUEST_METHOD'] === 'POST'){               
 
             $name = $_POST["name"];
             $username = $_POST["username"];
@@ -112,7 +110,7 @@
                         $imagePath  = "Images/default.jpg";                        
                     }    
                     insertData($name ,$username ,$password ,$email, $phone, $role ,$branch ,$imagePath );
-                    $successMessage = "Customer added successfully"; 
+                    $successMessage = "Employee succesfully added"; 
                 } else {
                     $errorMessage = $errorMessage .'Image File size is too big. <br>';   
                 }                

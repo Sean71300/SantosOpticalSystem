@@ -1,5 +1,6 @@
 <?php
 include 'ActivityTracker.php';
+include 'loginChecker.php';
 include 'customerFunctions.php'; 
 $name = "";
 $address = "";

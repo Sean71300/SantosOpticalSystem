@@ -400,17 +400,24 @@
                 BranchCode INT(10) PRIMARY KEY,
                 BranchName VARCHAR(100),
                 BranchLocation VARCHAR(500),
-                ContactNo INT(11)
+                ContactNo INT(12)
                 )";
 
         if (mysqli_query($conn, $sql))
         {
             
-            $id = generate_BranchCode();            
+            $id = generate_BranchCode(); 
+            $id1 = $id+1;
+            $id2 = $id+2;
+            $id3 = $id+3;           
             $sql = "INSERT INTO BranchMaster
                     (BranchCode,BranchName,BranchLocation,ContactNo)
                     VALUES
-                    ('$id','Malabon Branch','12 Balabon Tinajeros, Rizal Street', '09658798565')";
+                    ('$id','Malabon Branch','Pascual St, Malabon', '0288183480'),
+                    ('$id1','Malabon Branch','Bayan, Malabon', '0286321972'),
+                    ('$id2','Manila Branch','Quiapo, Manila', '9328447068'),
+                    ('$id3','Navotas Branch','Tangos, Navotas', '9658798565')
+                    ";
 
             mysqli_query($conn, $sql);
         }

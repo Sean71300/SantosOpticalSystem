@@ -1,11 +1,21 @@
 <?php
 include_once 'setup.php'; // Include the setup.php file
-include 'ActivityTracker.php';
-
 require_once 'connect.php'; // Connect to the database
+include 'ActivityTracker.php';
 
 $username = $password = ""; // Initialize the username and password variables
 $username_err = $password_err = ""; // Initialize the username and password error variables
+
+
+if (isset($_POST['cancel'])) {
+    // Execute your cancellation logic here
+    // For example, you might want to remove a record from the database
+
+    // Redirect to another page
+    header('Location: index.php');
+    exit();
+    
+}
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (empty(trim($_POST["username"]))) {
@@ -51,11 +61,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                             if ($roleid == 1) {
                                 header("location: admin.php");
+                                exit();
                             } else if ($roleid == 2) {
                                 header("location: employee.php");
+                                exit();
                             } else {
                                 header("location: login.php");
                                 $login_err = "Error has occurred, please try again.";
+                                exit();
                             }
                         } else {
                             $login_err = "The password you entered was not valid.";
@@ -125,7 +138,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             <div class="form-group"> 
                 <p class="fw-bold fs-5">Password</p>
-                <input type="password" name="password" id="password" class="form-control" required>
+                <input type="password" name="password" id="password" class="form-control <?php echo (!empty($password_err)) ? 'is-invalid' : ''; ?>" value="<?php echo $password; ?>">
+                <span class="invalid-feedback"><?php echo $password_err; ?></span>
             </div>
 
             <?php 
@@ -135,10 +149,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             ?>
 
             <div class="buttons">
-                <button type="submit" class="btn btn-success w-25" style="margin-right: 25px;">Login</button>
-                <button type="reset" class="btn btn-danger w-25" style="margin-left: 25px;">Reset</button>
+                <button type="submit" class="btn btn-success w-25" style="margin-right: 25px;">Login</button>                
+                <button type="cancel" name= "cancel" class="btn btn-danger w-25" style="margin-left: 25px;">Cancel</button>
             </div>
         </form>
-    </div>
+    </div> 
 </body>
 </html>

@@ -1,7 +1,7 @@
 <?php
   include 'ActivityTracker.php';
   include_once 'customerFunctions.php'; 
-  
+  include 'loginChecker.php';
 ?>
     
 <html>
