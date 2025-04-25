@@ -158,14 +158,13 @@
                 Count INT(10),
                 Upd_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (EmployeeID) REFERENCES employee(EmployeeID),                
-                FOREIGN KEY (ProductBranchID) REFERENCES ProductBranchMaster(ProductBranchID),
                 FOREIGN KEY (ActivityCode) REFERENCES activityMaster(ActivityCode)
                 )";
 
         if (mysqli_query($conn, $sql))
         {
             $id = generate_LogsID(); 
-            $id2 = generate_EmployeeID(); 
+            $id2 = generate_EmployeeID();
             $id3 = generate_ProductBrnchMstrID();  
             --$id2;
             --$id3;
