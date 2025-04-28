@@ -99,7 +99,7 @@
         <link rel="stylesheet" href="customCodes/custom.css">
     </head>
     <body class="bg-body-tertiary">
-        <?php include "Navigation.php"?> 
+        <?php include "sidebar.php"?> 
         <div class="container category-container">
             <h1>New Employee</h1>
 

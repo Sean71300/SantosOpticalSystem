@@ -261,7 +261,7 @@
                 $id = generate_ProductBrnchMstrID();    
                 $id2 = 2025140000 + $i; 
                 $id3 = generate_BranchCode();
-                $id3 =  ($id3-3)+(rand(0,3));
+                $id3 = ($id3-4)+(rand(0,3));
 
                 $count = rand(3, 50); // Generate a random count between 3 and 50
                 

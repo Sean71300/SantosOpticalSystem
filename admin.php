@@ -88,7 +88,7 @@ include 'loginChecker.php';
     </head>
 
     <body>
-        <?php include "employeeSidebar.php"?>
+        <?php include "sidebar.php"?>
 
         <!-- Main Content -->
         <div class="main-content">
