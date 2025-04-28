@@ -95,7 +95,7 @@ include 'loginChecker.php';
             </div>
             
             <div class="sidebar-menu">
-                <a href="#" class="sidebar-item active">
+                <a href="admin.php" class="sidebar-item active">
                     <i class="fas fa-tachometer-alt"></i> Dashboard
                 </a>
                 
@@ -103,7 +103,7 @@ include 'loginChecker.php';
                     <i class="fas fa-users"></i> Customer Information
                 </a>
                 
-                <a href="EmployeeRecords.php" class="sidebar-item">
+                <a href="EmployeeRecordsssss.php" class="sidebar-item">
                     <i class="fas fa-user-tie"></i> Manage Employees
                 </a>
                 
