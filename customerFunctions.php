@@ -3,33 +3,73 @@
   
     //read all row from database table
     function customerData()
+    {
+        $customerData = "";
+        $connection = connect();
 
-        {
-            $customerData = "";
-            $connection = connect();
+        $sql = "SELECT * FROM customer";
+        $result = $connection->query($sql);
 
-            $sql = "SELECT * FROM customer";
-            $result = $connection->query($sql);
-
-            if(!$result) {
-                die ("Invalid query: " . $connection->error);
-            }
-
-            // read data of each row
-            while ($row = $result->fetch_assoc()){
-                echo
-                "<tr>
-                    <td>$row[CustomerID]</td>
-                    <td>$row[CustomerName]</td>
-                    <td>$row[CustomerAddress]</td>
-                    <td>$row[CustomerContact]</td>
-                    <td>
-                        <a class='btn btn-primary btn-sm' href='customerEdit.php?CustomerID=$row[CustomerID]' >Edit</a>
-                        <a class='btn btn-danger btn-sm' href='customerDelete.php?CustomerID=$row[CustomerID]'>Delete</a>
-                    </td>
-                </tr>";
-            }            
+        if(!$result) {
+            die ("Invalid query: " . $connection->error);
         }
+
+        // read data of each row
+        while ($row = $result->fetch_assoc()){
+            echo
+            "<tr>
+                <td>$row[CustomerID]</td>
+                <td>$row[CustomerName]</td>
+                <td>$row[CustomerAddress]</td>
+                <td>$row[CustomerContact]</td>
+                <td>
+                    <a class='btn btn-primary btn-sm' href='customerEdit.php?CustomerID=$row[CustomerID]'>Edit</a>
+                    <a class='btn btn-danger btn-sm' href='customerDelete.php?CustomerID=$row[CustomerID]'>Delete</a>
+                    <button class='btn btn-info btn-sm view-orders' data-customer-id='$row[CustomerID]'>View Orders</button>
+                </td>
+            </tr>";
+        }            
+    }
+
+    // New function to get ordered products by customer
+    function getCustomerOrders($customerID) {
+        $connection = connect();
+        $orders = array();
+
+        $sql = "SELECT p.Model, b.BrandName, od.Quantity, oh.Created_dt 
+                FROM orderDetails od
+                JOIN Order_hdr oh ON od.OrderHdr_id = oh.Orderhdr_id
+                JOIN ProductBranchMaster pbm ON od.ProductBranchID = pbm.ProductBranchID
+                JOIN productMstr p ON pbm.ProductID = p.ProductID
+                JOIN brandMaster b ON p.BrandID = b.BrandID
+                WHERE oh.CustomerID = ?";
+        
+        $stmt = $connection->prepare($sql);
+        $stmt->bind_param("i", $customerID);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        while ($row = $result->fetch_assoc()) {
+            $orders[] = $row;
+        }
+
+        $stmt->close();
+        $connection->close();
+        
+        return $orders;
+    }
+
+    // Handle AJAX request for customer orders
+    if (isset($_GET['action'])) {
+        header('Content-Type: application/json');
+        if ($_GET['action'] === 'getCustomerOrders' && isset($_GET['customerID'])) {
+            $customerID = $_GET['customerID'];
+            $orders = getCustomerOrders($customerID);
+            echo json_encode($orders);
+            exit();
+        }
+    }
+
     function handleCustomerForm() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $name = $_POST["name"];
@@ -64,18 +104,18 @@
     }
     
     function insertData($name,$address,$phone,$info,$notes)
-        {
-            $conn = connect(); 
-            $id = generate_CustomerID();   
-            $upd_by = $_SESSION["full_name"];
-            $sql = "INSERT INTO customer 
-                    (CustomerID,CustomerName,CustomerAddress,CustomerContact,
-                    CustomerInfo,Notes,Upd_by) 
-                    VALUES
-                    ('$id','$name','$address','$phone','$info','$notes','$upd_by')";
-            
-            mysqli_query($conn, $sql);
-        }
+    {
+        $conn = connect(); 
+        $id = generate_CustomerID();   
+        $upd_by = $_SESSION["full_name"];
+        $sql = "INSERT INTO customer 
+                (CustomerID,CustomerName,CustomerAddress,CustomerContact,
+                CustomerInfo,Notes,Upd_by) 
+                VALUES
+                ('$id','$name','$address','$phone','$info','$notes','$upd_by')";
+        
+        mysqli_query($conn, $sql);
+    }
     
     function handleCancellation() {
         if (isset($_POST['confirm_cancel'])) {

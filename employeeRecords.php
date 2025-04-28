@@ -80,54 +80,19 @@ include 'loginChecker.php';
     </head>
     <body>
         <!-- Sidebar -->
-        <div class="sidebar">
-        <div class="sidebar-header">
-                <h4><i class="fas fa-cog"></i> Admin Panel</h4>
-            </div>
-            
-            <a href="admin.php" class="sidebar-item">
-                <i class="fas fa-tachometer-alt"></i> Dashboard
-            </a>
-            
-            <a href="customerRecords.php" class="sidebar-item active">
-                <i class="fas fa-users"></i> Customer Information
-            </a>
-            
-            <a href="EmployeeRecords.php" class="sidebar-item">
-                <i class="fas fa-user-tie"></i> Manage Employees
-            </a>
-            
-            <a href="admin-inventory.php" class="sidebar-item">
-                <i class="fas fa-boxes"></i> Manage Inventory
-            </a>
-            
-            <a href="#" class="sidebar-item">
-                <i class="fas fa-shopping-cart"></i> Orders
-            </a>
-            
-            <a href="#" class="sidebar-item">
-                <i class="fas fa-box-open"></i> Products
-            </a>
-            
-            <a href="#" class="sidebar-item">
-                <i class="fas fa-layer-group"></i> Collections
-            </a>
-            
-            <a href="#" class="sidebar-item">
-                <i class="fas fa-archive"></i> Package
-            </a>
-        </div>
+        <?php include "employeeSidebar.php"?>
+
 
         <!-- Main Content -->
-        <div class="main-content">
+        <div class="main-content">           
+            
+            <div class="data-table">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2><i class="fas fa-users-cog me-2"></i>Employee Records</h2>
                 <a href="employeeCreate.php" class="btn btn-primary">
                     <i class="fas fa-plus-circle me-2"></i>New Employee
                 </a>
             </div>
-            
-            <div class="data-table">
                 <div class="table-responsive">
                     <table class="table table-hover">
                         <thead class="table-light">
