@@ -520,6 +520,118 @@
                     ('$genID','Light Tech'
                     )";
             mysqli_query($conn, $sql);
+
+            $genID = generate_BrandID();
+            $sql = "INSERT INTO brandMaster
+                    (BrandID,BrandName)
+                    VALUES
+                    ('$genID','Ray-Ban'
+                    )";
+            mysqli_query($conn, $sql);
+
+            $genID = generate_BrandID();
+            $sql = "INSERT INTO brandMaster
+                    (BrandID,BrandName)
+                    VALUES
+                    ('$genID','Oakley'
+                    )";
+            mysqli_query($conn, $sql);
+
+            $genID = generate_BrandID();
+            $sql = "INSERT INTO brandMaster
+                    (BrandID,BrandName)
+                    VALUES
+                    ('$genID','Persol'
+                    )";
+            mysqli_query($conn, $sql);
+
+            $genID = generate_BrandID();
+            $sql = "INSERT INTO brandMaster
+                    (BrandID,BrandName)
+                    VALUES
+                    ('$genID','Acuvue'
+                    )";
+            mysqli_query($conn, $sql);
+
+            $genID = generate_BrandID();
+            $sql = "INSERT INTO brandMaster
+                    (BrandID,BrandName)
+                    VALUES
+                    ('$genID','Air Optix'
+                    )";
+            mysqli_query($conn, $sql);
+
+            $genID = generate_BrandID();
+            $sql = "INSERT INTO brandMaster
+                    (BrandID,BrandName)
+                    VALUES
+                    ('$genID','Biofinity'
+                    )";
+            mysqli_query($conn, $sql);
+
+            $genID = generate_BrandID();
+            $sql = "INSERT INTO brandMaster
+                    (BrandID,BrandName)
+                    VALUES
+                    ('$genID','EyeMo'
+                    )";
+            mysqli_query($conn, $sql);
+
+            $genID = generate_BrandID();
+            $sql = "INSERT INTO brandMaster
+                    (BrandID,BrandName)
+                    VALUES
+                    ('$genID','Essilor'
+                    )";
+            mysqli_query($conn, $sql);
+
+            $genID = generate_BrandID();
+            $sql = "INSERT INTO brandMaster
+                    (BrandID,BrandName)
+                    VALUES
+                    ('$genID','Hoya'
+                    )";
+            mysqli_query($conn, $sql);
+
+            $genID = generate_BrandID();
+            $sql = "INSERT INTO brandMaster
+                    (BrandID,BrandName)
+                    VALUES
+                    ('$genID','Zeiss'
+                    )";
+            mysqli_query($conn, $sql);
+
+            $genID = generate_BrandID();
+            $sql = "INSERT INTO brandMaster
+                    (BrandID,BrandName)
+                    VALUES
+                    ('$genID','Bausch + Lomb'
+                    )";
+            mysqli_query($conn, $sql);
+
+            $genID = generate_BrandID();
+            $sql = "INSERT INTO brandMaster
+                    (BrandID,BrandName)
+                    VALUES
+                    ('$genID','Rodenstock'
+                    )";
+            mysqli_query($conn, $sql);
+
+            $genID = generate_BrandID();
+            $sql = "INSERT INTO brandMaster
+                    (BrandID,BrandName)
+                    VALUES
+                    ('$genID','Maui Jim'
+                    )";
+            mysqli_query($conn, $sql);
+
+            $genID = generate_BrandID();
+            $sql = "INSERT INTO brandMaster
+                    (BrandID,BrandName)
+                    VALUES
+                    ('$genID','Nikon'
+                    )";
+            mysqli_query($conn, $sql);
         }
         else
         {
@@ -612,15 +724,22 @@
                 CategoryType VARCHAR(50) PRIMARY KEY,
                 Description VARCHAR(500)
                 )";
-        $desc="Frames that will be used for the 
-                    customer\'s Glasses";
+        $desc = mysqli_real_escape_string($conn, "Frames that will be used for the customer's Glasses");
         if (mysqli_query($conn, $sql))
         {            
             $sql = "INSERT INTO categoryType
                     (CategoryType,Description)
                     VALUES
-                    ('Frame','$desc'
-                    )";
+                    ('Frame', '$desc'),
+                    ('Contact Lenses', 'Contact lenses are thin lenses placed directly on the surface of the eye.'),
+                    ('Sunglasses', 'Sunglasses are eyewear designed to protect the eyes from sunlight and high-energy visible light.'),
+                    ('Convex Lens', 'Convex lenses are thicker in the center than at the edges and are used to correct hyperopia (farsightedness).'),
+                    ('Concave Lens', 'Concave lenses are thinner in the center than at the edges and are used to correct myopia (nearsightedness).'),
+                    ('Bifocal Lens', 'Bifocal lenses have two distinct optical powers, one for distance and one for near vision.'),
+                    ('Trifocal Lens', 'Trifocal lenses have three distinct optical powers for distance, intermediate, and near vision.'),
+                    ('Progressive Lens', 'Progressive lenses provide a smooth transition between multiple lens powers without visible lines.'),
+                    ('Photochromic Lens', 'Photochromic lenses darken in response to sunlight and clear up indoors.'),
+                    ('Polarized Lens', 'Polarized lenses reduce glare from reflective surfaces, improving visual comfort and clarity.')";
 
             mysqli_query($conn, $sql);
         }

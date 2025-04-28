@@ -1,5 +1,7 @@
 <?php
-include "setup.php";
+include 'order-functions.php';
+include 'ActivityTracker.php';
+include 'loginChecker.php';
 ?>
 
 <!DOCTYPE html>
