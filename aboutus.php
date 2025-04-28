@@ -83,6 +83,7 @@ include 'ActivityTracker.php';
         </style>
     </head>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     <body>
         <?php include "Navigation.php"?>
         <div class="button-container">
@@ -176,6 +177,8 @@ include 'ActivityTracker.php';
             });
         </script>
 =======
+=======
+>>>>>>> Stashed changes
         <?php
             include "Navigation.php";
         ?>
@@ -269,6 +272,5 @@ include 'ActivityTracker.php';
                 </div>
               </div>
             
->>>>>>> Stashed changes
     </body>
 </html>
