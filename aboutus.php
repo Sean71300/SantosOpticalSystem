@@ -99,7 +99,7 @@ include 'ActivityTracker.php';
         <div class="d-flex justify-content-center align-items-center">
             <div class="aboutus2-section">
                 <h1>ABOUT US</h1>
-                <h5>BVP Santos Optical Clinic emphasizes personalized customer service. 
+                <h5>Santos Optical Clinic emphasizes personalized customer service. 
                     Services they offer include eye examinations and prescription glasses.</h5>
             </div>
         </div><br><br><br>
@@ -111,7 +111,7 @@ include 'ActivityTracker.php';
               </div>
               <div class="col-md-7">
                 <p class="fs-4">
-                  BVP Santos Optical Clinic, owned by <b> Bien Ven P. Santos,</b> is a prominent provider of optical services,
+                  Santos Optical Clinic, owned by <b> Bien Ven P. Santos,</b> is a prominent provider of optical services,
                   and has been serving its community since its establishment as a sole proprietorship in 2001.
                 </p>
               </div>

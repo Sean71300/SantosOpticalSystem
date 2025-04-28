@@ -221,7 +221,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['cancel'])) {
 <div class="wrapper">
     <div class="titles">
         <img src="Images/logo.png" alt="Logo" class="logo">
-        <h2 class="title-login">Greetings Santosers</h2>
+        <h2 class="title-login">Greetings!</h2>
     </div>
 
     <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post" class="login-form">
