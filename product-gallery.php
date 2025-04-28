@@ -19,15 +19,17 @@
         while($row = mysqli_fetch_assoc($result)) {
             echo "<div class='col g-3'>";
                     echo "<div class='card' style='width: 18.5rem; height: 29.5rem;'>";
-                        echo '<img src="' . $row['ProductImage']. '"class="card-img-top" style="height: 300px;" alt="'. $row['Model'] .'">';
+                        echo '<img src="' . $row['ProductImage']. '"class="card-img-top" style="height: 250px;" alt="'. $row['Model'] .'">';
                             echo "<div class='card-body'>";
-                                echo "<h5 class='card-title overflow-hidden' style='height:3.5rem;'>".$row['Model']."</h5>";
+                                echo "<h5 class='card-title overflow-hidden' style='height:4rem;'>".$row['Model']."</h5>";
+                                echo "<p class='card-text'>".$row['CategoryType']."</p>";
                                 echo "<p class='card-text'>".$row['Avail_FL']."</p>";                                
                             echo "</div>";
-                        echo "<a href='#' class='btn btn-primary'>Go somewhere</a>";
+                        echo "<a href='#' class='btn btn-primary'>More details</a>";
                 echo "</div>";
             echo "</div>";
         }
+
         echo "<div class='col-12'>";
             echo "<div class='d-flex justify-content-center mt-5'>";
                 echo "<ul class='pagination'>";
@@ -55,18 +57,17 @@
                 }
             echo "</div>";
         echo "</div>"; 
-    
 ?>
-
 
 <!DOCTYPE html>
 <html>
     <head>
-    <title>About Us</title>
+    <title>Products</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
         <link rel="stylesheet" href="customCodes/s1.css">
         <link rel="stylesheet" href="customCodes/custom.css">
         <link rel="shortcut icon" type="image/x-icon" href="images/logo.png"/>

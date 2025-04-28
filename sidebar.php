@@ -42,7 +42,7 @@
             <i class="fas fa-boxes"></i> Manage Inventory
         </a>
         
-        <a href="#" class="sidebar-item">
+        <a href="order.php" class="sidebar-item">
             <i class="fas fa-shopping-cart"></i> Orders
         </a>
         
