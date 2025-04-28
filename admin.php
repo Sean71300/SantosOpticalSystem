@@ -18,7 +18,7 @@ include 'loginChecker.php';
 
     <header class="mb-5">
         <?php
-            include "Navigation.php";
+            include "employeeSidebar.php";
         ?>
     </header>
 
