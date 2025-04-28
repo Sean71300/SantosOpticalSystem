@@ -454,7 +454,10 @@ function editProduct(){ //Edit function to edit an existing product in the datab
                             <input type="hidden" name="productImg" value="' . htmlspecialchars($productImg) . '" />
                             <div class="mb-3">
                                 <label for="categoryType" class="form-label">Category Type</label>
-                                <input type="text" class="form-control" id="categoryType" name="categoryType" value="' . htmlspecialchars($categoryType) . '" required>
+                                <select class="form-select" id="categoryType" name="categoryType" required>';
+                                    getCategory();
+                                    echo '
+                                </select>
                             </div>
                             <div class="mb-3">
                                 <label for="ShapeDescription" class="form-label">Shape</label>
