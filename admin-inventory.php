@@ -1,11 +1,43 @@
 <?php
+session_start();
 include 'ActivityTracker.php';
 include 'loginChecker.php';
-include 'admin-inventory-funcs.php'; // Include the functions file
+include 'admin-inventory-funcs.php';
 
 // Get sort parameters from URL
 $sort = isset($_GET['sort']) ? $_GET['sort'] : 'ProductID';
 $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
+
+// Handle branch selection
+if (isset($_POST['searchProduct'])) {
+    $branchName = $_POST['chooseBranch'] ?? '';
+    $_SESSION['current_branch'] = $branchName;
+} else {
+    $branchName = $_GET['branch'] ?? $_SESSION['current_branch'] ?? '';
+}
+
+// Store current branch in session
+$_SESSION['current_branch'] = $branchName;
+
+// Handle form actions
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['editProductBtn'])) {
+        editProduct();
+    }
+    elseif (isset($_POST['saveProductBtn'])) {
+        confirmEditProduct();
+        header("Location: admin-inventory.php?sort=$sort&order=$order&branch=".urlencode($branchName));
+        exit();
+    }
+    elseif (isset($_POST['deleteProductBtn'])) {
+        confirmDeleteProduct();
+    }
+    elseif (isset($_POST['confirmDeleteBtn'])) {
+        deleteProduct();
+        header("Location: admin-inventory.php?sort=$sort&order=$order&branch=".urlencode($branchName));
+        exit();
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -88,7 +120,6 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                 padding: 20px;
                 margin-bottom: 20px;
             }
-            /* Sorting styles - updated to match employeeRecords.php */
             .sortable {
                 cursor: pointer;
                 position: relative;
@@ -123,11 +154,21 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
             </div>
 
             <div class="filter-container">
-                <form method="post" class="row g-3">
+                <form method="post" class="row g-3" id="branchForm">
                     <div class="col-md-8">
                         <label for="chooseBranch" class="form-label">Select Branch</label>
                         <select name="chooseBranch" id="chooseBranch" class="form-select">
-                            <?php getBranches(); ?>
+                            <option class='form-select-sm' value='' <?= empty($branchName) ? 'selected' : '' ?>>View All Branches</option>
+                            <?php 
+                            $link = connect();
+                            $sql = "SELECT BranchName from branchmaster";
+                            $result = mysqli_query($link, $sql);
+                            while($row = mysqli_fetch_array($result)) {
+                                $selected = ($row['BranchName'] === $branchName) ? 'selected' : '';
+                                echo "<option class='form-select-sm' value='".$row['BranchName']."' $selected>".$row['BranchName']."</option>";
+                            }
+                            mysqli_close($link);
+                            ?>
                         </select>
                     </div>
                     <div class="col-md-4 d-flex align-items-end">
@@ -140,83 +181,114 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
 
             <div class="table-container">
                 <div class="table-responsive">
-                    <table class="table table-hover">                                                
-                        <thead class="table-light">
-                            <tr>
-                                <th class="sortable <?php echo $sort == 'ProductID' ? 'active' : ''; ?>" onclick="sortTable('ProductID')">
-                                    Product ID
-                                    <span class="sort-icon">
-                                        <i class="fas fa-sort-<?php echo $sort == 'ProductID' ? (strtolower($order)) == 'asc' ? 'up' : 'down' : 'up'; ?>"></i>
-                                    </span>
-                                </th>
-                                <th class="sortable <?php echo $sort == 'CategoryType' ? 'active' : ''; ?>" onclick="sortTable('CategoryType')">
-                                    Category
-                                    <span class="sort-icon">
-                                        <i class="fas fa-sort-<?php echo $sort == 'CategoryType' ? (strtolower($order)) == 'asc' ? 'up' : 'down' : 'up'; ?>"></i>
-                                    </span>
-                                </th>
-                                <th class="sortable <?php echo $sort == 'ShapeDescription' ? 'active' : ''; ?>" onclick="sortTable('ShapeDescription')">
-                                    Shape
-                                    <span class="sort-icon">
-                                        <i class="fas fa-sort-<?php echo $sort == 'ShapeDescription' ? (strtolower($order)) == 'asc' ? 'up' : 'down' : 'up'; ?>"></i>
-                                    </span>
-                                </th>
-                                <th class="sortable <?php echo $sort == 'BrandName' ? 'active' : ''; ?>" onclick="sortTable('BrandName')">
-                                    Brand
-                                    <span class="sort-icon">
-                                        <i class="fas fa-sort-<?php echo $sort == 'BrandName' ? (strtolower($order)) == 'asc' ? 'up' : 'down' : 'up'; ?>"></i>
-                                    </span>
-                                </th>
-                                <th class="sortable <?php echo $sort == 'Model' ? 'active' : ''; ?>" onclick="sortTable('Model')">
-                                    Model
-                                    <span class="sort-icon">
-                                        <i class="fas fa-sort-<?php echo $sort == 'Model' ? (strtolower($order)) == 'asc' ? 'up' : 'down' : 'up'; ?>"></i>
-                                    </span>
-                                </th>
-                                <th>Remarks</th>
-                                <th>Product Image</th>
-                                <th class="sortable <?php echo $sort == 'TotalCount' ? 'active' : ''; ?>" onclick="sortTable('TotalCount')">
-                                    Total Count
-                                    <span class="sort-icon">
-                                        <i class="fas fa-sort-<?php echo $sort == 'TotalCount' ? (strtolower($order)) == 'asc' ? 'up' : 'down' : 'up'; ?>"></i>
-                                    </span>
-                                </th>
-                                <th>Updated by</th>
-                                <th class="sortable <?php echo $sort == 'LastUpdated' ? 'active' : ''; ?>" onclick="sortTable('LastUpdated')">
-                                    Last Updated
-                                    <span class="sort-icon">
-                                        <i class="fas fa-sort-<?php echo $sort == 'LastUpdated' ? (strtolower($order)) == 'asc' ? 'up' : 'down' : 'up'; ?>"></i>
-                                    </span>
-                                </th>
-                                <th colspan="2">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php
-                            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-                                if (isset($_POST['searchProduct'])) {
-                                    getInventory($sort, $order);
-                                }
-                                elseif (isset($_POST['editProductBtn'])) {
-                                    getInventory($sort, $order);
-                                    editProduct();
-                                }
-                                elseif (isset($_POST['saveProductBtn'])) {
-                                    confirmEditProduct();
-                                    getInventory($sort, $order);
-                                }
-                                elseif (isset($_POST['deleteProductBtn'])) {
-                                    confirmDeleteProduct();
-                                    getInventory($sort, $order);
-                                }
-                                elseif (isset($_POST['confirmDeleteBtn'])) {
-                                    deleteProduct();
-                                    getInventory($sort, $order);
-                                }
-                            }
-                            ?>
-                        </tbody>
-                    </table>
+                    <?php
+                    // Display inventory table based on branch selection
+                    if (empty($branchName)) {
+                        // All branches view
+                        echo '<table class="table table-hover text-center">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="sortable '.($sort == 'ProductID' ? 'active' : '').'" onclick="sortTable(\'ProductID\')">
+                                            Product ID
+                                            <span class="sort-icon">
+                                                <i class="fas fa-sort-'.($sort == 'ProductID' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
+                                            </span>
+                                        </th>
+                                        <th class="sortable '.($sort == 'CategoryType' ? 'active' : '').'" onclick="sortTable(\'CategoryType\')">
+                                            Category
+                                            <span class="sort-icon">
+                                                <i class="fas fa-sort-'.($sort == 'CategoryType' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
+                                            </span>
+                                        </th>
+                                        <th class="sortable '.($sort == 'ShapeDescription' ? 'active' : '').'" onclick="sortTable(\'ShapeDescription\')">
+                                            Shape
+                                            <span class="sort-icon">
+                                                <i class="fas fa-sort-'.($sort == 'ShapeDescription' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
+                                            </span>
+                                        </th>
+                                        <th class="sortable '.($sort == 'BrandName' ? 'active' : '').'" onclick="sortTable(\'BrandName\')">
+                                            Brand
+                                            <span class="sort-icon">
+                                                <i class="fas fa-sort-'.($sort == 'BrandName' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
+                                            </span>
+                                        </th>
+                                        <th class="sortable '.($sort == 'Model' ? 'active' : '').'" onclick="sortTable(\'Model\')">
+                                            Model
+                                            <span class="sort-icon">
+                                                <i class="fas fa-sort-'.($sort == 'Model' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
+                                            </span>
+                                        </th>
+                                        <th>Remarks</th>
+                                        <th>Product Image</th>
+                                        <th class="sortable '.($sort == 'TotalCount' ? 'active' : '').'" onclick="sortTable(\'TotalCount\')">
+                                            Total Count
+                                            <span class="sort-icon">
+                                                <i class="fas fa-sort-'.($sort == 'TotalCount' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
+                                            </span>
+                                        </th>
+                                        
+                                        <th colspan="2">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>';
+                        
+                        getInventory($sort, $order);
+                        
+                        echo '</tbody></table>';
+                    } else {
+                        // Specific branch view
+                        echo '<table class="table table-hover text-center">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="sortable '.($sort == 'ProductID' ? 'active' : '').'" onclick="sortTable(\'ProductID\')">
+                                            Product ID
+                                            <span class="sort-icon">
+                                                <i class="fas fa-sort-'.($sort == 'ProductID' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
+                                            </span>
+                                        </th>
+                                        <th class="sortable '.($sort == 'CategoryType' ? 'active' : '').'" onclick="sortTable(\'CategoryType\')">
+                                            Category
+                                            <span class="sort-icon">
+                                                <i class="fas fa-sort-'.($sort == 'CategoryType' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
+                                            </span>
+                                        </th>
+                                        <th class="sortable '.($sort == 'ShapeDescription' ? 'active' : '').'" onclick="sortTable(\'ShapeDescription\')">
+                                            Shape
+                                            <span class="sort-icon">
+                                                <i class="fas fa-sort-'.($sort == 'ShapeDescription' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
+                                            </span>
+                                        </th>
+                                        <th class="sortable '.($sort == 'BrandName' ? 'active' : '').'" onclick="sortTable(\'BrandName\')">
+                                            Brand
+                                            <span class="sort-icon">
+                                                <i class="fas fa-sort-'.($sort == 'BrandName' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
+                                            </span>
+                                        </th>
+                                        <th class="sortable '.($sort == 'Model' ? 'active' : '').'" onclick="sortTable(\'Model\')">
+                                            Model
+                                            <span class="sort-icon">
+                                                <i class="fas fa-sort-'.($sort == 'Model' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
+                                            </span>
+                                        </th>
+                                        <th>Remarks</th>
+                                        <th>Product Image</th>
+                                        <th class="sortable '.($sort == 'Count' ? 'active' : '').'" onclick="sortTable(\'Count\')">
+                                            Count
+                                            <span class="sort-icon">
+                                                <i class="fas fa-sort-'.($sort == 'Count' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
+                                            </span>
+                                        </th>
+                                        
+                                        <th colspan="2">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>';
+                        
+                        getInventory($sort, $order);
+                        
+                        echo '</tbody></table>';
+                    }
+                    ?>
                 </div>
             </div>
         </div>
@@ -227,38 +299,18 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
         <script>
             // Modal handling
             document.addEventListener('DOMContentLoaded', function() {
-                var editProductModalElement = document.getElementById("editProductModal");
-                if (editProductModalElement) {
-                    var editProductModal = new bootstrap.Modal(editProductModalElement);
-                    editProductModal.show();
-                }
-
-                var deleteProductModalElement = document.getElementById("deleteProductModal");
-                if (deleteProductModalElement) {
-                    var deleteProductModal = new bootstrap.Modal(deleteProductModalElement);
-                    deleteProductModal.show();
-                }
-
-                var confirmDeleteProductModal = document.getElementById("confirmDeleteProductModal");
-                if (confirmDeleteProductModal) {
-                    var confirmDeleteModal = new bootstrap.Modal(confirmDeleteProductModal);
-                    confirmDeleteModal.show();
-                }
-
-                var confirmEditModal = document.getElementById("confirmEditModal");
-                if (confirmEditModal) {
-                    var confirmEditModal = new bootstrap.Modal(confirmEditModal);
-                    confirmEditModal.show();
-                }
-            });
-
-            // Add confirmation for delete actions
-            document.querySelectorAll('.delete-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    if(!confirm('Are you sure you want to delete this product?')) {
-                        e.preventDefault();
+                // Show modals if they exist
+                const showModal = (modalId) => {
+                    const modalElement = document.getElementById(modalId);
+                    if (modalElement) {
+                        new bootstrap.Modal(modalElement).show();
                     }
-                });
+                };
+
+                showModal('editProductModal');
+                showModal('deleteProductModal');
+                showModal('confirmDeleteProductModal');
+                showModal('confirmEditModal');
             });
 
             // Function to handle table sorting
@@ -276,9 +328,26 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                 urlParams.set('sort', column);
                 urlParams.set('order', newOrder);
                 
+                // Preserve branch selection
+                const branchSelect = document.getElementById('chooseBranch');
+                if (branchSelect && branchSelect.value) {
+                    urlParams.set('branch', branchSelect.value);
+                } else {
+                    urlParams.delete('branch');
+                }
+                
                 // Reload the page with new parameters
                 window.location.href = window.location.pathname + '?' + urlParams.toString();
             }
+
+            // Add confirmation for delete actions
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    if(!confirm('Are you sure you want to delete this product?')) {
+                        e.preventDefault();
+                    }
+                });
+            });
         </script>
     </body>
 </html>

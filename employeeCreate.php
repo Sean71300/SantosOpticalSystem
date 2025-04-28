@@ -101,7 +101,8 @@ handleCancellation();
         <div class="form-container">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1><i class="fas fa-user-plus me-2"></i> New Employee</h1>
-                <a class="btn btn-outline-secondary" href="employeeRecords.php" role="button">
+                <a class="btn btn-outline-secondary" href="employeeRecords.php" role="button" data-bs-toggle="modal" 
+                data-bs-target="#cancelModal">
                     <i class="fas fa-arrow-left me-2"></i> Back to List
                 </a>            
             </div>
@@ -178,11 +179,7 @@ handleCancellation();
                     </div>
                 <?php endif; ?>
                 
-                <div class="d-flex justify-content-end gap-3 mt-5">
-                    <button type="button" class="btn btn-outline-danger btn-action" data-bs-toggle="modal" 
-                            data-bs-target="#cancelModal">
-                        <i class="fas fa-times me-2"></i> Cancel
-                    </button>
+                <div class="d-flex justify-content-end gap-3 mt-5">                    
                     <button type="submit" class="btn btn-primary btn-action" name="submit">
                         <i class="fas fa-save me-2"></i> Save
                     </button>
@@ -200,7 +197,7 @@ handleCancellation();
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    Are you sure you want to cancel? Any unsaved changes will be lost.
+                    Are you sure you want to return to employee records? Any unsaved changes will be lost.
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

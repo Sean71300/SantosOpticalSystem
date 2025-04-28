@@ -76,7 +76,7 @@ include 'order-functions.php';
     </head>
 
     <body>
-        <?php include "employeeSidebar.php"?>
+        <?php include "sidebar.php"?>
         
         <div class="main-content">
             <div class="table-container">
