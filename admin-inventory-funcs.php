@@ -22,7 +22,8 @@ function getBranches() { // For inventory show
     $link = connect();
     $sql = "SELECT BranchName from branchmaster";
     $result = mysqli_query($link, $sql);
-    while($row = mysqli_fetch_array($result)){
+    echo "<option class='form-select-sm' value=''>View All Branches</option>";
+    while($row = mysqli_fetch_array($result)) {
         echo "<option class='form-select-sm' value='".$row['BranchName']."'>".$row['BranchName']."</option>";
     }
 }
@@ -77,48 +78,105 @@ function getEmployeeName() { // Function to get employee names from the database
     mysqli_stmt_close($stmt);
 }
 
-function getInventory() { // Show inventory of the selected branch    
+function getInventory() {
     $link = connect();      
     $branchName = $_POST['chooseBranch'] ?? '';
+    
+    // If no branch selected, show all products with branch distribution
     if (empty($branchName)) {
-        echo '<div class="modal fade" id="errorSearchModal" tabindex="-1" aria-labelledby="errorSearchModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content bg-danger p-3 text-white">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="errorSearchModalLabel">Error <i class="fa-solid fa-exclamation"></i></h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        Please choose a branch before proceeding.
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
-                    </div>
-                </div>
-            </div>
-        </div>';
+        $sql = "SELECT 
+                    pm.ProductID, 
+                    pm.CategoryType, 
+                    sm.Description AS ShapeDescription,
+                    bm.BrandName,
+                    pm.Model, 
+                    pm.Remarks, 
+                    pm.ProductImage,
+                    GROUP_CONCAT(CONCAT(b.BranchName, ': ', pbm.Count) SEPARATOR '<br>') AS BranchDistribution,
+                    SUM(pbm.Count) AS TotalCount,
+                    pm.Upd_by,
+                    MAX(pbm.Upd_dt) AS LastUpdated
+                FROM productmstr pm
+                JOIN shapemaster sm ON pm.ShapeID = sm.ShapeID
+                JOIN brandmaster bm ON pm.BrandID = bm.BrandID
+                JOIN productbranchmaster pbm ON pm.ProductID = pbm.ProductID
+                JOIN branchmaster b ON pbm.BranchCode = b.BranchCode
+                GROUP BY pm.ProductID, pm.CategoryType, sm.Description, bm.BrandName, 
+                         pm.Model, pm.Remarks, pm.ProductImage, pm.Upd_by";
+        
+        $result = mysqli_query($link, $sql);
+        
+        echo "<table class='table table-bordered table-fixed mt-3' border='1'>
+                <thead class='text-center' style='vertical-align:middle;'>
+                    <th>Product ID</th>
+                    <th>Category</th>
+                    <th>Shape</th>
+                    <th>Brand</th>
+                    <th>Model</th>
+                    <th>Remarks</th>
+                    <th>Product Image</th>
+                    <th>Branch Distribution</th>
+                    <th>Total Count</th>
+                    <th>Updated by</th>
+                    <th>Last Updated</th>
+                    <th colspan=2>Action</th>
+                </thead>
+                <tbody class='table-group-divider'>";
+
+        while ($row = mysqli_fetch_assoc($result)) {
+            echo "<tr class='text-center'>
+                    <td>" . htmlspecialchars($row['ProductID']) . "</td>
+                    <td>" . htmlspecialchars($row['CategoryType']) . "</td>
+                    <td>" . htmlspecialchars($row['ShapeDescription']) . "</td>
+                    <td>" . htmlspecialchars($row['BrandName']) . "</td>
+                    <td>" . htmlspecialchars($row['Model']) . "</td>
+                    <td>" . htmlspecialchars($row['Remarks']) . "</td>
+                    <td><img src='" . htmlspecialchars($row['ProductImage']) . "' alt='Product Image' style='width:100px; height:auto;'/></td>
+                    <td>" . $row['BranchDistribution'] . "</td>
+                    <td>" . htmlspecialchars($row['TotalCount']) . "</td>
+                    <td>" . htmlspecialchars($row['Upd_by']) . "</td>
+                    <td>" . htmlspecialchars($row['LastUpdated']) . "</td>
+                    <td>
+                        <form method='post'>
+                            <input type='hidden' name='productID' value='" . htmlspecialchars($row['ProductID']) . "' />
+                            <button type='submit' class='btn btn-success' name='editProductBtn' value='editProductBtn' style='font-size:12px'><i class='fa-solid fa-pen'></i></button>
+                        </form>
+                    </td>
+                    <td>
+                        <form method='post'>
+                            <input type='hidden' name='productID' value='" . htmlspecialchars($row['ProductID']) . "' />
+                            <button type='submit' class='btn btn-danger' name='deleteProductBtn' value='deleteProductBtn' style='font-size:12px'><i class='fa-solid fa-trash'></i></button>
+                        </form>
+                    </td>
+                </tr>";
+        }
+
+        echo "</tbody></table>";
+        mysqli_free_result($result);
+        mysqli_close($link);
         return;
     }
 
-    $sql = "SELECT bm.BranchCode, pbm.*, pm.*, sm.Description AS ShapeDescription
+    // Original branch-specific display when a branch is selected
+    $sql = "SELECT bm.BranchCode, pbm.*, pm.*, sm.Description AS ShapeDescription, b.BrandName
             FROM branchmaster bm
             JOIN productbranchmaster pbm ON bm.BranchCode = pbm.BranchCode
             JOIN productmstr pm ON pbm.productID = pm.productID
             JOIN shapemaster sm ON pm.ShapeID = sm.ShapeID
-            WHERE bm.BranchName = ?"; //bm is branchmaster, pbm is productbranchmaster, pm is productmstr
+            JOIN brandmaster b ON pm.BrandID = b.BrandID
+            WHERE bm.BranchName = ?";
     
     $stmt = mysqli_prepare($link, $sql);
     mysqli_stmt_bind_param($stmt, "s", $branchName);
     mysqli_stmt_execute($stmt);
     $result = mysqli_stmt_get_result($stmt);
 
-    // display table
     echo "<table class='table table-bordered table-fixed mt-3' border='1'>
             <thead class='text-center' style='vertical-align:middle;'>
                 <th>Product ID</th>
-                <th>Category Type</th>
-                <th>Shape ID</th>
-                <th>Brand ID</th>
+                <th>Category</th>
+                <th>Shape</th>
+                <th>Brand</th>
                 <th>Model</th>
                 <th>Remarks</th>
                 <th>Product Image</th>
@@ -127,16 +185,14 @@ function getInventory() { // Show inventory of the selected branch
                 <th>Updated Date</th>
                 <th colspan=2>Action</th>
             </thead>
-            
             <tbody class='table-group-divider'>";
 
-    // fetch and display results
     while ($row = mysqli_fetch_assoc($result)) {
         echo "<tr class='text-center'>
                 <td>" . htmlspecialchars($row['ProductID']) . "</td>
                 <td>" . htmlspecialchars($row['CategoryType']) . "</td>
                 <td>" . htmlspecialchars($row['ShapeDescription']) . "</td>
-                <td>" . htmlspecialchars($row['BrandID']) . "</td>
+                <td>" . htmlspecialchars($row['BrandName']) . "</td>
                 <td>" . htmlspecialchars($row['Model']) . "</td>
                 <td>" . htmlspecialchars($row['Remarks']) . "</td>
                 <td><img src='" . htmlspecialchars($row['ProductImage']) . "' alt='Product Image' style='width:100px; height:auto;'/></td>
@@ -169,18 +225,9 @@ function getInventory() { // Show inventory of the selected branch
             </tr>";
     }
 
-    echo " </tbody>
-        </table>";
-    // Close the statement
+    echo "</tbody></table>";
     mysqli_stmt_close($stmt);
-
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        if (isset($_POST['editProductBtn'])) {
-            editProduct(); // Call the edit function
-        }
-    }
     mysqli_close($link);
-    return;
 }
 
 function addProduct(){ //Add function to add a new product to the database
