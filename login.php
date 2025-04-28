@@ -1,23 +1,18 @@
 <?php
-include_once 'setup.php'; // Include the setup.php file
-require_once 'connect.php'; // Connect to the database
+include_once 'setup.php';
+require_once 'connect.php';
 include 'ActivityTracker.php';
 
-$username = $password = ""; // Initialize the username and password variables
-$username_err = $password_err = ""; // Initialize the username and password error variables
-
+$username = $password = "";
+$username_err = $password_err = "";
+$login_err = "";
 
 if (isset($_POST['cancel'])) {
-    // Execute your cancellation logic here
-    // For example, you might want to remove a record from the database
-
-    // Redirect to another page
     header('Location: index.php');
     exit();
-    
 }
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
+if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['cancel'])) {
     if (empty(trim($_POST["username"]))) {
         $username_err = "Please enter your username.";
     } else {
@@ -42,7 +37,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     mysqli_stmt_bind_result($stmt, $id, $full_name, $img, $email, $number, $roleid, $username, $hashed_password, $branchcode, $status, $upd_by, $upd_dt);
                     if (mysqli_stmt_fetch($stmt)) {
                         if (password_verify($password, $hashed_password)) {
-                            // Set session variables
                             $_SESSION["loggedin"] = true;
                             $_SESSION["id"] = $id;
                             $_SESSION["full_name"] = $full_name;
@@ -55,9 +49,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             $_SESSION["status"] = $status;
                             $_SESSION["upd_by"] = $upd_by;
                             $_SESSION["upd_dt"] = $upd_dt;
-
-                            // Set last activity time
-                            $_SESSION['last_activity'] = time(); 
+                            $_SESSION['last_activity'] = time();
 
                             if ($roleid == 1) {
                                 header("location: admin.php");
@@ -66,9 +58,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 header("location: employee.php");
                                 exit();
                             } else {
-                                header("location: login.php");
                                 $login_err = "Error has occurred, please try again.";
-                                
                             }
                         } else {
                             $login_err = "The password you entered was not valid.";
@@ -88,71 +78,180 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <meta charset="UTF-8">
+    <title>Login | Santos Optical</title>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+    :root {
+        --primary-color: #43a047; /* green for sign in */
+        --cancel-color: #c62828; /* red for cancel */
+        --bg-color: #fff176; /* yellow background */
+        --input-border: #ccc;
+        --input-bg: #fff;
+        --form-bg: #ffffff;
+        --shadow: 0px 10px 25px rgba(0, 0, 0, 0.1);
+        --font: 'Inter', sans-serif;
+    }
 
-    <title>Login</title>
-</head>
+    * {
+        box-sizing: border-box;
+    }
 
-<style>
     body {
-        margin: 0;
-        padding: 0;
-        height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+    margin: 0;
+    padding: 0;
+    font-family: var(--font);
+    height: 100vh;
+    background-color: white;
+    background-size: cover; /* para fit sa bg */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+    .wrapper {
+        background: var(--form-bg);
+        padding: 3rem;
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        max-width: 400px;
+        width: 100%;
+        text-align: center;
+        border: 2px solid var(--cancel-color); /* keep the nice outline */
     }
 
-    h1 {
-        margin-bottom: 2.5rem;
-    }
-
-    .container {
-        padding: 10rem;
-    }
-
-    .form-group {
+    .logo {
+        width: 70px; /*Dito mag aadjust for size pic*/
         margin-bottom: 1rem;
     }
 
-    .buttons {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-top: 2.5rem;
+    .titles {
+        margin-bottom: 2rem;
+    }
+
+    .title-login {
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--cancel-color); /* title stays red */
+    }
+
+    .login-form {
+        width: 100%;
+    }
+
+    .input-box {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+
+    .input-field {
+        width: 100%;
+        padding: 15px 20px 15px 45px;
+        font-size: 16px;
+        background: var(--input-bg);
+        border: 1px solid var(--input-border);
+        border-radius: 8px;
+        outline: none;
+        transition: 0.3s ease;
+    }
+
+    .input-field:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(67, 160, 71, 0.2); /* green glow on focus */
+    }
+
+    .icon {
+        position: absolute;
+        top: 50%;
+        left: 15px;
+        transform: translateY(-50%);
+        font-size: 18px;
+        color: #999;
+    }
+
+    .btn-submit {
+        width: 100%;
+        padding: 15px;
+        background-color: var(--primary-color);
+        color: white;
+        font-size: 16px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-submit:hover {
+        background-color: #388e3c; /* darker green on hover */
+    }
+
+    .cancel-button {
+        width: 100%;
+        margin-top: 10px;
+        padding: 12px;
+        background: var(--cancel-color);
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        color: white;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .cancel-button:hover {
+        background: #b71c1c; /* darker red on hover */
+    }
+
+    .alert-danger, .invalid-feedback {
+        color: red;
+        font-size: 14px;
+        margin-top: 0.25rem;
+        display: block;
     }
 </style>
 
+
+</head>
 <body>
-    <div class="container">
-        <h1>Login</h1>
-        <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
-            <div class="form-group">
-                <p class="fw-bold fs-5">Username</p>
-                <input type="text" name="username" class="form-control <?php echo (!empty($username_err)) ? 'is-invalid' : ''; ?>" value="<?php echo $username; ?>">
-                <span class="invalid-feedback"><?php echo $username_err; ?></span>
-            </div>
 
-            <div class="form-group"> 
-                <p class="fw-bold fs-5">Password</p>
-                <input type="password" name="password" id="password" class="form-control <?php echo (!empty($password_err)) ? 'is-invalid' : ''; ?>" value="<?php echo $password; ?>">
-                <span class="invalid-feedback"><?php echo $password_err; ?></span>
-            </div>
+<div class="wrapper">
+    <div class="titles">
+        <img src="Images/logo.png" alt="Logo" class="logo">
+        <h2 class="title-login">Greetings Santosers</h2>
+    </div>
 
-            <?php 
-            if (!empty($login_err)) {
-                echo '<div class="mt-4 alert alert-danger">' . $login_err . '</div>';
-            }        
-            ?>
+    <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post" class="login-form">
+        <div class="input-box">
+            <i class='bx bx-user icon'></i>
+            <input type="text" name="username" class="input-field <?php echo (!empty($username_err)) ? 'is-invalid' : ''; ?>" placeholder="Your username" value="<?php echo htmlspecialchars($username); ?>">
+            <span class="invalid-feedback"><?php echo $username_err; ?></span>
+        </div>
 
-            <div class="buttons">
-                <button type="submit" class="btn btn-success w-25" style="margin-right: 25px;">Login</button>                
-                <button type="cancel" name= "cancel" class="btn btn-danger w-25" style="margin-left: 25px;">Cancel</button>
-            </div>
-        </form>
-    </div> 
+        <div class="input-box">
+            <i class='bx bx-lock-alt icon'></i>
+            <input type="password" name="password" class="input-field <?php echo (!empty($password_err)) ? 'is-invalid' : ''; ?>" placeholder="Your password">
+            <span class="invalid-feedback"><?php echo $password_err; ?></span>
+        </div>
+
+        <?php 
+        if (!empty($login_err)) {
+            echo '<div class="alert-danger">' . $login_err . '</div>';
+        }        
+        ?>
+
+        <div class="input-box">
+            <button type="submit" class="btn-submit">Sign In</button>
+        </div>
+
+        <div class="input-box">
+            <button type="submit" name="cancel" class="cancel-button">Cancel</button>
+        </div>
+    </form>
+</div>
+
 </body>
 </html>
