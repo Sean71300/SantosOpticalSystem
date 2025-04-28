@@ -161,8 +161,13 @@ include 'loginChecker.php';
                 
                 <div class="col-md-4">
                     <div class="dashboard-card recent-activity">
-                        <h5><i class="fas fa-clock me-2"></i>Recent Activity</h5>
-                        <ul class="list-group list-group-flush mt-3">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Recent Activity</h5>
+                            <a href="logs.php" class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-list me-1"></i> Show All Logs
+                            </a>
+                        </div>
+                        <ul class="list-group list-group-flush">
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <div>
                                     <small>Today, 10:45 AM</small>

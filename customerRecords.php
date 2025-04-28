@@ -2,6 +2,10 @@
 include 'ActivityTracker.php';
 include_once 'customerFunctions.php'; 
 include 'loginChecker.php';
+
+// Get sort parameters from URL
+$sort = isset($_GET['sort']) ? $_GET['sort'] : 'CustomerID';
+$order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
 ?>
     
 <html>
@@ -17,38 +21,34 @@ include 'loginChecker.php';
                 display: flex;
             }
             .sidebar {
-                background-color: white;  /* Changed from #2c3e50 to white */
+                background-color: white;
                 height: 100vh;
                 padding: 20px 0;
-                color: #2c3e50;  /* Changed text color for better contrast */
+                color: #2c3e50;
                 position: fixed;
                 width: 250px;
-                box-shadow: 2px 0 5px rgba(0,0,0,0.1);  /* Added subtle shadow */
+                box-shadow: 2px 0 5px rgba(0,0,0,0.1);
             }
-
             .sidebar-header {
                 padding: 0 20px 20px;
-                border-bottom: 1px solid rgba(0,0,0,0.1);  /* Changed border color */
+                border-bottom: 1px solid rgba(0,0,0,0.1);
             }
-
             .sidebar-item {
                 padding: 12px 20px;
                 margin: 5px 0;
                 border-radius: 0;
                 display: flex;
                 align-items: center;
-                color: #2c3e50;  /* Changed text color */
+                color: #2c3e50;
                 transition: all 0.3s;
-                text-decoration: none;  /* Removed underline */
+                text-decoration: none;
             }
-
             .sidebar-item:hover {
-                background-color: #f8f9fa;  /* Lighter hover state */
+                background-color: #f8f9fa;
                 color: #2c3e50;
             }
-
             .sidebar-item.active {
-                background-color: #e9ecef;  /* Lighter active state */
+                background-color: #e9ecef;
                 color: #2c3e50;
                 font-weight: 500;
             }   
@@ -68,6 +68,25 @@ include 'loginChecker.php';
                 box-shadow: 0 4px 6px rgba(0,0,0,0.1);
                 padding: 20px;
             }
+            /* Sorting styles */
+            .sortable {
+                cursor: pointer;
+                position: relative;
+                padding-right: 25px;
+            }
+            .sortable:hover {
+                background-color: #f8f9fa;
+            }
+            .sort-icon {
+                position: absolute;
+                right: 8px;
+                top: 50%;
+                transform: translateY(-50%);
+                display: none;
+            }
+            .sortable.active .sort-icon {
+                display: inline-block;                
+            }
         </style>
     </head>
     <body>
@@ -83,22 +102,37 @@ include 'loginChecker.php';
                     </a>            
                 </div>
                 
-                <table class="table table-hover">
+                <table class="table table-hover text-center">
                     <thead class="table-light">
                         <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Address</th>
-                            <th>Contact Number</th>
+                            <th class="sortable <?php echo $sort == 'CustomerID' ? 'active' : ''; ?>" onclick="sortTable('CustomerID')">
+                                ID
+                                <span class="sort-icon">
+                                    <i class="fas fa-sort-<?php echo $sort == 'CustomerID' ? (strtolower($order)) == 'asc' ? 'up' : 'down' : 'up'; ?>"></i>
+                                </span>
+                            </th>
+                            <th class="sortable <?php echo $sort == 'CustomerName' ? 'active' : ''; ?>" onclick="sortTable('CustomerName')">
+                                Name
+                                <span class="sort-icon">
+                                    <i class="fas fa-sort-<?php echo $sort == 'CustomerName' ? (strtolower($order)) == 'asc' ? 'up' : 'down' : 'up'; ?>"></i>
+                                </span>
+                            </th>
+                            <th>
+                                Address                                
+                            </th>
+                            <th>
+                                Contact Number                                
+                            </th>
                             <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>                      
-                        <?php customerData(); ?>                      
+                        <?php customerData($sort, $order); ?>                      
                     </tbody>
                 </table>
             </div>
         </div>
+
         <!-- Orders Modal -->
         <div class="modal fade" id="ordersModal" tabindex="-1" aria-labelledby="ordersModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-lg">
@@ -130,13 +164,28 @@ include 'loginChecker.php';
         </div>
 
         <script>
+            // Sorting function
+            function sortTable(column) {
+                const urlParams = new URLSearchParams(window.location.search);
+                let currentSort = urlParams.get('sort') || 'CustomerID';
+                let currentOrder = urlParams.get('order') || 'ASC';
+                
+                let newOrder = 'ASC';
+                if (currentSort === column) {
+                    newOrder = currentOrder === 'ASC' ? 'DESC' : 'ASC';
+                }
+                
+                urlParams.set('sort', column);
+                urlParams.set('order', newOrder);
+                window.location.href = window.location.pathname + '?' + urlParams.toString();
+            }
+
+            // View orders functionality
             document.addEventListener('DOMContentLoaded', function() {
-                // Handle view orders button clicks
                 document.querySelectorAll('.view-orders').forEach(button => {
                     button.addEventListener('click', function() {
                         const customerID = this.getAttribute('data-customer-id');
                         
-                        // Fetch customer orders via AJAX - now pointing to current file
                         fetch('customerFunctions.php?action=getCustomerOrders&customerID=' + customerID)
                             .then(response => response.json())
                             .then(orders => {
@@ -158,7 +207,6 @@ include 'loginChecker.php';
                                     });
                                 }
                                 
-                                // Show the modal
                                 const modal = new bootstrap.Modal(document.getElementById('ordersModal'));
                                 modal.show();
                             })

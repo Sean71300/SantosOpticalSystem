@@ -2,8 +2,12 @@
 include 'ActivityTracker.php';
 include_once 'employeeFunctions.php';   
 include 'loginChecker.php';
+
+// Get sort parameters from URL
+$sort = isset($_GET['sort']) ? $_GET['sort'] : 'id';
+$order = isset($_GET['order']) ? $_GET['order'] : 'asc';
 ?>
-    
+
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -85,6 +89,25 @@ include 'loginChecker.php';
                 padding: 5px 10px;
                 margin: 0 3px;
             }
+            /* Sorting styles - updated to match customerRecords.php */
+            .sortable {
+                cursor: pointer;
+                position: relative;
+                padding-right: 25px;
+            }
+            .sortable:hover {
+                background-color: #f8f9fa;
+            }
+            .sort-icon {
+                position: absolute;
+                right: 8px;
+                top: 50%;
+                transform: translateY(-50%);
+                display: none;
+            }
+            .sortable.active .sort-icon {
+                display: inline-block;                
+            }
         </style>
     </head>
     <body>
@@ -101,22 +124,48 @@ include 'loginChecker.php';
                 </div>
                 
                 <div class="table-responsive">
-                    <table class="table table-hover">
+                    <table class="table table-hover text-center">
                         <thead class="table-light">
                             <tr>
-                                <th>ID</th>
-                                <th>Name</th>
-                                <th>Address</th>
-                                <th>Contact</th>
-                                <th>Role</th>
-                                <th>Image</th>
-                                <th>Status</th>
-                                <th>Branch</th>
+                            <th class="sortable <?php echo $sort == 'EmployeeID' ? 'active' : ''; ?>" onclick="sortTable('EmployeeID')">
+                                ID
+                                <span class="sort-icon">
+                                    <i class="fas fa-sort-<?php echo $sort == 'EmployeeID' ? (strtolower($order)) == 'asc' ? 'up' : 'down' : 'up'; ?>"></i>
+                                </span>
+                            </th>
+                            <th class="sortable <?php echo $sort == 'EmployeeName' ? 'active' : ''; ?>" onclick="sortTable('EmployeeName')">
+                                Name
+                                <span class="sort-icon">
+                                    <i class="fas fa-sort-<?php echo $sort == 'EmployeeName' ? (strtolower($order)) == 'asc' ? 'up' : 'down' : 'up'; ?>"></i>
+                                </span>
+                            </th>
+                            <th class="sortable <?php echo $sort == 'EmployeeEmail' ? 'active' : ''; ?>" onclick="sortTable('EmployeeEmail')">
+                                Email
+                                <span class="sort-icon">
+                                    <i class="fas fa-sort-<?php echo $sort == 'EmployeeEmail' ? (strtolower($order)) == 'asc' ? 'up' : 'down' : 'up'; ?>"></i>
+                                </span>
+                            </th>
+                            <th>
+                                Contact                               
+                            </th>
+                            <th class="sortable <?php echo $sort == 'RoleID' ? 'active' : ''; ?>" onclick="sortTable('RoleID')">
+                                Role
+                                <span class="sort-icon">
+                                    <i class="fas fa-sort-<?php echo $sort == 'RoleID' ? (strtolower($order)) == 'asc' ? 'up' : 'down' : 'up'; ?>"></i>
+                                </span>
+                            </th>
+                            <th>Image</th>                            
+                            <th class="sortable <?php echo $sort == 'BranchCode' ? 'active' : ''; ?>" onclick="sortTable('BranchCode')">
+                                Branch
+                                <span class="sort-icon">
+                                    <i class="fas fa-sort-<?php echo $sort == 'BranchCode' ? (strtolower($order)) == 'asc' ? 'up' : 'down' : 'up'; ?>"></i>
+                                </span>
+                            </th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>                      
-                            <?php employeeData(); ?>                      
+                            <?php employeeData($sort, $order); ?>                      
                         </tbody>
                     </table>
                 </div>
@@ -132,6 +181,25 @@ include 'loginChecker.php';
                     }
                 });
             });
+
+            // Function to handle table sorting
+            function sortTable(column) {
+                const urlParams = new URLSearchParams(window.location.search);
+                let currentSort = urlParams.get('sort') || 'id';
+                let currentOrder = urlParams.get('order') || 'asc';
+                
+                let newOrder = 'asc';
+                if (currentSort === column) {
+                    newOrder = currentOrder === 'asc' ? 'desc' : 'asc';
+                }
+                
+                // Update URL parameters
+                urlParams.set('sort', column);
+                urlParams.set('order', newOrder);
+                
+                // Reload the page with new parameters
+                window.location.href = window.location.pathname + '?' + urlParams.toString();
+            }
         </script>
     </body>
 </html>

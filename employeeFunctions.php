@@ -2,97 +2,117 @@
     include_once 'setup.php'; 
   
     //read all row from database table
-    function employeeData()
-        {            
-            $connection = connect();
-            $sql = "SELECT * FROM employee";
-            $result = $connection->query($sql);
-
-            if(!$result) {
-                die ("Invalid query: " . $connection->error);
-            }
-
-            // read data of each row
-            while ($row = $result->fetch_assoc()){
-                $role="";
-                $branch="";
-
-                $connection = connect();
-                $sql2 = "SELECT BranchName FROM branchmaster WHERE BRANCHCODE = $row[BranchCode]";
-                $result2 = $connection->query($sql2);
-                if ($result2->num_rows > 0) {
-                    // Fetch the result as an associative array
-                    $branchData = $result2->fetch_assoc();
-                    $Branch = $branchData['BranchName']; // Convert to string
-                } else {
-                    $Branch = ""; // Handle the case where no results are found
-                }
-
-                if ($row['RoleID'] == 1){
-                    $role = "Admin";
-                }
-                else {
-                    $role = "Staff";
-                }
-                echo
-                "<tr>
-                    <td class='align-middle'>$row[EmployeeID]</td>
-                    <td class='align-middle'>$row[EmployeeName]</td>
-                    <td class='align-middle'>$row[EmployeeEmail]</td>
-                    <td class='align-middle'>$row[EmployeeNumber]</td>
+    function employeeData($sort = 'EmployeeID', $order = 'ASC') 
+    {
+        $connection = connect();
+        
+        // Validate and normalize inputs
+        $validColumns = ['EmployeeID', 'EmployeeName', 'EmployeeEmail', 'EmployeeNumber', 'RoleID', 'Status', 'BranchCode'];
+        $sort = in_array($sort, $validColumns) ? $sort : 'EmployeeID';
+        $order = strtoupper($order) === 'DESC' ? 'DESC' : 'ASC';
+    
+        // Base query with all necessary joins
+        $sql = "SELECT e.*, b.BranchName, 
+                CASE 
+                    WHEN e.RoleID = 1 THEN 'Admin' 
+                    ELSE 'Staff' 
+                END AS RoleDisplay,
+                CASE 
+                    WHEN e.RoleID = 1 THEN 1 
+                    ELSE 2 
+                END AS RoleOrder
+                FROM employee e
+                LEFT JOIN branchmaster b ON e.BranchCode = b.BranchCode ";
+    
+        // Special sorting logic for each column
+        switch($sort) {
+            case 'EmployeeEmail': // Address column
+                $sql .= "ORDER BY e.EmployeeEmail $order";
+                break;
+                
+            case 'RoleID': // Role column
+                $sql .= "ORDER BY RoleOrder $order";
+                break;
+                
+            case 'BranchCode': // Branch column
+                $sql .= "ORDER BY b.BranchName $order";
+                break;
+                
+            default: // All other columns
+                $sql .= "ORDER BY e.$sort $order";
+        }
+    
+        $result = $connection->query($sql);
+    
+        if(!$result) {
+            die("Invalid query: " . $connection->error);
+        }
+    
+        // Rest of your display code remains the same...
+        while ($row = $result->fetch_assoc()) {
+            $role = ($row['RoleID'] == 1) ? "Admin" : "Staff";
+            $branch = $row['BranchName'] ?? '';
+    
+            echo "<tr>
+                    <td class='align-middle'>{$row['EmployeeID']}</td>
+                    <td class='align-middle'>{$row['EmployeeName']}</td>
+                    <td class='align-middle'>{$row['EmployeeEmail']}</td>
+                    <td class='align-middle'>{$row['EmployeeNumber']}</td>
                     <td class='align-middle'>$role</td>
-                    <td>";
-                    echo '<img src="' . $row['EmployeePicture'] . '" alt="Image" style="max-width: 200px; margin: 10px;">';
-                    echo "</td>
-                    <td class='align-middle'>$row[Status]</td>
-                    <td class='align-middle'>$Branch</td>
                     <td class='align-middle'>
-                        <a class='btn btn-primary btn-sm' href='employeeEdit.php?EmployeeID=$row[EmployeeID]' >Edit</a>
-                        <a class='btn btn-danger btn-sm' href='employeeDelete.php?EmployeeID=$row[EmployeeID]'>Delete</a>
+                        <img src='{$row['EmployeePicture']}' alt='Employee Image' style='max-width: 50px; border-radius: 50%;'>
+                    </td>                    
+                    <td class='align-middle'>$branch</td>
+                    <td class='align-middle'>
+                        <a class='btn btn-primary btn-sm' href='employeeEdit.php?EmployeeID={$row['EmployeeID']}'>Edit</a>
+                        <a class='btn btn-danger btn-sm' href='employeeDelete.php?EmployeeID={$row['EmployeeID']}'>Delete</a>
                     </td>
-                </tr>";
-            }            
+                  </tr>";
         }
-        function branchHandler($branch) {
-            $connection = connect();
-        
-            $sql = "SELECT * FROM branchmaster";
-            $result = $connection->query($sql);
-        
-            if (!$result) {
-                die("Invalid query: " . $connection->error);
-            }        
-        
-            // Read data of each row
-            while ($row = $result->fetch_assoc()) {
-                // Use double quotes for the option value and PHP echo
-                echo "
-                    <option value='{$row['BranchCode']}' " . (($branch == $row['BranchCode']) ? 'selected' : '') . ">
-                        {$row['BranchName']}
-                    </option>
-                ";
-            }            
-        }
-        function roleHandler($role) {
-            $connection = connect();
-        
-            $sql = "SELECT * FROM rolemaster";
-            $result = $connection->query($sql);
-        
-            if (!$result) {
-                die("Invalid query: " . $connection->error);
-            }        
-        
-            // Read data of each row
-            while ($row = $result->fetch_assoc()) {
-                // Use double quotes for the option value and PHP echo
-                echo "
-                    <option value='{$row['RoleID']}' " . (($role == $row['RoleID']) ? 'selected' : '') . ">
-                        {$row['Description']}
-                    </option>
-                ";
-            }            
-        }
+    }
+
+    // Rest of your functions remain the same...
+    function branchHandler($branch) {
+        $connection = connect();
+    
+        $sql = "SELECT * FROM branchmaster";
+        $result = $connection->query($sql);
+    
+        if (!$result) {
+            die("Invalid query: " . $connection->error);
+        }        
+    
+        // Read data of each row
+        while ($row = $result->fetch_assoc()) {
+            // Use double quotes for the option value and PHP echo
+            echo "
+                <option value='{$row['BranchCode']}' " . (($branch == $row['BranchCode']) ? 'selected' : '') . ">
+                    {$row['BranchName']}
+                </option>
+            ";
+        }            
+    }
+
+    function roleHandler($role) {
+        $connection = connect();
+    
+        $sql = "SELECT * FROM rolemaster";
+        $result = $connection->query($sql);
+    
+        if (!$result) {
+            die("Invalid query: " . $connection->error);
+        }        
+    
+        // Read data of each row
+        while ($row = $result->fetch_assoc()) {
+            // Use double quotes for the option value and PHP echo
+            echo "
+                <option value='{$row['RoleID']}' " . (($role == $row['RoleID']) ? 'selected' : '') . ">
+                    {$row['Description']}
+                </option>
+            ";
+        }            
+    }
 
     function handleEmployeeFormC() 
     {

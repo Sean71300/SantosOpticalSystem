@@ -22,7 +22,7 @@ function getBranches() { // For inventory show
     $link = connect();
     $sql = "SELECT BranchName from branchmaster";
     $result = mysqli_query($link, $sql);
-    echo "<option class='form-select-sm' value=''>View All Branches</option>";
+    echo "<option class='form-select-sm' value='' selected>View All Branches</option>";
     while($row = mysqli_fetch_array($result)) {
         echo "<option class='form-select-sm' value='".$row['BranchName']."'>".$row['BranchName']."</option>";
     }
