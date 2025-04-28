@@ -54,7 +54,6 @@
             }            
         }
         function branchHandler($branch) {
-            $customerData = "";
             $connection = connect();
         
             $sql = "SELECT * FROM branchmaster";
@@ -75,7 +74,6 @@
             }            
         }
         function roleHandler($role) {
-            $customerData = "";
             $connection = connect();
         
             $sql = "SELECT * FROM rolemaster";
@@ -164,15 +162,8 @@
     function insertData($name, $username, $password, $email, $phone, $role, $branch, $imagePath)
         {
             $conn = connect();
-            $hashed_pw = password_hash($password, PASSWORD_DEFAULT);
-
+            $hashed_pw = password_hash($password, PASSWORD_DEFAULT);            
             
-            if ($role == "Admin"){
-                $roleID = 1;
-            }
-            else if ($role == "Employee" ){
-                $roleID = 2;
-            }
             
             $conn = connect(); 
             $id = generate_EmployeeID();  
@@ -183,7 +174,7 @@
                     Status,Upd_by) 
                     VALUES
                     ('$id','$name','$imagePath','$email','$phone',
-                    '$roleID','$username','$hashed_pw','2025160000','Active','$upd_by')";
+                    '$role','$username','$hashed_pw','2025160000','Active','$upd_by')";
             
             mysqli_query($conn, $sql);
         }

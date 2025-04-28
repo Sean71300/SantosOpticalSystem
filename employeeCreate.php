@@ -81,16 +81,15 @@
                 <label class="col-sm-3 col-form-label">Branch</label>
                 <div class="col-sm-6">
                     <select class="form-control" name="branch" required>                        
-                        <?php branchHandler();?>
+                        <?php branchHandler($branch);?>
                     </select>
                 </div>
             </div>      
             <div class="row mb-3">
                 <label class="col-sm-3 col-form-label">Role</label>
                 <div class="col-sm-6">
-                    <select class="form-control" name="role" required>                        
-                        <option value="Employee" <?php echo ($role == 'Employee') ? 'selected' : ''; ?>>Employee</option>
-                        <option value="Admin" <?php echo ($role == 'Admin') ? 'selected' : ''; ?>>Admin</option>
+                    <select class="form-control" name="role" required>                                                
+                        <?php roleHandler($role);?>
                     </select>
                 </div>
             </div>

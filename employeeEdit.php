@@ -69,7 +69,7 @@
             $sql = "UPDATE employee 
                     SET EmployeeName = '$name', EmployeePicture = '$imagePath', 
                     EmployeeEmail = '$email', EmployeeNumber = '$phone',
-                    RoleID = '$roleID', LoginName = '$username', Upd_by = '$upd_by', BranchCode = '$branch' 
+                    RoleID = '$role', LoginName = '$username', Upd_by = '$upd_by', BranchCode = '$branch' 
                     WHERE EmployeeID = {$id}";
     
             $conn = connect();
@@ -101,88 +101,88 @@
     <body class="bg-body-tertiary">
         <?php include "Navigation.php"?> 
         <div class="container category-container">
-        <h1>New Employee</h1>
+            <h1>New Employee</h1>
 
-        <?php
-         if (!empty($errorMessage)) {
-            echo "
-            <div class='alert alert-warning alert-dismissible fade show' role='alert'>
-                <strong>$errorMessage</strong>
-                <button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>
-            </div>
-            ";
-        }
-        ?>
-        
-        <form id="employeeCreate" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" method="post" enctype="multipart/form-data">
-            <input type="hidden" name="id" value ="<?php echo $id;?>">
-            <div class="row mb-3">
-                <label class="col-sm-3 col-form-label">Name</label>
-                <div class="col-sm-6">
-                    <input type="text" class="form-control" name="name" value="<?php echo $name;?>" >
-                </div>
-            </div>
-            <div class="row mb-3">
-                <label class="col-sm-3 col-form-label">Username</label>
-                <div class="col-sm-6">
-                    <input type="text" class="form-control" name="username" value="<?php echo $username;?>" >
-                </div>
-            </div>            
-            <div class="row mb-3">
-                <label class="col-sm-3 col-form-label">Email</label>
-                <div class="col-sm-6">
-                    <input type="text" class="form-control" name="email" value="<?php echo $email;?>" >
-                </div>
-            </div>
-            <div class="row mb-3">
-                <label class="col-sm-3 col-form-label">Contact Number</label>
-                <div class="col-sm-6">
-                    <input type="text" class="form-control" name="phone" value="<?php echo $phone;?>" >
-                </div>
-            </div>                      
-            <div class="row mb-3">
-                <label class="col-sm-3 col-form-label">Branch</label>
-                <div class="col-sm-6">
-                    <select class="form-control" name="branch" required>                        
-                        <?php branchHandler($branch);?>
-                    </select>
-                </div>
-            </div>
-            <div class="row mb-3">
-                <label class="col-sm-3 col-form-label">Role</label>
-                <div class="col-sm-6">
-                    <select class="form-control" name="role" required>                                                
-                        <?php roleHandler($role);?>
-                    </select>
-                </div>
-            </div>
-            <div class="row mb-3">
-                <img src="<?php echo $imagePath?>" alt="Image" style="max-width: 200px; margin: 10px;" alt="picture" id="picture" class="picture">
-                <label for="IMAGE" class="btn btn-success add-picture-button mt-3">
-                    <input class='form-control' type="file" name="IMAGE" id="IMAGE" accept=".jpg, .png, .jpeg" onchange="profilePicture(this)" style="display:none;" value="<?php echo htmlspecialchars($imagePath); ?>">Add Picture
-                </label>    
-            </div>
             <?php
-            if (!empty($successMessage)) {
+            if (!empty($errorMessage)) {
                 echo "
-                <div class='alert alert-success alert-dismissible fade show' role='alert'>
-                    <strong>$successMessage</strong>
+                <div class='alert alert-warning alert-dismissible fade show' role='alert'>
+                    <strong>$errorMessage</strong>
                     <button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>
                 </div>
                 ";
             }
             ?>
-            <div class="row mb-3">
-                <div class="offset-mb-3 col-sm-3 d-grid">
-                    <button type="submit" class="btn btn-primary" name="submit">Submit</button>
+            
+            <form id="employeeCreate" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" method="post" enctype="multipart/form-data">
+                <input type="hidden" name="id" value ="<?php echo $id;?>">
+                <div class="row mb-3">
+                    <label class="col-sm-3 col-form-label">Name</label>
+                    <div class="col-sm-6">
+                        <input type="text" class="form-control" name="name" value="<?php echo $name;?>" >
+                    </div>
                 </div>
-                <div class="col-sm-3 d-grid">
-                    <!-- Button to trigger modal -->
-                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#cancelModal">Return</button>                    
+                <div class="row mb-3">
+                    <label class="col-sm-3 col-form-label">Username</label>
+                    <div class="col-sm-6">
+                        <input type="text" class="form-control" name="username" value="<?php echo $username;?>" >
+                    </div>
+                </div>            
+                <div class="row mb-3">
+                    <label class="col-sm-3 col-form-label">Email</label>
+                    <div class="col-sm-6">
+                        <input type="text" class="form-control" name="email" value="<?php echo $email;?>" >
+                    </div>
                 </div>
-            </div>
-        </form>
-    </div>
+                <div class="row mb-3">
+                    <label class="col-sm-3 col-form-label">Contact Number</label>
+                    <div class="col-sm-6">
+                        <input type="text" class="form-control" name="phone" value="<?php echo $phone;?>" >
+                    </div>
+                </div>                      
+                <div class="row mb-3">
+                    <label class="col-sm-3 col-form-label">Branch</label>
+                    <div class="col-sm-6">
+                        <select class="form-control" name="branch" required>                        
+                            <?php branchHandler($branch);?>
+                        </select>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label class="col-sm-3 col-form-label">Role</label>
+                    <div class="col-sm-6">
+                        <select class="form-control" name="role" required>                                                
+                            <?php roleHandler($role);?>
+                        </select>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <img src="<?php echo $imagePath?>" alt="Image" style="max-width: 200px; margin: 10px;" alt="picture" id="picture" class="picture">
+                    <label for="IMAGE" class="btn btn-success add-picture-button mt-3">
+                        <input class='form-control' type="file" name="IMAGE" id="IMAGE" accept=".jpg, .png, .jpeg" onchange="profilePicture(this)" style="display:none;" value="<?php echo htmlspecialchars($imagePath); ?>">Add Picture
+                    </label>    
+                </div>
+                <?php
+                if (!empty($successMessage)) {
+                    echo "
+                    <div class='alert alert-success alert-dismissible fade show' role='alert'>
+                        <strong>$successMessage</strong>
+                        <button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>
+                    </div>
+                    ";
+                }
+                ?>
+                <div class="row mb-3">
+                    <div class="offset-mb-3 col-sm-3 d-grid">
+                        <button type="submit" class="btn btn-primary" name="submit">Submit</button>
+                    </div>
+                    <div class="col-sm-3 d-grid">
+                        <!-- Button to trigger modal -->
+                        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#cancelModal">Return</button>                    
+                    </div>
+                </div>
+            </form>
+        </div>
 
         <!-- Modal -->
     <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">

@@ -62,10 +62,15 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-        <link rel="shortcut icon" type="image/x-icon" href="images/logo.png"/>
+    <title>About Us</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+        <link rel="stylesheet" href="customCodes/s1.css">
         <link rel="stylesheet" href="customCodes/custom.css">
-        <title>Gallery</title>
+        <link rel="shortcut icon" type="image/x-icon" href="images/logo.png"/>
+        <link rel="stylesheet" href="customCodes/s2.css">
     </head>
 
     <header>
