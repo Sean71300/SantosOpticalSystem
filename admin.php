@@ -125,7 +125,7 @@ $recentActivities = getRecentActivities();
                         </div>
                         <h5>Employees</h5>
                         <div class="stat-number"><?php echo number_format($employeeCount); ?></div>
-                        <a href="EmployeeRecords.php" class="btn btn-sm btn-outline-success mt-2">View All</a>
+                        <a href="employeeRecords.php" class="btn btn-sm btn-outline-success mt-2">View All</a>
                     </div>
                 </div>
                 

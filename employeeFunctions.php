@@ -96,7 +96,7 @@
     function roleHandler($role) {
         $connection = connect();
     
-        $sql = "SELECT * FROM rolemaster";
+        $sql = "SELECT * FROM roleMaster";
         $result = $connection->query($sql);
     
         if (!$result) {
@@ -158,26 +158,41 @@
             }                         
     }       
 
-    function handleImage ($id){
-        $errorMessage = "";        
-        $conn = connect();
-        $sql = "SELECT EmployeePicture FROM employee where EmployeeID=$id";
-        $result = $conn->query($sql);
-        $row = $result->fetch_assoc();
-        $imagePath =  $row["EmployeePicture"]; 
-        
-        if ($_FILES["IMAGE"]["size"] < 100000000) {                    
+    function handleImage($id) 
+        {
+            $errorMessage = "";        
+            $conn = connect();
+            $sql = "SELECT EmployeePicture FROM employee where EmployeeID=$id";
+            $result = $conn->query($sql);
+            $row = $result->fetch_assoc();
+            $imagePath = $row["EmployeePicture"]; 
             
-            if (($_FILES["IMAGE"]["name"]) != null)
-            {
-                $imagePath = 'uploads/' . basename($_FILES['IMAGE']['name']);
-                move_uploaded_file($_FILES['IMAGE']['tmp_name'], $imagePath);
-            }   
-        } else {
-            $errorMessage = $errorMessage .'Image File size is too big. <br>';   
+            if ($_FILES["IMAGE"]["size"] < 100000000 && $_FILES["IMAGE"]["error"] == UPLOAD_ERR_OK) {                    
+                if (!empty($_FILES["IMAGE"]["name"])) {
+                    // Create uploads directory if it doesn't exist
+                    $uploadDir = 'uploads/';
+                    if (!file_exists($uploadDir)) {
+                        mkdir($uploadDir, 0755, true);
+                    }
+                    
+                    // Generate unique filename to prevent conflicts
+                    $fileExtension = pathinfo($_FILES['IMAGE']['name'], PATHINFO_EXTENSION);
+                    $newFilename = uniqid() . '.' . $fileExtension;
+                    $imagePath = $uploadDir . $newFilename;
+                    
+                    if (!move_uploaded_file($_FILES['IMAGE']['tmp_name'], $imagePath)) {
+                        $errorMessage = "Failed to upload image. Please check directory permissions.";
+                        // Fall back to default image if upload fails
+                        $imagePath = "Images/default.jpg";
+                    }
+                }   
+            } else {
+                if ($_FILES["IMAGE"]["error"] != UPLOAD_ERR_NO_FILE) {
+                    $errorMessage = 'Image file size is too big or upload error occurred.';
+                }
+            }
+            return [$errorMessage, $imagePath];
         }
-        return [$errorMessage, $imagePath];
-    }
 
     function insertData($name, $username, $password, $email, $phone, $role, $branch, $imagePath)
         {
