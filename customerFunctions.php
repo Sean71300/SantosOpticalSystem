@@ -93,7 +93,21 @@
             } else {
                 // Call the function to insert data
                 insertData($name, $address, $phone, $info, $notes);
-                $successMessage = "Customer added successfully"; 
+                $successMessage = "Customer added successfully";
+
+                include_once 'admin-inventory-funcs.php';
+                $conn = connect();
+                $logsID = generate_LogsID();
+                $logActivityCode = "2";
+                $logEmployeeID = getEmployeeID();
+                $logQty = "1";
+                $logUpdDT = date('Y-m-d H:i:s');
+                $sql = "INSERT INTO logs
+                        (LogID, LogType, LogDescription, Created_dt, Upd_by) 
+                        VALUES
+                        ('$logsID', '$logActivityCode', 'Customer Created', '$logUpdDT', '$logEmployeeID')";
+                mysqli_query($conn, $sql);
+                mysqli_close($conn);
     
                 // Clear the form fields after submission
                 $name = "";
