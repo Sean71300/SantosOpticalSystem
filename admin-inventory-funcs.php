@@ -79,105 +79,58 @@ function getEmployeeName()
         mysqli_stmt_close($stmt);
     }
 
-function getInventory($sort = 'ProductID', $order = 'ASC') 
-    {
-        $link = connect();      
-        $branchName = $_SESSION['current_branch'] ?? '';
-        
-        // Validate sort column and order
-        $validSortColumns = ['ProductID', 'CategoryType', 'ShapeDescription', 'BrandName', 'Model', 'TotalCount', 'LastUpdated', 'Count', 'Upd_dt'];
-        $sort = in_array($sort, $validSortColumns) ? $sort : 'ProductID';
-        $order = strtoupper($order) === 'DESC' ? 'DESC' : 'ASC';
-        
-        // If no branch selected, show all products with branch distribution
-        if (empty($branchName)) {
-            $sql = "SELECT 
-                        pm.ProductID, 
-                        pm.CategoryType, 
-                        sm.Description AS ShapeDescription,
-                        bm.BrandName,
-                        pm.Model, 
-                        pm.Remarks, 
-                        pm.ProductImage,
-                        GROUP_CONCAT(CONCAT(b.BranchName, ': ', pbm.Count) SEPARATOR '<br>') AS BranchDistribution,
-                        SUM(pbm.Count) AS TotalCount,
-                        pm.Upd_by,
-                        MAX(pbm.Upd_dt) AS LastUpdated
-                    FROM productmstr pm
-                    JOIN shapemaster sm ON pm.ShapeID = sm.ShapeID
-                    JOIN brandmaster bm ON pm.BrandID = bm.BrandID
-                    JOIN productbranchmaster pbm ON pm.ProductID = pbm.ProductID
-                    JOIN branchmaster b ON pbm.BranchCode = b.BranchCode
-                    GROUP BY pm.ProductID, pm.CategoryType, sm.Description, bm.BrandName, 
-                                pm.Model, pm.Remarks, pm.ProductImage, pm.Upd_by";
-            
-            // Add proper table prefixes for sorting
-            switch($sort) {
-                case 'ProductID': $sql .= " ORDER BY pm.ProductID"; break;
-                case 'CategoryType': $sql .= " ORDER BY pm.CategoryType"; break;
-                case 'ShapeDescription': $sql .= " ORDER BY sm.Description"; break;
-                case 'BrandName': $sql .= " ORDER BY bm.BrandName"; break;
-                case 'Model': $sql .= " ORDER BY pm.Model"; break;
-                case 'TotalCount': $sql .= " ORDER BY TotalCount"; break;
-                case 'LastUpdated': $sql .= " ORDER BY LastUpdated"; break;
-                case 'Upd_dt': $sql .= " ORDER BY pbm.Upd_dt"; break;
-                default: $sql .= " ORDER BY pm.ProductID";
-            }
-            
-            $sql .= " $order";
-            
-            $result = mysqli_query($link, $sql);
-            
-            if (!$result) {
-                die("Query failed: " . mysqli_error($link));
-            }
-            
-            while ($row = mysqli_fetch_assoc($result)) {
-                echo "<tr>
-                        <td>".htmlspecialchars($row['ProductID'])."</td>
-                        <td>".htmlspecialchars($row['CategoryType'])."</td>
-                        <td>".htmlspecialchars($row['ShapeDescription'])."</td>
-                        <td>".htmlspecialchars($row['BrandName'])."</td>
-                        <td>".htmlspecialchars($row['Model'])."</td>
-                        <td>".htmlspecialchars($row['Remarks'])."</td>
-                        <td><img src='".htmlspecialchars($row['ProductImage'])."' class='product-img'></td>
-                        <td>".htmlspecialchars($row['TotalCount'])."</td>                        
-                    </tr>";
-            }
+function getInventory($sort = 'ProductID', $order = 'ASC') {
+    $link = connect();      
+    $branchName = $_SESSION['current_branch'] ?? '';
     
-            mysqli_free_result($result);
-            mysqli_close($link);
-            return;
-        }
+    // Validate sort column and order
+    $validSortColumns = ['ProductID', 'CategoryType', 'ShapeDescription', 'BrandName', 'Model', 'TotalCount', 'LastUpdated', 'Count', 'Upd_dt'];
+    $sort = in_array($sort, $validSortColumns) ? $sort : 'ProductID';
+    $order = strtoupper($order) === 'DESC' ? 'DESC' : 'ASC';
     
-        // Branch-specific display
-        $sql = "SELECT bm.BranchCode, pbm.*, pm.*, sm.Description AS ShapeDescription, b.BrandName
-                FROM branchmaster bm
-                JOIN productbranchmaster pbm ON bm.BranchCode = pbm.BranchCode
-                JOIN productmstr pm ON pbm.productID = pm.productID
+    // If no branch selected, show all products with branch distribution
+    if (empty($branchName)) {
+        $sql = "SELECT 
+                    pm.ProductID, 
+                    pm.CategoryType, 
+                    sm.Description AS ShapeDescription,
+                    bm.BrandName,
+                    pm.Model, 
+                    pm.Remarks, 
+                    pm.ProductImage,
+                    GROUP_CONCAT(CONCAT(b.BranchName, ': ', pbm.Count) SEPARATOR '<br>') AS BranchDistribution,
+                    SUM(pbm.Count) AS TotalCount,
+                    pm.Upd_by,
+                    MAX(pbm.Upd_dt) AS LastUpdated
+                FROM productmstr pm
                 JOIN shapemaster sm ON pm.ShapeID = sm.ShapeID
-                JOIN brandmaster b ON pm.BrandID = b.BrandID
-                WHERE bm.BranchName = ?";
+                JOIN brandmaster bm ON pm.BrandID = bm.BrandID
+                JOIN productbranchmaster pbm ON pm.ProductID = pbm.ProductID
+                JOIN branchmaster b ON pbm.BranchCode = b.BranchCode
+                GROUP BY pm.ProductID, pm.CategoryType, sm.Description, bm.BrandName, 
+                            pm.Model, pm.Remarks, pm.ProductImage, pm.Upd_by";
         
-        // Add sorting
+        // Add proper table prefixes for sorting
         switch($sort) {
             case 'ProductID': $sql .= " ORDER BY pm.ProductID"; break;
             case 'CategoryType': $sql .= " ORDER BY pm.CategoryType"; break;
             case 'ShapeDescription': $sql .= " ORDER BY sm.Description"; break;
-            case 'BrandName': $sql .= " ORDER BY b.BrandName"; break;
+            case 'BrandName': $sql .= " ORDER BY bm.BrandName"; break;
             case 'Model': $sql .= " ORDER BY pm.Model"; break;
-            case 'Count': $sql .= " ORDER BY pbm.Count"; break;
+            case 'TotalCount': $sql .= " ORDER BY TotalCount"; break;
+            case 'LastUpdated': $sql .= " ORDER BY LastUpdated"; break;
             case 'Upd_dt': $sql .= " ORDER BY pbm.Upd_dt"; break;
             default: $sql .= " ORDER BY pm.ProductID";
         }
         
         $sql .= " $order";
         
-        $stmt = mysqli_prepare($link, $sql);
-        mysqli_stmt_bind_param($stmt, "s", $branchName);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-    
+        $result = mysqli_query($link, $sql);
+        
+        if (!$result) {
+            die("Query failed: " . mysqli_error($link));
+        }
+        
         while ($row = mysqli_fetch_assoc($result)) {
             echo "<tr>
                     <td>".htmlspecialchars($row['ProductID'])."</td>
@@ -187,39 +140,84 @@ function getInventory($sort = 'ProductID', $order = 'ASC')
                     <td>".htmlspecialchars($row['Model'])."</td>
                     <td>".htmlspecialchars($row['Remarks'])."</td>
                     <td><img src='".htmlspecialchars($row['ProductImage'])."' class='product-img'></td>
-                    <td>".htmlspecialchars($row['Count'])."</td>
-
-                    <td>
-                        <form method='post'>
-                            <input type='hidden' name='chooseBranch' value='" . htmlspecialchars($branchName) . "' />
-                            <input type='hidden' name='productBranchID' value='" . htmlspecialchars($row['ProductBranchID']) . "' />
-                            <input type='hidden' name='productID' value='" . htmlspecialchars($row['ProductID']) . "' />
-                            <input type='hidden' name='categoryType' value='" . htmlspecialchars($row['CategoryType']) . "' />
-                            <input type='hidden' name='shape' value='" . htmlspecialchars($row['ShapeDescription']) . "' />
-                            <input type='hidden' name='brandID' value='" . htmlspecialchars($row['BrandID']) . "' />
-                            <input type='hidden' name='model' value='" . htmlspecialchars($row['Model']) . "' />
-                            <input type='hidden' name='remarks' value='" . htmlspecialchars($row['Remarks']) . "' />
-                            <input type='hidden' name='count' value='" . htmlspecialchars($row['Count']) . "' />
-                            <input type='hidden' name='productImg' value='" . htmlspecialchars($row['ProductImage']) . "' />
-                            <button type='submit' class='btn btn-success' name='editProductBtn' value='editProductBtn' style='font-size:12px'><i class='fa-solid fa-pen'></i></button>
-                            </button>
-                        </form>
-                    </td>
-                    <td>
-                        <form method='post'>
-                            <input type='hidden' name='chooseBranch' value='" . htmlspecialchars($branchName) . "' />
-                            <input type='hidden' name='productBranchID' value='" . htmlspecialchars($row['ProductBranchID']) . "' />
-                            <input type='hidden' name='productID' value='" . htmlspecialchars($row['ProductID']) . "' />
-                            <button type='submit' class='btn btn-danger' name='deleteProductBtn' value='deleteProductBtn' style='font-size:12px'><i class='fa-solid fa-trash'></i></button>
-                            </button>
-                        </form>
-                    </td>
+                    <td>".htmlspecialchars($row['TotalCount'])."</td>                        
                 </tr>";
         }
-    
-        mysqli_stmt_close($stmt);
+
+        mysqli_free_result($result);
         mysqli_close($link);
+        return;
     }
+
+    // Branch-specific display
+    $sql = "SELECT bm.BranchCode, pbm.*, pm.*, sm.Description AS ShapeDescription, b.BrandName
+            FROM branchmaster bm
+            JOIN productbranchmaster pbm ON bm.BranchCode = pbm.BranchCode
+            JOIN productmstr pm ON pbm.productID = pm.productID
+            JOIN shapemaster sm ON pm.ShapeID = sm.ShapeID
+            JOIN brandmaster b ON pm.BrandID = b.BrandID
+            WHERE bm.BranchName = ?";
+    
+    // Add sorting
+    switch($sort) {
+        case 'ProductID': $sql .= " ORDER BY pm.ProductID"; break;
+        case 'CategoryType': $sql .= " ORDER BY pm.CategoryType"; break;
+        case 'ShapeDescription': $sql .= " ORDER BY sm.Description"; break;
+        case 'BrandName': $sql .= " ORDER BY b.BrandName"; break;
+        case 'Model': $sql .= " ORDER BY pm.Model"; break;
+        case 'Count': $sql .= " ORDER BY pbm.Count"; break;
+        case 'Upd_dt': $sql .= " ORDER BY pbm.Upd_dt"; break;
+        default: $sql .= " ORDER BY pm.ProductID";
+    }
+    
+    $sql .= " $order";
+    
+    $stmt = mysqli_prepare($link, $sql);
+    mysqli_stmt_bind_param($stmt, "s", $branchName);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+
+    while ($row = mysqli_fetch_assoc($result)) {
+        echo "<tr>
+                <td>".htmlspecialchars($row['ProductID'])."</td>
+                <td>".htmlspecialchars($row['CategoryType'])."</td>
+                <td>".htmlspecialchars($row['ShapeDescription'])."</td>
+                <td>".htmlspecialchars($row['BrandName'])."</td>
+                <td>".htmlspecialchars($row['Model'])."</td>
+                <td>".htmlspecialchars($row['Remarks'])."</td>
+                <td><img src='".htmlspecialchars($row['ProductImage'])."' class='product-img'></td>
+                <td>".htmlspecialchars($row['Count'])."</td>
+
+                <td>
+                    <form method='post'>
+                        <input type='hidden' name='chooseBranch' value='" . htmlspecialchars($branchName) . "' />
+                        <input type='hidden' name='productBranchID' value='" . htmlspecialchars($row['ProductBranchID']) . "' />
+                        <input type='hidden' name='productID' value='" . htmlspecialchars($row['ProductID']) . "' />
+                        <input type='hidden' name='categoryType' value='" . htmlspecialchars($row['CategoryType']) . "' />
+                        <input type='hidden' name='shape' value='" . htmlspecialchars($row['ShapeDescription']) . "' />
+                        <input type='hidden' name='brandID' value='" . htmlspecialchars($row['BrandID']) . "' />
+                        <input type='hidden' name='model' value='" . htmlspecialchars($row['Model']) . "' />
+                        <input type='hidden' name='remarks' value='" . htmlspecialchars($row['Remarks']) . "' />
+                        <input type='hidden' name='count' value='" . htmlspecialchars($row['Count']) . "' />
+                        <input type='hidden' name='productImg' value='" . htmlspecialchars($row['ProductImage']) . "' />
+                        <button type='submit' class='btn btn-success' name='editProductBtn' value='editProductBtn' style='font-size:12px'><i class='fa-solid fa-pen'></i></button>
+                        </button>
+                    </form>
+                </td>
+                <td>
+                    <form method='post'>
+                        <input type='hidden' name='chooseBranch' value='" . htmlspecialchars($branchName) . "' />
+                        <input type='hidden' name='productBranchID' value='" . htmlspecialchars($row['ProductBranchID']) . "' />
+                        <input type='hidden' name='productID' value='" . htmlspecialchars($row['ProductID']) . "' />
+                        <button type='submit' class='btn btn-danger' name='deleteProductBtn' value='deleteProductBtn' style='font-size:12px'><i class='fa-solid fa-trash'></i></button>
+                        </button>
+                    </form>
+                </td>
+            </tr>";
+    }
+    mysqli_stmt_close($stmt);
+    mysqli_close($link);
+}
 
 function addProduct(){ //Add function to add a new product to the database
     $link = connect();
