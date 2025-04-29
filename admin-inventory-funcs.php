@@ -391,30 +391,29 @@ function addProduct(){ //Add function to add a new product to the database
 
 function editShape($currentShapeDescription = '') { // Function to edit shape
     $link = connect();
-    $sql = "SELECT * FROM shapemaster WHERE Description = ?";
-    $stmt = mysqli_prepare($link, $sql);
-    mysqli_stmt_bind_param($stmt, "s", $currentShapeDescription);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt); 
+    $sql = "SELECT * FROM shapemaster";
+    $result = mysqli_query($link, $sql);
+
     while ($row = mysqli_fetch_array($result)) {
-        $selected = ($row['ShapeID'] === $currentShapeDescription) ? 'selected' : '';
-        echo "<option class='form-select-sm' value='" . htmlspecialchars($row['ShapeID']) . "' $selected>" . htmlspecialchars($row['Description']) . "</option>";
+        $selected = ($row['Description'] === $currentShapeDescription) ? 'selected' : '';
+        echo "<option class='form-select-sm' value='" . htmlspecialchars($row['Description']) . "' $selected>" . 
+             htmlspecialchars($row['Description']) . "</option>";
     }
+
     mysqli_close($link);
 }
 
 function editBrand($currentBrand = '') {
     $link = connect();
-    $sql = "SELECT * FROM brandmaster WHERE BrandID = ?";
-    $stmt = mysqli_prepare($link, $sql);
-    mysqli_stmt_bind_param($stmt, "s", $currentBrand);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-    while ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
+    $sql = "SELECT * FROM brandmaster";
+    $result = mysqli_query($link, $sql);
+
+    while ($row = mysqli_fetch_array($result)) {
         $selected = ($row['BrandID'] === $currentBrand) ? 'selected' : '';
-        echo "<option class='form-select-sm' value='" . htmlspecialchars($row['BrandID']) . "' $selected>" . htmlspecialchars($row['BrandName']) . "</option>";
+        echo "<option class='form-select-sm' value='" . htmlspecialchars($row['BrandID']) . "' $selected>" . 
+             htmlspecialchars($row['BrandName']) . "</option>";
     }
-    mysqli_stmt_close($stmt);
+
     mysqli_close($link);
 }
 
