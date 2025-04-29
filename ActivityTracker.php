@@ -5,13 +5,13 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 
-// Set session timeout duration (e.g., 5 minutes)
-$timeout_duration = 300; // 5 minutes
+// Set session timeout duration (e.g., 15 minutes)
+$timeout_duration = 900; // 15 minutes
 
 // Check if the session is set and if the timeout has expired
 if (isset($_SESSION['LAST_ACTIVITY'])) {
     if (time() - $_SESSION['LAST_ACTIVITY'] > $timeout_duration) {
-        // Last request was more than 5 minutes ago
+        // Last request was more than 15 minutes ago
         session_unset();     // Unset session variables
         session_destroy();   // Destroy session
         header("Location: login.php"); // Redirect to login page

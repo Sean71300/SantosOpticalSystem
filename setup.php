@@ -1,5 +1,6 @@
 <?php
-
+    error_reporting(E_ALL);
+    ini_set('display_errors', 1);
     // Connection
 
     function connect() 
@@ -7,7 +8,7 @@
         $db_host = 'localhost';
         $db_username = 'root';
         $db_password = '';
-        $db_name = 'SantosOpticals';
+        $db_name = 'u809407821_santosopticals';
 
         $conn = new mysqli($db_host, $db_username, $db_password, $db_name);
 
@@ -37,7 +38,7 @@
         }
 
         // Creating database
-        $sql = "CREATE DATABASE SantosOpticals";
+        $sql = "CREATE DATABASE u809407821_santosopticals";
 
         if ($conn->query($sql) === TRUE) 
         {
@@ -55,6 +56,7 @@
     function create_RoleMasterTable()
     {
         $conn = connect();
+        
         $sql = "CREATE TABLE roleMaster (
                 RoleID INT(10) PRIMARY KEY,
                 Description VARCHAR(30)
@@ -153,12 +155,11 @@
         $sql = "CREATE TABLE Logs (
                 LogsID INT(10) PRIMARY KEY,
                 EmployeeID INT(10),
-                BranchCode INT(10),
+                ProductBranchID INT(10),
                 ActivityCode INT(10),
                 Count INT(10),
                 Upd_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (EmployeeID) REFERENCES employee(EmployeeID),
-                FOREIGN KEY (BranchCode) REFERENCES BranchMaster(BranchCode),                
+                FOREIGN KEY (EmployeeID) REFERENCES employee(EmployeeID),                
                 FOREIGN KEY (ActivityCode) REFERENCES activityMaster(ActivityCode)
                 )";
 
@@ -166,11 +167,11 @@
         {
             $id = generate_LogsID(); 
             $id2 = generate_EmployeeID();
-            $id3 = generate_BranchCode();  
+            $id3 = generate_ProductBrnchMstrID();  
             --$id2;
             --$id3;
             $sql = "INSERT INTO Logs
-                    (LogsID,EmployeeID,BranchCode,ActivityCode,Count)
+                    (LogsID,EmployeeID,ProductBranchID,ActivityCode,Count)
                     VALUES
                     ('$id', '$id2', '$id3', '2','1'
                     )";
@@ -1207,9 +1208,15 @@
 ?>
 
 <?php
-    // Check if the database exists
-     $conn = new mysqli('localhost','root','');
-     $db_check_query = "SHOW DATABASES LIKE 'SantosOpticals'";
+    // Configuration
+        $db_host = 'localhost';
+        $db_username = 'root';
+        $db_password = '';
+
+        // Create connection
+        $conn = new mysqli($db_host, $db_username, $db_password);
+        
+     $db_check_query = "SHOW DATABASES LIKE 'u809407821_santosopticals'";
  
      $result = mysqli_query($conn, $db_check_query);    
      if (mysqli_num_rows($result) == 0) 
@@ -1229,9 +1236,9 @@
         create_CustomersTable();
     }    
     // Check if Product Master Table exists
-    $table_check_query = "SHOW TABLES LIKE 'CategoryType'";
+    $table_check_query = "SHOW TABLES LIKE 'categoryType'";  // Changed from 'CategoryType' to 'categoryType'
     $result = mysqli_query($conn, $table_check_query);
-
+    
     if (mysqli_num_rows($result) == 0) 
     {
         create_CategoryTypeTable();

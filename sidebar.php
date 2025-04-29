@@ -14,7 +14,7 @@ if ($isAdmin === true) {
     <!-- Added logo and brand name at the top -->
     <div class="sidebar-brand text-center py-3">
         <a class="navbar-brand fw-bold d-flex flex-column align-items-center" href="index.php">
-            <img src="images/logo.png" alt="Logo" width="60" height="80" class="mb-2"> 
+            <img src="Images/logo.png" alt="Logo" width="60" height="80" class="mb-2"> 
             <span>Santos Optical</span>
         </a>
     </div>

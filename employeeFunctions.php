@@ -22,7 +22,7 @@
                     ELSE 2 
                 END AS RoleOrder
                 FROM employee e
-                LEFT JOIN branchmaster b ON e.BranchCode = b.BranchCode ";
+                LEFT JOIN BranchMaster b ON e.BranchCode = b.BranchCode ";
     
         // Special sorting logic for each column
         switch($sort) {
@@ -75,7 +75,7 @@
     function branchHandler($branch) {
         $connection = connect();
     
-        $sql = "SELECT * FROM branchmaster";
+        $sql = "SELECT * FROM BranchMaster";
         $result = $connection->query($sql);
     
         if (!$result) {
