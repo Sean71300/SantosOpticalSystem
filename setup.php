@@ -827,12 +827,13 @@
                         $brandID = 2025150006; 
                         break;
                 }
-
+ 
+                $shape = rand(1,5);
                 $sql = "INSERT INTO productMstr
                             (ProductID, CategoryType, ShapeID, BrandID, Model, Remarks,
                             ProductImage, Avail_FL, Upd_by)
                             VALUES
-                            ('$id', 'Frame', '1', '$brandID', 
+                            ('$id', 'Frame', '$shape', '$brandID', 
                             '$model', 'New Model', '$img_path', 'Available', 
                             'Bien Ven P. Santos')";
 
