@@ -2,12 +2,17 @@
     include_once 'setup.php'; 
   
     //read all row from database table
-    function customerData()
+    function customerData($sort = 'CustomerID', $order = 'ASC')
     {
         $customerData = "";
         $connection = connect();
 
-        $sql = "SELECT * FROM customer";
+        // Validate sort column to prevent SQL injection
+        $validColumns = ['CustomerID', 'CustomerName', 'CustomerAddress', 'CustomerContact'];
+        $sort = in_array($sort, $validColumns) ? $sort : 'CustomerID';
+        $order = strtoupper($order) === 'DESC' ? 'DESC' : 'ASC';
+
+        $sql = "SELECT * FROM customer ORDER BY $sort $order";
         $result = $connection->query($sql);
 
         if(!$result) {

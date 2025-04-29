@@ -42,9 +42,9 @@
                 }
                 else if ($_SESSION["roleid"] == 2)
                 {
-                    echo '<li><a class="dropdown-item" href="employee.php">Employee page</a></li>';
+                    echo '<li><a class="dropdown-item" href="admin.php">Employee page</a></li>';
                 }
-                echo  '<li><a class="dropdown-item" href="logout.php">Sign Out</a></li>';
+                echo  '<li><a class="dropdown-item" href="logout.php">Log Out</a></li>';
                 echo  '</ul>';
                 echo  '</div>';
                 }

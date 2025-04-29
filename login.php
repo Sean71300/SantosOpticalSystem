@@ -51,13 +51,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['cancel'])) {
                             $_SESSION["upd_dt"] = $upd_dt;
                             $_SESSION['last_activity'] = time();
 
-                            if ($roleid == 1) {
+                            if ($roleid == 1 || 2) {
                                 header("location: admin.php");
                                 exit();
-                            } else if ($roleid == 2) {
-                                header("location: employee.php");
-                                exit();
-                            } else {
+                            }else {
                                 $login_err = "Error has occurred, please try again.";
                             }
                         } else {

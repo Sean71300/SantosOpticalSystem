@@ -1,157 +1,220 @@
 <?php
-    include 'ActivityTracker.php';
-    include 'employeeFunctions.php'; 
-    include 'loginChecker.php';
-    
-    $name = "";
-    $username = "";
-    $password = "";
-    $email = "";
-    $phone = "";
-    $role = "";
-    $branch = "";   
+include 'ActivityTracker.php';
+include 'employeeFunctions.php'; 
+include 'loginChecker.php';
 
-    
-    [$errorMessage, $successMessage] = handleEmployeeFormC();    
-    
-    handleCancellation();
-    
-    
+$name = "";
+$username = "";
+$password = "";
+$email = "";
+$phone = "";
+$role = "";
+$branch = "";   
 
+[$errorMessage, $successMessage] = handleEmployeeFormC();    
+handleCancellation();
 ?>
 
-<html>
-<title>
-    Employee Page
-</title>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <title>New Employee | Santos Optical</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="customCodes/custom.css">
-    
-</head>
-<body class="bg-body-tertiary">
-    <?php include "Navigation.php"?> 
-    <div class="container category-container">
-        <h1>New Employee</h1>
-
-        <?php
-         if (!empty($errorMessage)) {
-            echo "
-            <div class='alert alert-warning alert-dismissible fade show' role='alert'>
-                <strong>$errorMessage</strong>
-                <button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>
-            </div>
-            ";
+    <style>
+        body {
+            background-color: #f5f7fa;
+            display: flex;
         }
-        ?>
-        
-        <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" method="post" enctype="multipart/form-data">
-            <div class="row mb-3">
-                <label class="col-sm-3 col-form-label">Name</label>
-                <div class="col-sm-6">
-                    <input type="text" class="form-control" name="name" value="<?php echo $name;?>" >
-                </div>
+        .sidebar {
+            background-color: white;
+            height: 100vh;
+            padding: 20px 0;
+            color: #2c3e50;
+            position: fixed;
+            width: 250px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+        .sidebar-item {
+            padding: 12px 20px;
+            margin: 5px 0;
+            border-radius: 0;
+            display: flex;
+            align-items: center;
+            color: #2c3e50;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+        .sidebar-item:hover {
+            background-color: #f8f9fa;
+            color: #2c3e50;
+        }
+        .sidebar-item.active {
+            background-color: #e9ecef;
+            color: #2c3e50;
+            font-weight: 500;
+        }   
+        .sidebar-item i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            width: calc(100% - 250px);
+        }
+        .form-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        .form-label {
+            font-weight: 500;
+        }
+        .btn-action {
+            min-width: 120px;
+        }
+        .employee-img {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <?php include "sidebar.php"?>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="form-container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="fas fa-user-plus me-2"></i> New Employee</h1>
+                <a class="btn btn-outline-secondary" href="employeeRecords.php" role="button" data-bs-toggle="modal" 
+                data-bs-target="#cancelModal">
+                    <i class="fas fa-arrow-left me-2"></i> Back to List
+                </a>            
             </div>
-            <div class="row mb-3">
-                <label class="col-sm-3 col-form-label">Username</label>
-                <div class="col-sm-6">
-                    <input type="text" class="form-control" name="username" value="<?php echo $username;?>" >
-                </div>
-            </div>
-            <div class="row mb-3">
-                <label class="col-sm-3 col-form-label">Password</label>
-                <div class="col-sm-6">
-                    <input type="password" class="form-control" name="password" value="<?php echo $password;?>" >
-                </div>
-            </div>
-            <div class="row mb-3">
-                <label class="col-sm-3 col-form-label">Email</label>
-                <div class="col-sm-6">
-                    <input type="text" class="form-control" name="email" value="<?php echo $email;?>" >
-                </div>
-            </div>
-            <div class="row mb-3">
-                <label class="col-sm-3 col-form-label">Contact Number</label>
-                <div class="col-sm-6">
-                    <input type="text" class="form-control" name="phone" value="<?php echo $phone;?>" >
-                </div>
-            </div>  
-            <div class="row mb-3">
-                <label class="col-sm-3 col-form-label">Branch</label>
-                <div class="col-sm-6">
-                    <select class="form-control" name="branch" required>                        
-                        <?php branchHandler($branch);?>
-                    </select>
-                </div>
-            </div>      
-            <div class="row mb-3">
-                <label class="col-sm-3 col-form-label">Role</label>
-                <div class="col-sm-6">
-                    <select class="form-control" name="role" required>                                                
-                        <?php roleHandler($role);?>
-                    </select>
-                </div>
-            </div>
-            <div class="row mb-3">
-                <img src="Images/default.jpg" alt="picture" style="max-width: 200px; margin: 10px;" alt="picture" id="picture" class="picture">
-                <label for="IMAGE" class="btn btn-success add-picture-button mt-3">
-                    <input class='form-control' type="file" name="IMAGE" id="IMAGE" accept=".jpg, .png, .jpeg" onchange="profilePicture(this)" style="display:none;" value="<?php echo htmlspecialchars($imagePath); ?>">Add Picture
-                </label> 
-            </div>
-            <?php
-            if (!empty($successMessage)) {
-                echo "
-                <div class='alert alert-success alert-dismissible fade show' role='alert'>
-                    <strong>$successMessage</strong>
+            
+            <?php if (!empty($errorMessage)): ?>
+                <div class='alert alert-warning alert-dismissible fade show' role='alert'>
+                    <strong><?php echo $errorMessage; ?></strong>
                     <button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>
                 </div>
-                ";
-            }
-            ?>
-            <div class="row mb-3">
-                <div class="offset-mb-3 col-sm-3 d-grid">
-                    <button type="submit" class="btn btn-primary" name="submit">Submit</button>
+            <?php endif; ?>
+            
+            <form method="post" id="employeeCreate" enctype="multipart/form-data">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" class="form-control form-control-lg" name="name" 
+                               value="<?php echo htmlspecialchars($name); ?>" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Username</label>
+                        <input type="text" class="form-control form-control-lg" name="username" 
+                               value="<?php echo htmlspecialchars($username); ?>" required>
+                    </div>
                 </div>
-                <div class="col-sm-3 d-grid">
-                    <!-- Button to trigger modal -->
-                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#cancelModal">Return</button>                    
+                
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-control form-control-lg" name="password" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control form-control-lg" name="email" 
+                               value="<?php echo htmlspecialchars($email); ?>" required>
+                    </div>
                 </div>
-            </div>
-        </form>
+                
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label">Contact Number</label>
+                        <input type="text" class="form-control form-control-lg" name="phone" 
+                               value="<?php echo htmlspecialchars($phone); ?>" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Branch</label>
+                        <select class="form-select form-control-lg" name="branch" required>
+                            <?php branchHandler($branch); ?>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label">Role</label>
+                        <select class="form-select form-control-lg" name="role" required>
+                            <?php roleHandler($role); ?>
+                        </select>
+                    </div>
+                    <div class="col-md-6 text-center">
+                        <img src="Images/default.jpg" alt="Employee Image" class="employee-img">
+                        <div>
+                            <label for="IMAGE" class="btn btn-success">
+                                <input type="file" name="IMAGE" id="IMAGE" accept=".jpg, .png, .jpeg" onchange="profilePicture(this)" style="display:none;">
+                                <i class="fas fa-camera me-2"></i> Add Picture
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <?php if (!empty($successMessage)): ?>
+                    <div class='alert alert-success alert-dismissible fade show' role='alert'>
+                        <strong><?php echo $successMessage; ?></strong>
+                        <button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>
+                    </div>
+                <?php endif; ?>
+                
+                <div class="d-flex justify-content-end gap-3 mt-5">                    
+                    <button type="submit" class="btn btn-primary btn-action" name="submit">
+                        <i class="fas fa-save me-2"></i> Save
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
-    <!-- Modal -->
+    <!-- Cancel Confirmation Modal -->
     <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="cancelModalLabel">Confirm Cancellation</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                Are you sure you want to Return? You will lose any unsaved changes.
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <form  method="post" style="display: inline;">
-                    <input type="hidden" name="confirm_cancel" value="1">
-                    <button type="return" class="btn btn-primary">Yes, Return</button>
-                </form>
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="cancelModalLabel">Confirm Cancellation</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to return to employee records? Any unsaved changes will be lost.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <a href="employeeRecords.php" class="btn btn-danger">Yes, Cancel</a>
+                </div>
             </div>
         </div>
     </div>
-</div>
-<script>
-         function profilePicture(input) {
+
+    <script>
+        function profilePicture(input) {
             if (input.files && input.files[0]) {
                 var reader = new FileReader();
                 reader.onload = function(e) {
-                    document.getElementById("picture").src = e.target.result;
+                    document.querySelector(".employee-img").src = e.target.result;
                 };
                 reader.readAsDataURL(input.files[0]);
-            } else {
-                document.getElementById("picture").src = "#";
             }
         }
     </script>
