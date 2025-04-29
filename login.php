@@ -1,6 +1,6 @@
 <?php
+include_once 'connect.php';
 include_once 'setup.php';
-require_once 'connect.php';
 include 'ActivityTracker.php';
 
 $username = $password = "";
