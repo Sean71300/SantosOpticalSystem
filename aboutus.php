@@ -1,6 +1,6 @@
 <?php
-include_once 'setup.php'; // Include the setup.php file
-include 'ActivityTracker.php';
+  include_once 'setup.php'; // Include the setup.php file
+  include 'ActivityTracker.php';
 ?>
 
 <!DOCTYPE html>

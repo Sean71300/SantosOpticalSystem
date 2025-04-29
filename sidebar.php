@@ -1,17 +1,26 @@
 <?php
-    $panel = " Panel"; 
-    $isAdmin = isset($_SESSION['roleid']) && $_SESSION['roleid'] === 1;
-    
-    if ($isAdmin === true) {
-        $panel = "Admin". $panel;
-    } 
-    else {
-        $panel = "Employee". $panel;
-    }
+// Set panel title based on role
+$panel = " Panel"; 
+$isAdmin = isset($_SESSION['roleid']) && $_SESSION['roleid'] === 1;
+
+if ($isAdmin === true) {
+    $panel = "Admin". $panel;
+} else {
+    $panel = "Employee". $panel;
+}
 ?>
 
 <div class="sidebar">
-    <div class="sidebar-header">
+    <!-- Added logo and brand name at the top -->
+    <div class="sidebar-brand text-center py-3">
+        <a class="navbar-brand fw-bold d-flex flex-column align-items-center" href="index.php">
+            <img src="images/logo.png" alt="Logo" width="60" height="80" class="mb-2"> 
+            <span>Santos Optical</span>
+        </a>
+    </div>
+    
+   
+    <div class="sidebar-header text-center">
         <h4><i class="fas fa-cog"></i> <?php echo $panel ?></h4>
     </div>
     
