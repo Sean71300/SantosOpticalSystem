@@ -95,17 +95,18 @@
                 insertData($name, $address, $phone, $info, $notes);
                 $successMessage = "Customer added successfully";
 
-                include_once 'admin-inventory-funcs.php';
+                //Insert Log
                 $conn = connect();
                 $logsID = generate_LogsID();
                 $logActivityCode = "2";
-                $logEmployeeID = getEmployeeID();
+                $logEmployeeID = $_SESSION["id"];
                 $logQty = "1";
                 $logUpdDT = date('Y-m-d H:i:s');
+                $logBranchID = $_SESSION["branchcode"];
                 $sql = "INSERT INTO logs
-                        (LogID, LogType, LogDescription, Created_dt, Upd_by) 
+                        (LogsID, EmployeeID, BranchCode, ActivityCode, Count, Upd_dt) 
                         VALUES
-                        ('$logsID', '$logActivityCode', 'Customer Created', '$logUpdDT', '$logEmployeeID')";
+                        ('$logsID', '$logEmployeeID', '$logBranchID', '$logActivityCode', '$logQty', '$logUpdDT')";
                 mysqli_query($conn, $sql);
                 mysqli_close($conn);
     

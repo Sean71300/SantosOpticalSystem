@@ -153,11 +153,12 @@
         $sql = "CREATE TABLE Logs (
                 LogsID INT(10) PRIMARY KEY,
                 EmployeeID INT(10),
-                ProductBranchID INT(10),
+                BranchCode INT(10),
                 ActivityCode INT(10),
                 Count INT(10),
                 Upd_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (EmployeeID) REFERENCES employee(EmployeeID),                
+                FOREIGN KEY (EmployeeID) REFERENCES employee(EmployeeID),
+                FOREIGN KEY (BranchCode) REFERENCES BranchMaster(BranchCode),                
                 FOREIGN KEY (ActivityCode) REFERENCES activityMaster(ActivityCode)
                 )";
 
@@ -165,11 +166,11 @@
         {
             $id = generate_LogsID(); 
             $id2 = generate_EmployeeID();
-            $id3 = generate_ProductBrnchMstrID();  
+            $id3 = generate_BranchCode();  
             --$id2;
             --$id3;
             $sql = "INSERT INTO Logs
-                    (LogsID,EmployeeID,ProductBranchID,ActivityCode,Count)
+                    (LogsID,EmployeeID,BranchCode,ActivityCode,Count)
                     VALUES
                     ('$id', '$id2', '$id3', '2','1'
                     )";
