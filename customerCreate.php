@@ -24,7 +24,7 @@ handleCancellation();
 </head>
 <body class="bg-body-tertiary">
     <?php include "Navigation.php"?> 
-    <div class="container category-container">
+    <div class="container category-container mt-5">
         <h1>New Customer</h1>
 
         <?php
