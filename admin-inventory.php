@@ -226,8 +226,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                                 <i class="fas fa-sort-'.($sort == 'TotalCount' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
                                             </span>
                                         </th>
-                                        
-                                        <th colspan="2">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>';
@@ -291,6 +289,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ?>
                 </div>
             </div>
+            <?php
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                if (isset($_POST['editProductBtn'])) {
+                    editProduct();
+                }
+                elseif (isset($_POST['saveProductBtn'])) {
+                    confirmEditProduct();
+                    getInventory();
+                }
+                elseif (isset($_POST['deleteProductBtn'])) {                     
+                    confirmDeleteProduct();
+                    getInventory();
+                }
+                elseif (isset($_POST['confirmDeleteBtn'])) {
+                    deleteProduct();
+                    getInventory();
+                }                 
+            }
+        ?>
         </div>
 
         <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>

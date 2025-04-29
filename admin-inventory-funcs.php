@@ -142,24 +142,6 @@ function getInventory($sort = 'ProductID', $order = 'ASC')
                         <td>".htmlspecialchars($row['Remarks'])."</td>
                         <td><img src='".htmlspecialchars($row['ProductImage'])."' class='product-img'></td>
                         <td>".htmlspecialchars($row['TotalCount'])."</td>                        
-                        <td>
-                            <form method='post'>
-                                <input type='hidden' name='productID' value='".htmlspecialchars($row['ProductID'])."'>
-                                <input type='hidden' name='chooseBranch' value=''>
-                                <button type='submit' name='editProductBtn' class='btn btn-primary action-btn'>
-                                    <i class='fas fa-edit'></i>
-                                </button>
-                            </form>
-                        </td>
-                        <td>
-                            <form method='post'>
-                                <input type='hidden' name='productID' value='".htmlspecialchars($row['ProductID'])."'>
-                                <input type='hidden' name='chooseBranch' value=''>
-                                <button type='submit' name='deleteProductBtn' class='btn btn-danger action-btn'>
-                                    <i class='fas fa-trash'></i>
-                                </button>
-                            </form>
-                        </td>
                     </tr>";
             }
     
@@ -209,21 +191,26 @@ function getInventory($sort = 'ProductID', $order = 'ASC')
 
                     <td>
                         <form method='post'>
-                            <input type='hidden' name='productID' value='".htmlspecialchars($row['ProductID'])."'>
-                            <input type='hidden' name='productBranchID' value='".htmlspecialchars($row['ProductBranchID'])."'>
-                            <input type='hidden' name='chooseBranch' value='".htmlspecialchars($branchName)."'>
-                            <button type='submit' name='editProductBtn' class='btn btn-primary action-btn'>
-                                <i class='fas fa-edit'></i>
+                            <input type='hidden' name='chooseBranch' value='" . htmlspecialchars($branchName) . "' />
+                            <input type='hidden' name='productBranchID' value='" . htmlspecialchars($row['ProductBranchID']) . "' />
+                            <input type='hidden' name='productID' value='" . htmlspecialchars($row['ProductID']) . "' />
+                            <input type='hidden' name='categoryType' value='" . htmlspecialchars($row['CategoryType']) . "' />
+                            <input type='hidden' name='shape' value='" . htmlspecialchars($row['ShapeDescription']) . "' />
+                            <input type='hidden' name='brandID' value='" . htmlspecialchars($row['BrandID']) . "' />
+                            <input type='hidden' name='model' value='" . htmlspecialchars($row['Model']) . "' />
+                            <input type='hidden' name='remarks' value='" . htmlspecialchars($row['Remarks']) . "' />
+                            <input type='hidden' name='count' value='" . htmlspecialchars($row['Count']) . "' />
+                            <input type='hidden' name='productImg' value='" . htmlspecialchars($row['ProductImage']) . "' />
+                            <button type='submit' class='btn btn-success' name='editProductBtn' value='editProductBtn' style='font-size:12px'><i class='fa-solid fa-pen'></i></button>
                             </button>
                         </form>
                     </td>
                     <td>
                         <form method='post'>
-                            <input type='hidden' name='productID' value='".htmlspecialchars($row['ProductID'])."'>
-                            <input type='hidden' name='productBranchID' value='".htmlspecialchars($row['ProductBranchID'])."'>
-                            <input type='hidden' name='chooseBranch' value='".htmlspecialchars($branchName)."'>
-                            <button type='submit' name='deleteProductBtn' class='btn btn-danger action-btn'>
-                                <i class='fas fa-trash'></i>
+                            <input type='hidden' name='chooseBranch' value='" . htmlspecialchars($branchName) . "' />
+                            <input type='hidden' name='productBranchID' value='" . htmlspecialchars($row['ProductBranchID']) . "' />
+                            <input type='hidden' name='productID' value='" . htmlspecialchars($row['ProductID']) . "' />
+                            <button type='submit' class='btn btn-danger' name='deleteProductBtn' value='deleteProductBtn' style='font-size:12px'><i class='fa-solid fa-trash'></i></button>
                             </button>
                         </form>
                     </td>
@@ -406,17 +393,60 @@ function addProduct(){ //Add function to add a new product to the database
 
 function editShape($currentShapeDescription = '') { // Function to edit shape
     $link = connect();
-    $sql = "SELECT * FROM shapemaster";
-    $result = mysqli_query($link, $sql);
+    $sql = "SELECT * FROM shapemaster WHERE Description = ?";
+    $stmt = mysqli_prepare($link, $sql);
+    mysqli_stmt_bind_param($stmt, "s", $currentShapeDescription);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt); 
     while ($row = mysqli_fetch_array($result)) {
-        $selected = ($row['Description'] === $currentShapeDescription) ? 'selected' : '';
+        $selected = ($row['ShapeID'] === $currentShapeDescription) ? 'selected' : '';
         echo "<option class='form-select-sm' value='" . htmlspecialchars($row['ShapeID']) . "' $selected>" . htmlspecialchars($row['Description']) . "</option>";
     }
-    mysqli_free_result($result);
     mysqli_close($link);
 }
 
+function editBrand($currentBrand = '') {
+    $link = connect();
+    $sql = "SELECT * FROM brandmaster WHERE BrandID = ?";
+    $stmt = mysqli_prepare($link, $sql);
+    mysqli_stmt_bind_param($stmt, "s", $currentBrand);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    while ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
+        $selected = ($row['BrandID'] === $currentBrand) ? 'selected' : '';
+        echo "<option class='form-select-sm' value='" . htmlspecialchars($row['BrandID']) . "' $selected>" . htmlspecialchars($row['BrandName']) . "</option>";
+    }
+    mysqli_stmt_close($stmt);
+    mysqli_close($link);
+}
 
+function editCategory($currentCategory = '') {
+    $link = connect();
+    $sql = "SELECT * FROM categorytype";
+    $result = mysqli_query($link, $sql);
+    
+    while ($row = mysqli_fetch_array($result)) {
+        $selected = ($row['CategoryType'] === $currentCategory) ? 'selected' : '';
+        echo "<option class='form-select-sm' value='" . htmlspecialchars($row['CategoryType']) . "' $selected>" . 
+             htmlspecialchars($row['CategoryType']) . "</option>";
+    }
+    
+    mysqli_close($link);
+}
+
+function getBranchCode($currentBranch = '') {
+    $link = connect();
+    $sql = "SELECT BranchCode FROM branchmaster WHERE BranchName = ?";
+    $stmt = mysqli_prepare($link, $sql);
+    mysqli_stmt_bind_param($stmt, "s", $currentBranch);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    if ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
+        return $row['BranchCode'];
+    }
+    mysqli_stmt_close($stmt);
+    mysqli_close($link);
+}
 
 function editProduct(){ //Edit function to edit an existing product in the database 
     $productID = $_POST['productID'] ?? '';
@@ -447,7 +477,7 @@ function editProduct(){ //Edit function to edit an existing product in the datab
                             <div class="mb-3">
                                 <label for="categoryType" class="form-label">Category Type</label>
                                 <select class="form-select" id="categoryType" name="categoryType" required>';
-                                    getCategory();
+                                    editCategory($categoryType);
                                     echo '
                                 </select>
                             </div>
@@ -463,7 +493,7 @@ function editProduct(){ //Edit function to edit an existing product in the datab
                                     <label for="brandID" class="col-form-label">Brand:</label>
                                 </div>
                                 <select name="brandID" id="brandID" class="form-select">';
-                                    getBrands();
+                                    editBrand($brandID);
                                     echo '
                                 </select>
                             </div>
