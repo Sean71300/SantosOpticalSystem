@@ -1,9 +1,15 @@
 <?php
-include_once 'setup.php'; // Include the setup.php file
-require_once 'connect.php'; //Connect to the database
+include_once 'setup.php';
 include 'ActivityTracker.php';
 include 'loginChecker.php';
+include 'adminFunctions.php';
 
+// Get all counts
+$customerCount = getCustomerCount();
+$employeeCount = getEmployeeCount();
+$inventoryCount = getInventoryCount();
+$orderCount = getOrderCount();
+$recentActivities = getRecentActivities();
 ?>
 
 <!DOCTYPE html>
@@ -88,7 +94,7 @@ include 'loginChecker.php';
     </head>
 
     <body>
-        <?php include "sidebar.php"?>
+        <?php include "sidebar.php"; ?>
 
         <!-- Main Content -->
         <div class="main-content">
@@ -106,7 +112,7 @@ include 'loginChecker.php';
                             <i class="fas fa-users"></i>
                         </div>
                         <h5>Customers</h5>
-                        <div class="stat-number">1,245</div>
+                        <div class="stat-number"><?php echo number_format($customerCount); ?></div>
                         <a href="customerRecords.php" class="btn btn-sm btn-outline-primary mt-2">View All</a>
                     </div>
                 </div>
@@ -118,7 +124,7 @@ include 'loginChecker.php';
                             <i class="fas fa-user-tie"></i>
                         </div>
                         <h5>Employees</h5>
-                        <div class="stat-number">56</div>
+                        <div class="stat-number"><?php echo number_format($employeeCount); ?></div>
                         <a href="EmployeeRecords.php" class="btn btn-sm btn-outline-success mt-2">View All</a>
                     </div>
                 </div>
@@ -130,7 +136,7 @@ include 'loginChecker.php';
                             <i class="fas fa-boxes"></i>
                         </div>
                         <h5>Inventory</h5>
-                        <div class="stat-number">892</div>
+                        <div class="stat-number"><?php echo number_format($inventoryCount); ?></div>
                         <a href="admin-inventory.php" class="btn btn-sm btn-outline-warning mt-2">View All</a>
                     </div>
                 </div>
@@ -142,7 +148,7 @@ include 'loginChecker.php';
                             <i class="fas fa-shopping-cart"></i>
                         </div>
                         <h5>Orders</h5>
-                        <div class="stat-number">328</div>
+                        <div class="stat-number"><?php echo number_format($orderCount); ?></div>
                         <a href="#" class="btn btn-sm btn-outline-info mt-2">View All</a>
                     </div>
                 </div>
@@ -168,31 +174,15 @@ include 'loginChecker.php';
                             </a>
                         </div>
                         <ul class="list-group list-group-flush">
+                            <?php foreach ($recentActivities as $activity): ?>
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <div>
-                                    <small>Today, 10:45 AM</small>
-                                    <div>New order #1234 placed</div>
+                                    <small><?php echo date('M j, g:i A', strtotime($activity['Upd_dt'])); ?></small>
+                                    <div><?php echo htmlspecialchars($activity['Description']); ?></div>
                                 </div>
                                 <span class="badge bg-primary rounded-pill">New</span>
                             </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <div>
-                                    <small>Today, 09:30 AM</small>
-                                    <div>Product "Blue Widget" updated</div>
-                                </div>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <div>
-                                    <small>Yesterday, 3:15 PM</small>
-                                    <div>New customer registered</div>
-                                </div>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <div>
-                                    <small>Yesterday, 11:20 AM</small>
-                                    <div>Inventory stock updated</div>
-                                </div>
-                            </li>
+                            <?php endforeach; ?>
                         </ul>
                     </div>
                 </div>
@@ -200,3 +190,5 @@ include 'loginChecker.php';
         </div>
     </body>
 </html>
+
+    
