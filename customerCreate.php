@@ -23,62 +23,20 @@ handleCancellation();
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="customCodes/custom.css">
-    
-    <style>
-        body {
-            background-color: #f5f7fa;
-            display: flex;
-        }
-        .sidebar {
-            background-color: white;
-            height: 100vh;
-            padding: 20px 0;
-            color: #2c3e50;
-            position: fixed;
-            width: 250px;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-        }
-        .sidebar-header {
-            padding: 0 20px 20px;
-            border-bottom: 1px solid rgba(0,0,0,0.1);
-        }
-        .sidebar-item {
-            padding: 12px 20px;
-            margin: 5px 0;
-            border-radius: 0;
-            display: flex;
-            align-items: center;
-            color: #2c3e50;
-            transition: all 0.3s;
-            text-decoration: none;
-        }
-        .sidebar-item:hover {
-            background-color: #f8f9fa;
-            color: #2c3e50;
-        }
-        .sidebar-item.active {
-            background-color: #e9ecef;
-            color: #2c3e50;
-            font-weight: 500;
-        }   
-        .sidebar-item i {
-            margin-right: 10px;
-            width: 20px;
-            text-align: center;
-        }
-        .main-content {
-            margin-left: 250px;
-            padding: 20px;
-            width: calc(100% - 250px);
-        }
-        .form-container {
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            padding: 30px;
-        }
-        .form-label {
-            font-weight: 500;
+</head>
+<body class="bg-body-tertiary">
+    <?php include "Navigation.php"?> 
+    <div class="container category-container mt-5">
+        <h1>New Customer</h1>
+
+        <?php
+         if (!empty($errorMessage)) {
+            echo "
+            <div class='alert alert-warning alert-dismissible fade show' role='alert'>
+                <strong>$errorMessage</strong>
+                <button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>
+            </div>
+            ";
         }
         .btn-action {
             min-width: 120px;

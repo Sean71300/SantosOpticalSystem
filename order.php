@@ -83,7 +83,7 @@ include 'order-functions.php';
             <div class="d-flex justify-content-between align-items-center mb-4">
                     <h1><i class="fa-solid fa-pen-to-square me-2"></i>Orders</h1>
                     <a class="btn btn-primary" href="customerCreate.php" role="button">
-                        <i class="fas fa-plus me-2"></i> New Order
+                        <i class="fas fa-plus me-2"></i>New Order
                     </a>            
                 </div>
             </div>
