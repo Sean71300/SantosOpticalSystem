@@ -10,10 +10,10 @@
         $page = (isset($_GET['page'])) ? (int)$_GET['page'] : 1;
         $start = ($page - 1) * $perPage;
 
-        $sql = "SELECT * FROM `productmstr` LIMIT $start, $perPage";
+        $sql = "SELECT * FROM `productMstr` LIMIT $start, $perPage";
         $result = mysqli_query($conn, $sql);
 
-        $total = mysqli_num_rows(mysqli_query($conn, "SELECT * FROM `productmstr`"));
+        $total = mysqli_num_rows(mysqli_query($conn, "SELECT * FROM `productMstr`"));
         $totalPages = ceil($total / $perPage);
 
         while($row = mysqli_fetch_assoc($result)) {
