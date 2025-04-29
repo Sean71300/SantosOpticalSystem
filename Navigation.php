@@ -25,7 +25,7 @@
                 <?php  
                 if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
                     echo '<li class="nav-item m-2">';
-                    echo '<a class="nav-link " href="Login.php">|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Login</a>';
+                    echo '<a class="nav-link " href="login.php">|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Login</a>';
                     echo '</li>';
                 }
                 else{     
