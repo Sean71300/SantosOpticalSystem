@@ -59,7 +59,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         [$errorMessage, $imagePath] = handleImage($id);
 
         // Update employee record
-        $upd_by = $_SESSION["full_name"];
+        $upd_by = $_SESSION["full_name"];        
+        $employee_id = $_SESSION["id"];
         $sql = "UPDATE employee 
                 SET EmployeeName = '$name', EmployeePicture = '$imagePath', 
                 EmployeeEmail = '$email', EmployeeNumber = '$phone',
@@ -73,12 +74,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
             $errorMessage = "Invalid query: " . $conn->error;
             break;
         }                        
-        $successMessage = "Employee successfully updated";            
+        $successMessage = "Employee successfully updated";    
+        EGenerateLogs($employee_id,$id);    
         header('Refresh: 2, url=employeeRecords.php');   
 
     } while (false);    
 }
-
+function EGenerateLogs($employee_id,$id)
+    {
+        $conn = connect(); 
+        $Logsid = generate_LogsID(); ;   
+        $upd_by = $_SESSION["full_name"];
+        $sql = "INSERT INTO Logs 
+                (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Upd_dt)
+                VALUES
+                ('$Logsid', '$employee_id', '$id', 'employee', '4', NOW())";
+        
+        mysqli_query($conn, $sql);
+    }
 handleCancellation();
 ?>
 
