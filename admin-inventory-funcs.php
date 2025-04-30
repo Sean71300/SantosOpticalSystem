@@ -708,16 +708,16 @@ function confirmEditProduct() {
                         </div>
                     </div>
                 </div>';
-            $logSQL = "INSERT INTO logs (LogsID, EmployeeID, ProductBranchID, ActivityCode, Count, Upd_dt) VALUES (?, ?, ?, ?, ?, ?)";
-            $logStmt = mysqli_prepare($link, $logSQL);
-            $logID = generate_LogsID();
-            $logEmployeeID = getEmployeeID();
-            $logActivityCode = '4';
-            $logCount = $count;
-            $logUpdDT = date('Y-m-d H:i:s');
-            mysqli_stmt_bind_param($logStmt, "ssssss", $logID, $logEmployeeID, $productBranchID, $logActivityCode, $logCount, $logUpdDT);
-            mysqli_stmt_execute($logStmt);
-            mysqli_stmt_close($logStmt);
+            // $logSQL = "INSERT INTO logs (LogsID, EmployeeID, ProductBranchID, ActivityCode, Count, Upd_dt) VALUES (?, ?, ?, ?, ?, ?)";
+            // $logStmt = mysqli_prepare($link, $logSQL);
+            // $logID = generate_LogsID();
+            // $logEmployeeID = getEmployeeID();
+            // $logActivityCode = '4';
+            // $logCount = $count;
+            // $logUpdDT = date('Y-m-d H:i:s');
+            // mysqli_stmt_bind_param($logStmt, "ssssss", $logID, $logEmployeeID, $productBranchID, $logActivityCode, $logCount, $logUpdDT);
+            // mysqli_stmt_execute($logStmt);
+            // mysqli_stmt_close($logStmt);
         } else {
             echo '<div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered">
