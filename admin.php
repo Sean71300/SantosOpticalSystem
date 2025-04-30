@@ -10,6 +10,7 @@ $employeeCount = getEmployeeCount();
 $inventoryCount = getInventoryCount();
 $orderCount = getOrderCount();
 $recentActivities = getRecentActivities();
+$lowInventory = getLowInventoryProducts();
 ?>
 
 <!DOCTYPE html>
@@ -166,7 +167,38 @@ $recentActivities = getRecentActivities();
                 </div>
                 
                 <div class="col-md-4">
-                    <div class="dashboard-card recent-activity">
+                    <div class="dashboard-card recent-activity">    
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0"><i class="fa-solid fa-circle-exclamation me-2"></i>Low Stocks</h5>
+                            <a href="admin-inventory.php" class="btn btn-sm btn-outline-secondary">
+                            <i class="fa-solid fa-boxes-stacked"></i> Show Inventory
+                            </a>
+                        </div>
+                        <hr class="border-1 border-black opacity-25">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div class="row">
+                                    <?php
+                                    if (count($lowInventory) > 0) {
+                                        foreach ($lowInventory as $product) {
+                                            echo '<div class="container d-flex align-items-center">';
+                                            echo '<img src="' . htmlspecialchars($product['ProductImage']) . '" alt="Product Image" style="height:100px; width:100px;" class="img-thumbnail">';
+                                                echo '<div class="fw-bold ms-3">';
+                                                    echo htmlspecialchars($product['Model']);
+                                                    echo htmlspecialchars($product['Count']);
+                                                echo '</div>';
+                                            echo '</div>';
+                                        }
+                                    } else {
+                                        echo '<p class="text-center">No low stock products.</p>';
+                                    } 
+                                    ?>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="dashboard-card recent-activity">    
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Recent Activity</h5>
                             <a href="logs.php" class="btn btn-sm btn-outline-secondary">

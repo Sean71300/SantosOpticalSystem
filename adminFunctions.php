@@ -67,4 +67,22 @@ function getRecentActivities($limit = 5) {
     mysqli_close($conn);
     return $activities;
 }
+
+function getLowInventoryProducts() {
+    $conn = connect();
+    $lowInventory = [];
+    $query = "SELECT pbm.ProductBranchID, pbm.ProductID, pbm.BranchCode, pbm.Count, pm.*
+              FROM productbranchmaster pbm 
+              JOIN productMstr pm ON pbm.ProductID = pm.ProductID
+              WHERE pbm.Count <= 10 
+              ORDER BY pbm.Count ASC";
+    $result = mysqli_query($conn, $query);
+    if ($result) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $lowInventory[] = $row;
+        }
+    }
+    mysqli_close($conn);
+    return $lowInventory;
+}
 ?>
