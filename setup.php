@@ -1219,6 +1219,166 @@
         $conn->close();
         return $id;
     }       
+    function populateCoreTablesWith15Records() {
+        $conn = connect();
+        
+        try {
+            // 1. Populate 15 Employees
+            $employees = [
+                ['Bien Ven P. Santos', 'BVPSantosOptical@gmail.com', '09864571325', 1, 'BVSantos1', 'JPSantos123', 2025160000],
+                ['Sean Genesis V. Morse', 'SeanGenesis@gmail.com', '09438945698', 2, 'SGMorse1', 'Morse123', 2025160001],
+                ['Maria Cristina L. Reyes', 'MCReyes@gmail.com', '09123456789', 2, 'MCReyes1', 'Reyes123', 2025160002],
+                ['Juan Dela Cruz', 'JDCruz@gmail.com', '09234567890', 2, 'JDCruz1', 'Cruz123', 2025160003],
+                ['Ana Marie S. Lopez', 'AMLopez@gmail.com', '09345678901', 2, 'AMLopez1', 'Lopez123', 2025160000],
+                ['Carlos Miguel G. Tan', 'CMTan@gmail.com', '09456789012', 2, 'CMTan1', 'Tan123', 2025160001],
+                ['Lourdes F. Mendoza', 'LFMendoza@gmail.com', '09567890123', 2, 'LFMendoza1', 'Mendoza123', 2025160002],
+                ['Ricardo B. Gonzales', 'RBGonzales@gmail.com', '09678901234', 2, 'RBGonzales1', 'Gonzales123', 2025160003],
+                ['Patricia Ann Q. Santos', 'PAQSantos@gmail.com', '09789012345', 2, 'PAQSantos1', 'Santos123', 2025160000],
+                ['Francisco M. Lim', 'FMLim@gmail.com', '09890123456', 2, 'FMLim1', 'Lim123', 2025160001],
+                ['Elena R. Castillo', 'ECastillo@gmail.com', '09901234567', 2, 'ECastillo1', 'Castillo123', 2025160002],
+                ['Miguel A. Santiago', 'MSantiago@gmail.com', '09112233445', 2, 'MSantiago1', 'Santiago123', 2025160003],
+                ['Sophia G. Ramirez', 'SRamirez@gmail.com', '09223344556', 2, 'SRamirez1', 'Ramirez123', 2025160000],
+                ['Daniel L. Ocampo', 'DOcampo@gmail.com', '09334455667', 2, 'DOcampo1', 'Ocampo123', 2025160001],
+                ['Isabella T. Navarro', 'INavarro@gmail.com', '09445566778', 2, 'INavarro1', 'Navarro123', 2025160002]
+            ];
+    
+            echo "Populating 15 employees...\n";
+            foreach ($employees as $emp) {
+                $id = generate_EmployeeID();
+                $hashed_pw = password_hash($emp[5], PASSWORD_DEFAULT);
+                $img_path = "Images/default.jpg";
+    
+                $sql = "INSERT INTO employee VALUES (
+                    $id, 
+                    '{$emp[0]}', 
+                    '$img_path', 
+                    '{$emp[1]}', 
+                    '{$emp[2]}', 
+                    {$emp[3]}, 
+                    '{$emp[4]}', 
+                    '$hashed_pw', 
+                    {$emp[6]}, 
+                    'Active', 
+                    'System', 
+                    NOW()
+                )";
+    
+                if (!mysqli_query($conn, $sql)) {
+                    throw new Exception("Failed to insert employee: " . $conn->error);
+                }
+                echo "Added employee: {$emp[0]}\n";
+            }
+    
+            // 2. Populate 15 Customers with Logs
+            $customers = [
+                ['Sean Genesis', '231 Visayas St, Malabon', '09864325874', '60 Years old \n185cm \nMale', 'Round Face Shape'],
+                ['Maria Teresa Cruz', '123 Main St, Quezon City', '09123456789', '45 Years old \n160cm \nFemale', 'Oval Face Shape'],
+                ['Juan Dela Peña', '456 Oak Ave, Makati', '09234567890', '35 Years old \n175cm \nMale', 'Square Face Shape'],
+                ['Ana Marie Santos', '789 Pine Rd, Manila', '09345678901', '28 Years old \n165cm \nFemale', 'Heart Face Shape'],
+                ['Carlos Miguel Reyes', '321 Elm St, Pasig', '09456789012', '50 Years old \n170cm \nMale', 'Oval Face Shape'],
+                ['Lourdes Fernandez', '654 Maple Ln, Mandaluyong', '09567890123', '55 Years old \n158cm \nFemale', 'Round Face Shape'],
+                ['Ricardo Gonzales', '987 Cedar Blvd, Taguig', '09678901234', '40 Years old \n180cm \nMale', 'Square Face Shape'],
+                ['Patricia Ann Lim', '135 Walnut St, Paranaque', '09789012345', '30 Years old \n162cm \nFemale', 'Oval Face Shape'],
+                ['Francisco Martinez', '246 Birch Rd, Las Piñas', '09890123456', '65 Years old \n172cm \nMale', 'Round Face Shape'],
+                ['Elena Rodriguez', '369 Spruce Ave, Muntinlupa', '09901234567', '42 Years old \n166cm \nFemale', 'Heart Face Shape'],
+                ['Antonio B. Reyes', '159 Acacia St, Valenzuela', '09112233445', '48 Years old \n170cm \nMale', 'Oval Face Shape'],
+                ['Gabriela S. Mendoza', '753 Pineapple St, Caloocan', '09223344556', '33 Years old \n163cm \nFemale', 'Heart Face Shape'],
+                ['Rafael T. Castro', '852 Mango Ave, Marikina', '09334455667', '52 Years old \n175cm \nMale', 'Square Face Shape'],
+                ['Isabel V. Dela Cruz', '456 Banana Rd, San Juan', '09445566778', '29 Years old \n160cm \nFemale', 'Oval Face Shape'],
+                ['Luis M. Navarro', '789 Coconut Ln, Pasay', '09556677889', '38 Years old \n178cm \nMale', 'Round Face Shape']
+            ];
+    
+            echo "\nPopulating 15 customers with logs...\n";
+            foreach ($customers as $cust) {
+                $id = generate_CustomerID();
+                
+                $sql = "INSERT INTO customer VALUES (
+                    '$id', 
+                    '{$cust[0]}', 
+                    '{$cust[1]}', 
+                    '{$cust[2]}', 
+                    '{$cust[3]}', 
+                    '{$cust[4]}', 
+                    'System', 
+                    NOW()
+                )";
+    
+                if (!mysqli_query($conn, $sql)) {
+                    throw new Exception("Failed to insert customer: " . $conn->error);
+                }
+    
+                // Create log entry
+                $logId = generate_LogsID();
+                $employee_id = 1; // Default to admin
+                
+                $logSql = "INSERT INTO Logs VALUES (
+                    '$logId', 
+                    '$employee_id', 
+                    '$id', 
+                    'customer', 
+                    2, 
+                    NOW()
+                )";
+    
+                if (!mysqli_query($conn, $logSql)) {
+                    throw new Exception("Failed to insert customer log: " . $conn->error);
+                }
+                echo "Added customer: {$cust[0]}\n";
+            }
+    
+            // 3. Populate 15 Products
+            $products = [
+                ['Minima M-508C _144 867', 2025150000, 'Frame', 3500, 'Magnesium'],
+                ['IMAX 5565 54-17-140', 2025150001, 'Frame', 4200, 'Beryllium'],
+                ['Paul Hueman PHF-300A', 2025150002, 'Frame', 3800, 'Pure aluminum'],
+                ['Caradin CR-2020', 2025150003, 'Frame', 4500, 'Ticral'],
+                ['Lee Cooper LC-101', 2025150004, 'Frame', 3900, 'Stainless'],
+                ['Bobby Jones BJ-505', 2025150005, 'Frame', 4100, 'Nickel titanium'],
+                ['LIGHT TECH 7783L', 2025150006, 'Frame', 3700, 'Monel'],
+                ['Ray-Ban RB2140', 2025150007, 'Sunglasses', 5200, 'Plastic'],
+                ['Oakley OO9438', 2025150008, 'Sunglasses', 5800, 'Gliamide'],
+                ['Persol PO3254', 2025150009, 'Sunglasses', 5400, 'Magnesium'],
+                ['Acuvue Oasys', 2025150010, 'Contact Lenses', 3200, 'Silicone hydrogel'],
+                ['Air Optix Aqua', 2025150011, 'Contact Lenses', 3400, 'Lotrafilcon B'],
+                ['Biofinity', 2025150012, 'Contact Lenses', 3600, 'Comfilcon A'],
+                ['Essilor Varilux', 2025150013, 'Progressive Lens', 7800, 'Plastic'],
+                ['Hoya EnRoute', 2025150014, 'Photochromic Lens', 8200, 'Polycarbonate']
+            ];
+    
+            echo "\nPopulating 15 products...\n";
+            foreach ($products as $index => $prod) {
+                $id = generate_ProductMstrID();
+                $shape = rand(1,5);
+                $img_num = str_pad(69 + $index, 5, '0', STR_PAD_LEFT);
+                $img_path = "Images/$img_num.jpg";
+    
+                $sql = "INSERT INTO productMstr VALUES (
+                    '$id', 
+                    '{$prod[2]}', 
+                    $shape, 
+                    '{$prod[1]}', 
+                    '{$prod[0]}', 
+                    '{$prod[4]}', 
+                    '{$prod[3]}', 
+                    '$img_path', 
+                    'Available', 
+                    'System', 
+                    NOW()
+                )";
+    
+                if (!mysqli_query($conn, $sql)) {
+                    throw new Exception("Failed to insert product: " . $conn->error);
+                }
+                echo "Added product: {$prod[0]}\n";
+            }
+    
+            echo "\nSuccessfully populated all tables with 15 records each!\n";
+        } catch (Exception $e) {
+            echo "Error: " . $e->getMessage() . "\n";
+        } finally {
+            $conn->close();
+        }
+    }
 ?>
 
 <?php
@@ -1355,5 +1515,12 @@
     {
         create_LogsTable();
     }    
-    
+    $emp_count = $conn->query("SELECT COUNT(*) FROM employee")->fetch_row()[0];
+    $cust_count = $conn->query("SELECT COUNT(*) FROM customer")->fetch_row()[0];
+    $prod_count = $conn->query("SELECT COUNT(*) FROM productMstr")->fetch_row()[0];
+    $conn->close();
+
+    if ($emp_count < 15 || $cust_count < 15 || $prod_count < 15) {
+        populateCoreTablesWith15Records();
+    }
 ?>
