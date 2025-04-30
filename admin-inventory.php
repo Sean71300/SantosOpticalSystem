@@ -170,7 +170,6 @@ $_SESSION['current_branch'] = $branchName;
             <div class="table-container">
                 <div class="table-responsive">
                     <?php
-                    // Display inventory table based on branch selection
                     function branchSelection($sort, $order){
                         // All branches view
                         echo '<table class="table table-hover text-center">
@@ -291,7 +290,8 @@ $_SESSION['current_branch'] = $branchName;
                                 editProduct();
                             }
                             elseif (isset($_POST['saveProductBtn'])) {
-                                confirmEditProduct(); 
+                                confirmEditProduct();
+                                branchView($sort, $order); 
                             }
                             elseif (isset($_POST['deleteProductBtn'])) {
                                 confirmDeleteProduct();
