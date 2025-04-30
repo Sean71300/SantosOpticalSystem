@@ -209,9 +209,9 @@
 
     // Create Product Branch Master Table
 
-    function create_ProductBrnchMstrTable()
-    {
+    function create_ProductBrnchMstrTable() {
         $conn = connect();
+        
         $sql = "CREATE TABLE ProductBranchMaster (
                 ProductBranchID INT(10) PRIMARY KEY,
                 ProductID INT(10),
@@ -223,28 +223,44 @@
                 FOREIGN KEY (ProductID) REFERENCES productMstr(ProductID),
                 FOREIGN KEY (BranchCode) REFERENCES BranchMaster(BranchCode)
                 )";
-
+    
         if (mysqli_query($conn, $sql)) {
-            for ($i = 0; $i < 12; $i++) {
-                $id = generate_ProductBrnchMstrID();    
-                $id2 = 2025140000 + $i; 
-                $id3 = generate_BranchCode();
-                $id3 = ($id3-4)+(rand(0,3));
-
-                $count = rand(3, 50); // Generate a random count between 3 and 50
-                
-                $sql = "INSERT INTO ProductBranchMaster
-                        (ProductBranchID, ProductID, BranchCode, Count, Avail_FL, Upd_by)
-                        VALUES
-                        ('$id', '$id2', '$id3', '$count', 'Available', 'Bien Ven P. Santos')";
-                mysqli_query($conn, $sql);             
+            // Get existing ProductIDs from productMstr
+            $productQuery = "SELECT ProductID FROM productMstr LIMIT 12";
+            $productResult = $conn->query($productQuery);
+            
+            // Get existing BranchCodes
+            $branchQuery = "SELECT BranchCode FROM BranchMaster";
+            $branchResult = $conn->query($branchQuery);
+            $branches = [];
+            while($row = $branchResult->fetch_assoc()) {
+                $branches[] = $row['BranchCode'];
             }
+            
+            if ($productResult->num_rows > 0) {
+                $i = 0;
+                while($row = $productResult->fetch_assoc() && $i < 12) {
+                    $productID = $row['ProductID'];
+                    $branchCode = $branches[array_rand($branches)]; // Random existing branch
+                    $count = rand(3, 50);
+                    $id = generate_ProductBrnchMstrID();
+                    
+                    $sql = "INSERT INTO ProductBranchMaster
+                            (ProductBranchID, ProductID, BranchCode, Count, Avail_FL, Upd_by)
+                            VALUES
+                            ('$id', '$productID', '$branchCode', '$count', 'Available', 'Bien Ven P. Santos')";
+                    
+                    if (!mysqli_query($conn, $sql)) {
+                        echo "Error inserting product branch: " . $conn->error;
+                    }
+                    $i++;
+                }
+            } else {
+                echo "No products found in productMstr to create branch mappings";
+            }
+        } else {
+            echo "<br>There is an error in creating the table: " . $conn->error;
         }
-        else
-        {
-            echo "<br>There is an error in creating the table: " . $conn->connect_error;
-        }
-
         $conn->close();
     }
 
@@ -1064,15 +1080,7 @@
             mysqli_query($conn, $sql);
         }
 
-        $products = [
-            [
-                'model' => 'Minima M-508C _144 867',
-                'brandID' => 2025150000,
-                'category' => 'Frame',
-                'price' => '₱3500',
-                'material' => 'Magnesium',
-                'image' => 'Images/00069.jpg'
-            ],
+        $products = [            
             [
                 'model' => 'IMAX 5565 54-17-140',
                 'brandID' => 2025150001,
@@ -1341,122 +1349,98 @@
     // Check if Role Master Table exists
     $table_check_query = "SHOW TABLES LIKE 'roleMaster'";
     $result = mysqli_query($conn, $table_check_query);
-
-    if (mysqli_num_rows($result) == 0) 
-    {
+    if (mysqli_num_rows($result) == 0) {
         create_RoleMasterTable();
     }
-     // Check if Branch Master Table exists
+
+    // Check if Branch Master Table exists
     $table_check_query = "SHOW TABLES LIKE 'BranchMaster'";
     $result = mysqli_query($conn, $table_check_query);
-
-    if (mysqli_num_rows($result) == 0) 
-    {
+    if (mysqli_num_rows($result) == 0) {
         create_BranchMasterTable();
-    }    
+    }
+
     // Check if Activity Master Table exists
     $table_check_query = "SHOW TABLES LIKE 'activityMaster'";
     $result = mysqli_query($conn, $table_check_query);
-
-    if (mysqli_num_rows($result) == 0) 
-    {
+    if (mysqli_num_rows($result) == 0) {
         create_ActivityhMstrTable();
-    }    
-    // Check if Product Master Table exists
-    $table_check_query = "SHOW TABLES LIKE 'categoryType'";  // Changed from 'CategoryType' to 'categoryType'
+    }
+
+    // Check if categoryType Table exists
+    $table_check_query = "SHOW TABLES LIKE 'categoryType'";
     $result = mysqli_query($conn, $table_check_query);
-    
-    if (mysqli_num_rows($result) == 0) 
-    {
+    if (mysqli_num_rows($result) == 0) {
         create_CategoryTypeTable();
     }
+
     // Check if Shape Master Table exists
     $table_check_query = "SHOW TABLES LIKE 'shapeMaster'";
     $result = mysqli_query($conn, $table_check_query);
-
-    if (mysqli_num_rows($result) == 0) 
-    {
+    if (mysqli_num_rows($result) == 0) {
         create_ShapeMasterTable();
     }
+
+    // Check if brandMaster Table exists
     $table_check_query = "SHOW TABLES LIKE 'brandMaster'";
     $result = mysqli_query($conn, $table_check_query);
-
-    if (mysqli_num_rows($result) == 0) 
-    {
+    if (mysqli_num_rows($result) == 0) {
         create_BrandMasterTable();
     }
+
     // Check if employee table exists
     $table_check_query = "SHOW TABLES LIKE 'employee'";
     $result = mysqli_query($conn, $table_check_query);
-
-    if (mysqli_num_rows($result) == 0) 
-    {
+    if (mysqli_num_rows($result) == 0) {
         create_EmployeesTable();
     }
-    // Check if Shape Master Table exists
-    $table_check_query = "SHOW TABLES LIKE 'shapeMaster'";
-    $result = mysqli_query($conn, $table_check_query);
 
-    if (mysqli_num_rows($result) == 0) 
-    {
-        create_ShapeMasterTable();
-    }
-    // Check if Shape Master Table exists
     // Check if customer table exists
     $table_check_query = "SHOW TABLES LIKE 'customer'";
     $result = mysqli_query($conn, $table_check_query);
-
-    if (mysqli_num_rows($result) == 0) 
-    {
+    if (mysqli_num_rows($result) == 0) {
         create_CustomersTable();
-    }    
+    }
+
+    // Check if Product Master Table exists (must come before ProductBranchMaster)
+    $table_check_query = "SHOW TABLES LIKE 'productMstr'";
+    $result = mysqli_query($conn, $table_check_query);
+    if (mysqli_num_rows($result) == 0) {
+        create_ProductMstrTable();
+    }
+
+    // Check if Product Branch Master Table exists (depends on productMstr)
+    $table_check_query = "SHOW TABLES LIKE 'ProductBranchMaster'";
+    $result = mysqli_query($conn, $table_check_query);
+    if (mysqli_num_rows($result) == 0) {
+        create_ProductBrnchMstrTable();
+    }
+
     // Check if Order_hdr Table exists
     $table_check_query = "SHOW TABLES LIKE 'Order_hdr'";
     $result = mysqli_query($conn, $table_check_query);
-
-    if (mysqli_num_rows($result) == 0) 
-    {
+    if (mysqli_num_rows($result) == 0) {
         create_Order_hdrTable();
     }
-    
-    // Check if Product Master Table exists
-    $table_check_query = "SHOW TABLES LIKE 'productMstr'";
-    $result = mysqli_query($conn, $table_check_query);
 
-    if (mysqli_num_rows($result) == 0) 
-    {
-        create_ProductMstrTable();
-    }
-    // Check if Product Branch Master Table exists
-    $table_check_query = "SHOW TABLES LIKE 'ProductBranchMaster'";
-    $result = mysqli_query($conn, $table_check_query);
-
-    if (mysqli_num_rows($result) == 0) 
-    {
-        create_ProductBrnchMstrTable();
-    }
     // Check if Order Details Table exists
     $table_check_query = "SHOW TABLES LIKE 'orderDetails'";
     $result = mysqli_query($conn, $table_check_query);
-
-    if (mysqli_num_rows($result) == 0) 
-    {
+    if (mysqli_num_rows($result) == 0) {
         create_orderDetailsTable();
-    }    
-    
+    }
+
     // Check if Logs Table exists
     $table_check_query = "SHOW TABLES LIKE 'Logs'";
     $result = mysqli_query($conn, $table_check_query);
-
-    if (mysqli_num_rows($result) == 0) 
-    {
+    if (mysqli_num_rows($result) == 0) {
         create_LogsTable();
-    }    
+    }
+
+    // Populate tables with sample data only after all tables are created
     $table_check_query = "SHOW TABLES LIKE 'Logs'";
     $result = mysqli_query($conn, $table_check_query);
-
-    if (mysqli_num_rows($result) == 1) 
-    {
+    if (mysqli_num_rows($result) == 1) {
         populateTables();
-    }    
+    }
 ?>
