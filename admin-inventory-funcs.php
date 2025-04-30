@@ -673,7 +673,6 @@ function confirmEditProduct() {
     // Proceed with database updates if the file upload is successful
     if ($uploadOk) {
         $success = true;
-
         // Update productmstr table
         $sql1 = "UPDATE productMstr SET CategoryType = ?, ShapeID = ?, BrandID = ?, Model = ?, Material = ?, Price = ?, ProductImage = ?, Upd_by = ?, Upd_dt = ? WHERE ProductID = ?";
         $stmt1 = mysqli_prepare($link, $sql1);
