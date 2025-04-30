@@ -22,17 +22,21 @@ $_SESSION['current_branch'] = $branchName;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['editProductBtn'])) {
         editProduct();
+        exit;
     }
     elseif (isset($_POST['saveProductBtn'])) {
         confirmEditProduct();
         header("Location: admin-inventory.php?sort=$sort&order=$order&branch=".urlencode($branchName));
+        exit;
     }
     elseif (isset($_POST['deleteProductBtn'])) {
         confirmDeleteProduct();
+        exit;
     }
     elseif (isset($_POST['confirmDeleteBtn'])) {
         deleteProduct();
         header("Location: admin-inventory.php?sort=$sort&order=$order&branch=".urlencode($branchName));
+        exit;
     }
 }
 ?>
