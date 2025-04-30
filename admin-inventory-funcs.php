@@ -589,6 +589,8 @@ function confirmEditProduct() {
     $productBranchID = $_POST['productBranchID'] ?? '';
     $date = new DateTime();
     $upd_dt = $date->format('Y-m-d H:i:s');
+    echo $shape;
+    return;
 
     $targetDir = "uploads/";
     $targetFile = $productImg; // Default to existing image
