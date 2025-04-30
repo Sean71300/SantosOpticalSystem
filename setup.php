@@ -761,8 +761,7 @@
             ShapeID INT (1),
             BrandID INT (10),                              
             Model VARCHAR(50),
-            Material VARCHAR(50),
-            Price VARCHAR(20),
+            Remarks VARCHAR(500),
             ProductImage VARCHAR(255),
             Avail_FL VARCHAR (50),  
             Upd_by VARCHAR(50),
@@ -772,7 +771,78 @@
             FOREIGN KEY (BrandID) REFERENCES brandMaster(BrandID)
             )";
 
-        mysqli_query($conn, $sql);
+        if (mysqli_query($conn, $sql)) {
+        
+            for ($i = 0; $i <= 11; $i++) {
+                $img_path = 'Images/' . str_pad(69 + $i, 5, '0', STR_PAD_LEFT) . '.jpg';                
+                $id = generate_ProductMstrID();
+                $model = '';
+
+                switch ($i) {
+                    case 0: 
+                        $model = 'Minima M-508C _144 867';
+                        $brandID = 2025150000;
+                        break;
+                    case 1: 
+                        $model = 'IMAX 5565 54-17-140'; 
+                        $brandID = 2025150001;
+                        break;
+                    case 2: 
+                        $model = 'Paul Hueman';
+                        $brandID = 2025150002; 
+                        break;
+                    case 3: 
+                        $model = 'PAUL HUEMAN PHF-300A Col.5 50-201-42';
+                        $brandID = 2025150002;
+                        break;
+                    case 4: 
+                        $model = 'Caradin'; 
+                        $brandID = 2025150003;
+                        break;
+                    case 5: 
+                        $model = 'Lee Cooper'; 
+                        $brandID = 2025150004;
+                        break;
+                    case 6: 
+                        $model = 'Bobby Jones'; 
+                        $brandID = 2025150005;
+                        break;
+                    case 7: 
+                        $model = 'LIGHT TECH 3PC 7783L 54-16-140 BB 072'; 
+                        $brandID = 2025150006;
+                        break;
+                    case 8: 
+                        $model = 'LIGHT TECH 3PC 7775LBG 007'; 
+                        $brandID = 2025150006;
+                        break;
+                    case 9: 
+                        $model = 'LIGHT TECH'; 
+                        $brandID = 2025150006;
+                        break;
+                    case 10: 
+                        $model = 'LIGHT TECH';
+                        $brandID = 2025150006; 
+                        break;
+                    case 11: 
+                        $model = 'LIGHT TECH';
+                        $brandID = 2025150006; 
+                        break;
+                }
+ 
+                $shape = rand(1,5);
+                $sql = "INSERT INTO productMstr
+                            (ProductID, CategoryType, ShapeID, BrandID, Model, Remarks,
+                            ProductImage, Avail_FL, Upd_by)
+                            VALUES
+                            ('$id', 'Frame', '$shape', '$brandID', 
+                            '$model', 'New Model', '$img_path', 'Available', 
+                            'Bien Ven P. Santos')";
+
+                mysqli_query($conn, $sql);
+            }
+        } else {
+            echo "<br>There is an error in creating the table: " . $conn->connect_error;
+        }
         $conn->close();
     }
 
@@ -820,7 +890,133 @@
                 FOREIGN KEY (BranchCode) REFERENCES BranchMaster(BranchCode)
                 )";
 
-        mysqli_query($conn, $sql);        
+        if (mysqli_query($conn, $sql))
+        {
+            $employees = [
+                [
+                    'name' => 'Bien Ven P. Santos',
+                    'email' => 'BVPSantosOptical@gmail.com',
+                    'number' => '09864571325',
+                    'role' => 1,
+                    'login' => 'BVSantos1',
+                    'password' => 'JPSantos123',
+                    'branch' => 2025160000,
+                    'status' => 'Active'
+                ],
+                [
+                    'name' => 'Sean Genesis V. Morse',
+                    'email' => 'SeanGenesis@gmail.com',
+                    'number' => '09438945698',
+                    'role' => 2,
+                    'login' => 'SGMorse1',
+                    'password' => 'Morse123',
+                    'branch' => 2025160001,
+                    'status' => 'Active'
+                ],
+                [
+                    'name' => 'Maria Cristina L. Reyes',
+                    'email' => 'MCReyes@gmail.com',
+                    'number' => '09123456789',
+                    'role' => 2,
+                    'login' => 'MCReyes1',
+                    'password' => 'Reyes123',
+                    'branch' => 2025160002,
+                    'status' => 'Active'
+                ],
+                [
+                    'name' => 'Juan Dela Cruz',
+                    'email' => 'JDCruz@gmail.com',
+                    'number' => '09234567890',
+                    'role' => 2,
+                    'login' => 'JDCruz1',
+                    'password' => 'Cruz123',
+                    'branch' => 2025160003,
+                    'status' => 'Active'
+                ],
+                [
+                    'name' => 'Ana Marie S. Lopez',
+                    'email' => 'AMLopez@gmail.com',
+                    'number' => '09345678901',
+                    'role' => 2,
+                    'login' => 'AMLopez1',
+                    'password' => 'Lopez123',
+                    'branch' => 2025160000,
+                    'status' => 'Active'
+                ],
+                [
+                    'name' => 'Carlos Miguel G. Tan',
+                    'email' => 'CMTan@gmail.com',
+                    'number' => '09456789012',
+                    'role' => 2,
+                    'login' => 'CMTan1',
+                    'password' => 'Tan123',
+                    'branch' => 2025160001,
+                    'status' => 'Active'
+                ],
+                [
+                    'name' => 'Lourdes F. Mendoza',
+                    'email' => 'LFMendoza@gmail.com',
+                    'number' => '09567890123',
+                    'role' => 2,
+                    'login' => 'LFMendoza1',
+                    'password' => 'Mendoza123',
+                    'branch' => 2025160002,
+                    'status' => 'Active'
+                ],
+                [
+                    'name' => 'Ricardo B. Gonzales',
+                    'email' => 'RBGonzales@gmail.com',
+                    'number' => '09678901234',
+                    'role' => 2,
+                    'login' => 'RBGonzales1',
+                    'password' => 'Gonzales123',
+                    'branch' => 2025160003,
+                    'status' => 'Active'
+                ],
+                [
+                    'name' => 'Patricia Ann Q. Santos',
+                    'email' => 'PAQSantos@gmail.com',
+                    'number' => '09789012345',
+                    'role' => 2,
+                    'login' => 'PAQSantos1',
+                    'password' => 'Santos123',
+                    'branch' => 2025160000,
+                    'status' => 'Active'
+                ],
+                [
+                    'name' => 'Francisco M. Lim',
+                    'email' => 'FMLim@gmail.com',
+                    'number' => '09890123456',
+                    'role' => 2,
+                    'login' => 'FMLim1',
+                    'password' => 'Lim123',
+                    'branch' => 2025160001,
+                    'status' => 'Active'
+                ]
+            ];
+
+            $img_path = "Images/default.jpg";
+            
+            foreach ($employees as $emp) {
+                $id = generate_EmployeeID();
+                $hashed_pw = password_hash($emp['password'], PASSWORD_DEFAULT);
+
+                $sql = "INSERT INTO employee
+                        (EmployeeID, EmployeeName, EmployeePicture, EmployeeEmail,
+                        EmployeeNumber, RoleID, LoginName, Password, BranchCode, Status,
+                        Upd_by)
+                        VALUES
+                        ($id, '{$emp['name']}', '$img_path', '{$emp['email']}', 
+                        '{$emp['number']}', '{$emp['role']}', '{$emp['login']}', '$hashed_pw', 
+                        '{$emp['branch']}', '{$emp['status']}', 'Admin')";
+
+                mysqli_query($conn, $sql);
+            }
+        }
+        else
+        {
+            echo "<br>There is an error in creating the table: " . $conn->connect_error;
+        }
 
         $conn->close();
     }
@@ -865,7 +1061,100 @@
                 Upd_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )";
     
-        mysqli_query($conn, $sql);
+        if (mysqli_query($conn, $sql))
+        {           
+            $customers = [
+                [
+                    'name' => 'Sean Genesis',
+                    'address' => '231 Visayas Street, Malabon City',
+                    'contact' => '09864325874',
+                    'info' => '60 Years old \n185cm \nMale',
+                    'notes' => 'Round Face Shape'
+                ],
+                [
+                    'name' => 'Maria Teresa Cruz',
+                    'address' => '123 Main Street, Quezon City',
+                    'contact' => '09123456789',
+                    'info' => '45 Years old \n160cm \nFemale',
+                    'notes' => 'Oval Face Shape'
+                ],
+                [
+                    'name' => 'Juan Dela Peña',
+                    'address' => '456 Oak Avenue, Makati City',
+                    'contact' => '09234567890',
+                    'info' => '35 Years old \n175cm \nMale',
+                    'notes' => 'Square Face Shape'
+                ],
+                [
+                    'name' => 'Ana Marie Santos',
+                    'address' => '789 Pine Road, Manila',
+                    'contact' => '09345678901',
+                    'info' => '28 Years old \n165cm \nFemale',
+                    'notes' => 'Heart Face Shape'
+                ],
+                [
+                    'name' => 'Carlos Miguel Reyes',
+                    'address' => '321 Elm Street, Pasig City',
+                    'contact' => '09456789012',
+                    'info' => '50 Years old \n170cm \nMale',
+                    'notes' => 'Oval Face Shape'
+                ],
+                [
+                    'name' => 'Lourdes Fernandez',
+                    'address' => '654 Maple Lane, Mandaluyong',
+                    'contact' => '09567890123',
+                    'info' => '55 Years old \n158cm \nFemale',
+                    'notes' => 'Round Face Shape'
+                ],
+                [
+                    'name' => 'Ricardo Gonzales',
+                    'address' => '987 Cedar Blvd, Taguig',
+                    'contact' => '09678901234',
+                    'info' => '40 Years old \n180cm \nMale',
+                    'notes' => 'Square Face Shape'
+                ],
+                [
+                    'name' => 'Patricia Ann Lim',
+                    'address' => '135 Walnut Street, Paranaque',
+                    'contact' => '09789012345',
+                    'info' => '30 Years old \n162cm \nFemale',
+                    'notes' => 'Oval Face Shape'
+                ],
+                [
+                    'name' => 'Francisco Martinez',
+                    'address' => '246 Birch Road, Las Piñas',
+                    'contact' => '09890123456',
+                    'info' => '65 Years old \n172cm \nMale',
+                    'notes' => 'Round Face Shape'
+                ],
+                [
+                    'name' => 'Elena Rodriguez',
+                    'address' => '369 Spruce Avenue, Muntinlupa',
+                    'contact' => '09901234567',
+                    'info' => '42 Years old \n166cm \nFemale',
+                    'notes' => 'Heart Face Shape'
+                ]
+            ];
+            
+            foreach ($customers as $cust) {
+                $id = generate_CustomerID();
+                
+                $sql = "INSERT INTO customer 
+                        (CustomerID, CustomerName, CustomerAddress, CustomerContact,
+                        CustomerInfo, Notes, Upd_by) 
+                        VALUES
+                        ('$id', '{$cust['name']}', '{$cust['address']}', 
+                        '{$cust['contact']}', '{$cust['info']}', 
+                        '{$cust['notes']}', 'Bien Ven P. Santos')";
+                
+                mysqli_query($conn, $sql);
+                
+            }
+        }
+        else
+        {
+            echo "<br>There is an error in creating the table: " . $conn->connect_error;
+        }
     
         $conn->close();
     }
@@ -916,166 +1205,6 @@
         $conn->close();
         return $id;
     }       
-    function populateCoreTablesWith15Records() {
-        $conn = connect();
-        
-        try {
-            // 1. Populate 15 Employees
-            $employees = [
-                ['Bien Ven P. Santos', 'BVPSantosOptical@gmail.com', '09864571325', 1, 'BVSantos1', 'JPSantos123', 2025160000],
-                ['Sean Genesis V. Morse', 'SeanGenesis@gmail.com', '09438945698', 2, 'SGMorse1', 'Morse123', 2025160001],
-                ['Maria Cristina L. Reyes', 'MCReyes@gmail.com', '09123456789', 2, 'MCReyes1', 'Reyes123', 2025160002],
-                ['Juan Dela Cruz', 'JDCruz@gmail.com', '09234567890', 2, 'JDCruz1', 'Cruz123', 2025160003],
-                ['Ana Marie S. Lopez', 'AMLopez@gmail.com', '09345678901', 2, 'AMLopez1', 'Lopez123', 2025160000],
-                ['Carlos Miguel G. Tan', 'CMTan@gmail.com', '09456789012', 2, 'CMTan1', 'Tan123', 2025160001],
-                ['Lourdes F. Mendoza', 'LFMendoza@gmail.com', '09567890123', 2, 'LFMendoza1', 'Mendoza123', 2025160002],
-                ['Ricardo B. Gonzales', 'RBGonzales@gmail.com', '09678901234', 2, 'RBGonzales1', 'Gonzales123', 2025160003],
-                ['Patricia Ann Q. Santos', 'PAQSantos@gmail.com', '09789012345', 2, 'PAQSantos1', 'Santos123', 2025160000],
-                ['Francisco M. Lim', 'FMLim@gmail.com', '09890123456', 2, 'FMLim1', 'Lim123', 2025160001],
-                ['Elena R. Castillo', 'ECastillo@gmail.com', '09901234567', 2, 'ECastillo1', 'Castillo123', 2025160002],
-                ['Miguel A. Santiago', 'MSantiago@gmail.com', '09112233445', 2, 'MSantiago1', 'Santiago123', 2025160003],
-                ['Sophia G. Ramirez', 'SRamirez@gmail.com', '09223344556', 2, 'SRamirez1', 'Ramirez123', 2025160000],
-                ['Daniel L. Ocampo', 'DOcampo@gmail.com', '09334455667', 2, 'DOcampo1', 'Ocampo123', 2025160001],
-                ['Isabella T. Navarro', 'INavarro@gmail.com', '09445566778', 2, 'INavarro1', 'Navarro123', 2025160002]
-            ];
-    
-            echo "Populating 15 employees...\n";
-            foreach ($employees as $emp) {
-                $id = generate_EmployeeID();
-                $hashed_pw = password_hash($emp[5], PASSWORD_DEFAULT);
-                $img_path = "Images/default.jpg";
-    
-                $sql = "INSERT INTO employee VALUES (
-                    $id, 
-                    '{$emp[0]}', 
-                    '$img_path', 
-                    '{$emp[1]}', 
-                    '{$emp[2]}', 
-                    {$emp[3]}, 
-                    '{$emp[4]}', 
-                    '$hashed_pw', 
-                    {$emp[6]}, 
-                    'Active', 
-                    'System', 
-                    NOW()
-                )";
-    
-                if (!mysqli_query($conn, $sql)) {
-                    throw new Exception("Failed to insert employee: " . $conn->error);
-                }
-                echo "Added employee: {$emp[0]}\n";
-            }
-    
-            // 2. Populate 15 Customers with Logs
-            $customers = [
-                ['Sean Genesis', '231 Visayas St, Malabon', '09864325874', '60 Years old \n185cm \nMale', 'Round Face Shape'],
-                ['Maria Teresa Cruz', '123 Main St, Quezon City', '09123456789', '45 Years old \n160cm \nFemale', 'Oval Face Shape'],
-                ['Juan Dela Peña', '456 Oak Ave, Makati', '09234567890', '35 Years old \n175cm \nMale', 'Square Face Shape'],
-                ['Ana Marie Santos', '789 Pine Rd, Manila', '09345678901', '28 Years old \n165cm \nFemale', 'Heart Face Shape'],
-                ['Carlos Miguel Reyes', '321 Elm St, Pasig', '09456789012', '50 Years old \n170cm \nMale', 'Oval Face Shape'],
-                ['Lourdes Fernandez', '654 Maple Ln, Mandaluyong', '09567890123', '55 Years old \n158cm \nFemale', 'Round Face Shape'],
-                ['Ricardo Gonzales', '987 Cedar Blvd, Taguig', '09678901234', '40 Years old \n180cm \nMale', 'Square Face Shape'],
-                ['Patricia Ann Lim', '135 Walnut St, Paranaque', '09789012345', '30 Years old \n162cm \nFemale', 'Oval Face Shape'],
-                ['Francisco Martinez', '246 Birch Rd, Las Piñas', '09890123456', '65 Years old \n172cm \nMale', 'Round Face Shape'],
-                ['Elena Rodriguez', '369 Spruce Ave, Muntinlupa', '09901234567', '42 Years old \n166cm \nFemale', 'Heart Face Shape'],
-                ['Antonio B. Reyes', '159 Acacia St, Valenzuela', '09112233445', '48 Years old \n170cm \nMale', 'Oval Face Shape'],
-                ['Gabriela S. Mendoza', '753 Pineapple St, Caloocan', '09223344556', '33 Years old \n163cm \nFemale', 'Heart Face Shape'],
-                ['Rafael T. Castro', '852 Mango Ave, Marikina', '09334455667', '52 Years old \n175cm \nMale', 'Square Face Shape'],
-                ['Isabel V. Dela Cruz', '456 Banana Rd, San Juan', '09445566778', '29 Years old \n160cm \nFemale', 'Oval Face Shape'],
-                ['Luis M. Navarro', '789 Coconut Ln, Pasay', '09556677889', '38 Years old \n178cm \nMale', 'Round Face Shape']
-            ];
-    
-            echo "\nPopulating 15 customers with logs...\n";
-            foreach ($customers as $cust) {
-                $id = generate_CustomerID();
-                
-                $sql = "INSERT INTO customer VALUES (
-                    '$id', 
-                    '{$cust[0]}', 
-                    '{$cust[1]}', 
-                    '{$cust[2]}', 
-                    '{$cust[3]}', 
-                    '{$cust[4]}', 
-                    'System', 
-                    NOW()
-                )";
-    
-                if (!mysqli_query($conn, $sql)) {
-                    throw new Exception("Failed to insert customer: " . $conn->error);
-                }
-    
-                // Create log entry
-                $logId = generate_LogsID();
-                $employee_id = 1; // Default to admin
-                
-                $logSql = "INSERT INTO Logs VALUES (
-                    '$logId', 
-                    '$employee_id', 
-                    '$id', 
-                    'customer', 
-                    2, 
-                    NOW()
-                )";
-    
-                if (!mysqli_query($conn, $logSql)) {
-                    throw new Exception("Failed to insert customer log: " . $conn->error);
-                }
-                echo "Added customer: {$cust[0]}\n";
-            }
-    
-            // 3. Populate 15 Products
-            $products = [
-                ['Minima M-508C _144 867', 2025150000, 'Frame', 3500, 'Magnesium'],
-                ['IMAX 5565 54-17-140', 2025150001, 'Frame', 4200, 'Beryllium'],
-                ['Paul Hueman PHF-300A', 2025150002, 'Frame', 3800, 'Pure aluminum'],
-                ['Caradin CR-2020', 2025150003, 'Frame', 4500, 'Ticral'],
-                ['Lee Cooper LC-101', 2025150004, 'Frame', 3900, 'Stainless'],
-                ['Bobby Jones BJ-505', 2025150005, 'Frame', 4100, 'Nickel titanium'],
-                ['LIGHT TECH 7783L', 2025150006, 'Frame', 3700, 'Monel'],
-                ['Ray-Ban RB2140', 2025150007, 'Sunglasses', 5200, 'Plastic'],
-                ['Oakley OO9438', 2025150008, 'Sunglasses', 5800, 'Gliamide'],
-                ['Persol PO3254', 2025150009, 'Sunglasses', 5400, 'Magnesium'],
-                ['Acuvue Oasys', 2025150010, 'Contact Lenses', 3200, 'Silicone hydrogel'],
-                ['Air Optix Aqua', 2025150011, 'Contact Lenses', 3400, 'Lotrafilcon B'],
-                ['Biofinity', 2025150012, 'Contact Lenses', 3600, 'Comfilcon A'],
-                ['Essilor Varilux', 2025150013, 'Progressive Lens', 7800, 'Plastic'],
-                ['Hoya EnRoute', 2025150014, 'Photochromic Lens', 8200, 'Polycarbonate']
-            ];
-    
-            echo "\nPopulating 15 products...\n";
-            foreach ($products as $index => $prod) {
-                $id = generate_ProductMstrID();
-                $shape = rand(1,5);
-                $img_num = str_pad(69 + $index, 5, '0', STR_PAD_LEFT);
-                $img_path = "Images/$img_num.jpg";
-    
-                $sql = "INSERT INTO productMstr VALUES (
-                    '$id', 
-                    '{$prod[2]}', 
-                    $shape, 
-                    '{$prod[1]}', 
-                    '{$prod[0]}', 
-                    '{$prod[4]}', 
-                    '{$prod[3]}', 
-                    '$img_path', 
-                    'Available', 
-                    'System', 
-                    NOW()
-                )";
-    
-                if (!mysqli_query($conn, $sql)) {
-                    throw new Exception("Failed to insert product: " . $conn->error);
-                }
-                echo "Added product: {$prod[0]}\n";
-            }
-    
-            echo "\nSuccessfully populated all tables with 15 records each!\n";
-        } catch (Exception $e) {
-            echo "Error: " . $e->getMessage() . "\n";
-        } finally {
-            $conn->close();
-        }
-    }
 ?>
 
 <?php
@@ -1098,29 +1227,13 @@
     }
     $conn = connect();
     
-    // Check if Role Master Table exists
-    $table_check_query = "SHOW TABLES LIKE 'roleMaster'";
+    // Check if customer table exists
+    $table_check_query = "SHOW TABLES LIKE 'customer'";
     $result = mysqli_query($conn, $table_check_query);
 
     if (mysqli_num_rows($result) == 0) 
     {
-        create_RoleMasterTable();
-    }
-     // Check if Branch Master Table exists
-    $table_check_query = "SHOW TABLES LIKE 'BranchMaster'";
-    $result = mysqli_query($conn, $table_check_query);
-
-    if (mysqli_num_rows($result) == 0) 
-    {
-        create_BranchMasterTable();
-    }    
-    // Check if Activity Master Table exists
-    $table_check_query = "SHOW TABLES LIKE 'activityMaster'";
-    $result = mysqli_query($conn, $table_check_query);
-
-    if (mysqli_num_rows($result) == 0) 
-    {
-        create_ActivityhMstrTable();
+        create_CustomersTable();
     }    
     // Check if Product Master Table exists
     $table_check_query = "SHOW TABLES LIKE 'categoryType'";  // Changed from 'CategoryType' to 'categoryType'
@@ -1138,6 +1251,7 @@
     {
         create_ShapeMasterTable();
     }
+    // Check if Shape Master Table exists
     $table_check_query = "SHOW TABLES LIKE 'brandMaster'";
     $result = mysqli_query($conn, $table_check_query);
 
@@ -1145,30 +1259,21 @@
     {
         create_BrandMasterTable();
     }
-    // Check if employee table exists
-    $table_check_query = "SHOW TABLES LIKE 'employee'";
+    // Check if Branch Master Table exists
+    $table_check_query = "SHOW TABLES LIKE 'BranchMaster'";
     $result = mysqli_query($conn, $table_check_query);
 
     if (mysqli_num_rows($result) == 0) 
     {
-        create_EmployeesTable();
-    }
-    // Check if Shape Master Table exists
-    $table_check_query = "SHOW TABLES LIKE 'shapeMaster'";
+        create_BranchMasterTable();
+    }    
+    // Check if Activity Master Table exists
+    $table_check_query = "SHOW TABLES LIKE 'activityMaster'";
     $result = mysqli_query($conn, $table_check_query);
 
     if (mysqli_num_rows($result) == 0) 
     {
-        create_ShapeMasterTable();
-    }
-    // Check if Shape Master Table exists
-    // Check if customer table exists
-    $table_check_query = "SHOW TABLES LIKE 'customer'";
-    $result = mysqli_query($conn, $table_check_query);
-
-    if (mysqli_num_rows($result) == 0) 
-    {
-        create_CustomersTable();
+        create_ActivityhMstrTable();
     }    
     // Check if Order_hdr Table exists
     $table_check_query = "SHOW TABLES LIKE 'Order_hdr'";
@@ -1178,7 +1283,14 @@
     {
         create_Order_hdrTable();
     }
-    
+    // Check if Role Master Table exists
+    $table_check_query = "SHOW TABLES LIKE 'roleMaster'";
+    $result = mysqli_query($conn, $table_check_query);
+
+    if (mysqli_num_rows($result) == 0) 
+    {
+        create_RoleMasterTable();
+    }
     // Check if Product Master Table exists
     $table_check_query = "SHOW TABLES LIKE 'productMstr'";
     $result = mysqli_query($conn, $table_check_query);
@@ -1203,7 +1315,14 @@
     {
         create_orderDetailsTable();
     }    
-    
+    // Check if employee table exists
+    $table_check_query = "SHOW TABLES LIKE 'employee'";
+    $result = mysqli_query($conn, $table_check_query);
+
+    if (mysqli_num_rows($result) == 0) 
+    {
+        create_EmployeesTable();
+    }
     // Check if Logs Table exists
     $table_check_query = "SHOW TABLES LIKE 'Logs'";
     $result = mysqli_query($conn, $table_check_query);
@@ -1212,12 +1331,5 @@
     {
         create_LogsTable();
     }    
-    $emp_count = $conn->query("SELECT COUNT(*) FROM employee")->fetch_row()[0];
-    $cust_count = $conn->query("SELECT COUNT(*) FROM customer")->fetch_row()[0];
-    $prod_count = $conn->query("SELECT COUNT(*) FROM productMstr")->fetch_row()[0];
-    $conn->close();
-
-    if ($emp_count < 15 || $cust_count < 15 || $prod_count < 15) {
-        populateCoreTablesWith15Records();
-    }
+    
 ?>
