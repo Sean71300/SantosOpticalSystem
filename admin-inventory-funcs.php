@@ -589,7 +589,7 @@ function confirmEditProduct() {
     $productBranchID = $_POST['productBranchID'] ?? '';
     $date = new DateTime();
     $upd_dt = $date->format('Y-m-d H:i:s');
-    echo $shape;
+    echo $shape . 'burnik';
     return;
 
     $targetDir = "uploads/";
