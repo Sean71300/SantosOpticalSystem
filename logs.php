@@ -1,13 +1,9 @@
 <?php
 include_once 'setup.php';
-include 'loginChecker.php';
 include 'ActivityTracker.php';
-
+include 'loginChecker.php';
 // Check if user is admin
-if ($_SESSION['role'] != 1) {
-    header("Location: unauthorized.php");
-    exit();
-}
+
 
 // Pagination setup
 $logsPerPage = 10;
@@ -46,7 +42,8 @@ $conn->close();
 <!DOCTYPE html>
 <html>
 <head>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="customCodes/custom.css">
     <link rel="shortcut icon" type="image/x-icon" href="images/logo.png"/>
