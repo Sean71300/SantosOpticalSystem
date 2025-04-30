@@ -95,7 +95,8 @@ function getEmployeeName()
                         sm.Description AS ShapeDescription,
                         bm.BrandName,
                         pm.Model, 
-                        pm.Remarks, 
+                        pm.Material,
+                        pm.Price, 
                         pm.ProductImage,
                         GROUP_CONCAT(CONCAT(b.BranchName, ': ', pbm.Count) SEPARATOR '<br>') AS BranchDistribution,
                         SUM(pbm.Count) AS TotalCount,
@@ -107,7 +108,7 @@ function getEmployeeName()
                     JOIN ProductBranchMaster pbm ON pm.ProductID = pbm.ProductID
                     JOIN BranchMaster b ON pbm.BranchCode = b.BranchCode
                     GROUP BY pm.ProductID, pm.CategoryType, sm.Description, bm.BrandName, 
-                                pm.Model, pm.Remarks, pm.ProductImage, pm.Upd_by";
+                                pm.Model, pm.Material, pm.Price, pm.ProductImage, pm.Upd_by";
             
             switch($sort) {
                 case 'ProductID': $sql .= " ORDER BY pm.ProductID"; break;
@@ -136,7 +137,8 @@ function getEmployeeName()
                         <td class='align-middle'>".htmlspecialchars($row['ShapeDescription'])."</td>
                         <td class='align-middle'>".htmlspecialchars($row['BrandName'])."</td>
                         <td class='align-middle'>".htmlspecialchars($row['Model'])."</td>
-                        <td class='align-middle'>".htmlspecialchars($row['Remarks'])."</td>
+                        <td class='align-middle'>".htmlspecialchars($row['Material'])."</td>
+                        <td class='align-middle'>".htmlspecialchars($row['Price'])."</td>
                         <td class='align-middle'><img src='".htmlspecialchars($row['ProductImage'])."' class='product-img'></td>
                         <td class='align-middle'>".htmlspecialchars($row['TotalCount'])."</td>                        
                     </tr>";
@@ -187,7 +189,8 @@ function getEmployeeName()
                         <td class='align-middle'>".htmlspecialchars($row['ShapeDescription'])."</td>
                         <td class='align-middle'>".htmlspecialchars($row['BrandName'])."</td>
                         <td class='align-middle'>".htmlspecialchars($row['Model'])."</td>
-                        <td class='align-middle'>".htmlspecialchars($row['Remarks'])."</td>
+                        <td class='align-middle'>".htmlspecialchars($row['Material'])."</td>
+                        <td class='align-middle'>".htmlspecialchars($row['Price'])."</td>
                         <td class='align-middle'><img src='".htmlspecialchars($row['ProductImage'])."' class='product-img'></td>
                         <td class='align-middle'>".htmlspecialchars($row['Count'])."</td>
                         <td>
@@ -199,7 +202,8 @@ function getEmployeeName()
                                 <input type='hidden' name='shape' value='" . htmlspecialchars($row['ShapeDescription']) . "' />
                                 <input type='hidden' name='brandID' value='" . htmlspecialchars($row['BrandID']) . "' />
                                 <input type='hidden' name='model' value='" . htmlspecialchars($row['Model']) . "' />
-                                <input type='hidden' name='remarks' value='" . htmlspecialchars($row['Remarks']) . "' />
+                                <input type='hidden' name='material' value='" . htmlspecialchars($row['Material']) . "' />
+                                <input type='hidden' name='price' value='" . htmlspecialchars($row['Price']) . "' />
                                 <input type='hidden' name='count' value='" . htmlspecialchars($row['Count']) . "' />
                                 <input type='hidden' name='productImg' value='" . htmlspecialchars($row['ProductImage']) . "' />
                                 <button type='submit' class='btn btn-success' name='editProductBtn' value='editProductBtn' style='font-size:12px'><i class='fa-solid fa-pen'></i></button>
@@ -231,7 +235,8 @@ function addProduct(){ //Add function to add a new product to the database
     $newProductQty = $_POST['productQty'];
     $newProductShape = $_POST['productShape'];
     $newProductCategory = $_POST['productCategory'];
-    $newProductRemarks = $_POST['productRemarks'];
+    $newProductMaterial = $_POST['productMaterial'];
+    $newProductPrice = $_POST['productPrice'];
     $newProductImg = $_FILES['productImg'];
     if ($newProductQty > 0) {
         $avail_FL = 'Available';
@@ -253,6 +258,11 @@ function addProduct(){ //Add function to add a new product to the database
 
         // Check if image file is a valid image
         $check = getimagesize($newProductImg["tmp_name"]);
+        if (empty($check)) {
+            echo "Error: Unable to process the image. Please upload a valid image file.";
+            $uploadOk = 0;
+        }
+
         if ($check === false) {
             echo "File is not an image.";
             $uploadOk = 0;
@@ -323,10 +333,10 @@ function addProduct(){ //Add function to add a new product to the database
 
         if ($uploadOk && file_exists($targetFile)) {
             // Insert product details into the product master database
-            $sql = "INSERT INTO productMstr (ProductID, CategoryType, ShapeID, BrandID, Model, Remarks, ProductImage, Avail_FL, Upd_by, Upd_dt) 
+            $sql = "INSERT INTO productMstr (ProductID, CategoryType, ShapeID, BrandID, Model, Material, Price, ProductImage, Avail_FL, Upd_by, Upd_dt) 
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $stmt = mysqli_prepare($link, $sql);
-            mysqli_stmt_bind_param($stmt, "ssssssssss", $newProductID, $newProductCategory, $newProductShape, $newProductBrand, $newProductName, $newProductRemarks, $targetFile, $avail_FL, $upd_by, $upd_dt);            
+            mysqli_stmt_bind_param($stmt, "sssssssss", $newProductID, $newProductCategory, $newProductShape, $newProductBrand, $newProductName, $newProductMaterial, $newProductPrice, $targetFile, $avail_FL, $upd_by);           
             mysqli_stmt_execute($stmt);
             mysqli_stmt_close($stmt);
             
@@ -452,7 +462,8 @@ function editProduct(){ //Edit function to edit an existing product in the datab
     $ShapeDescription = $_POST['shape'] ?? '';
     $brandID = $_POST['brandID'] ?? '';
     $model = $_POST['model'] ?? '';
-    $remarks = $_POST['remarks'] ?? '';
+    $material = $_POST['material'] ?? '';
+    $price = $_POST['price'] ?? '';
     $count = $_POST['count'] ?? '';
     $productImg = $_POST['productImg'] ?? '';
     $branchName = $_POST['chooseBranch'] ?? '';
@@ -500,8 +511,12 @@ function editProduct(){ //Edit function to edit an existing product in the datab
                                 <input type="text" class="form-control" id="model" name="model" value="' . htmlspecialchars($model) . '" required>
                             </div>
                             <div class="mb-3">
-                                <label for="remarks" class="form-label">Remarks</label>
-                                <input type="text" class="form-control" id="remarks" name="remarks" value="' . htmlspecialchars($remarks) . '" required>
+                                <label for="material" class="form-label">Material</label>
+                                <input type="text" class="form-control" id="material" name="material" value="' . htmlspecialchars($material) . '" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="price" class="form-label">Price</label>
+                                <input type="text" class="form-control" id="price" name="price" value="' . htmlspecialchars($price) . '" required>
                             </div>
                             <div class="mb-3">
                                 <label for="count" class="form-label">Count</label>
@@ -563,7 +578,8 @@ function confirmEditProduct() {
     $shape = $_POST['ShapeDescription'] ?? '';
     $brandID = $_POST['brandID'] ?? '';
     $model = $_POST['model'] ?? '';
-    $remarks = $_POST['remarks'] ?? '';
+    $material = $_POST['material'] ?? '';
+    $price = $_POST['price'] ?? '';
     $count = $_POST['count'] ?? '';
     $avail_FL = ($count > 0) ? 'Available' : 'Not Available';
     $NewProductImg = $_FILES['newProductImg'];
@@ -659,9 +675,9 @@ function confirmEditProduct() {
         $success = true;
 
         // Update productmstr table
-        $sql1 = "UPDATE productMstr SET CategoryType = ?, ShapeID = ?, BrandID = ?, Model = ?, Remarks = ?, ProductImage = ?, Upd_by = ?, Upd_dt = ? WHERE ProductID = ?";
+        $sql1 = "UPDATE productMstr SET CategoryType = ?, ShapeID = ?, BrandID = ?, Model = ?, Material = ?, Price = ?, ProductImage = ?, Upd_by = ?, Upd_dt = ? WHERE ProductID = ?";
         $stmt1 = mysqli_prepare($link, $sql1);
-        mysqli_stmt_bind_param($stmt1, "sssssssss", $categoryType, $shape, $brandID, $model, $remarks, $targetFile, $employeeName, $upd_dt, $productID);
+        mysqli_stmt_bind_param($stmt1, "sssssssss", $categoryType, $shape, $brandID, $model, $material, $price, $targetFile, $employeeName, $upd_dt, $productID);
         if (!mysqli_stmt_execute($stmt1)) {
             $success = false;
         }

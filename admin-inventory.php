@@ -226,7 +226,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                                 <i class="fas fa-sort-'.($sort == 'Model' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
                                             </span>
                                         </th>
-                                        <th>Remarks</th>
+                                        <th>Material</th>
                                         <th>Product Image</th>
                                         <th class="sortable '.($sort == 'TotalCount' ? 'active' : '').'" onclick="sortTable(\'TotalCount\')">
                                             Total Count
@@ -276,7 +276,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                                 <i class="fas fa-sort-'.($sort == 'Model' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
                                             </span>
                                         </th>
-                                        <th>Remarks</th>
+                                        <th>Material</th>
                                         <th>Product Image</th>
                                         <th class="sortable '.($sort == 'Count' ? 'active' : '').'" onclick="sortTable(\'Count\')">
                                             Count
