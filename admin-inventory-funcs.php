@@ -702,7 +702,9 @@ function confirmEditProduct() {
                             <div class="modal-body">
                                 The product has been updated successfully!
                             </div>
-                            <a href="admin-inventory.php?branch='.urlencode($_POST['chooseBranch']).'&sort='.urlencode($_GET['sort'] ?? 'ProductID').'&order='.urlencode($_GET['order'] ?? 'ASC').'" class="btn btn-secondary">Close</a>
+                            <div class="modal-footer">                             
+                                <a href="admin-inventory.php?branch='.urlencode($_POST['chooseBranch']).'&sort='.urlencode($_GET['sort'] ?? 'ProductID').'&order='.urlencode($_GET['order'] ?? 'ASC').'" class="btn btn-secondary">Close</a>
+                            </div>
                         </div>
                     </div>
                 </div>
