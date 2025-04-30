@@ -365,17 +365,7 @@ function addProduct(){ //Add function to add a new product to the database
                         </div>
                     </div>
                 </div>';
-
-            $logSQL = "INSERT INTO Logs (LogsID, EmployeeID, ProductBranchID, ActivityCode, Count, Upd_dt) VALUES (?, ?, ?, ?, ?, ?)";
-            $logStmt = mysqli_prepare($link, $logSQL);
-            $logID = generate_LogsID();
-            $logEmployeeID = getEmployeeID();
-            $logActivityCode = '2'; // Activity code for adding a product
-            $logCount = $newProductQty; // Assuming count is 1 for adding a product
-            $logUpdDT = date('Y-m-d H:i:s');
-            mysqli_stmt_bind_param($logStmt, "ssssss", $logID, $logEmployeeID, $newProductBranchID, $logActivityCode, $logCount, $logUpdDT);
-            mysqli_stmt_execute($logStmt);
-            mysqli_stmt_close($logStmt);
+            
         } else {
             echo 
             '<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
