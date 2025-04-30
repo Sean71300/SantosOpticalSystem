@@ -462,7 +462,8 @@ function editProduct(){ //Edit function to edit an existing product in the datab
     $brandID = $_POST['brandID'] ?? '';
     $model = $_POST['model'] ?? '';
     $material = $_POST['material'] ?? '';
-    $price = "₱" . $_POST['price'] ?? '';
+    $price = $_POST['price'] ?? '';
+    $price = ltrim($price, '₱');
     $count = $_POST['count'] ?? '';
     $productImg = $_POST['productImg'] ?? '';
     $branchName = $_POST['chooseBranch'] ?? '';
@@ -578,7 +579,7 @@ function confirmEditProduct() {
     $brandID = $_POST['brandID'] ?? '';
     $model = $_POST['model'] ?? '';
     $material = $_POST['material'] ?? '';
-    $price = $_POST['price'] ?? '';
+    $price = '₱' . $_POST['price'] ?? '';
     $count = $_POST['count'] ?? '';
     $avail_FL = ($count > 0) ? 'Available' : 'Not Available';
     $NewProductImg = $_FILES['newProductImg'];
