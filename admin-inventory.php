@@ -279,24 +279,26 @@ $_SESSION['current_branch'] = $branchName;
                 </div>
             </div>
             <?php
-            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-                if (isset($_POST['editProductBtn'])) {
-                    editProduct();
+            // Handle form actions
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    if (isset($_POST['editProductBtn'])) {
+                        editProduct();
+                    }
+                    elseif (isset($_POST['saveProductBtn'])) {
+                        confirmEditProduct();
+                        header("Location: admin-inventory.php?sort=$sort&order=$order&branch=".urlencode($branchName));
+                        exit();
+                    }
+                    elseif (isset($_POST['deleteProductBtn'])) {
+                        confirmDeleteProduct();
+                    }
+                    elseif (isset($_POST['confirmDeleteBtn'])) {
+                        deleteProduct();
+                        header("Location: admin-inventory.php?sort=$sort&order=$order&branch=".urlencode($branchName));
+                        exit();
+                    }
                 }
-                elseif (isset($_POST['saveProductBtn'])) {
-                    confirmEditProduct();
-                    getInventory();
-                }
-                elseif (isset($_POST['deleteProductBtn'])) {                     
-                    confirmDeleteProduct();
-                    getInventory();
-                }
-                elseif (isset($_POST['confirmDeleteBtn'])) {
-                    deleteProduct();
-                    getInventory();
-                }                 
-            }
-        ?>
+            ?>
         </div>
 
         <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
