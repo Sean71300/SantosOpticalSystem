@@ -202,6 +202,7 @@
             
             $conn = connect(); 
             $id = generate_EmployeeID();  
+            $employee_id = $_SESSION["id"];   
             $upd_by = $_SESSION["full_name"];         
             $sql = "INSERT INTO employee 
                     (EmployeeID,EmployeeName,EmployeePicture,EmployeeEmail,
@@ -212,7 +213,20 @@
                     '$role','$username','$hashed_pw','2025160000','Active','$upd_by')";
             
             mysqli_query($conn, $sql);
+            GenerateLogs($employee_id,$id);
         }
+        function GenerateLogs($employee_id,$id)
+    {
+        $conn = connect(); 
+        $Logsid = generate_LogsID(); ;   
+        $upd_by = $_SESSION["full_name"];
+        $sql = "INSERT INTO Logs 
+                (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Upd_dt)
+                VALUES
+                ('$Logsid', '$employee_id', '$id', 'employee', '2', NOW())";
+        
+        mysqli_query($conn, $sql);
+    }
     function handleCancellation() 
     {
         if (isset($_POST['confirm_cancel'])) {
