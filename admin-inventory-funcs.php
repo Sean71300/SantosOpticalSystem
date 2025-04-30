@@ -456,6 +456,9 @@ function getBranchCode($currentBranch = '') {
 }
 
 function editProduct(){ //Edit function to edit an existing product in the database 
+    echo 'burnik';
+    return;
+    
     $productID = $_POST['productID'] ?? '';
     $categoryType = $_POST['categoryType'] ?? '';
     $ShapeDescription = $_POST['shape'] ?? '';
