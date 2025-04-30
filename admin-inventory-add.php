@@ -159,7 +159,7 @@ include 'loginChecker.php';
                         <img src="Images/default-product.png" alt="Product Image" class="product-img-preview">
                         <div>
                             <label for="productImg" class="btn btn-success">
-                                <input type="file" name="productImg" id="productImg" accept="image/png, image/jpeg" onchange="productImagePreview(this)" style="display:none;">
+                                <input type="file" name="productImg" id="productImg" accept="image/png, image/jpeg" onchange="productImagePreview(this)" style="display:none;" required>
                                 <i class="fas fa-camera me-2"></i> Add Product Image
                             </label>
                         </div>
