@@ -1160,17 +1160,9 @@
                         VALUES
                         ('$id', '{$cust['name']}', '{$cust['address']}', 
                         '{$cust['contact']}', '{$cust['info']}', 
-                        '{$cust['notes']}', 'Bien Ven P. Santos')";                
+                        '{$cust['notes']}', 'Bien Ven P. Santos')";     
+                        
                 mysqli_query($conn, $sql);
-
-                $employee_id = generate_EmployeeID();
-                $Logsid = generate_LogsID(); ;   
-                $sql1 = "INSERT INTO Logs                 
-                (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Upd_dt)
-                VALUES
-                ('$Logsid', '$employee_id', '$id', 'customer', '2', NOW())";
-        
-                mysqli_query($conn, $sql1);
             }
         }
         else
