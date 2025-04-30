@@ -306,6 +306,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 elseif (isset($_POST['saveProductBtn'])) {
                     confirmEditProduct();
                     getInventory();
+                    echo 'burnik';
                 }
                 elseif (isset($_POST['deleteProductBtn'])) {                     
                     confirmDeleteProduct();
