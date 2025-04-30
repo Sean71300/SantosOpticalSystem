@@ -182,14 +182,14 @@ function getEmployeeName()
     
             while ($row = mysqli_fetch_assoc($result)) {
                 echo "<tr>
-                        <td>".htmlspecialchars($row['ProductID'])."</td>
-                        <td>".htmlspecialchars($row['CategoryType'])."</td>
-                        <td>".htmlspecialchars($row['ShapeDescription'])."</td>
-                        <td>".htmlspecialchars($row['BrandName'])."</td>
-                        <td>".htmlspecialchars($row['Model'])."</td>
-                        <td>".htmlspecialchars($row['Remarks'])."</td>
-                        <td><img src='".htmlspecialchars($row['ProductImage'])."' class='product-img'></td>
-                        <td>".htmlspecialchars($row['Count'])."</td>
+                        <td class='align-middle'>".htmlspecialchars($row['ProductID'])."</td>
+                        <td class='align-middle'>".htmlspecialchars($row['CategoryType'])."</td>
+                        <td class='align-middle'>".htmlspecialchars($row['ShapeDescription'])."</td>
+                        <td class='align-middle'>".htmlspecialchars($row['BrandName'])."</td>
+                        <td class='align-middle'>".htmlspecialchars($row['Model'])."</td>
+                        <td class='align-middle'>".htmlspecialchars($row['Remarks'])."</td>
+                        <td class='align-middle'><img src='".htmlspecialchars($row['ProductImage'])."' class='product-img'></td>
+                        <td class='align-middle'>".htmlspecialchars($row['Count'])."</td>
                         <td>
                             <form method='post'>
                                 <input type='hidden' name='chooseBranch' value='" . htmlspecialchars($branchName) . "' />
