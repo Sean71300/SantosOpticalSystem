@@ -281,19 +281,18 @@ $_SESSION['current_branch'] = $branchName;
                         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             if (isset($_POST['editProductBtn'])) {
                                 editProduct();
-                                getInventory($sort, $order);
                             }
                             elseif (isset($_POST['saveProductBtn'])) {
                                 confirmEditProduct(); 
-                                getInventory($sort, $order);       
+                                header("Refresh:0");     
                             }
                             elseif (isset($_POST['deleteProductBtn'])) {
                                 confirmDeleteProduct();
-                                getInventory($sort, $order);
+                                header("Refresh:0");
                             }
                             elseif (isset($_POST['confirmDeleteBtn'])) {
                                 deleteProduct();
-                                getInventory($sort, $order);      
+                                header("Refresh:0");    
                             }
                         }
                     ?>
