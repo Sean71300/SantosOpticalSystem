@@ -1248,21 +1248,30 @@
         $conn->close();        
     }
     $conn = connect();
-    // Check if Logs Table exists
-    $table_check_query = "SHOW TABLES LIKE 'Logs'";
+    
+    // Check if Role Master Table exists
+    $table_check_query = "SHOW TABLES LIKE 'roleMaster'";
     $result = mysqli_query($conn, $table_check_query);
 
     if (mysqli_num_rows($result) == 0) 
     {
-        create_LogsTable();
+        create_RoleMasterTable();
+    }
+     // Check if Branch Master Table exists
+    $table_check_query = "SHOW TABLES LIKE 'BranchMaster'";
+    $result = mysqli_query($conn, $table_check_query);
+
+    if (mysqli_num_rows($result) == 0) 
+    {
+        create_BranchMasterTable();
     }    
-    // Check if customer table exists
-    $table_check_query = "SHOW TABLES LIKE 'customer'";
+    // Check if Activity Master Table exists
+    $table_check_query = "SHOW TABLES LIKE 'activityMaster'";
     $result = mysqli_query($conn, $table_check_query);
 
     if (mysqli_num_rows($result) == 0) 
     {
-        create_CustomersTable();
+        create_ActivityhMstrTable();
     }    
     // Check if Product Master Table exists
     $table_check_query = "SHOW TABLES LIKE 'categoryType'";  // Changed from 'CategoryType' to 'categoryType'
@@ -1280,7 +1289,6 @@
     {
         create_ShapeMasterTable();
     }
-    // Check if Shape Master Table exists
     $table_check_query = "SHOW TABLES LIKE 'brandMaster'";
     $result = mysqli_query($conn, $table_check_query);
 
@@ -1288,21 +1296,30 @@
     {
         create_BrandMasterTable();
     }
-    // Check if Branch Master Table exists
-    $table_check_query = "SHOW TABLES LIKE 'BranchMaster'";
+    // Check if employee table exists
+    $table_check_query = "SHOW TABLES LIKE 'employee'";
     $result = mysqli_query($conn, $table_check_query);
 
     if (mysqli_num_rows($result) == 0) 
     {
-        create_BranchMasterTable();
-    }    
-    // Check if Activity Master Table exists
-    $table_check_query = "SHOW TABLES LIKE 'activityMaster'";
+        create_EmployeesTable();
+    }
+    // Check if Shape Master Table exists
+    $table_check_query = "SHOW TABLES LIKE 'shapeMaster'";
     $result = mysqli_query($conn, $table_check_query);
 
     if (mysqli_num_rows($result) == 0) 
     {
-        create_ActivityhMstrTable();
+        create_ShapeMasterTable();
+    }
+    // Check if Shape Master Table exists
+    // Check if customer table exists
+    $table_check_query = "SHOW TABLES LIKE 'customer'";
+    $result = mysqli_query($conn, $table_check_query);
+
+    if (mysqli_num_rows($result) == 0) 
+    {
+        create_CustomersTable();
     }    
     // Check if Order_hdr Table exists
     $table_check_query = "SHOW TABLES LIKE 'Order_hdr'";
@@ -1312,14 +1329,7 @@
     {
         create_Order_hdrTable();
     }
-    // Check if Role Master Table exists
-    $table_check_query = "SHOW TABLES LIKE 'roleMaster'";
-    $result = mysqli_query($conn, $table_check_query);
-
-    if (mysqli_num_rows($result) == 0) 
-    {
-        create_RoleMasterTable();
-    }
+    
     // Check if Product Master Table exists
     $table_check_query = "SHOW TABLES LIKE 'productMstr'";
     $result = mysqli_query($conn, $table_check_query);
@@ -1344,14 +1354,14 @@
     {
         create_orderDetailsTable();
     }    
-    // Check if employee table exists
-    $table_check_query = "SHOW TABLES LIKE 'employee'";
+    
+    // Check if Logs Table exists
+    $table_check_query = "SHOW TABLES LIKE 'Logs'";
     $result = mysqli_query($conn, $table_check_query);
 
     if (mysqli_num_rows($result) == 0) 
     {
-        create_EmployeesTable();
-    }
-    
+        create_LogsTable();
+    }    
     
 ?>
