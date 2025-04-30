@@ -166,8 +166,10 @@ include 'loginChecker.php';
                     </div>
                 </div>
                 
-                <?php 
-                    addProduct();
+                <?php
+                    if ($_SERVER['REQUEST_METHOD'] === 'POST') { 
+                        addProduct();
+                    }
                 ?>
                 
                 <div class="d-flex justify-content-end gap-3 mt-5">                    
