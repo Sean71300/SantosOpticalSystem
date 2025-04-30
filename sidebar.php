@@ -54,6 +54,12 @@ if ($isAdmin === true) {
         <a href="order.php" class="sidebar-item <?php echo ($current_page == 'order.php') ? 'active' : ''; ?>">
             <i class="fas fa-shopping-cart"></i> Manage Orders
         </a>
+
+        <?php if ($isAdmin): ?>
+            <a href="logs.php" class="sidebar-item <?php echo ($current_page == 'logs.php') ? 'active' : ''; ?>">
+                <i class="fas fa-shopping-cart"></i> System Logs
+            </a>
+        <?php endif; ?>
         
         <!-- Logout Button -->
         <div class="sidebar-footer" style="position: absolute; bottom: 0; width: 100%;">
