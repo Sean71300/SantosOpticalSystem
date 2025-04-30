@@ -53,6 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
             break;
         }
         $upd_by = $_SESSION["full_name"];
+        $employee_id = $_SESSION["id"];
         $sql = "UPDATE customer 
             SET CustomerName = '$name', CustomerAddress = '$address', 
             CustomerContact = '$phone', CustomerInfo = '$info',
