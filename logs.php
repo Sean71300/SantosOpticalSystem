@@ -1,7 +1,6 @@
 <?php
 include_once 'setup.php';
 include 'ActivityTracker.php';
-include 'loginChecker.php';
 
 // Check if user is logged in and has admin privileges
 session_start();
