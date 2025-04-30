@@ -103,9 +103,23 @@
                 FOREIGN KEY (CustomerID) REFERENCES customer(CustomerID)
                 )";
 
-        mysqli_query($conn, $sql);
-        
-        
+        if (mysqli_query($conn, $sql))
+        {
+            $id = generate_Order_hdr_ID();
+            $id2 = generate_CustomerID();  
+            --$id2;
+            $sql = "INSERT INTO Order_hdr
+                    (Orderhdr_id,CustomerID,BranchCode,Created_by)
+                    VALUES
+                    ('$id', '$id2', '2025160000', 'Bien Ven P. Santos'
+                    )";
+
+            mysqli_query($conn, $sql);
+        }
+        else
+        {
+            echo "<br>There is an error in creating the table: " . $conn->connect_error;
+        }
 
         $conn->close();
     }
@@ -147,8 +161,27 @@
                 Upd_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (EmployeeID) REFERENCES employee(EmployeeID),                
                 FOREIGN KEY (ActivityCode) REFERENCES activityMaster(ActivityCode)
-                )";    
-        mysqli_query($conn, $sql);        
+                )";
+    
+        if (mysqli_query($conn, $sql))
+        {
+            $id = generate_LogsID(); 
+            $id2 = generate_EmployeeID();
+            --$id2;
+            
+            // Sample log entry for an employee activity
+            $sql = "INSERT INTO Logs
+                    (LogsID, EmployeeID, TargetID, TargetType, ActivityCode)
+                    VALUES
+                    ('$id', '$id2', '$id2', 'employee', '2')";
+    
+            mysqli_query($conn, $sql);
+        }
+        else
+        {
+            echo "<br>There is an error in creating the table: " . $conn->connect_error;
+        }
+    
         $conn->close();
     }
 
@@ -209,78 +242,43 @@
 
     // Create Product Branch Master Table
 
-    function create_ProductBrnchMstrTable() {
+    function create_ProductBrnchMstrTable()
+    {
         $conn = connect();
-        
-        try {
-            // Create the table if it doesn't exist
-            $sql = "CREATE TABLE IF NOT EXISTS ProductBranchMaster (
-                    ProductBranchID INT(10) PRIMARY KEY,
-                    ProductID INT(10),
-                    BranchCode INT(10),
-                    Count INT(100),
-                    Avail_FL VARCHAR(50), 
-                    Upd_by VARCHAR(50),
-                    Upd_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    FOREIGN KEY (ProductID) REFERENCES productMstr(ProductID),
-                    FOREIGN KEY (BranchCode) REFERENCES BranchMaster(BranchCode)
-                    )";
-            $conn->query($sql);
-    
-            // Check if table is empty
-            $check = "SELECT COUNT(*) as count FROM ProductBranchMaster";
-            $result = $conn->query($check);
-            $row = $result->fetch_assoc();
-            
-            if ($row['count'] == 0) {
-                // Get existing products
-                $products = $conn->query("SELECT ProductID FROM productMstr LIMIT 12");
-                if (!$products) {
-                    throw new Exception("Failed to get products: " . $conn->error);
-                }
+        $sql = "CREATE TABLE ProductBranchMaster (
+                ProductBranchID INT(10) PRIMARY KEY,
+                ProductID INT(10),
+                BranchCode INT(10),
+                Count INT(100),
+                Avail_FL VARCHAR(50), 
+                Upd_by VARCHAR(50),
+                Upd_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (ProductID) REFERENCES productMstr(ProductID),
+                FOREIGN KEY (BranchCode) REFERENCES BranchMaster(BranchCode)
+                )";
+
+        if (mysqli_query($conn, $sql)) {
+            for ($i = 0; $i < 12; $i++) {
+                $id = generate_ProductBrnchMstrID();    
+                $id2 = 2025140000 + $i; 
+                $id3 = generate_BranchCode();
+                $id3 = ($id3-4)+(rand(0,3));
+
+                $count = rand(3, 50); // Generate a random count between 3 and 50
                 
-                // Get existing branches
-                $branches = $conn->query("SELECT BranchCode FROM BranchMaster");
-                if (!$branches) {
-                    throw new Exception("Failed to get branches: " . $conn->error);
-                }
-                
-                $branchCodes = [];
-                while ($row = $branches->fetch_assoc()) {
-                    $branchCodes[] = $row['BranchCode'];
-                }
-                
-                if (empty($branchCodes)) {
-                    throw new Exception("No branches found in BranchMaster");
-                }
-                
-                $i = 0;
-                while ($row = $products->fetch_assoc() && $i < 12) {
-                    $productID = $row['ProductID'];
-                    $branchCode = $branchCodes[array_rand($branchCodes)];
-                    $count = rand(3, 50);
-                    $id = generate_ProductBrnchMstrID();
-                    
-                    $insertSql = "INSERT INTO ProductBranchMaster
-                                 (ProductBranchID, ProductID, BranchCode, Count, Avail_FL, Upd_by)
-                                 VALUES (?, ?, ?, ?, 'Available', 'System')";
-                    
-                    $stmt = $conn->prepare($insertSql);
-                    $stmt->bind_param("iiii", $id, $productID, $branchCode, $count);
-                    
-                    if (!$stmt->execute()) {
-                        throw new Exception("Failed to insert product branch: " . $stmt->error);
-                    }
-                    
-                    $stmt->close();
-                    $i++;
-                }
+                $sql = "INSERT INTO ProductBranchMaster
+                        (ProductBranchID, ProductID, BranchCode, Count, Avail_FL, Upd_by)
+                        VALUES
+                        ('$id', '$id2', '$id3', '$count', 'Available', 'Bien Ven P. Santos')";
+                mysqli_query($conn, $sql);             
             }
-        } catch (Exception $e) {
-            echo "Error: " . $e->getMessage();
-        } finally {
-            $conn->close();
         }
+        else
+        {
+            echo "<br>There is an error in creating the table: " . $conn->connect_error;
+        }
+
+        $conn->close();
     }
 
     // Generate ProductBrnchMstrID
@@ -757,51 +755,91 @@
     // Create Product Master Table
     function create_ProductMstrTable() {
         $conn = connect();
-    
         $sql = "CREATE TABLE productMstr (
-                ProductID INT(10) PRIMARY KEY,
-                CategoryType VARCHAR(50),
-                ShapeID INT(1),
-                BrandID INT(10),                              
-                Model VARCHAR(50),
-                Material VARCHAR(50),
-                Price VARCHAR(20),
-                ProductImage VARCHAR(255),
-                Avail_FL VARCHAR(50),  
-                Upd_by VARCHAR(50),
-                Upd_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (CategoryType) REFERENCES categoryType(CategoryType),
-                FOREIGN KEY (ShapeID) REFERENCES shapeMaster(ShapeID),
-                FOREIGN KEY (BrandID) REFERENCES brandMaster(BrandID)
-                )";
-    
-        if (mysqli_query($conn, $sql)) 
-        {
-            $products = [
-                [
-                    'model' => 'Minima M-508C _144 867',
-                    'brandID' => 2025150000,
-                    'category' => 'Frame',
-                    'price' => '₱3500',
-                    'material' => 'Magnesium',
-                    'image' => 'Images/00069.jpg'
-                ],
-            ];
+            ProductID INT(10) PRIMARY KEY,
+            CategoryType VARCHAR (50),
+            ShapeID INT (1),
+            BrandID INT (10),                              
+            Model VARCHAR(50),
+            Remarks VARCHAR(500),
+            ProductImage VARCHAR(255),
+            Avail_FL VARCHAR (50),  
+            Upd_by VARCHAR(50),
+            Upd_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (CategoryType) REFERENCES categoryType(CategoryType),
+            FOREIGN KEY (ShapeID) REFERENCES shapeMaster(ShapeID),
+            FOREIGN KEY (BrandID) REFERENCES brandMaster(BrandID)
+            )";
 
-            foreach ($products as $prod) {
+        if (mysqli_query($conn, $sql)) {
+        
+            for ($i = 0; $i <= 11; $i++) {
+                $img_path = 'Images/' . str_pad(69 + $i, 5, '0', STR_PAD_LEFT) . '.jpg';                
                 $id = generate_ProductMstrID();
+                $model = '';
+
+                switch ($i) {
+                    case 0: 
+                        $model = 'Minima M-508C _144 867';
+                        $brandID = 2025150000;
+                        break;
+                    case 1: 
+                        $model = 'IMAX 5565 54-17-140'; 
+                        $brandID = 2025150001;
+                        break;
+                    case 2: 
+                        $model = 'Paul Hueman';
+                        $brandID = 2025150002; 
+                        break;
+                    case 3: 
+                        $model = 'PAUL HUEMAN PHF-300A Col.5 50-201-42';
+                        $brandID = 2025150002;
+                        break;
+                    case 4: 
+                        $model = 'Caradin'; 
+                        $brandID = 2025150003;
+                        break;
+                    case 5: 
+                        $model = 'Lee Cooper'; 
+                        $brandID = 2025150004;
+                        break;
+                    case 6: 
+                        $model = 'Bobby Jones'; 
+                        $brandID = 2025150005;
+                        break;
+                    case 7: 
+                        $model = 'LIGHT TECH 3PC 7783L 54-16-140 BB 072'; 
+                        $brandID = 2025150006;
+                        break;
+                    case 8: 
+                        $model = 'LIGHT TECH 3PC 7775LBG 007'; 
+                        $brandID = 2025150006;
+                        break;
+                    case 9: 
+                        $model = 'LIGHT TECH'; 
+                        $brandID = 2025150006;
+                        break;
+                    case 10: 
+                        $model = 'LIGHT TECH';
+                        $brandID = 2025150006; 
+                        break;
+                    case 11: 
+                        $model = 'LIGHT TECH';
+                        $brandID = 2025150006; 
+                        break;
+                }
+ 
                 $shape = rand(1,5);
-    
                 $sql = "INSERT INTO productMstr
-                        (ProductID, CategoryType, ShapeID, BrandID, Model, Material, Price,
-                        ProductImage, Avail_FL, Upd_by)
-                        VALUES
-                        ('$id', '{$prod['category']}', '$shape', '{$prod['brandID']}', 
-                        '{$prod['model']}', '{$prod['material']}', '{$prod['price']}', 
-                        '{$prod['image']}', 'Available', 'System')";
-    
+                            (ProductID, CategoryType, ShapeID, BrandID, Model, Remarks,
+                            ProductImage, Avail_FL, Upd_by)
+                            VALUES
+                            ('$id', 'Frame', '$shape', '$brandID', 
+                            '$model', 'New Model', '$img_path', 'Available', 
+                            'Bien Ven P. Santos')";
+
                 mysqli_query($conn, $sql);
-            }        
+            }
         } else {
             echo "<br>There is an error in creating the table: " . $conn->connect_error;
         }
@@ -852,7 +890,8 @@
                 FOREIGN KEY (BranchCode) REFERENCES BranchMaster(BranchCode)
                 )";
 
-        if (mysqli_query($conn, $sql)){
+        if (mysqli_query($conn, $sql))
+        {
             $employees = [
                 [
                     'name' => 'Bien Ven P. Santos',
@@ -864,13 +903,104 @@
                     'branch' => 2025160000,
                     'status' => 'Active'
                 ],
+                [
+                    'name' => 'Sean Genesis V. Morse',
+                    'email' => 'SeanGenesis@gmail.com',
+                    'number' => '09438945698',
+                    'role' => 2,
+                    'login' => 'SGMorse1',
+                    'password' => 'Morse123',
+                    'branch' => 2025160001,
+                    'status' => 'Active'
+                ],
+                [
+                    'name' => 'Maria Cristina L. Reyes',
+                    'email' => 'MCReyes@gmail.com',
+                    'number' => '09123456789',
+                    'role' => 2,
+                    'login' => 'MCReyes1',
+                    'password' => 'Reyes123',
+                    'branch' => 2025160002,
+                    'status' => 'Active'
+                ],
+                [
+                    'name' => 'Juan Dela Cruz',
+                    'email' => 'JDCruz@gmail.com',
+                    'number' => '09234567890',
+                    'role' => 2,
+                    'login' => 'JDCruz1',
+                    'password' => 'Cruz123',
+                    'branch' => 2025160003,
+                    'status' => 'Active'
+                ],
+                [
+                    'name' => 'Ana Marie S. Lopez',
+                    'email' => 'AMLopez@gmail.com',
+                    'number' => '09345678901',
+                    'role' => 2,
+                    'login' => 'AMLopez1',
+                    'password' => 'Lopez123',
+                    'branch' => 2025160000,
+                    'status' => 'Active'
+                ],
+                [
+                    'name' => 'Carlos Miguel G. Tan',
+                    'email' => 'CMTan@gmail.com',
+                    'number' => '09456789012',
+                    'role' => 2,
+                    'login' => 'CMTan1',
+                    'password' => 'Tan123',
+                    'branch' => 2025160001,
+                    'status' => 'Active'
+                ],
+                [
+                    'name' => 'Lourdes F. Mendoza',
+                    'email' => 'LFMendoza@gmail.com',
+                    'number' => '09567890123',
+                    'role' => 2,
+                    'login' => 'LFMendoza1',
+                    'password' => 'Mendoza123',
+                    'branch' => 2025160002,
+                    'status' => 'Active'
+                ],
+                [
+                    'name' => 'Ricardo B. Gonzales',
+                    'email' => 'RBGonzales@gmail.com',
+                    'number' => '09678901234',
+                    'role' => 2,
+                    'login' => 'RBGonzales1',
+                    'password' => 'Gonzales123',
+                    'branch' => 2025160003,
+                    'status' => 'Active'
+                ],
+                [
+                    'name' => 'Patricia Ann Q. Santos',
+                    'email' => 'PAQSantos@gmail.com',
+                    'number' => '09789012345',
+                    'role' => 2,
+                    'login' => 'PAQSantos1',
+                    'password' => 'Santos123',
+                    'branch' => 2025160000,
+                    'status' => 'Active'
+                ],
+                [
+                    'name' => 'Francisco M. Lim',
+                    'email' => 'FMLim@gmail.com',
+                    'number' => '09890123456',
+                    'role' => 2,
+                    'login' => 'FMLim1',
+                    'password' => 'Lim123',
+                    'branch' => 2025160001,
+                    'status' => 'Active'
+                ]
             ];
-            foreach ($employees as $emp) 
-            {
+
+            $img_path = "Images/default.jpg";
+            
+            foreach ($employees as $emp) {
                 $id = generate_EmployeeID();
                 $hashed_pw = password_hash($emp['password'], PASSWORD_DEFAULT);
-                $img_path = "Images/default.jpg";
-    
+
                 $sql = "INSERT INTO employee
                         (EmployeeID, EmployeeName, EmployeePicture, EmployeeEmail,
                         EmployeeNumber, RoleID, LoginName, Password, BranchCode, Status,
@@ -878,7 +1008,7 @@
                         VALUES
                         ($id, '{$emp['name']}', '$img_path', '{$emp['email']}', 
                         '{$emp['number']}', '{$emp['role']}', '{$emp['login']}', '$hashed_pw', 
-                        '{$emp['branch']}', '{$emp['status']}', 'System')";
+                        '{$emp['branch']}', '{$emp['status']}', 'Admin')";
 
                 mysqli_query($conn, $sql);
             }
@@ -887,7 +1017,7 @@
         {
             echo "<br>There is an error in creating the table: " . $conn->connect_error;
         }
-            
+
         $conn->close();
     }
 
@@ -941,7 +1071,70 @@
                     'info' => '60 Years old \n185cm \nMale',
                     'notes' => 'Round Face Shape'
                 ],
-            ];        
+                [
+                    'name' => 'Maria Teresa Cruz',
+                    'address' => '123 Main Street, Quezon City',
+                    'contact' => '09123456789',
+                    'info' => '45 Years old \n160cm \nFemale',
+                    'notes' => 'Oval Face Shape'
+                ],
+                [
+                    'name' => 'Juan Dela Peña',
+                    'address' => '456 Oak Avenue, Makati City',
+                    'contact' => '09234567890',
+                    'info' => '35 Years old \n175cm \nMale',
+                    'notes' => 'Square Face Shape'
+                ],
+                [
+                    'name' => 'Ana Marie Santos',
+                    'address' => '789 Pine Road, Manila',
+                    'contact' => '09345678901',
+                    'info' => '28 Years old \n165cm \nFemale',
+                    'notes' => 'Heart Face Shape'
+                ],
+                [
+                    'name' => 'Carlos Miguel Reyes',
+                    'address' => '321 Elm Street, Pasig City',
+                    'contact' => '09456789012',
+                    'info' => '50 Years old \n170cm \nMale',
+                    'notes' => 'Oval Face Shape'
+                ],
+                [
+                    'name' => 'Lourdes Fernandez',
+                    'address' => '654 Maple Lane, Mandaluyong',
+                    'contact' => '09567890123',
+                    'info' => '55 Years old \n158cm \nFemale',
+                    'notes' => 'Round Face Shape'
+                ],
+                [
+                    'name' => 'Ricardo Gonzales',
+                    'address' => '987 Cedar Blvd, Taguig',
+                    'contact' => '09678901234',
+                    'info' => '40 Years old \n180cm \nMale',
+                    'notes' => 'Square Face Shape'
+                ],
+                [
+                    'name' => 'Patricia Ann Lim',
+                    'address' => '135 Walnut Street, Paranaque',
+                    'contact' => '09789012345',
+                    'info' => '30 Years old \n162cm \nFemale',
+                    'notes' => 'Oval Face Shape'
+                ],
+                [
+                    'name' => 'Francisco Martinez',
+                    'address' => '246 Birch Road, Las Piñas',
+                    'contact' => '09890123456',
+                    'info' => '65 Years old \n172cm \nMale',
+                    'notes' => 'Round Face Shape'
+                ],
+                [
+                    'name' => 'Elena Rodriguez',
+                    'address' => '369 Spruce Avenue, Muntinlupa',
+                    'contact' => '09901234567',
+                    'info' => '42 Years old \n166cm \nFemale',
+                    'notes' => 'Heart Face Shape'
+                ]
+            ];
             
             foreach ($customers as $cust) {
                 $id = generate_CustomerID();
@@ -954,6 +1147,15 @@
                         '{$cust['contact']}', '{$cust['info']}', 
                         '{$cust['notes']}', 'Bien Ven P. Santos')";                
                 mysqli_query($conn, $sql);
+
+                $employee_id = generate_EmployeeID();
+                $Logsid = generate_LogsID(); ;   
+                $sql1 = "INSERT INTO Logs                 
+                (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Upd_dt)
+                VALUES
+                ('$Logsid', '$employee_id', '$id', 'customer', '2', NOW())";
+        
+                mysqli_query($conn, $sql1);
             }
         }
         else
@@ -1010,339 +1212,6 @@
         $conn->close();
         return $id;
     }       
-    function populateTables(){
-        $conn = connect();
-        $customers = [
-            [
-                'name' => 'Sean Genesis',
-                'address' => '231 Visayas Street, Malabon City',
-                'contact' => '09864325874',
-                'info' => '60 Years old \n185cm \nMale',
-                'notes' => 'Round Face Shape'
-            ],
-            [
-                'name' => 'Maria Teresa Cruz',
-                'address' => '123 Main Street, Quezon City',
-                'contact' => '09123456789',
-                'info' => '45 Years old \n160cm \nFemale',
-                'notes' => 'Oval Face Shape'
-            ],
-            [
-                'name' => 'Juan Dela Peña',
-                'address' => '456 Oak Avenue, Makati City',
-                'contact' => '09234567890',
-                'info' => '35 Years old \n175cm \nMale',
-                'notes' => 'Square Face Shape'
-            ],
-            [
-                'name' => 'Ana Marie Santos',
-                'address' => '789 Pine Road, Manila',
-                'contact' => '09345678901',
-                'info' => '28 Years old \n165cm \nFemale',
-                'notes' => 'Heart Face Shape'
-            ],
-            [
-                'name' => 'Carlos Miguel Reyes',
-                'address' => '321 Elm Street, Pasig City',
-                'contact' => '09456789012',
-                'info' => '50 Years old \n170cm \nMale',
-                'notes' => 'Oval Face Shape'
-            ],
-            [
-                'name' => 'Lourdes Fernandez',
-                'address' => '654 Maple Lane, Mandaluyong',
-                'contact' => '09567890123',
-                'info' => '55 Years old \n158cm \nFemale',
-                'notes' => 'Round Face Shape'
-            ],
-            [
-                'name' => 'Ricardo Gonzales',
-                'address' => '987 Cedar Blvd, Taguig',
-                'contact' => '09678901234',
-                'info' => '40 Years old \n180cm \nMale',
-                'notes' => 'Square Face Shape'
-            ],
-            [
-                'name' => 'Patricia Ann Lim',
-                'address' => '135 Walnut Street, Paranaque',
-                'contact' => '09789012345',
-                'info' => '30 Years old \n162cm \nFemale',
-                'notes' => 'Oval Face Shape'
-            ],
-            [
-                'name' => 'Francisco Martinez',
-                'address' => '246 Birch Road, Las Piñas',
-                'contact' => '09890123456',
-                'info' => '65 Years old \n172cm \nMale',
-                'notes' => 'Round Face Shape'
-            ],
-            [
-                'name' => 'Elena Rodriguez',
-                'address' => '369 Spruce Avenue, Muntinlupa',
-                'contact' => '09901234567',
-                'info' => '42 Years old \n166cm \nFemale',
-                'notes' => 'Heart Face Shape'
-            ]
-        ];
-        
-        foreach ($customers as $cust) {
-
-            $id = generate_CustomerID();            
-            $sql = "INSERT INTO customer 
-                    (CustomerID, CustomerName, CustomerAddress, CustomerContact,
-                    CustomerInfo, Notes, Upd_by) 
-                    VALUES
-                    ('$id', '{$cust['name']}', '{$cust['address']}', 
-                    '{$cust['contact']}', '{$cust['info']}', 
-                    '{$cust['notes']}', 'Bien Ven P. Santos')";     
-                    
-            mysqli_query($conn, $sql);
-        }
-
-        $products = [            
-            [
-                'model' => 'IMAX 5565 54-17-140',
-                'brandID' => 2025150001,
-                'category' => 'Frame',
-                'price' => '₱4200',
-                'material' => 'Beryllium',
-                'image' => 'Images/00070.jpg'
-            ],
-            [
-                'model' => 'Paul Hueman PHF-300A',
-                'brandID' => 2025150002,
-                'category' => 'Frame',
-                'price' => '₱3800',
-                'material' => 'Pure aluminum',
-                'image' => 'Images/00071.jpg'
-            ],
-            [
-                'model' => 'Caradin CR-2020',
-                'brandID' => 2025150003,
-                'category' => 'Frame',
-                'price' => '₱4500',
-                'material' => 'Ticral',
-                'image' => 'Images/00072.jpg'
-            ],
-            [
-                'model' => 'Lee Cooper LC-101',
-                'brandID' => 2025150004,
-                'category' => 'Frame',
-                'price' => '₱3900',
-                'material' => 'Stainless',
-                'image' => 'Images/00073.jpg'
-            ],
-            [
-                'model' => 'Bobby Jones BJ-505',
-                'brandID' => 2025150005,
-                'category' => 'Frame',
-                'price' => '₱4100',
-                'material' => 'Nickel titanium',
-                'image' => 'Images/00074.jpg'
-            ],
-            [
-                'model' => 'LIGHT TECH 7783L',
-                'brandID' => 2025150006,
-                'category' => 'Frame',
-                'price' => '₱3700',
-                'material' => 'Monel',
-                'image' => 'Images/00075.jpg'
-            ],
-            [
-                'model' => 'Ray-Ban RB2140',
-                'brandID' => 2025150007,
-                'category' => 'Sunglasses',
-                'price' => '₱5200',
-                'material' => 'Plastic',
-                'image' => 'Images/00076.jpg'
-            ],
-            [
-                'model' => 'Oakley OO9438',
-                'brandID' => 2025150008,
-                'category' => 'Sunglasses',
-                'price' => '₱5800',
-                'material' => 'Gliamide',
-                'image' => 'Images/00077.jpg'
-            ],
-            [
-                'model' => 'Persol PO3254',
-                'brandID' => 2025150009,
-                'category' => 'Sunglasses',
-                'price' => '₱5400',
-                'material' => 'Magnesium',
-                'image' => 'Images/00078.jpg'
-            ],
-            [
-                'model' => 'Acuvue Oasys',
-                'brandID' => 2025150010,
-                'category' => 'Contact Lenses',
-                'price' => '₱3200',
-                'material' => 'Silicone hydrogel',
-                'image' => 'Images/00079.jpg'
-            ],
-            [
-                'model' => 'Air Optix Aqua',
-                'brandID' => 2025150011,
-                'category' => 'Contact Lenses',
-                'price' => '₱3400',
-                'material' => 'Lotrafilcon B',
-                'image' => 'Images/00080.jpg'
-            ],
-            [
-                'model' => 'Biofinity',
-                'brandID' => 2025150012,
-                'category' => 'Contact Lenses',
-                'price' => '₱3600',
-                'material' => 'Comfilcon A',
-                'image' => 'Images/00081.jpg'
-            ],
-            [
-                'model' => 'Essilor Varilux',
-                'brandID' => 2025150013,
-                'category' => 'Progressive Lens',
-                'price' => '₱7800',
-                'material' => 'Plastic',
-                'image' => 'Images/00082.jpg'
-            ],
-            [
-                'model' => 'Hoya EnRoute',
-                'brandID' => 2025150014,
-                'category' => 'Photochromic Lens',
-                'price' => '₱8200',
-                'material' => 'Polycarbonate',
-                'image' => 'Images/00083.jpg'
-            ]
-        ];
-
-        foreach ($products as $prod) {
-            $id = generate_ProductMstrID();
-            $shape = rand(1,5);
-
-            $sql = "INSERT INTO productMstr
-                    (ProductID, CategoryType, ShapeID, BrandID, Model, Material, Price,
-                    ProductImage, Avail_FL, Upd_by)
-                    VALUES
-                    ('$id', '{$prod['category']}', '$shape', '{$prod['brandID']}', 
-                    '{$prod['model']}', '{$prod['material']}', '{$prod['price']}', 
-                    '{$prod['image']}', 'Available', 'System')";
-
-            mysqli_query($conn, $sql);
-        }    
-        $employees = [           
-            [
-                'name' => 'Sean Genesis V. Morse',
-                'email' => 'SeanGenesis@gmail.com',
-                'number' => '09438945698',
-                'role' => 2,
-                'login' => 'SGMorse1',
-                'password' => 'Morse123',
-                'branch' => 2025160001,
-                'status' => 'Active'
-            ],
-            [
-                'name' => 'Maria Cristina L. Reyes',
-                'email' => 'MCReyes@gmail.com',
-                'number' => '09123456789',
-                'role' => 2,
-                'login' => 'MCReyes1',
-                'password' => 'Reyes123',
-                'branch' => 2025160002,
-                'status' => 'Active'
-            ],
-            [
-                'name' => 'Juan Dela Cruz',
-                'email' => 'JDCruz@gmail.com',
-                'number' => '09234567890',
-                'role' => 2,
-                'login' => 'JDCruz1',
-                'password' => 'Cruz123',
-                'branch' => 2025160003,
-                'status' => 'Active'
-            ],
-            [
-                'name' => 'Ana Marie S. Lopez',
-                'email' => 'AMLopez@gmail.com',
-                'number' => '09345678901',
-                'role' => 2,
-                'login' => 'AMLopez1',
-                'password' => 'Lopez123',
-                'branch' => 2025160000,
-                'status' => 'Active'
-            ],
-            [
-                'name' => 'Carlos Miguel G. Tan',
-                'email' => 'CMTan@gmail.com',
-                'number' => '09456789012',
-                'role' => 2,
-                'login' => 'CMTan1',
-                'password' => 'Tan123',
-                'branch' => 2025160001,
-                'status' => 'Active'
-            ],
-            [
-                'name' => 'Lourdes F. Mendoza',
-                'email' => 'LFMendoza@gmail.com',
-                'number' => '09567890123',
-                'role' => 2,
-                'login' => 'LFMendoza1',
-                'password' => 'Mendoza123',
-                'branch' => 2025160002,
-                'status' => 'Active'
-            ],
-            [
-                'name' => 'Ricardo B. Gonzales',
-                'email' => 'RBGonzales@gmail.com',
-                'number' => '09678901234',
-                'role' => 2,
-                'login' => 'RBGonzales1',
-                'password' => 'Gonzales123',
-                'branch' => 2025160003,
-                'status' => 'Active'
-            ],
-            [
-                'name' => 'Patricia Ann Q. Santos',
-                'email' => 'PAQSantos@gmail.com',
-                'number' => '09789012345',
-                'role' => 2,
-                'login' => 'PAQSantos1',
-                'password' => 'Santos123',
-                'branch' => 2025160000,
-                'status' => 'Active'
-            ],
-            [
-                'name' => 'Francisco M. Lim',
-                'email' => 'FMLim@gmail.com',
-                'number' => '09890123456',
-                'role' => 2,
-                'login' => 'FMLim1',
-                'password' => 'Lim123',
-                'branch' => 2025160001,
-                'status' => 'Active'
-            ]
-        ];
-
-        $img_path = "Images/default.jpg";
-        
-        foreach ($employees as $emp) {
-            $id = generate_EmployeeID();
-            $hashed_pw = password_hash($emp['password'], PASSWORD_DEFAULT);
-
-            $sql = "INSERT INTO employee
-                    (EmployeeID, EmployeeName, EmployeePicture, EmployeeEmail,
-                    EmployeeNumber, RoleID, LoginName, Password, BranchCode, Status,
-                    Upd_by)
-                    VALUES
-                    ($id, '{$emp['name']}', '$img_path', '{$emp['email']}', 
-                    '{$emp['number']}', '{$emp['role']}', '{$emp['login']}', '$hashed_pw', 
-                    '{$emp['branch']}', '{$emp['status']}', 'Admin')";
-
-            mysqli_query($conn, $sql);
-        }
-    
-
-    }
-    
-    
 ?>
 
 <?php
@@ -1365,101 +1234,109 @@
     }
     $conn = connect();
     
-    // Check if Role Master Table exists
-    $table_check_query = "SHOW TABLES LIKE 'roleMaster'";
-    $result = mysqli_query($conn, $table_check_query);
-    if (mysqli_num_rows($result) == 0) {
-        create_RoleMasterTable();
-    }
-
-    // Check if Branch Master Table exists
-    $table_check_query = "SHOW TABLES LIKE 'BranchMaster'";
-    $result = mysqli_query($conn, $table_check_query);
-    if (mysqli_num_rows($result) == 0) {
-        create_BranchMasterTable();
-    }
-
-    // Check if Activity Master Table exists
-    $table_check_query = "SHOW TABLES LIKE 'activityMaster'";
-    $result = mysqli_query($conn, $table_check_query);
-    if (mysqli_num_rows($result) == 0) {
-        create_ActivityhMstrTable();
-    }
-
-    // Check if categoryType Table exists
-    $table_check_query = "SHOW TABLES LIKE 'categoryType'";
-    $result = mysqli_query($conn, $table_check_query);
-    if (mysqli_num_rows($result) == 0) {
-        create_CategoryTypeTable();
-    }
-
-    // Check if Shape Master Table exists
-    $table_check_query = "SHOW TABLES LIKE 'shapeMaster'";
-    $result = mysqli_query($conn, $table_check_query);
-    if (mysqli_num_rows($result) == 0) {
-        create_ShapeMasterTable();
-    }
-
-    // Check if brandMaster Table exists
-    $table_check_query = "SHOW TABLES LIKE 'brandMaster'";
-    $result = mysqli_query($conn, $table_check_query);
-    if (mysqli_num_rows($result) == 0) {
-        create_BrandMasterTable();
-    }
-
-    // Check if employee table exists
-    $table_check_query = "SHOW TABLES LIKE 'employee'";
-    $result = mysqli_query($conn, $table_check_query);
-    if (mysqli_num_rows($result) == 0) {
-        create_EmployeesTable();
-    }
-
     // Check if customer table exists
     $table_check_query = "SHOW TABLES LIKE 'customer'";
     $result = mysqli_query($conn, $table_check_query);
-    if (mysqli_num_rows($result) == 0) {
+
+    if (mysqli_num_rows($result) == 0) 
+    {
         create_CustomersTable();
-    }
-
-    // Check if Product Master Table exists (must come before ProductBranchMaster)
-    $table_check_query = "SHOW TABLES LIKE 'productMstr'";
+    }    
+    // Check if Product Master Table exists
+    $table_check_query = "SHOW TABLES LIKE 'categoryType'";  // Changed from 'CategoryType' to 'categoryType'
     $result = mysqli_query($conn, $table_check_query);
-    if (mysqli_num_rows($result) == 0) {
-        create_ProductMstrTable();
+    
+    if (mysqli_num_rows($result) == 0) 
+    {
+        create_CategoryTypeTable();
     }
-
-    // Check if Product Branch Master Table exists (depends on productMstr)
-    $table_check_query = "SHOW TABLES LIKE 'ProductBranchMaster'";
+    // Check if Shape Master Table exists
+    $table_check_query = "SHOW TABLES LIKE 'shapeMaster'";
     $result = mysqli_query($conn, $table_check_query);
-    if (mysqli_num_rows($result) == 0) {
-        create_ProductBrnchMstrTable();
-    }
 
+    if (mysqli_num_rows($result) == 0) 
+    {
+        create_ShapeMasterTable();
+    }
+    // Check if Shape Master Table exists
+    $table_check_query = "SHOW TABLES LIKE 'brandMaster'";
+    $result = mysqli_query($conn, $table_check_query);
+
+    if (mysqli_num_rows($result) == 0) 
+    {
+        create_BrandMasterTable();
+    }
+    // Check if Branch Master Table exists
+    $table_check_query = "SHOW TABLES LIKE 'BranchMaster'";
+    $result = mysqli_query($conn, $table_check_query);
+
+    if (mysqli_num_rows($result) == 0) 
+    {
+        create_BranchMasterTable();
+    }    
+    // Check if Activity Master Table exists
+    $table_check_query = "SHOW TABLES LIKE 'activityMaster'";
+    $result = mysqli_query($conn, $table_check_query);
+
+    if (mysqli_num_rows($result) == 0) 
+    {
+        create_ActivityhMstrTable();
+    }    
     // Check if Order_hdr Table exists
     $table_check_query = "SHOW TABLES LIKE 'Order_hdr'";
     $result = mysqli_query($conn, $table_check_query);
-    if (mysqli_num_rows($result) == 0) {
+
+    if (mysqli_num_rows($result) == 0) 
+    {
         create_Order_hdrTable();
     }
+    // Check if Role Master Table exists
+    $table_check_query = "SHOW TABLES LIKE 'roleMaster'";
+    $result = mysqli_query($conn, $table_check_query);
 
+    if (mysqli_num_rows($result) == 0) 
+    {
+        create_RoleMasterTable();
+    }
+    // Check if Product Master Table exists
+    $table_check_query = "SHOW TABLES LIKE 'productMstr'";
+    $result = mysqli_query($conn, $table_check_query);
+
+    if (mysqli_num_rows($result) == 0) 
+    {
+        create_ProductMstrTable();
+    }
+    // Check if Product Branch Master Table exists
+    $table_check_query = "SHOW TABLES LIKE 'ProductBranchMaster'";
+    $result = mysqli_query($conn, $table_check_query);
+
+    if (mysqli_num_rows($result) == 0) 
+    {
+        create_ProductBrnchMstrTable();
+    }
     // Check if Order Details Table exists
     $table_check_query = "SHOW TABLES LIKE 'orderDetails'";
     $result = mysqli_query($conn, $table_check_query);
-    if (mysqli_num_rows($result) == 0) {
-        create_orderDetailsTable();
-    }
 
+    if (mysqli_num_rows($result) == 0) 
+    {
+        create_orderDetailsTable();
+    }    
+    // Check if employee table exists
+    $table_check_query = "SHOW TABLES LIKE 'employee'";
+    $result = mysqli_query($conn, $table_check_query);
+
+    if (mysqli_num_rows($result) == 0) 
+    {
+        create_EmployeesTable();
+    }
     // Check if Logs Table exists
     $table_check_query = "SHOW TABLES LIKE 'Logs'";
     $result = mysqli_query($conn, $table_check_query);
-    if (mysqli_num_rows($result) == 0) {
-        create_LogsTable();
-    }
 
-    // Populate tables with sample data only after all tables are created
-    $table_check_query = "SHOW TABLES LIKE 'Logs'";
-    $result = mysqli_query($conn, $table_check_query);
-    if (mysqli_num_rows($result) == 1) {
-        populateTables();
-    }
+    if (mysqli_num_rows($result) == 0) 
+    {
+        create_LogsTable();
+    }    
+    
 ?>
