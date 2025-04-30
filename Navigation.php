@@ -16,6 +16,9 @@
                 <li class="nav-item">
                     <a class="nav-link m-2" href="#">COLLECTIONS</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link m-2" href="#">PACKAGE</a>
+                </li>
                 <li class="nav-item m-2">
                     <a class="nav-link" href="aboutus.php">ABOUT</a>
                 </li>                                  
