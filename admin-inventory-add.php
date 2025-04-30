@@ -162,6 +162,17 @@ include 'loginChecker.php';
                 </div>
 
                 <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label for="productMaterial" class="form-label">Material</label>
+                        <input type="text" class="form-control form-control-lg" id="productMaterial" name="productMaterial" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="productPrice" class="form-label">Price</label>
+                        <input type="text" class="form-control form-control-lg" id="productPrice" name="productPrice" required>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
                     <div class="col-md-6 text-center">
                         <img src="Images/default-product.png" alt="Product Image" class="product-img-preview">
                         <div>
