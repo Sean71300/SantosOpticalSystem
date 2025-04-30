@@ -171,7 +171,7 @@ $_SESSION['current_branch'] = $branchName;
                 <div class="table-responsive">
                     <?php
                     // Display inventory table based on branch selection
-                    if (empty($branchName)) {
+                    function branchSelection($sort, $order){
                         // All branches view
                         echo '<table class="table table-hover text-center">
                                 <thead class="table-light">
@@ -221,7 +221,9 @@ $_SESSION['current_branch'] = $branchName;
                         getInventory($sort, $order);
                         
                         echo '</tbody></table>';
-                    } else {
+                    }
+                    
+                    function branchView($sort, $order) {
                         // Specific branch view
                         echo '<table class="table table-hover text-center">
                                 <thead class="table-light">
@@ -275,6 +277,12 @@ $_SESSION['current_branch'] = $branchName;
                         
                         echo '</tbody></table>';
                     }
+
+                    if (empty($branchName)) {
+                    branchSelection($sort, $order);
+                    } else {
+                    branchView($sort, $order);
+                    }
                     ?>
 
                     <?php
@@ -284,7 +292,7 @@ $_SESSION['current_branch'] = $branchName;
                             }
                             elseif (isset($_POST['saveProductBtn'])) {
                                 confirmEditProduct(); 
-                                header("Refresh:0");     
+                                branchView($sort, $order);  
                             }
                             elseif (isset($_POST['deleteProductBtn'])) {
                                 confirmDeleteProduct();
@@ -292,7 +300,7 @@ $_SESSION['current_branch'] = $branchName;
                             }
                             elseif (isset($_POST['confirmDeleteBtn'])) {
                                 deleteProduct();
-                                header("Refresh:0");    
+                                branchView($sort, $order);   
                             }
                         }
                     ?>
