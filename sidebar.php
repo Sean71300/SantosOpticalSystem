@@ -42,7 +42,7 @@ if ($isAdmin === true) {
         </a>
         
         <?php if ($isAdmin): ?>
-            <a href="employeeRecords.php" class="sidebar-item <?php echo ($current_page == 'EmployeeRecords.php') ? 'active' : ''; ?>">
+            <a href="employeeRecords.php" class="sidebar-item <?php echo ($current_page == 'employeeRecords.php') ? 'active' : ''; ?>">
                 <i class="fas fa-user-tie"></i> Manage Employees
             </a>
         <?php endif; ?>
@@ -51,9 +51,15 @@ if ($isAdmin === true) {
             <i class="fas fa-boxes"></i> Manage Inventory
         </a>
         
-        <a href="order.php" class="sidebar-item">
-            <i class="fas fa-shopping-cart"></i> Orders
+        <a href="order.php" class="sidebar-item <?php echo ($current_page == 'order.php') ? 'active' : ''; ?>">
+            <i class="fas fa-shopping-cart"></i> Manage Orders
         </a>
+
+        <?php if ($isAdmin): ?>
+            <a href="logs.php" class="sidebar-item <?php echo ($current_page == 'logs.php') ? 'active' : ''; ?>">
+                <i class="fas fa-shopping-cart"></i> System Logs
+            </a>
+        <?php endif; ?>
         
         <!-- Logout Button -->
         <div class="sidebar-footer" style="position: absolute; bottom: 0; width: 100%;">

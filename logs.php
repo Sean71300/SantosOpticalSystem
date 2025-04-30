@@ -1,13 +1,9 @@
 <?php
 include_once 'setup.php';
-include 'loginChecker.php';
 include 'ActivityTracker.php';
-
+include 'loginChecker.php';
 // Check if user is admin
-if ($_SESSION['role'] != 1) {
-    header("Location: unauthorized.php");
-    exit();
-}
+
 
 // Pagination setup
 $logsPerPage = 10;
@@ -46,68 +42,83 @@ $conn->close();
 <!DOCTYPE html>
 <html>
 <head>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="customCodes/custom.css">
-    <link rel="shortcut icon" type="image/x-icon" href="images/logo.png"/>
-    <title>System Logs</title>
-    <style>
-        body {
-            background-color: #f5f7fa;
-        }
-        .sidebar {
-            background-color: white;
-            height: 100vh;
-            padding: 20px 0;
-            color: #2c3e50;
-            position: fixed;
-            width: 250px;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-        }
-        .main-content {
-            margin-left: 250px;
-            padding: 20px;
-            width: calc(100% - 250px);
-        }
-        .logs-container {
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            padding: 20px;
-        }
-        .log-entry {
-            border-left: 4px solid #0d6efd;
-            padding-left: 15px;
-            margin-bottom: 15px;
-            transition: all 0.3s;
-        }
-        .log-entry:hover {
-            background-color: #f8f9fa;
-        }
-        .log-time {
-            font-size: 0.85rem;
-            color: #6c757d;
-        }
-        .log-action {
-            font-weight: 500;
-        }
-        .log-target {
-            color: #0d6efd;
-        }
-        .badge-customer {
-            background-color: #20c997;
-        }
-        .badge-employee {
-            background-color: #6f42c1;
-        }
-        .badge-product {
-            background-color: #fd7e14;
-        }
-        .badge-order {
-            background-color: #d63384;
-        }
-    </style>
-</head>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+        <link rel="stylesheet" href="customCodes/custom.css">
+        <link rel="shortcut icon" type="image/x-icon" href="images/logo.png"/>
+        <title>Admin | Dashboard</title>
+        <style>
+            body {
+                background-color: #f5f7fa;
+            }
+            .sidebar {
+                background-color: white;
+                height: 100vh;
+                padding: 20px 0;
+                color: #2c3e50;
+                position: fixed;
+                width: 250px;
+                box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            }
+            .sidebar-header {
+                padding: 0 20px 20px;
+                border-bottom: 1px solid rgba(0,0,0,0.1);
+            }
+            .sidebar-item {
+                padding: 12px 20px;
+                margin: 5px 0;
+                border-radius: 0;
+                display: flex;
+                align-items: center;
+                color: #2c3e50;
+                transition: all 0.3s;
+                text-decoration: none;
+            }
+            .sidebar-item:hover {
+                background-color: #f8f9fa;
+                color: #2c3e50;
+            }
+            .sidebar-item.active {
+                background-color: #e9ecef;
+                color: #2c3e50;
+                font-weight: 500;
+            }
+            .sidebar-item i {
+                margin-right: 10px;
+                width: 20px;
+                text-align: center;
+            }
+            .main-content {
+                margin-left: 250px;
+                padding: 20px;
+                width: calc(100% - 250px);
+            }
+            .dashboard-card {
+                border-radius: 10px;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                margin-bottom: 20px;
+                padding: 20px;
+                background-color: white;
+                transition: transform 0.3s;
+            }
+            .dashboard-card:hover {
+                transform: translateY(-5px);
+            }
+            .card-icon {
+                font-size: 2rem;
+                margin-bottom: 15px;
+            }
+            .stat-number {
+                font-size: 2rem;
+                font-weight: bold;
+            }
+            .recent-activity {
+                max-height: 400px;
+                overflow-y: auto;
+            }
+        </style>
+    </head>
 <body>
     <?php include "sidebar.php"; ?>
 
