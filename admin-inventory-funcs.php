@@ -138,7 +138,7 @@ function getInventory($sort = 'ProductID', $order = 'ASC') {
                     <td class='align-middle'>".htmlspecialchars($row['Model'])."</td>
                     <td class='align-middle'>".htmlspecialchars($row['Material'])."</td>
                     <td class='align-middle'><img src='".htmlspecialchars($row['ProductImage'])."' class='product-img'></td>
-                    <td class='align-middle'>".htmlspecialchars($row['Available Stocks'])."</td>                        
+                    <td class='align-middle'>".htmlspecialchars($row['TotalCount'])."</td>                        
                 </tr>";
         }
 
