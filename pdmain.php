@@ -17,39 +17,47 @@
     <link rel="stylesheet" href="customCodes/s2.css">
     
     <style>
-        /* Carousel full-width styling */
-        #eyeglassCarousel {
-            width: 100%;
-            margin: 0 auto;
-        }
-        
-        .carousel-inner {
-            width: 100%;
-            height: 100%;
-        }
-        
-        .carousel-item {
-            height: 70vh; /* Adjust this value based on your needs */
-            min-height: 400px;
-        }
-        
-        .carousel-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover; /* This ensures images cover the space while maintaining aspect ratio */
-        }
-        
-        /* Product image styling */
-        .product-img {
-            max-width: 100%;
-            height: auto;
-            transition: transform 0.3s ease;
-        }
-        
-        .product-img:hover {
-            transform: scale(1.05);
-        }
-    </style>
+    /* Carousel full-width styling */
+    #eyeglassCarousel {
+        width: 100%;
+        margin: 0 auto;
+        margin-top: 20px; /* Added margin to move it down */
+    }
+    
+    .carousel-inner {
+        width: 100%;
+        height: 100%;
+    }
+    
+    .carousel-item {
+        height: 70vh; /* Adjust this value based on your needs */
+        min-height: 400px;
+    }
+    
+    .carousel-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain; /* Changed from 'cover' to 'contain' to prevent cropping */
+        background-color: #f8f9fa; /* Added background color for any empty space */
+    }
+    
+    /* Hide carousel controls */
+    .carousel-control-prev,
+    .carousel-control-next {
+        display: none !important;
+    }
+    
+    /* Product image styling */
+    .product-img {
+        max-width: 100%;
+        height: auto;
+        transition: transform 0.3s ease;
+    }
+    
+    .product-img:hover {
+        transform: scale(1.05);
+    }
+</style>
 </head>
 <body>
     <header>
@@ -203,13 +211,35 @@
                 once: true
             });
             
-            // Initialize carousel with autoplay
+            // paulit ulit like the way I miss her
             var myCarousel = document.querySelector('#eyeglassCarousel');
             var carousel = new bootstrap.Carousel(myCarousel, {
                 interval: 3000,
                 wrap: true
             });
         });
+
+        document.addEventListener('DOMContentLoaded', function() {
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true
+        });
+        
+        
+        var myCarousel = document.querySelector('#eyeglassCarousel');
+        var carousel = new bootstrap.Carousel(myCarousel, {
+            interval: 3000,  // pang adjust sa time nang pag slide
+            wrap: true,     
+            ride: 'carousel', 
+            pause: false    
+        });
+        
+        
+        myCarousel.addEventListener('slid.bs.carousel', function() {
+            carousel.cycle();
+        });
+    });
     </script>
 </body>
 </html>
