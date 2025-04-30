@@ -57,7 +57,7 @@ if ($isAdmin === true) {
 
         <?php if ($isAdmin): ?>
             <a href="logs.php" class="sidebar-item <?php echo ($current_page == 'logs.php') ? 'active' : ''; ?>">
-                <i class="fas fa-shopping-cart"></i> System Logs
+                <i class="fas fa-clipboard-list"></i> System Logs
             </a>
         <?php endif; ?>
         
