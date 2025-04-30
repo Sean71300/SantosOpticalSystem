@@ -167,20 +167,7 @@ include 'loginChecker.php';
                 </div>
                 
                 <?php 
-                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-                    $result = addProduct();
-                    if ($result === true): ?>
-                        <div class='alert alert-success alert-dismissible fade show' role='alert'>
-                            <strong>Product added successfully!</strong>
-                            <button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>
-                        </div>
-                    <?php else: ?>
-                        <div class='alert alert-danger alert-dismissible fade show' role='alert'>
-                            <strong>Error: <?php echo $result; ?></strong>
-                            <button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>
-                        </div>
-                    <?php endif;
-                }
+                    addProduct();
                 ?>
                 
                 <div class="d-flex justify-content-end gap-3 mt-5">                    
@@ -223,6 +210,9 @@ include 'loginChecker.php';
                 };
                 reader.readAsDataURL(input.files[0]);
             }
+
+            var myModal = new bootstrap.Modal(document.getElementById("successModal"));
+            myModal.show();
         }
     </script>
 </body>
