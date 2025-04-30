@@ -42,7 +42,7 @@ if ($isAdmin === true) {
         </a>
         
         <?php if ($isAdmin): ?>
-            <a href="employeeRecords.php" class="sidebar-item <?php echo ($current_page == 'EmployeeRecords.php') ? 'active' : ''; ?>">
+            <a href="employeeRecords.php" class="sidebar-item <?php echo ($current_page == 'employeeRecords.php') ? 'active' : ''; ?>">
                 <i class="fas fa-user-tie"></i> Manage Employees
             </a>
         <?php endif; ?>
