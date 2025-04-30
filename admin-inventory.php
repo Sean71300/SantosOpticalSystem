@@ -279,7 +279,7 @@ $_SESSION['current_branch'] = $branchName;
                     }
 
                     if (empty($branchName)) {
-                    branchSelection($sort, $order);
+                    branchSelection($sort, $order);                   
                     } else {
                     branchView($sort, $order);
                     }
@@ -292,15 +292,12 @@ $_SESSION['current_branch'] = $branchName;
                             }
                             elseif (isset($_POST['saveProductBtn'])) {
                                 confirmEditProduct(); 
-                                branchView($sort, $order);  
                             }
                             elseif (isset($_POST['deleteProductBtn'])) {
                                 confirmDeleteProduct();
-                                header("Refresh:0");
                             }
                             elseif (isset($_POST['confirmDeleteBtn'])) {
                                 deleteProduct();
-                                branchView($sort, $order);   
                             }
                         }
                     ?>
