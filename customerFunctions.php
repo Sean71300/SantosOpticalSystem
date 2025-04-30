@@ -93,22 +93,7 @@
             } else {
                 // Call the function to insert data
                 insertData($name, $address, $phone, $info, $notes);
-                $successMessage = "Customer added successfully";
-
-                //Insert Log
-                $conn = connect();
-                $logsID = generate_LogsID();
-                $logActivityCode = "2";
-                $logEmployeeID = $_SESSION["id"];
-                $logQty = "1";
-                $logUpdDT = date('Y-m-d H:i:s');
-                $logBranchID = $_SESSION["branchcode"];
-                $sql = "INSERT INTO logs
-                        (LogsID, EmployeeID, BranchCode, ActivityCode, Count, Upd_dt) 
-                        VALUES
-                        ('$logsID', '$logEmployeeID', '$logBranchID', '$logActivityCode', '$logQty', '$logUpdDT')";
-                mysqli_query($conn, $sql);
-                mysqli_close($conn);
+                $successMessage = "Customer added successfully"; 
     
                 // Clear the form fields after submission
                 $name = "";
