@@ -761,7 +761,8 @@
             ShapeID INT (1),
             BrandID INT (10),                              
             Model VARCHAR(50),
-            Remarks VARCHAR(500),
+            Material VARCHAR(50),
+            Price VARCHAR(20),
             ProductImage VARCHAR(255),
             Avail_FL VARCHAR (50),  
             Upd_by VARCHAR(50),
@@ -830,12 +831,26 @@
                 }
  
                 $shape = rand(1,5);
+                $price = rand(3500, 10000);
+                $materials = [
+                    'Magnesium',
+                    'Beryllium',
+                    'Pure aluminum',
+                    'Ticral',
+                    'Stainless',
+                    'Nickel titanium',
+                    'Monel',
+                    'Plastic',
+                    'Gliamide'
+                ];    
+                $randomMaterial = $materials[array_rand($materials)];
+
                 $sql = "INSERT INTO productMstr
-                            (ProductID, CategoryType, ShapeID, BrandID, Model, Remarks,
+                            (ProductID, CategoryType, ShapeID, BrandID, Model, Material, Price,
                             ProductImage, Avail_FL, Upd_by)
                             VALUES
                             ('$id', 'Frame', '$shape', '$brandID', 
-                            '$model', 'New Model', '$img_path', 'Available', 
+                            '$model', '$randomMaterial', '$price', '$img_path', 'Available', 
                             'Bien Ven P. Santos')";
 
                 mysqli_query($conn, $sql);
