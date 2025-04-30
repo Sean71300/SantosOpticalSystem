@@ -212,56 +212,75 @@
     function create_ProductBrnchMstrTable() {
         $conn = connect();
         
-        $sql = "CREATE TABLE ProductBranchMaster (
-                ProductBranchID INT(10) PRIMARY KEY,
-                ProductID INT(10),
-                BranchCode INT(10),
-                Count INT(100),
-                Avail_FL VARCHAR(50), 
-                Upd_by VARCHAR(50),
-                Upd_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (ProductID) REFERENCES productMstr(ProductID),
-                FOREIGN KEY (BranchCode) REFERENCES BranchMaster(BranchCode)
-                )";
+        try {
+            // Create the table if it doesn't exist
+            $sql = "CREATE TABLE IF NOT EXISTS ProductBranchMaster (
+                    ProductBranchID INT(10) PRIMARY KEY,
+                    ProductID INT(10),
+                    BranchCode INT(10),
+                    Count INT(100),
+                    Avail_FL VARCHAR(50), 
+                    Upd_by VARCHAR(50),
+                    Upd_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (ProductID) REFERENCES productMstr(ProductID),
+                    FOREIGN KEY (BranchCode) REFERENCES BranchMaster(BranchCode)
+                    )";
+            $conn->query($sql);
     
-        if (mysqli_query($conn, $sql)) {
-            // Get existing ProductIDs from productMstr
-            $productQuery = "SELECT ProductID FROM productMstr LIMIT 12";
-            $productResult = $conn->query($productQuery);
+            // Check if table is empty
+            $check = "SELECT COUNT(*) as count FROM ProductBranchMaster";
+            $result = $conn->query($check);
+            $row = $result->fetch_assoc();
             
-            // Get existing BranchCodes
-            $branchQuery = "SELECT BranchCode FROM BranchMaster";
-            $branchResult = $conn->query($branchQuery);
-            $branches = [];
-            while($row = $branchResult->fetch_assoc()) {
-                $branches[] = $row['BranchCode'];
-            }
-            
-            if ($productResult->num_rows > 0) {
+            if ($row['count'] == 0) {
+                // Get existing products
+                $products = $conn->query("SELECT ProductID FROM productMstr LIMIT 12");
+                if (!$products) {
+                    throw new Exception("Failed to get products: " . $conn->error);
+                }
+                
+                // Get existing branches
+                $branches = $conn->query("SELECT BranchCode FROM BranchMaster");
+                if (!$branches) {
+                    throw new Exception("Failed to get branches: " . $conn->error);
+                }
+                
+                $branchCodes = [];
+                while ($row = $branches->fetch_assoc()) {
+                    $branchCodes[] = $row['BranchCode'];
+                }
+                
+                if (empty($branchCodes)) {
+                    throw new Exception("No branches found in BranchMaster");
+                }
+                
                 $i = 0;
-                while($row = $productResult->fetch_assoc() && $i < 12) {
+                while ($row = $products->fetch_assoc() && $i < 12) {
                     $productID = $row['ProductID'];
-                    $branchCode = $branches[array_rand($branches)]; // Random existing branch
+                    $branchCode = $branchCodes[array_rand($branchCodes)];
                     $count = rand(3, 50);
                     $id = generate_ProductBrnchMstrID();
                     
-                    $sql = "INSERT INTO ProductBranchMaster
-                            (ProductBranchID, ProductID, BranchCode, Count, Avail_FL, Upd_by)
-                            VALUES
-                            ('$id', '$productID', '$branchCode', '$count', 'Available', 'Bien Ven P. Santos')";
+                    $insertSql = "INSERT INTO ProductBranchMaster
+                                 (ProductBranchID, ProductID, BranchCode, Count, Avail_FL, Upd_by)
+                                 VALUES (?, ?, ?, ?, 'Available', 'System')";
                     
-                    if (!mysqli_query($conn, $sql)) {
-                        echo "Error inserting product branch: " . $conn->error;
+                    $stmt = $conn->prepare($insertSql);
+                    $stmt->bind_param("iiii", $id, $productID, $branchCode, $count);
+                    
+                    if (!$stmt->execute()) {
+                        throw new Exception("Failed to insert product branch: " . $stmt->error);
                     }
+                    
+                    $stmt->close();
                     $i++;
                 }
-            } else {
-                echo "No products found in productMstr to create branch mappings";
             }
-        } else {
-            echo "<br>There is an error in creating the table: " . $conn->error;
+        } catch (Exception $e) {
+            echo "Error: " . $e->getMessage();
+        } finally {
+            $conn->close();
         }
-        $conn->close();
     }
 
     // Generate ProductBrnchMstrID
