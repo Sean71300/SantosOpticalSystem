@@ -205,7 +205,7 @@ function getEmployeeName()
                                 <input type='hidden' name='price' value='" . htmlspecialchars($row['Price']) . "' />
                                 <input type='hidden' name='count' value='" . htmlspecialchars($row['Count']) . "' />
                                 <input type='hidden' name='productImg' value='" . htmlspecialchars($row['ProductImage']) . "' />
-                                <button type='submit' class='btn btn-success' name='editProductBtn' value='editProductBtn' style='font-size:12px'><i class='fa-solid fa-pen'></i></button>
+                                <button type='submit' class='btn btn-success' name='editProductBtn' style='font-size:12px'><i class='fa-solid fa-pen'></i></button>
                             </form>
                         </td>
                         <td>
