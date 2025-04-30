@@ -8,6 +8,9 @@ $phone = "";
 $info = "";
 $notes = "";   
 
+$errorMessage = "";
+$successMessage = "";
+
 [$errorMessage, $successMessage] = handleCustomerForm();
 handleCancellation();
 ?>

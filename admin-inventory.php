@@ -1,5 +1,4 @@
 <?php
-session_start();
 include 'ActivityTracker.php';
 include 'loginChecker.php';
 include 'admin-inventory-funcs.php';
@@ -152,32 +151,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <i class="fas fa-plus me-2"></i> Add Product
                 </a>            
             </div>
-
-            <div class="filter-container">
-                <form method="post" class="row g-3" id="branchForm">
-                    <div class="col-md-8">
-                        <label for="chooseBranch" class="form-label">Select Branch</label>
-                        <select name="chooseBranch" id="chooseBranch" class="form-select">
-                            <option class='form-select-sm' value='' <?= empty($branchName) ? 'selected' : '' ?>>View All Branches</option>
-                            <?php 
-                            $link = connect();
-                            $sql = "SELECT BranchName from branchmaster";
-                            $result = mysqli_query($link, $sql);
-                            while($row = mysqli_fetch_array($result)) {
-                                $selected = ($row['BranchName'] === $branchName) ? 'selected' : '';
-                                echo "<option class='form-select-sm' value='".$row['BranchName']."' $selected>".$row['BranchName']."</option>";
-                            }
-                            mysqli_close($link);
-                            ?>
-                        </select>
-                    </div>
-                    <div class="col-md-4 d-flex align-items-end">
-                        <button type="submit" class="btn btn-primary w-100" name="searchProduct">
-                            <i class="fas fa-search me-2"></i> Search
-                        </button>
-                    </div>
-                </form>
-            </div>
+        
+        <div class="filter-container">
+            <form method="post" class="row g-3" id="branchForm">
+                <div class="col-md-8">
+                    <label for="chooseBranch" class="form-label">Select Branch</label>
+                    <select name="chooseBranch" id="chooseBranch" class="form-select form-select-sm">
+                        <option value='' <?= empty($branchName) ? 'selected' : '' ?>>View All Branches</option>
+                        <?php 
+                        $link = connect();
+                        if (!$link) {
+                            die("Database connection failed: " . mysqli_connect_error());
+                        }
+                        
+                        $sql = "SELECT BranchName FROM BranchMaster";
+                        $result = mysqli_query($link, $sql);
+                        
+                        if (!$result) {
+                            die("Query failed: " . mysqli_error($link));
+                        }
+                        
+                        while($row = mysqli_fetch_assoc($result)) {
+                            $selected = (strcasecmp($row['BranchName'], $branchName) === 0) ? 'selected' : '';
+                            echo "<option value='".htmlspecialchars($row['BranchName'])."' $selected>".htmlspecialchars($row['BranchName'])."</option>";
+                        }
+                        mysqli_close($link);
+                        ?>
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100" name="searchProduct">
+                        <i class="fas fa-search me-2"></i> Search
+                    </button>
+                </div>
+            </form>
+        </div>
 
             <div class="table-container">
                 <div class="table-responsive">
