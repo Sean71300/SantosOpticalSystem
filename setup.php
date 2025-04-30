@@ -539,5 +539,4 @@ foreach ($tables as $table => $function) {
 }
 $conn->close();
 
-echo "Database setup completed successfully!";
 ?>
