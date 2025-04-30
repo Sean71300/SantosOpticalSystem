@@ -236,7 +236,7 @@ function addProduct(){ //Add function to add a new product to the database
     $newProductShape = $_POST['productShape'];
     $newProductCategory = $_POST['productCategory'];
     $newProductMaterial = $_POST['productMaterial'];
-    $newProductPrice = $_POST['productPrice'];
+    $newProductPrice = "₱". $_POST['productPrice'];
     $newProductImg = $_FILES['productImg'];
     if ($newProductQty > 0) {
         $avail_FL = 'Available';
@@ -463,7 +463,7 @@ function editProduct(){ //Edit function to edit an existing product in the datab
     $brandID = $_POST['brandID'] ?? '';
     $model = $_POST['model'] ?? '';
     $material = $_POST['material'] ?? '';
-    $price = $_POST['price'] ?? '';
+    $price = "₱" . $_POST['price'] ?? '';
     $count = $_POST['count'] ?? '';
     $productImg = $_POST['productImg'] ?? '';
     $branchName = $_POST['chooseBranch'] ?? '';
