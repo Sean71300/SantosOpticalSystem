@@ -171,7 +171,6 @@
                     <ul class="list-unstyled">
                         <li><a href="#" class="text-dark text-decoration-none">Frames</a></li>
                         <li><a href="#" class="text-dark text-decoration-none">Sunglasses</a></li>
-                        <li><a href="#" class="text-dark text-decoration-none">Package</a></li>
                     </ul>
                 </div>
 
