@@ -1,7 +1,5 @@
 <?php
-// system_logs.php
 include_once 'setup.php';
-require_once 'connect.php';
 include 'ActivityTracker.php';
 include 'loginChecker.php';
 
