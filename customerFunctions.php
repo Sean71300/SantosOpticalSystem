@@ -113,11 +113,25 @@
         $conn = connect(); 
         $id = generate_CustomerID();   
         $upd_by = $_SESSION["full_name"];
+        $employee_id = $_SESSION["id"];
         $sql = "INSERT INTO customer 
                 (CustomerID,CustomerName,CustomerAddress,CustomerContact,
                 CustomerInfo,Notes,Upd_by) 
                 VALUES
                 ('$id','$name','$address','$phone','$info','$notes','$upd_by')";
+        
+        mysqli_query($conn, $sql);
+        GenerateLogs($employee_id,$id);
+    }
+    function GenerateLogs($employee_id,$id)
+    {
+        $conn = connect(); 
+        $Logsid = generate_LogsID(); ;   
+        $upd_by = $_SESSION["full_name"];
+        $sql = "INSERT INTO Logs 
+                (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Upd_dt)
+                VALUES
+                ('$Logsid', '$employee_id', '$id', 'customer', '2', NOW())";
         
         mysqli_query($conn, $sql);
     }
