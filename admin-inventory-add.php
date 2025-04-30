@@ -172,7 +172,7 @@ include 'loginChecker.php';
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="d-flex justify-content-end gap-3 mt-5">                    
+                        <div class="d-flex flex-row-reverse justify-content-end gap-3 mt-5">                    
                             <button type="reset" class="btn btn-danger btn-action">
                                 <i class="fas fa-undo me-2"></i> Reset
                             </button>
