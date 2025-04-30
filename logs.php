@@ -1,47 +1,26 @@
 <?php
-include_once 'setup.php';
+include_once 'setup.php'; // Include the setup.php file
+require_once 'connect.php'; //Connect to the database
 include 'ActivityTracker.php';
-
-// Check if user is logged in and has admin privileges
-session_start();
-if (!isset($_SESSION['employee_id']) || $_SESSION['role_id'] != 1) {
-    header("Location: login.php");
-    exit();
-}
+include 'loginChecker.php';
 
 // Pagination variables
 $limit = 10; // Number of records per page
-$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-if ($page < 1) $page = 1;
+$page = isset($_GET['page']) ? $_GET['page'] : 1;
 $start = ($page - 1) * $limit;
 
-// Search functionality
-$search = isset($_GET['search']) ? trim($_GET['search']) : '';
-$search_condition = '';
-if (!empty($search)) {
-    $search = mysqli_real_escape_string($conn, $search);
-    $search_condition = "WHERE e.EmployeeName LIKE '%$search%' OR 
-                         am.Description LIKE '%$search%' OR 
-                         l.TargetType LIKE '%$search%'";
-}
-
-// Fetch total number of logs with search condition
-$total_query = "SELECT COUNT(*) as total FROM Logs l
-                JOIN employee e ON l.EmployeeID = e.EmployeeID
-                JOIN activityMaster am ON l.ActivityCode = am.ActivityCode
-                $search_condition";
+// Fetch total number of logs
+$total_query = "SELECT COUNT(*) as total FROM Logs";
 $total_result = mysqli_query($conn, $total_query);
 $total_row = mysqli_fetch_assoc($total_result);
 $total_records = $total_row['total'];
 $total_pages = ceil($total_records / $limit);
 
 // Fetch logs with employee and activity information
-$query = "SELECT l.LogsID, l.Upd_dt, e.EmployeeName, 
-                 am.Description as Activity, l.TargetID, l.TargetType
+$query = "SELECT l.LogsID, l.Upd_dt, e.EmployeeName, am.Description as Activity, l.Count 
           FROM Logs l
           JOIN employee e ON l.EmployeeID = e.EmployeeID
           JOIN activityMaster am ON l.ActivityCode = am.ActivityCode
-          $search_condition
           ORDER BY l.Upd_dt DESC
           LIMIT $start, $limit";
 $result = mysqli_query($conn, $query);
@@ -49,166 +28,164 @@ $result = mysqli_query($conn, $query);
 
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Admin | System Logs</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="customCodes/custom.css">
-    <link rel="shortcut icon" type="image/x-icon" href="images/logo.png"/>
-    <style>
-        body {
-            background-color: #f5f7fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        .main-content {
-            margin-left: 250px;
-            padding: 20px;
-            width: calc(100% - 250px);
-        }
-        .logs-container {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        .table-responsive {
-            overflow-x: auto;
-        }
-        .table th {
-            background-color: #f8f9fa;
-            font-weight: 600;
-        }
-        .search-box {
-            max-width: 400px;
-        }
-        .pagination {
-            justify-content: center;
-        }
-        .badge {
-            font-weight: 500;
-            padding: 5px 10px;
-        }
-        .badge-customer {
-            background-color: #4e73df;
-        }
-        .badge-employee {
-            background-color: #1cc88a;
-        }
-        .badge-product {
-            background-color: #f6c23e;
-        }
-        .badge-order {
-            background-color: #e74a3b;
-        }
-    </style>
-</head>
-<body>
-    <?php include "sidebar.php"; ?>
+    <head>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+        <link rel="stylesheet" href="customCodes/custom.css">
+        <link rel="shortcut icon" type="image/x-icon" href="images/logo.png"/>
+        <title>Admin | Logs</title>
+        <style>
+            body {
+                background-color: #f5f7fa;
+            }
+            .sidebar {
+                background-color: white;
+                height: 100vh;
+                padding: 20px 0;
+                color: #2c3e50;
+                position: fixed;
+                width: 250px;
+                box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            }
+            .sidebar-header {
+                padding: 0 20px 20px;
+                border-bottom: 1px solid rgba(0,0,0,0.1);
+            }
+            .sidebar-item {
+                padding: 12px 20px;
+                margin: 5px 0;
+                border-radius: 0;
+                display: flex;
+                align-items: center;
+                color: #2c3e50;
+                transition: all 0.3s;
+                text-decoration: none;
+            }
+            .sidebar-item:hover {
+                background-color: #f8f9fa;
+                color: #2c3e50;
+            }
+            .sidebar-item.active {
+                background-color: #e9ecef;
+                color: #2c3e50;
+                font-weight: 500;
+            }
+            .sidebar-item i {
+                margin-right: 10px;
+                width: 20px;
+                text-align: center;
+            }
+            .main-content {
+                margin-left: 250px;
+                padding: 20px;
+                width: calc(100% - 250px);
+            }
+            .dashboard-card {
+                border-radius: 10px;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                margin-bottom: 20px;
+                padding: 20px;
+                background-color: white;
+                transition: transform 0.3s;
+            }
+            .dashboard-card:hover {
+                transform: translateY(-5px);
+            }
+            .card-icon {
+                font-size: 2rem;
+                margin-bottom: 15px;
+            }
+            .stat-number {
+                font-size: 2rem;
+                font-weight: bold;
+            }
+            .table-responsive {
+                overflow-x: auto;
+            }
+            .pagination {
+                justify-content: center;
+            }
+        </style>
+    </head>
 
-    <div class="main-content">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2><i class="fas fa-history me-2"></i> System Activity Logs</h2>
-            <div>
-                <form method="GET" class="d-flex search-box">
-                    <input type="text" name="search" class="form-control me-2" 
-                           placeholder="Search logs..." value="<?php echo htmlspecialchars($search); ?>">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-search"></i>
-                    </button>
-                </form>
-            </div>
-        </div>
-        
-        <div class="logs-container">
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>Log ID</th>
-                            <th>Timestamp</th>
-                            <th>Employee</th>
-                            <th>Activity</th>
-                            <th>Target ID</th>
-                            <th>Target Type</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (mysqli_num_rows($result) > 0): ?>
-                            <?php while ($row = mysqli_fetch_assoc($result)): ?>
-                                <tr>
-                                    <td><?php echo htmlspecialchars($row['LogsID']); ?></td>
-                                    <td><?php echo htmlspecialchars($row['Upd_dt']); ?></td>
-                                    <td><?php echo htmlspecialchars($row['EmployeeName']); ?></td>
-                                    <td><?php echo htmlspecialchars($row['Activity']); ?></td>
-                                    <td><?php echo htmlspecialchars($row['TargetID']); ?></td>
-                                    <td>
-                                        <?php 
-                                        $badge_class = '';
-                                        switch($row['TargetType']) {
-                                            case 'customer':
-                                                $badge_class = 'badge-customer';
-                                                break;
-                                            case 'employee':
-                                                $badge_class = 'badge-employee';
-                                                break;
-                                            case 'product':
-                                                $badge_class = 'badge-product';
-                                                break;
-                                            case 'order':
-                                                $badge_class = 'badge-order';
-                                                break;
-                                        }
-                                        ?>
-                                        <span class="badge <?php echo $badge_class; ?>">
-                                            <?php echo ucfirst(htmlspecialchars($row['TargetType'])); ?>
-                                        </span>
-                                    </td>
-                                </tr>
-                            <?php endwhile; ?>
-                        <?php else: ?>
-                            <tr>
-                                <td colspan="6" class="text-center py-4">No logs found</td>
-                            </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
+    <body>
+        <?php include "sidebar.php"?>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>System Logs</h2>
+                <div>
+                    <form method="GET" class="d-flex">
+                        <input type="text" name="search" class="form-control me-2" placeholder="Search logs...">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
+                </div>
             </div>
             
-            <!-- Pagination -->
-            <?php if ($total_pages > 1): ?>
+            <!-- Logs Table -->
+            <div class="dashboard-card">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Log ID</th>
+                                <th>Timestamp</th>
+                                <th>Employee</th>
+                                <th>Activity</th>
+                                <th>Count</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php
+                            if (mysqli_num_rows($result)) {
+                                while ($row = mysqli_fetch_assoc($result)) {
+                                    echo "<tr>";
+                                    echo "<td>" . htmlspecialchars($row['LogsID']) . "</td>";
+                                    echo "<td>" . htmlspecialchars($row['Upd_dt']) . "</td>";
+                                    echo "<td>" . htmlspecialchars($row['EmployeeName']) . "</td>";
+                                    echo "<td>" . htmlspecialchars($row['Activity']) . "</td>";
+                                    echo "<td>" . htmlspecialchars($row['Count']) . "</td>";
+                                    echo "</tr>";
+                                }
+                            } else {
+                                echo "<tr><td colspan='5' class='text-center'>No logs found</td></tr>";
+                            }
+                            ?>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
                 <nav aria-label="Page navigation">
-                    <ul class="pagination mt-4">
+                    <ul class="pagination">
                         <li class="page-item <?php if($page <= 1) echo 'disabled'; ?>">
-                            <a class="page-link" href="?page=<?php echo $page-1; ?>&search=<?php echo urlencode($search); ?>" 
-                               aria-label="Previous">
+                            <a class="page-link" href="?page=<?php echo $page-1; ?>" aria-label="Previous">
                                 <span aria-hidden="true">&laquo;</span>
                             </a>
                         </li>
-                        <?php for ($i = 1; $i <= $total_pages; $i++): ?>
-                            <li class="page-item <?php if($page == $i) echo 'active'; ?>">
-                                <a class="page-link" href="?page=<?php echo $i; ?>&search=<?php echo urlencode($search); ?>">
-                                    <?php echo $i; ?>
-                                </a>
-                            </li>
-                        <?php endfor; ?>
+                        <?php
+                        for ($i = 1; $i <= $total_pages; $i++) {
+                            echo "<li class='page-item " . ($page == $i ? 'active' : '') . "'><a class='page-link' href='?page=$i'>$i</a></li>";
+                        }
+                        ?>
                         <li class="page-item <?php if($page >= $total_pages) echo 'disabled'; ?>">
-                            <a class="page-link" href="?page=<?php echo $page+1; ?>&search=<?php echo urlencode($search); ?>" 
-                               aria-label="Next">
+                            <a class="page-link" href="?page=<?php echo $page+1; ?>" aria-label="Next">
                                 <span aria-hidden="true">&raquo;</span>
                             </a>
                         </li>
                     </ul>
                 </nav>
-            <?php endif; ?>
-            
-            <div class="text-end mt-2">
-                <span class="text-muted">
-                    Showing <?php echo ($start + 1) . " to " . min($start + $limit, $total_records) . " of $total_records entries"; ?>
-                </span>
+                
+                <div class="text-end">
+                    <span class="text-muted">
+                        Showing <?php echo ($start + 1) . " to " . min($start + $limit, $total_records) . " of $total_records entries"; ?>
+                    </span>
+                </div>
             </div>
         </div>
-    </div>
-</body>
+    </body>
 </html>
