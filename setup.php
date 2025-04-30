@@ -161,27 +161,8 @@
                 Upd_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (EmployeeID) REFERENCES employee(EmployeeID),                
                 FOREIGN KEY (ActivityCode) REFERENCES activityMaster(ActivityCode)
-                )";
-    
-        if (mysqli_query($conn, $sql))
-        {
-            $id = generate_LogsID(); 
-            $id2 = generate_EmployeeID();
-            --$id2;
-            
-            // Sample log entry for an employee activity
-            $sql = "INSERT INTO Logs
-                    (LogsID, EmployeeID, TargetID, TargetType, ActivityCode)
-                    VALUES
-                    ('$id', '$id2', '$id2', 'employee', '2')";
-    
-            mysqli_query($conn, $sql);
-        }
-        else
-        {
-            echo "<br>There is an error in creating the table: " . $conn->connect_error;
-        }
-    
+                )";    
+        mysqli_query($conn, $sql);        
         $conn->close();
     }
 
