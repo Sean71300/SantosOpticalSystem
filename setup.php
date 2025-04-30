@@ -6,8 +6,8 @@
     function connect() 
     {
         $db_host = 'localhost';
-        $db_username = 'root';
-        $db_password = '';
+        $db_username = 'u809407821_santosopticals';
+        $db_password = '8Bt?Q0]=w';
         $db_name = 'u809407821_santosopticals';
 
         $conn = new mysqli($db_host, $db_username, $db_password, $db_name);
@@ -25,8 +25,8 @@
     {
         // Configuration
         $db_host = 'localhost';
-        $db_username = 'root';
-        $db_password = '';
+        $db_username = 'u809407821_santosopticals';
+        $db_password = '8Bt?Q0]=w';
 
         // Create connection
         $conn = new mysqli($db_host, $db_username, $db_password);
@@ -155,34 +155,33 @@
         $sql = "CREATE TABLE Logs (
                 LogsID INT(10) PRIMARY KEY,
                 EmployeeID INT(10),
-                ProductBranchID INT(10),
+                TargetID INT(10),
+                TargetType ENUM('customer', 'employee', 'product', 'order') NOT NULL,
                 ActivityCode INT(10),
-                Count INT(10),
                 Upd_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (EmployeeID) REFERENCES employee(EmployeeID),                
                 FOREIGN KEY (ActivityCode) REFERENCES activityMaster(ActivityCode)
                 )";
-
+    
         if (mysqli_query($conn, $sql))
         {
             $id = generate_LogsID(); 
             $id2 = generate_EmployeeID();
-            $id3 = generate_ProductBrnchMstrID();  
             --$id2;
-            --$id3;
+            
+            // Sample log entry for an employee activity
             $sql = "INSERT INTO Logs
-                    (LogsID,EmployeeID,ProductBranchID,ActivityCode,Count)
+                    (LogsID, EmployeeID, TargetID, TargetType, ActivityCode)
                     VALUES
-                    ('$id', '$id2', '$id3', '2','1'
-                    )";
-
+                    ('$id', '$id2', '$id2', 'employee', '2')";
+    
             mysqli_query($conn, $sql);
         }
         else
         {
             echo "<br>There is an error in creating the table: " . $conn->connect_error;
         }
-
+    
         $conn->close();
     }
 
@@ -1210,8 +1209,8 @@
 <?php
     // Configuration
         $db_host = 'localhost';
-        $db_username = 'root';
-        $db_password = '';
+        $db_username = 'u809407821_santosopticals';
+        $db_password = '8Bt?Q0]=w';
 
         // Create connection
         $conn = new mysqli($db_host, $db_username, $db_password);
