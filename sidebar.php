@@ -55,10 +55,6 @@ if ($isAdmin === true) {
             <i class="fas fa-shopping-cart"></i> Orders
         </a>
         
-        <a href="#" class="sidebar-item">
-            <i class="fas fa-box-open"></i> Products
-        </a>
-        
         <!-- Logout Button -->
         <div class="sidebar-footer" style="position: absolute; bottom: 0; width: 100%;">
             <a href="logout.php" class="sidebar-item text-danger">
