@@ -32,15 +32,12 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav ps-5 fs-5 fw-bold ms-2 mb-lg-0 col d-flex justify-content-end">                  
+                <ul class="navbar-nav ps-5 fs-5 fw-bold ms-2 mb-lg-0 col d-flex justify-content-end">
+                    <li class="nav-item">
+                        <a class="nav-link m-2 <?php echo ($current_page == 'trackorder.php') ? 'active' : ''; ?>" href="trackorder.php">Track Order</a>
+                    </li>                
                     <li class="nav-item">
                         <a class="nav-link m-2 <?php echo ($current_page == 'product-gallery.php') ? 'active' : ''; ?>" href="product-gallery.php">PRODUCTS</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link m-2 <?php echo ($current_page == 'collections.php') ? 'active' : ''; ?>" href="#">COLLECTIONS</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link m-2 <?php echo ($current_page == 'package.php') ? 'active' : ''; ?>" href="#">PACKAGE</a>
                     </li>
                     <li class="nav-item m-2">
                         <a class="nav-link <?php echo ($current_page == 'aboutus.php') ? 'active' : ''; ?>" href="aboutus.php">ABOUT</a>
