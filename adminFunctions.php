@@ -72,7 +72,7 @@ function getLowInventoryProducts() {
     $conn = connect();
     $lowInventory = [];
     $query = "SELECT pbm.ProductBranchID, pbm.ProductID, pbm.BranchCode, pbm.Count, pm.*
-              FROM productbranchmaster pbm 
+              FROM ProductBranchMaster pbm 
               JOIN productMstr pm ON pbm.ProductID = pm.ProductID
               WHERE pbm.Count <= 10 
               ORDER BY pbm.Count ASC";
