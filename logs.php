@@ -17,7 +17,7 @@ $total_records = $total_row['total'];
 $total_pages = ceil($total_records / $limit);
 
 // Fetch logs with employee and activity information
-$query = "SELECT l.LogsID, l.Upd_dt, e.EmployeeName, am.Description as Activity, l.Count 
+$query = "SELECT l.LogsID, l.Upd_dt, e.EmployeeName, am.Description as Activity
           FROM Logs l
           JOIN employee e ON l.EmployeeID = e.EmployeeID
           JOIN activityMaster am ON l.ActivityCode = am.ActivityCode
