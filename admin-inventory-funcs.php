@@ -366,7 +366,7 @@ function addProduct(){ //Add function to add a new product to the database
                     </div>
                 </div>';
 
-            $logSQL = "INSERT INTO logs (LogsID, EmployeeID, ProductBranchID, ActivityCode, Count, Upd_dt) VALUES (?, ?, ?, ?, ?, ?)";
+            $logSQL = "INSERT INTO Logs (LogsID, EmployeeID, ProductBranchID, ActivityCode, Count, Upd_dt) VALUES (?, ?, ?, ?, ?, ?)";
             $logStmt = mysqli_prepare($link, $logSQL);
             $logID = generate_LogsID();
             $logEmployeeID = getEmployeeID();
