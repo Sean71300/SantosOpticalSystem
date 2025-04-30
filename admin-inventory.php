@@ -311,19 +311,29 @@ $_SESSION['current_branch'] = $branchName;
         <script>
             // Modal handling
             document.addEventListener('DOMContentLoaded', function() {
-                // Show modals if they exist
-                const showModal = (modalId) => {
-                    const modalElement = document.getElementById(modalId);
-                    if (modalElement) {
-                        new bootstrap.Modal(modalElement).show();
-                    }
-                };
+            // Show modals if they exist
+            const showModal = (modalId) => {
+                const modalElement = document.getElementById(modalId);
+                if (modalElement) {
+                    const modal = new bootstrap.Modal(modalElement);
+                    modal.show();
+                    
+                    // Add event listener for when modal is hidden
+                    modalElement.addEventListener('hidden.bs.modal', function () {
+                        // If this is a success modal, reload the page
+                        if (modalId === 'editProductModal' || modalId === 'deleteProductModal') {
+                            const urlParams = new URLSearchParams(window.location.search);
+                            window.location.href = window.location.pathname + '?' + urlParams.toString();
+                        }
+                    });
+                }
+            };
 
-                showModal('editProductModal');
-                showModal('deleteProductModal');
-                showModal('confirmDeleteProductModal');
-                showModal('confirmEditModal');
-            });
+            showModal('editProductModal');
+            showModal('deleteProductModal');
+            showModal('confirmDeleteProductModal');
+            showModal('confirmEditModal');
+        });
 
             // Function to handle table sorting
             function sortTable(column) {
