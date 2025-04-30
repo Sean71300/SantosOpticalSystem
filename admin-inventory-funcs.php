@@ -334,9 +334,9 @@ function addProduct(){ //Add function to add a new product to the database
         if ($uploadOk && file_exists($targetFile)) {
             // Insert product details into the product master database
             $sql = "INSERT INTO productMstr (ProductID, CategoryType, ShapeID, BrandID, Model, Material, Price, ProductImage, Avail_FL, Upd_by, Upd_dt) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $stmt = mysqli_prepare($link, $sql);
-            mysqli_stmt_bind_param($stmt, "sssssssss", $newProductID, $newProductCategory, $newProductShape, $newProductBrand, $newProductName, $newProductMaterial, $newProductPrice, $targetFile, $avail_FL, $upd_by);           
+            mysqli_stmt_bind_param($stmt, "sssssssssss", $newProductID, $newProductCategory, $newProductShape, $newProductBrand, $newProductName, $newProductMaterial, $newProductPrice, $targetFile, $avail_FL, $upd_by, $upd_dt);          
             mysqli_stmt_execute($stmt);
             mysqli_stmt_close($stmt);
             
@@ -344,7 +344,7 @@ function addProduct(){ //Add function to add a new product to the database
             $sql = "INSERT INTO ProductBranchMaster (ProductBranchID, ProductID, BranchCode, Count, Avail_FL, Upd_by, Upd_dt)
                     VALUES (?, ?, ?, ?, ?, ?, ?)"; 
             $stmt = mysqli_prepare($link, $sql);
-            mysqli_stmt_bind_param($stmt, "sssssss", $newProductBranchID, $newProductID, $newProductBranchCode, $newProductQty, $avail_FL, $upd_by, $upd_dt);
+            mysqli_stmt_bind_param($stmt, "sssisds", $newProductBranchID, $newProductID, $newProductBranchCode, $newProductQty, $avail_FL, $upd_by, $upd_dt);
             mysqli_stmt_execute($stmt);
             mysqli_stmt_close($stmt);
 
