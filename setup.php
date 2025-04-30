@@ -754,147 +754,8 @@
                 FOREIGN KEY (BrandID) REFERENCES brandMaster(BrandID)
                 )";
     
-        if (mysqli_query($conn, $sql)) {
-            $products = [
-                [
-                    'model' => 'Minima M-508C _144 867',
-                    'brandID' => 2025150000,
-                    'category' => 'Frame',
-                    'price' => '₱3500',
-                    'material' => 'Magnesium',
-                    'image' => 'Images/00069.jpg'
-                ],
-                [
-                    'model' => 'IMAX 5565 54-17-140',
-                    'brandID' => 2025150001,
-                    'category' => 'Frame',
-                    'price' => '₱4200',
-                    'material' => 'Beryllium',
-                    'image' => 'Images/00070.jpg'
-                ],
-                [
-                    'model' => 'Paul Hueman PHF-300A',
-                    'brandID' => 2025150002,
-                    'category' => 'Frame',
-                    'price' => '₱3800',
-                    'material' => 'Pure aluminum',
-                    'image' => 'Images/00071.jpg'
-                ],
-                [
-                    'model' => 'Caradin CR-2020',
-                    'brandID' => 2025150003,
-                    'category' => 'Frame',
-                    'price' => '₱4500',
-                    'material' => 'Ticral',
-                    'image' => 'Images/00072.jpg'
-                ],
-                [
-                    'model' => 'Lee Cooper LC-101',
-                    'brandID' => 2025150004,
-                    'category' => 'Frame',
-                    'price' => '₱3900',
-                    'material' => 'Stainless',
-                    'image' => 'Images/00073.jpg'
-                ],
-                [
-                    'model' => 'Bobby Jones BJ-505',
-                    'brandID' => 2025150005,
-                    'category' => 'Frame',
-                    'price' => '₱4100',
-                    'material' => 'Nickel titanium',
-                    'image' => 'Images/00074.jpg'
-                ],
-                [
-                    'model' => 'LIGHT TECH 7783L',
-                    'brandID' => 2025150006,
-                    'category' => 'Frame',
-                    'price' => '₱3700',
-                    'material' => 'Monel',
-                    'image' => 'Images/00075.jpg'
-                ],
-                [
-                    'model' => 'Ray-Ban RB2140',
-                    'brandID' => 2025150007,
-                    'category' => 'Sunglasses',
-                    'price' => '₱5200',
-                    'material' => 'Plastic',
-                    'image' => 'Images/00076.jpg'
-                ],
-                [
-                    'model' => 'Oakley OO9438',
-                    'brandID' => 2025150008,
-                    'category' => 'Sunglasses',
-                    'price' => '₱5800',
-                    'material' => 'Gliamide',
-                    'image' => 'Images/00077.jpg'
-                ],
-                [
-                    'model' => 'Persol PO3254',
-                    'brandID' => 2025150009,
-                    'category' => 'Sunglasses',
-                    'price' => '₱5400',
-                    'material' => 'Magnesium',
-                    'image' => 'Images/00078.jpg'
-                ],
-                [
-                    'model' => 'Acuvue Oasys',
-                    'brandID' => 2025150010,
-                    'category' => 'Contact Lenses',
-                    'price' => '₱3200',
-                    'material' => 'Silicone hydrogel',
-                    'image' => 'Images/00079.jpg'
-                ],
-                [
-                    'model' => 'Air Optix Aqua',
-                    'brandID' => 2025150011,
-                    'category' => 'Contact Lenses',
-                    'price' => '₱3400',
-                    'material' => 'Lotrafilcon B',
-                    'image' => 'Images/00080.jpg'
-                ],
-                [
-                    'model' => 'Biofinity',
-                    'brandID' => 2025150012,
-                    'category' => 'Contact Lenses',
-                    'price' => '₱3600',
-                    'material' => 'Comfilcon A',
-                    'image' => 'Images/00081.jpg'
-                ],
-                [
-                    'model' => 'Essilor Varilux',
-                    'brandID' => 2025150013,
-                    'category' => 'Progressive Lens',
-                    'price' => '₱7800',
-                    'material' => 'Plastic',
-                    'image' => 'Images/00082.jpg'
-                ],
-                [
-                    'model' => 'Hoya EnRoute',
-                    'brandID' => 2025150014,
-                    'category' => 'Photochromic Lens',
-                    'price' => '₱8200',
-                    'material' => 'Polycarbonate',
-                    'image' => 'Images/00083.jpg'
-                ]
-            ];
-    
-            foreach ($products as $prod) {
-                $id = generate_ProductMstrID();
-                $shape = rand(1,5);
-    
-                $sql = "INSERT INTO productMstr
-                        (ProductID, CategoryType, ShapeID, BrandID, Model, Material, Price,
-                        ProductImage, Avail_FL, Upd_by)
-                        VALUES
-                        ('$id', '{$prod['category']}', '$shape', '{$prod['brandID']}', 
-                        '{$prod['model']}', '{$prod['material']}', '{$prod['price']}', 
-                        '{$prod['image']}', 'Available', 'System')";
-    
-                mysqli_query($conn, $sql);
-            }
-        } else {
-            echo "<br>There is an error in creating the table: " . $conn->error;
-        }
+        mysqli_query($conn, $sql);
+            
         $conn->close();
     }
 
@@ -942,134 +803,9 @@
                 FOREIGN KEY (BranchCode) REFERENCES BranchMaster(BranchCode)
                 )";
 
-        if (mysqli_query($conn, $sql))
-        {
-            $employees = [
-                [
-                    'name' => 'Bien Ven P. Santos',
-                    'email' => 'BVPSantosOptical@gmail.com',
-                    'number' => '09864571325',
-                    'role' => 1,
-                    'login' => 'BVSantos1',
-                    'password' => 'JPSantos123',
-                    'branch' => 2025160000,
-                    'status' => 'Active'
-                ],
-                [
-                    'name' => 'Sean Genesis V. Morse',
-                    'email' => 'SeanGenesis@gmail.com',
-                    'number' => '09438945698',
-                    'role' => 2,
-                    'login' => 'SGMorse1',
-                    'password' => 'Morse123',
-                    'branch' => 2025160001,
-                    'status' => 'Active'
-                ],
-                [
-                    'name' => 'Maria Cristina L. Reyes',
-                    'email' => 'MCReyes@gmail.com',
-                    'number' => '09123456789',
-                    'role' => 2,
-                    'login' => 'MCReyes1',
-                    'password' => 'Reyes123',
-                    'branch' => 2025160002,
-                    'status' => 'Active'
-                ],
-                [
-                    'name' => 'Juan Dela Cruz',
-                    'email' => 'JDCruz@gmail.com',
-                    'number' => '09234567890',
-                    'role' => 2,
-                    'login' => 'JDCruz1',
-                    'password' => 'Cruz123',
-                    'branch' => 2025160003,
-                    'status' => 'Active'
-                ],
-                [
-                    'name' => 'Ana Marie S. Lopez',
-                    'email' => 'AMLopez@gmail.com',
-                    'number' => '09345678901',
-                    'role' => 2,
-                    'login' => 'AMLopez1',
-                    'password' => 'Lopez123',
-                    'branch' => 2025160000,
-                    'status' => 'Active'
-                ],
-                [
-                    'name' => 'Carlos Miguel G. Tan',
-                    'email' => 'CMTan@gmail.com',
-                    'number' => '09456789012',
-                    'role' => 2,
-                    'login' => 'CMTan1',
-                    'password' => 'Tan123',
-                    'branch' => 2025160001,
-                    'status' => 'Active'
-                ],
-                [
-                    'name' => 'Lourdes F. Mendoza',
-                    'email' => 'LFMendoza@gmail.com',
-                    'number' => '09567890123',
-                    'role' => 2,
-                    'login' => 'LFMendoza1',
-                    'password' => 'Mendoza123',
-                    'branch' => 2025160002,
-                    'status' => 'Active'
-                ],
-                [
-                    'name' => 'Ricardo B. Gonzales',
-                    'email' => 'RBGonzales@gmail.com',
-                    'number' => '09678901234',
-                    'role' => 2,
-                    'login' => 'RBGonzales1',
-                    'password' => 'Gonzales123',
-                    'branch' => 2025160003,
-                    'status' => 'Active'
-                ],
-                [
-                    'name' => 'Patricia Ann Q. Santos',
-                    'email' => 'PAQSantos@gmail.com',
-                    'number' => '09789012345',
-                    'role' => 2,
-                    'login' => 'PAQSantos1',
-                    'password' => 'Santos123',
-                    'branch' => 2025160000,
-                    'status' => 'Active'
-                ],
-                [
-                    'name' => 'Francisco M. Lim',
-                    'email' => 'FMLim@gmail.com',
-                    'number' => '09890123456',
-                    'role' => 2,
-                    'login' => 'FMLim1',
-                    'password' => 'Lim123',
-                    'branch' => 2025160001,
-                    'status' => 'Active'
-                ]
-            ];
-
-            $img_path = "Images/default.jpg";
+        mysqli_query($conn, $sql);
+        
             
-            foreach ($employees as $emp) {
-                $id = generate_EmployeeID();
-                $hashed_pw = password_hash($emp['password'], PASSWORD_DEFAULT);
-
-                $sql = "INSERT INTO employee
-                        (EmployeeID, EmployeeName, EmployeePicture, EmployeeEmail,
-                        EmployeeNumber, RoleID, LoginName, Password, BranchCode, Status,
-                        Upd_by)
-                        VALUES
-                        ($id, '{$emp['name']}', '$img_path', '{$emp['email']}', 
-                        '{$emp['number']}', '{$emp['role']}', '{$emp['login']}', '$hashed_pw', 
-                        '{$emp['branch']}', '{$emp['status']}', 'Admin')";
-
-                mysqli_query($conn, $sql);
-            }
-        }
-        else
-        {
-            echo "<br>There is an error in creating the table: " . $conn->connect_error;
-        }
-
         $conn->close();
     }
 
@@ -1113,99 +849,9 @@
                 Upd_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )";
     
-        if (mysqli_query($conn, $sql))
-        {           
-            $customers = [
-                [
-                    'name' => 'Sean Genesis',
-                    'address' => '231 Visayas Street, Malabon City',
-                    'contact' => '09864325874',
-                    'info' => '60 Years old \n185cm \nMale',
-                    'notes' => 'Round Face Shape'
-                ],
-                [
-                    'name' => 'Maria Teresa Cruz',
-                    'address' => '123 Main Street, Quezon City',
-                    'contact' => '09123456789',
-                    'info' => '45 Years old \n160cm \nFemale',
-                    'notes' => 'Oval Face Shape'
-                ],
-                [
-                    'name' => 'Juan Dela Peña',
-                    'address' => '456 Oak Avenue, Makati City',
-                    'contact' => '09234567890',
-                    'info' => '35 Years old \n175cm \nMale',
-                    'notes' => 'Square Face Shape'
-                ],
-                [
-                    'name' => 'Ana Marie Santos',
-                    'address' => '789 Pine Road, Manila',
-                    'contact' => '09345678901',
-                    'info' => '28 Years old \n165cm \nFemale',
-                    'notes' => 'Heart Face Shape'
-                ],
-                [
-                    'name' => 'Carlos Miguel Reyes',
-                    'address' => '321 Elm Street, Pasig City',
-                    'contact' => '09456789012',
-                    'info' => '50 Years old \n170cm \nMale',
-                    'notes' => 'Oval Face Shape'
-                ],
-                [
-                    'name' => 'Lourdes Fernandez',
-                    'address' => '654 Maple Lane, Mandaluyong',
-                    'contact' => '09567890123',
-                    'info' => '55 Years old \n158cm \nFemale',
-                    'notes' => 'Round Face Shape'
-                ],
-                [
-                    'name' => 'Ricardo Gonzales',
-                    'address' => '987 Cedar Blvd, Taguig',
-                    'contact' => '09678901234',
-                    'info' => '40 Years old \n180cm \nMale',
-                    'notes' => 'Square Face Shape'
-                ],
-                [
-                    'name' => 'Patricia Ann Lim',
-                    'address' => '135 Walnut Street, Paranaque',
-                    'contact' => '09789012345',
-                    'info' => '30 Years old \n162cm \nFemale',
-                    'notes' => 'Oval Face Shape'
-                ],
-                [
-                    'name' => 'Francisco Martinez',
-                    'address' => '246 Birch Road, Las Piñas',
-                    'contact' => '09890123456',
-                    'info' => '65 Years old \n172cm \nMale',
-                    'notes' => 'Round Face Shape'
-                ],
-                [
-                    'name' => 'Elena Rodriguez',
-                    'address' => '369 Spruce Avenue, Muntinlupa',
-                    'contact' => '09901234567',
-                    'info' => '42 Years old \n166cm \nFemale',
-                    'notes' => 'Heart Face Shape'
-                ]
-            ];
+        mysqli_query($conn, $sql);
+        
             
-            foreach ($customers as $cust) {
-                $id = generate_CustomerID();
-                
-                $sql = "INSERT INTO customer 
-                        (CustomerID, CustomerName, CustomerAddress, CustomerContact,
-                        CustomerInfo, Notes, Upd_by) 
-                        VALUES
-                        ('$id', '{$cust['name']}', '{$cust['address']}', 
-                        '{$cust['contact']}', '{$cust['info']}', 
-                        '{$cust['notes']}', 'Bien Ven P. Santos')";     
-                        
-                mysqli_query($conn, $sql);
-            }
-        }
-        else
-        {
-            echo "<br>There is an error in creating the table: " . $conn->connect_error;
-        }
     
         $conn->close();
     }
@@ -1256,6 +902,356 @@
         $conn->close();
         return $id;
     }       
+    function populateTables(){
+        $conn = connect();
+        $customers = [
+            [
+                'name' => 'Sean Genesis',
+                'address' => '231 Visayas Street, Malabon City',
+                'contact' => '09864325874',
+                'info' => '60 Years old \n185cm \nMale',
+                'notes' => 'Round Face Shape'
+            ],
+            [
+                'name' => 'Maria Teresa Cruz',
+                'address' => '123 Main Street, Quezon City',
+                'contact' => '09123456789',
+                'info' => '45 Years old \n160cm \nFemale',
+                'notes' => 'Oval Face Shape'
+            ],
+            [
+                'name' => 'Juan Dela Peña',
+                'address' => '456 Oak Avenue, Makati City',
+                'contact' => '09234567890',
+                'info' => '35 Years old \n175cm \nMale',
+                'notes' => 'Square Face Shape'
+            ],
+            [
+                'name' => 'Ana Marie Santos',
+                'address' => '789 Pine Road, Manila',
+                'contact' => '09345678901',
+                'info' => '28 Years old \n165cm \nFemale',
+                'notes' => 'Heart Face Shape'
+            ],
+            [
+                'name' => 'Carlos Miguel Reyes',
+                'address' => '321 Elm Street, Pasig City',
+                'contact' => '09456789012',
+                'info' => '50 Years old \n170cm \nMale',
+                'notes' => 'Oval Face Shape'
+            ],
+            [
+                'name' => 'Lourdes Fernandez',
+                'address' => '654 Maple Lane, Mandaluyong',
+                'contact' => '09567890123',
+                'info' => '55 Years old \n158cm \nFemale',
+                'notes' => 'Round Face Shape'
+            ],
+            [
+                'name' => 'Ricardo Gonzales',
+                'address' => '987 Cedar Blvd, Taguig',
+                'contact' => '09678901234',
+                'info' => '40 Years old \n180cm \nMale',
+                'notes' => 'Square Face Shape'
+            ],
+            [
+                'name' => 'Patricia Ann Lim',
+                'address' => '135 Walnut Street, Paranaque',
+                'contact' => '09789012345',
+                'info' => '30 Years old \n162cm \nFemale',
+                'notes' => 'Oval Face Shape'
+            ],
+            [
+                'name' => 'Francisco Martinez',
+                'address' => '246 Birch Road, Las Piñas',
+                'contact' => '09890123456',
+                'info' => '65 Years old \n172cm \nMale',
+                'notes' => 'Round Face Shape'
+            ],
+            [
+                'name' => 'Elena Rodriguez',
+                'address' => '369 Spruce Avenue, Muntinlupa',
+                'contact' => '09901234567',
+                'info' => '42 Years old \n166cm \nFemale',
+                'notes' => 'Heart Face Shape'
+            ]
+        ];
+        
+        foreach ($customers as $cust) {
+
+            $id = generate_CustomerID();            
+            $sql = "INSERT INTO customer 
+                    (CustomerID, CustomerName, CustomerAddress, CustomerContact,
+                    CustomerInfo, Notes, Upd_by) 
+                    VALUES
+                    ('$id', '{$cust['name']}', '{$cust['address']}', 
+                    '{$cust['contact']}', '{$cust['info']}', 
+                    '{$cust['notes']}', 'Bien Ven P. Santos')";     
+                    
+            mysqli_query($conn, $sql);
+        }
+
+        $products = [
+            [
+                'model' => 'Minima M-508C _144 867',
+                'brandID' => 2025150000,
+                'category' => 'Frame',
+                'price' => '₱3500',
+                'material' => 'Magnesium',
+                'image' => 'Images/00069.jpg'
+            ],
+            [
+                'model' => 'IMAX 5565 54-17-140',
+                'brandID' => 2025150001,
+                'category' => 'Frame',
+                'price' => '₱4200',
+                'material' => 'Beryllium',
+                'image' => 'Images/00070.jpg'
+            ],
+            [
+                'model' => 'Paul Hueman PHF-300A',
+                'brandID' => 2025150002,
+                'category' => 'Frame',
+                'price' => '₱3800',
+                'material' => 'Pure aluminum',
+                'image' => 'Images/00071.jpg'
+            ],
+            [
+                'model' => 'Caradin CR-2020',
+                'brandID' => 2025150003,
+                'category' => 'Frame',
+                'price' => '₱4500',
+                'material' => 'Ticral',
+                'image' => 'Images/00072.jpg'
+            ],
+            [
+                'model' => 'Lee Cooper LC-101',
+                'brandID' => 2025150004,
+                'category' => 'Frame',
+                'price' => '₱3900',
+                'material' => 'Stainless',
+                'image' => 'Images/00073.jpg'
+            ],
+            [
+                'model' => 'Bobby Jones BJ-505',
+                'brandID' => 2025150005,
+                'category' => 'Frame',
+                'price' => '₱4100',
+                'material' => 'Nickel titanium',
+                'image' => 'Images/00074.jpg'
+            ],
+            [
+                'model' => 'LIGHT TECH 7783L',
+                'brandID' => 2025150006,
+                'category' => 'Frame',
+                'price' => '₱3700',
+                'material' => 'Monel',
+                'image' => 'Images/00075.jpg'
+            ],
+            [
+                'model' => 'Ray-Ban RB2140',
+                'brandID' => 2025150007,
+                'category' => 'Sunglasses',
+                'price' => '₱5200',
+                'material' => 'Plastic',
+                'image' => 'Images/00076.jpg'
+            ],
+            [
+                'model' => 'Oakley OO9438',
+                'brandID' => 2025150008,
+                'category' => 'Sunglasses',
+                'price' => '₱5800',
+                'material' => 'Gliamide',
+                'image' => 'Images/00077.jpg'
+            ],
+            [
+                'model' => 'Persol PO3254',
+                'brandID' => 2025150009,
+                'category' => 'Sunglasses',
+                'price' => '₱5400',
+                'material' => 'Magnesium',
+                'image' => 'Images/00078.jpg'
+            ],
+            [
+                'model' => 'Acuvue Oasys',
+                'brandID' => 2025150010,
+                'category' => 'Contact Lenses',
+                'price' => '₱3200',
+                'material' => 'Silicone hydrogel',
+                'image' => 'Images/00079.jpg'
+            ],
+            [
+                'model' => 'Air Optix Aqua',
+                'brandID' => 2025150011,
+                'category' => 'Contact Lenses',
+                'price' => '₱3400',
+                'material' => 'Lotrafilcon B',
+                'image' => 'Images/00080.jpg'
+            ],
+            [
+                'model' => 'Biofinity',
+                'brandID' => 2025150012,
+                'category' => 'Contact Lenses',
+                'price' => '₱3600',
+                'material' => 'Comfilcon A',
+                'image' => 'Images/00081.jpg'
+            ],
+            [
+                'model' => 'Essilor Varilux',
+                'brandID' => 2025150013,
+                'category' => 'Progressive Lens',
+                'price' => '₱7800',
+                'material' => 'Plastic',
+                'image' => 'Images/00082.jpg'
+            ],
+            [
+                'model' => 'Hoya EnRoute',
+                'brandID' => 2025150014,
+                'category' => 'Photochromic Lens',
+                'price' => '₱8200',
+                'material' => 'Polycarbonate',
+                'image' => 'Images/00083.jpg'
+            ]
+        ];
+
+        foreach ($products as $prod) {
+            $id = generate_ProductMstrID();
+            $shape = rand(1,5);
+
+            $sql = "INSERT INTO productMstr
+                    (ProductID, CategoryType, ShapeID, BrandID, Model, Material, Price,
+                    ProductImage, Avail_FL, Upd_by)
+                    VALUES
+                    ('$id', '{$prod['category']}', '$shape', '{$prod['brandID']}', 
+                    '{$prod['model']}', '{$prod['material']}', '{$prod['price']}', 
+                    '{$prod['image']}', 'Available', 'System')";
+
+            mysqli_query($conn, $sql);
+        }    
+        $employees = [
+            [
+                'name' => 'Bien Ven P. Santos',
+                'email' => 'BVPSantosOptical@gmail.com',
+                'number' => '09864571325',
+                'role' => 1,
+                'login' => 'BVSantos1',
+                'password' => 'JPSantos123',
+                'branch' => 2025160000,
+                'status' => 'Active'
+            ],
+            [
+                'name' => 'Sean Genesis V. Morse',
+                'email' => 'SeanGenesis@gmail.com',
+                'number' => '09438945698',
+                'role' => 2,
+                'login' => 'SGMorse1',
+                'password' => 'Morse123',
+                'branch' => 2025160001,
+                'status' => 'Active'
+            ],
+            [
+                'name' => 'Maria Cristina L. Reyes',
+                'email' => 'MCReyes@gmail.com',
+                'number' => '09123456789',
+                'role' => 2,
+                'login' => 'MCReyes1',
+                'password' => 'Reyes123',
+                'branch' => 2025160002,
+                'status' => 'Active'
+            ],
+            [
+                'name' => 'Juan Dela Cruz',
+                'email' => 'JDCruz@gmail.com',
+                'number' => '09234567890',
+                'role' => 2,
+                'login' => 'JDCruz1',
+                'password' => 'Cruz123',
+                'branch' => 2025160003,
+                'status' => 'Active'
+            ],
+            [
+                'name' => 'Ana Marie S. Lopez',
+                'email' => 'AMLopez@gmail.com',
+                'number' => '09345678901',
+                'role' => 2,
+                'login' => 'AMLopez1',
+                'password' => 'Lopez123',
+                'branch' => 2025160000,
+                'status' => 'Active'
+            ],
+            [
+                'name' => 'Carlos Miguel G. Tan',
+                'email' => 'CMTan@gmail.com',
+                'number' => '09456789012',
+                'role' => 2,
+                'login' => 'CMTan1',
+                'password' => 'Tan123',
+                'branch' => 2025160001,
+                'status' => 'Active'
+            ],
+            [
+                'name' => 'Lourdes F. Mendoza',
+                'email' => 'LFMendoza@gmail.com',
+                'number' => '09567890123',
+                'role' => 2,
+                'login' => 'LFMendoza1',
+                'password' => 'Mendoza123',
+                'branch' => 2025160002,
+                'status' => 'Active'
+            ],
+            [
+                'name' => 'Ricardo B. Gonzales',
+                'email' => 'RBGonzales@gmail.com',
+                'number' => '09678901234',
+                'role' => 2,
+                'login' => 'RBGonzales1',
+                'password' => 'Gonzales123',
+                'branch' => 2025160003,
+                'status' => 'Active'
+            ],
+            [
+                'name' => 'Patricia Ann Q. Santos',
+                'email' => 'PAQSantos@gmail.com',
+                'number' => '09789012345',
+                'role' => 2,
+                'login' => 'PAQSantos1',
+                'password' => 'Santos123',
+                'branch' => 2025160000,
+                'status' => 'Active'
+            ],
+            [
+                'name' => 'Francisco M. Lim',
+                'email' => 'FMLim@gmail.com',
+                'number' => '09890123456',
+                'role' => 2,
+                'login' => 'FMLim1',
+                'password' => 'Lim123',
+                'branch' => 2025160001,
+                'status' => 'Active'
+            ]
+        ];
+
+        $img_path = "Images/default.jpg";
+        
+        foreach ($employees as $emp) {
+            $id = generate_EmployeeID();
+            $hashed_pw = password_hash($emp['password'], PASSWORD_DEFAULT);
+
+            $sql = "INSERT INTO employee
+                    (EmployeeID, EmployeeName, EmployeePicture, EmployeeEmail,
+                    EmployeeNumber, RoleID, LoginName, Password, BranchCode, Status,
+                    Upd_by)
+                    VALUES
+                    ($id, '{$emp['name']}', '$img_path', '{$emp['email']}', 
+                    '{$emp['number']}', '{$emp['role']}', '{$emp['login']}', '$hashed_pw', 
+                    '{$emp['branch']}', '{$emp['status']}', 'Admin')";
+
+            mysqli_query($conn, $sql);
+        }
+    
+
+    }
+    
     
 ?>
 
@@ -1393,5 +1389,11 @@
     {
         create_LogsTable();
     }    
-    
+    $table_check_query = "SHOW TABLES LIKE 'Logs'";
+    $result = mysqli_query($conn, $table_check_query);
+
+    if (mysqli_num_rows($result) == 1) 
+    {
+        populateTables();
+    }    
 ?>
