@@ -51,8 +51,8 @@ if ($isAdmin === true) {
             <i class="fas fa-boxes"></i> Manage Inventory
         </a>
         
-        <a href="order.php" class="sidebar-item">
-            <i class="fas fa-shopping-cart"></i> Orders
+        <a href="order.php" class="sidebar-item <?php echo ($current_page == 'order.php') ? 'active' : ''; ?>">
+            <i class="fas fa-shopping-cart"></i> Manage Orders
         </a>
         
         <!-- Logout Button -->
