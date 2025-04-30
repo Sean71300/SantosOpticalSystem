@@ -761,7 +761,8 @@
             ShapeID INT (1),
             BrandID INT (10),                              
             Model VARCHAR(50),
-            Remarks VARCHAR(500),
+            Material VARCHAR(50),
+            Price VARCHAR(20),
             ProductImage VARCHAR(255),
             Avail_FL VARCHAR (50),  
             Upd_by VARCHAR(50),
@@ -830,12 +831,26 @@
                 }
  
                 $shape = rand(1,5);
+                $price = '₱' . rand(3500, 10000);
+                $materials = [
+                    'Magnesium',
+                    'Beryllium',
+                    'Pure aluminum',
+                    'Ticral',
+                    'Stainless',
+                    'Nickel titanium',
+                    'Monel',
+                    'Plastic',
+                    'Gliamide'
+                ];    
+                $randomMaterial = $materials[array_rand($materials)];
+
                 $sql = "INSERT INTO productMstr
-                            (ProductID, CategoryType, ShapeID, BrandID, Model, Remarks,
+                            (ProductID, CategoryType, ShapeID, BrandID, Model, Material, Price,
                             ProductImage, Avail_FL, Upd_by)
                             VALUES
                             ('$id', 'Frame', '$shape', '$brandID', 
-                            '$model', 'New Model', '$img_path', 'Available', 
+                            '$model', '$randomMaterial', '$price', '$img_path', 'Available', 
                             'Bien Ven P. Santos')";
 
                 mysqli_query($conn, $sql);
@@ -1145,10 +1160,9 @@
                         VALUES
                         ('$id', '{$cust['name']}', '{$cust['address']}', 
                         '{$cust['contact']}', '{$cust['info']}', 
-                        '{$cust['notes']}', 'Bien Ven P. Santos')";
-                
+                        '{$cust['notes']}', 'Bien Ven P. Santos')";     
+                        
                 mysqli_query($conn, $sql);
-                
             }
         }
         else
@@ -1205,6 +1219,7 @@
         $conn->close();
         return $id;
     }       
+    
 ?>
 
 <?php
@@ -1227,13 +1242,29 @@
     }
     $conn = connect();
     
-    // Check if customer table exists
-    $table_check_query = "SHOW TABLES LIKE 'customer'";
+    // Check if Role Master Table exists
+    $table_check_query = "SHOW TABLES LIKE 'roleMaster'";
     $result = mysqli_query($conn, $table_check_query);
 
     if (mysqli_num_rows($result) == 0) 
     {
-        create_CustomersTable();
+        create_RoleMasterTable();
+    }
+     // Check if Branch Master Table exists
+    $table_check_query = "SHOW TABLES LIKE 'BranchMaster'";
+    $result = mysqli_query($conn, $table_check_query);
+
+    if (mysqli_num_rows($result) == 0) 
+    {
+        create_BranchMasterTable();
+    }    
+    // Check if Activity Master Table exists
+    $table_check_query = "SHOW TABLES LIKE 'activityMaster'";
+    $result = mysqli_query($conn, $table_check_query);
+
+    if (mysqli_num_rows($result) == 0) 
+    {
+        create_ActivityhMstrTable();
     }    
     // Check if Product Master Table exists
     $table_check_query = "SHOW TABLES LIKE 'categoryType'";  // Changed from 'CategoryType' to 'categoryType'
@@ -1251,7 +1282,6 @@
     {
         create_ShapeMasterTable();
     }
-    // Check if Shape Master Table exists
     $table_check_query = "SHOW TABLES LIKE 'brandMaster'";
     $result = mysqli_query($conn, $table_check_query);
 
@@ -1259,21 +1289,30 @@
     {
         create_BrandMasterTable();
     }
-    // Check if Branch Master Table exists
-    $table_check_query = "SHOW TABLES LIKE 'BranchMaster'";
+    // Check if employee table exists
+    $table_check_query = "SHOW TABLES LIKE 'employee'";
     $result = mysqli_query($conn, $table_check_query);
 
     if (mysqli_num_rows($result) == 0) 
     {
-        create_BranchMasterTable();
-    }    
-    // Check if Activity Master Table exists
-    $table_check_query = "SHOW TABLES LIKE 'activityMaster'";
+        create_EmployeesTable();
+    }
+    // Check if Shape Master Table exists
+    $table_check_query = "SHOW TABLES LIKE 'shapeMaster'";
     $result = mysqli_query($conn, $table_check_query);
 
     if (mysqli_num_rows($result) == 0) 
     {
-        create_ActivityhMstrTable();
+        create_ShapeMasterTable();
+    }
+    // Check if Shape Master Table exists
+    // Check if customer table exists
+    $table_check_query = "SHOW TABLES LIKE 'customer'";
+    $result = mysqli_query($conn, $table_check_query);
+
+    if (mysqli_num_rows($result) == 0) 
+    {
+        create_CustomersTable();
     }    
     // Check if Order_hdr Table exists
     $table_check_query = "SHOW TABLES LIKE 'Order_hdr'";
@@ -1283,14 +1322,7 @@
     {
         create_Order_hdrTable();
     }
-    // Check if Role Master Table exists
-    $table_check_query = "SHOW TABLES LIKE 'roleMaster'";
-    $result = mysqli_query($conn, $table_check_query);
-
-    if (mysqli_num_rows($result) == 0) 
-    {
-        create_RoleMasterTable();
-    }
+    
     // Check if Product Master Table exists
     $table_check_query = "SHOW TABLES LIKE 'productMstr'";
     $result = mysqli_query($conn, $table_check_query);
@@ -1315,14 +1347,7 @@
     {
         create_orderDetailsTable();
     }    
-    // Check if employee table exists
-    $table_check_query = "SHOW TABLES LIKE 'employee'";
-    $result = mysqli_query($conn, $table_check_query);
-
-    if (mysqli_num_rows($result) == 0) 
-    {
-        create_EmployeesTable();
-    }
+    
     // Check if Logs Table exists
     $table_check_query = "SHOW TABLES LIKE 'Logs'";
     $result = mysqli_query($conn, $table_check_query);
