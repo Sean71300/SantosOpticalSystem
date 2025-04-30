@@ -9,7 +9,10 @@
             <span class="navbar-toggler-icon"></span>
         </button>
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav ps-5 fs-5 fw-bold ms-2 mb-lg-0 col d-flex justify-content-end">                  
+            <ul class="navbar-nav ps-5 fs-5 fw-bold ms-2 mb-lg-0 col d-flex justify-content-end">
+                <li class="nav-item">
+                    <a class="nav-link m-2" href="index.php">TRACK ORDER</a>
+                </li>                  
                 <li class="nav-item">
                     <a class="nav-link m-2" href="product-gallery.php">PRODUCTS</a>
                 </li>
