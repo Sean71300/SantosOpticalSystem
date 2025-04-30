@@ -702,12 +702,21 @@ function confirmEditProduct() {
                             <div class="modal-body">
                                 The product has been updated successfully!
                             </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            </div>
+                            <a href="admin-inventory.php?branch='.urlencode($_POST['chooseBranch']).'&sort='.urlencode($_GET['sort'] ?? 'ProductID').'&order='.urlencode($_GET['order'] ?? 'ASC').'" class="btn btn-secondary">Close</a>
                         </div>
                     </div>
-                </div>';
+                </div>
+                <script>
+                    document.addEventListener("DOMContentLoaded", function() {
+                        const modal = new bootstrap.Modal(document.getElementById("editProductModal"));
+                        modal.show();
+                        
+                        setTimeout(function() {
+                            const urlParams = new URLSearchParams(window.location.search);
+                            window.location.href = window.location.pathname + "?" + urlParams.toString();
+                        }, 2000); // Redirect after 2 seconds
+                    });
+                </script>';
             // $logSQL = "INSERT INTO logs (LogsID, EmployeeID, ProductBranchID, ActivityCode, Count, Upd_dt) VALUES (?, ?, ?, ?, ?, ?)";
             // $logStmt = mysqli_prepare($link, $logSQL);
             // $logID = generate_LogsID();
