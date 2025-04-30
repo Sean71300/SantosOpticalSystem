@@ -1233,7 +1233,14 @@
         $conn->close();        
     }
     $conn = connect();
-    
+    // Check if Logs Table exists
+    $table_check_query = "SHOW TABLES LIKE 'Logs'";
+    $result = mysqli_query($conn, $table_check_query);
+
+    if (mysqli_num_rows($result) == 0) 
+    {
+        create_LogsTable();
+    }    
     // Check if customer table exists
     $table_check_query = "SHOW TABLES LIKE 'customer'";
     $result = mysqli_query($conn, $table_check_query);
@@ -1330,13 +1337,6 @@
     {
         create_EmployeesTable();
     }
-    // Check if Logs Table exists
-    $table_check_query = "SHOW TABLES LIKE 'Logs'";
-    $result = mysqli_query($conn, $table_check_query);
-
-    if (mysqli_num_rows($result) == 0) 
-    {
-        create_LogsTable();
-    }    
+    
     
 ?>
