@@ -103,23 +103,9 @@
                 FOREIGN KEY (CustomerID) REFERENCES customer(CustomerID)
                 )";
 
-        if (mysqli_query($conn, $sql))
-        {
-            $id = generate_Order_hdr_ID();
-            $id2 = generate_CustomerID();  
-            --$id2;
-            $sql = "INSERT INTO Order_hdr
-                    (Orderhdr_id,CustomerID,BranchCode,Created_by)
-                    VALUES
-                    ('$id', '$id2', '2025160000', 'Bien Ven P. Santos'
-                    )";
-
-            mysqli_query($conn, $sql);
-        }
-        else
-        {
-            echo "<br>There is an error in creating the table: " . $conn->connect_error;
-        }
+        mysqli_query($conn, $sql);
+        
+        
 
         $conn->close();
     }
