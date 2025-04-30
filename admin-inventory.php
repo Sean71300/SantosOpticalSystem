@@ -26,7 +26,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     elseif (isset($_POST['saveProductBtn'])) {
         confirmEditProduct();
         header("Location: admin-inventory.php?sort=$sort&order=$order&branch=".urlencode($branchName));
-        exit();
     }
     elseif (isset($_POST['deleteProductBtn'])) {
         confirmDeleteProduct();
@@ -34,7 +33,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     elseif (isset($_POST['confirmDeleteBtn'])) {
         deleteProduct();
         header("Location: admin-inventory.php?sort=$sort&order=$order&branch=".urlencode($branchName));
-        exit();
     }
 }
 ?>
