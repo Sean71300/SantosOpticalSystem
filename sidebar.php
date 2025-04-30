@@ -59,14 +59,6 @@ if ($isAdmin === true) {
             <i class="fas fa-box-open"></i> Products
         </a>
         
-        <a href="#" class="sidebar-item">
-            <i class="fas fa-layer-group"></i> Collections
-        </a>
-        
-        <a href="#" class="sidebar-item">
-            <i class="fas fa-archive"></i> Package
-        </a>
-        
         <!-- Logout Button -->
         <div class="sidebar-footer" style="position: absolute; bottom: 0; width: 100%;">
             <a href="logout.php" class="sidebar-item text-danger">
