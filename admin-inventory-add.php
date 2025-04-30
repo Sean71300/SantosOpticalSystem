@@ -171,25 +171,26 @@ include 'loginChecker.php';
                             </label>
                         </div>
                     </div>
-                </div>
-                
-                <?php
-                    if ($_SERVER['REQUEST_METHOD'] === 'POST') { 
-                        addProduct();
-                    }
-                ?>
-                
-                <div class="d-flex justify-content-end gap-3 mt-5">                    
-                    <button type="reset" class="btn btn-danger btn-action">
-                        <i class="fas fa-undo me-2"></i> Reset
-                    </button>
-                    <button type="submit" class="btn btn-primary btn-action" name="addProduct" value="addProduct">
-                        <i class="fas fa-save me-2"></i> Add Product
-                    </button>
+                    <div class="col-md-6">
+                        <div class="d-flex justify-content-end gap-3 mt-5">                    
+                            <button type="reset" class="btn btn-danger btn-action">
+                                <i class="fas fa-undo me-2"></i> Reset
+                            </button>
+                            <button type="submit" class="btn btn-primary btn-action" name="addProduct" value="addProduct">
+                                <i class="fas fa-save me-2"></i> Add Product
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </form>
         </div>
     </div>
+
+    <?php
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') { 
+            addProduct();
+        }
+    ?>
 
     <!-- Cancel Confirmation Modal -->
     <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
