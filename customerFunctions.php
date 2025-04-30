@@ -92,8 +92,12 @@
                 $errorMessage = 'All the fields are required';
             } else {
                 // Call the function to insert data
-                insertData($name, $address, $phone, $info, $notes);
-                $successMessage = "Customer added successfully"; 
+                $result = insertData($name, $address, $phone, $info, $notes);
+                if ($result) {
+                    $successMessage = "Customer added successfully"; 
+                } else {
+                    $errorMessage = "Error adding customer";
+                }
     
                 // Clear the form fields after submission
                 $name = "";
@@ -108,18 +112,75 @@
         }
     }
     
-    function insertData($name,$address,$phone,$info,$notes)
+    function insertData($name, $address, $phone, $info, $notes)
     {
         $conn = connect(); 
-        $id = generate_CustomerID();   
-        $upd_by = $_SESSION["full_name"];
-        $sql = "INSERT INTO customer 
-                (CustomerID,CustomerName,CustomerAddress,CustomerContact,
-                CustomerInfo,Notes,Upd_by) 
-                VALUES
-                ('$id','$name','$address','$phone','$info','$notes','$upd_by')";
+        $conn->begin_transaction();
         
-        mysqli_query($conn, $sql);
+        try {
+            // 1. Generate customer ID
+            $id = generate_CustomerID();   
+            $upd_by = $_SESSION["full_name"] ?? 'system';
+            
+            // 2. Insert customer data
+            $sql = "INSERT INTO customer 
+                    (CustomerID, CustomerName, CustomerAddress, CustomerContact,
+                    CustomerInfo, Notes, Upd_by) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?)";
+            
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("issssss", $id, $name, $address, $phone, $info, $notes, $upd_by);
+            $stmt->execute();
+            
+            // 3. Get employee ID (ensure it exists)
+            $employeeId = 0;
+            if (isset($_SESSION['employee_id'])) {
+                $check = $conn->prepare("SELECT EmployeeID FROM employee WHERE EmployeeID = ?");
+                $check->bind_param("i", $_SESSION['employee_id']);
+                $check->execute();
+                $result = $check->get_result();
+                if ($result->num_rows > 0) {
+                    $employeeId = $_SESSION['employee_id'];
+                }
+            }
+            
+            // Fallback to system account if needed
+            if ($employeeId == 0) {
+                $check = $conn->prepare("SELECT EmployeeID FROM employee WHERE LoginName = 'system' LIMIT 1");
+                $check->execute();
+                $result = $check->get_result();
+                if ($result->num_rows > 0) {
+                    $row = $result->fetch_assoc();
+                    $employeeId = $row['EmployeeID'];
+                } else {
+                    // Ultimate fallback - use first admin account
+                    $employeeId = 1;
+                }
+            }
+            
+            // 4. Generate log ID
+            $logId = generate_LogsID();
+            
+            // 5. Insert log record
+            $logSql = "INSERT INTO Logs 
+                       (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Upd_dt)
+                       VALUES (?, ?, ?, 'customer', 2, NOW())";
+            
+            $logStmt = $conn->prepare($logSql);
+            $logStmt->bind_param("iii", $logId, $employeeId, $id);
+            $logStmt->execute();
+            
+            // Commit transaction
+            $conn->commit();
+            return true;
+            
+        } catch (Exception $e) {
+            $conn->rollback();
+            error_log("Error in customer creation: " . $e->getMessage());
+            return false;
+        } finally {
+            $conn->close();
+        }
     }
     
     function handleCancellation() {

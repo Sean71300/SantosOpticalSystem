@@ -1204,61 +1204,7 @@
         $conn->close();
         return $id;
     }
-    function create_CustomerLogTrigger() {
-        $conn = connect();
-        
-        // Drop the trigger if it exists
-        $conn->query("DROP TRIGGER IF EXISTS after_customer_insert");
-        
-        // Create the new trigger using auto-increment or direct value
-        $triggerSQL = "
-        CREATE TRIGGER after_customer_insert
-        AFTER INSERT ON customer
-        FOR EACH ROW
-        BEGIN
-            DECLARE employee_id INT;
-            DECLARE new_log_id INT;
-            
-            -- Get the employee ID
-            SET employee_id = IFNULL((SELECT EmployeeID FROM employee WHERE LoginName = NEW.Upd_by LIMIT 1), 0);
-            
-            -- Generate log ID using your pattern (year + 02 + 4-digit sequence)
-            SET new_log_id = (
-                SELECT IFNULL(
-                    CONCAT(YEAR(NOW()), '02', 
-                    LPAD(
-                        IFNULL(
-                            (SELECT SUBSTRING(MAX(LogsID), 7, 4) FROM Logs 
-                            WHERE LogsID LIKE CONCAT(YEAR(NOW()), '02%')
-                        ), 0) + 1, 
-                        4, '0')
-                    ),
-                    CONCAT(YEAR(NOW()), '020001')
-                )
-            );
-            
-            -- Insert log record
-            INSERT INTO Logs (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Upd_dt)
-            VALUES (
-                new_log_id,
-                employee_id,
-                NEW.CustomerID,
-                'customer',
-                2, -- ActivityCode 2 = 'Added'
-                NOW()
-            );
-        END;
-        ";
-        
-        try {
-            $conn->multi_query($triggerSQL);
-            while ($conn->next_result()) {} // Flush multi_queries
-        } catch (mysqli_sql_exception $e) {
-            error_log("Error creating customer log trigger: " . $e->getMessage());
-        }
-        
-        $conn->close();
-    }
+    
 ?>
 
 <?php
@@ -1384,11 +1330,5 @@
     if (mysqli_num_rows($result) == 0) 
     {
         create_LogsTable();
-    }
-    $trigger_check_query = "SHOW TRIGGERS LIKE 'after_customer_insert'";
-    $result = mysqli_query($conn, $trigger_check_query);
-
-    if (mysqli_num_rows($result) == 0) {
-        create_CustomerLogTrigger();
-    }
+    }    
 ?>
