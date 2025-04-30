@@ -20,7 +20,6 @@ $_SESSION['current_branch'] = $branchName;
 
 // Handle form actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    echo 'burnik';
     if (isset($_POST['editProductBtn'])) {
         editProduct();
     }
