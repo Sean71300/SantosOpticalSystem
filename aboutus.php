@@ -52,13 +52,12 @@
                 box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             }
 
+    
             .nav-button {
-                transition: transform 0.3s ease-in-out;
+             
             }
 
-            .nav-button:hover {
-                transform: scale(1.1);
-            }
+      
 
             .doctor-section {
                 animation: slideInFromLeft 2s ease-in-out;

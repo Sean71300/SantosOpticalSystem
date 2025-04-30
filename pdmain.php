@@ -130,7 +130,7 @@
                         and stylish frames to match your personality. Explore our wide range of services today!
                     </p>
                     <div class="d-flex justify-content-end">
-                        <a href="demoourservices.html" class="nav-button">KNOW MORE</a>
+                        <a href="ourservices.php" class="nav-button">KNOW MORE</a>
                     </div>
                 </div>
             </div>
@@ -145,7 +145,7 @@
                     <p class="about-text">
                         Know and learn more about PBV Santos Optical!
                     </p>
-                    <a href="damoabtus.html" class="btn-see-all">SEE ALL <span>></span></a>
+                    <a href="aboutus.php" class="btn-see-all">SEE ALL <span>></span></a>
                 </div>
                 <div class="col-lg-6 text-center" data-aos="fade-left">
                     <img src="Images/imgabt.jpg" alt="About Us Image" class="img-fluid rounded">
