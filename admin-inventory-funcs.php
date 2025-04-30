@@ -138,7 +138,6 @@ function getEmployeeName()
                         <td class='align-middle'>".htmlspecialchars($row['BrandName'])."</td>
                         <td class='align-middle'>".htmlspecialchars($row['Model'])."</td>
                         <td class='align-middle'>".htmlspecialchars($row['Material'])."</td>
-                        <td class='align-middle'>".htmlspecialchars($row['Price'])."</td>
                         <td class='align-middle'><img src='".htmlspecialchars($row['ProductImage'])."' class='product-img'></td>
                         <td class='align-middle'>".htmlspecialchars($row['TotalCount'])."</td>                        
                     </tr>";
