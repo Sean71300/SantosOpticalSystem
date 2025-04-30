@@ -850,7 +850,7 @@
                             ProductImage, Avail_FL, Upd_by)
                             VALUES
                             ('$id', 'Frame', '$shape', '$brandID', 
-                            '$model', $randomMaterial, $price, '$img_path', 'Available', 
+                            '$model', '$randomMaterial', '$price', '$img_path', 'Available', 
                             'Bien Ven P. Santos')";
 
                 mysqli_query($conn, $sql);
