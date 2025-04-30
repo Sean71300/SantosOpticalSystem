@@ -1204,6 +1204,65 @@
         $conn->close();
         return $id;
     }
+    function create_CustomerInsertTrigger() {
+        $conn = connect();
+        
+        // First, drop the trigger if it already exists
+        $conn->query("DROP TRIGGER IF EXISTS after_customer_insert");
+        
+        // Create the new trigger
+        $triggerSQL = "
+        CREATE TRIGGER after_customer_insert
+        AFTER INSERT ON customer
+        FOR EACH ROW
+        BEGIN
+            DECLARE employee_id INT;
+            DECLARE new_log_id INT;
+            
+            -- Get the employee ID from the Upd_by field (using LoginName)
+            -- Default to 1 (admin) if not found
+            SELECT IFNULL(
+                (SELECT EmployeeID FROM employee WHERE LoginName = NEW.Upd_by LIMIT 1),
+                1
+            ) INTO employee_id;
+            
+            -- Generate log ID using the same pattern as generate_LogsID()
+            -- Format: YYYY + '02' + 4-digit sequence (e.g., 2024020001)
+            SELECT IFNULL(
+                CONCAT(YEAR(NOW()), '02', 
+                LPAD(
+                    IFNULL(
+                        (SELECT SUBSTRING(MAX(LogsID), 7, 4) FROM Logs 
+                        WHERE LogsID LIKE CONCAT(YEAR(NOW()), '02%')
+                    ), 0) + 1, 
+                    4, '0'
+                ),
+                CONCAT(YEAR(NOW()), '020001')
+            ) INTO new_log_id;
+            
+            -- Insert log record
+            INSERT INTO Logs (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Upd_dt)
+            VALUES (
+                new_log_id,
+                employee_id,
+                NEW.CustomerID,
+                'customer',
+                2, -- ActivityCode 2 = 'Added' (from your activityMaster table)
+                NOW()
+            );
+        END;
+        ";
+        
+        try {
+            $conn->multi_query($triggerSQL);
+            while ($conn->next_result()) {} // Flush multi_queries
+            error_log("Customer insert trigger created successfully");
+        } catch (mysqli_sql_exception $e) {
+            error_log("Error creating customer insert trigger: " . $e->getMessage());
+        }
+        
+        $conn->close();
+    }
     
 ?>
 
@@ -1331,4 +1390,8 @@
     {
         create_LogsTable();
     }    
+    $trigger_check = $conn->query("SHOW TRIGGERS LIKE 'after_customer_insert'");
+    if ($trigger_check->num_rows == 0) {
+        create_CustomerInsertTrigger();
+    }
 ?>
