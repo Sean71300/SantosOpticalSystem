@@ -676,7 +676,7 @@ function confirmEditProduct() {
         // Update productmstr table
         $sql1 = "UPDATE productMstr SET CategoryType = ?, ShapeID = ?, BrandID = ?, Model = ?, Material = ?, Price = ?, ProductImage = ?, Upd_by = ?, Upd_dt = ? WHERE ProductID = ?";
         $stmt1 = mysqli_prepare($link, $sql1);
-        mysqli_stmt_bind_param($stmt1, "sssssssss", $categoryType, $shape, $brandID, $model, $material, $price, $targetFile, $employeeName, $upd_dt, $productID);
+        mysqli_stmt_bind_param($stmt1, "ssssssssss", $categoryType, $shape, $brandID, $model, $material, $price, $targetFile, $employeeName, $upd_dt, $productID);
         if (!mysqli_stmt_execute($stmt1)) {
             $success = false;
         }
