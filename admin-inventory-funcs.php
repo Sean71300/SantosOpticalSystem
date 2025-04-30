@@ -406,7 +406,7 @@ function editShape($currentShapeDescription = '') { // Function to edit shape
 
     while ($row = mysqli_fetch_array($result)) {
         $selected = ($row['Description'] === $currentShapeDescription) ? 'selected' : '';
-        echo "<option class='form-select-sm' value='" . htmlspecialchars($row['Description']) . "' $selected>" . 
+        echo "<option class='form-select-sm' value='" . htmlspecialchars($row['ShapeID']) . "' $selected>" . 
              htmlspecialchars($row['Description']) . "</option>";
     }
 
