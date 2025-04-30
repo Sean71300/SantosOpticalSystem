@@ -283,13 +283,16 @@ $_SESSION['current_branch'] = $branchName;
                                 editProduct();
                             }
                             elseif (isset($_POST['saveProductBtn'])) {
-                                confirmEditProduct();        
+                                confirmEditProduct(); 
+                                header("Refresh:0");     
                             }
                             elseif (isset($_POST['deleteProductBtn'])) {
                                 confirmDeleteProduct();
+                                header("Refresh:0");
                             }
                             elseif (isset($_POST['confirmDeleteBtn'])) {
-                                deleteProduct();      
+                                deleteProduct();
+                                header("Refresh:0");    
                             }
                         }
                     ?>
