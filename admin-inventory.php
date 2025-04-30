@@ -17,26 +17,6 @@ if (isset($_POST['searchProduct'])) {
 
 // Store current branch in session
 $_SESSION['current_branch'] = $branchName;
-
-// Handle form actions
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['editProductBtn'])) {
-        editProduct();
-    }
-    elseif (isset($_POST['saveProductBtn'])) {
-        confirmEditProduct();
-        header("Location: admin-inventory.php?sort=$sort&order=$order&branch=".urlencode($branchName));
-        exit();
-    }
-    elseif (isset($_POST['deleteProductBtn'])) {
-        confirmDeleteProduct();
-    }
-    elseif (isset($_POST['confirmDeleteBtn'])) {
-        deleteProduct();
-        header("Location: admin-inventory.php?sort=$sort&order=$order&branch=".urlencode($branchName));
-        exit();
-    }
-}
 ?>
 
 <!DOCTYPE html>
@@ -295,6 +275,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         
                         echo '</tbody></table>';
                     }
+                    ?>
+
+                    <?php
+                        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                            if (isset($_POST['editProductBtn'])) {
+                                editProduct();
+                            }
+                            elseif (isset($_POST['saveProductBtn'])) {
+                                confirmEditProduct();        
+                            }
+                            elseif (isset($_POST['deleteProductBtn'])) {
+                                confirmDeleteProduct();
+                            }
+                            elseif (isset($_POST['confirmDeleteBtn'])) {
+                                deleteProduct();      
+                            }
+                        }
                     ?>
                 </div>
             </div>
