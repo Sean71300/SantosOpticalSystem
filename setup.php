@@ -740,8 +740,36 @@
                 FOREIGN KEY (BrandID) REFERENCES brandMaster(BrandID)
                 )";
     
-        mysqli_query($conn, $sql);
-            
+        if (mysqli_query($conn, $sql)) 
+        {
+            $products = [
+                [
+                    'model' => 'Minima M-508C _144 867',
+                    'brandID' => 2025150000,
+                    'category' => 'Frame',
+                    'price' => '₱3500',
+                    'material' => 'Magnesium',
+                    'image' => 'Images/00069.jpg'
+                ],
+            ];
+
+            foreach ($products as $prod) {
+                $id = generate_ProductMstrID();
+                $shape = rand(1,5);
+    
+                $sql = "INSERT INTO productMstr
+                        (ProductID, CategoryType, ShapeID, BrandID, Model, Material, Price,
+                        ProductImage, Avail_FL, Upd_by)
+                        VALUES
+                        ('$id', '{$prod['category']}', '$shape', '{$prod['brandID']}', 
+                        '{$prod['model']}', '{$prod['material']}', '{$prod['price']}', 
+                        '{$prod['image']}', 'Available', 'System')";
+    
+                mysqli_query($conn, $sql);
+            }        
+        } else {
+            echo "<br>There is an error in creating the table: " . $conn->connect_error;
+        }
         $conn->close();
     }
 
@@ -789,8 +817,41 @@
                 FOREIGN KEY (BranchCode) REFERENCES BranchMaster(BranchCode)
                 )";
 
-        mysqli_query($conn, $sql);
-        
+        if (mysqli_query($conn, $sql)){
+            $employees = [
+                [
+                    'name' => 'Bien Ven P. Santos',
+                    'email' => 'BVPSantosOptical@gmail.com',
+                    'number' => '09864571325',
+                    'role' => 1,
+                    'login' => 'BVSantos1',
+                    'password' => 'JPSantos123',
+                    'branch' => 2025160000,
+                    'status' => 'Active'
+                ],
+            ];
+            foreach ($employees as $emp) 
+            {
+                $id = generate_EmployeeID();
+                $hashed_pw = password_hash($emp['password'], PASSWORD_DEFAULT);
+                $img_path = "Images/default.jpg";
+    
+                $sql = "INSERT INTO employee
+                        (EmployeeID, EmployeeName, EmployeePicture, EmployeeEmail,
+                        EmployeeNumber, RoleID, LoginName, Password, BranchCode, Status,
+                        Upd_by)
+                        VALUES
+                        ($id, '{$emp['name']}', '$img_path', '{$emp['email']}', 
+                        '{$emp['number']}', '{$emp['role']}', '{$emp['login']}', '$hashed_pw', 
+                        '{$emp['branch']}', '{$emp['status']}', 'System')";
+
+                mysqli_query($conn, $sql);
+            }
+        }
+        else
+        {
+            echo "<br>There is an error in creating the table: " . $conn->connect_error;
+        }
             
         $conn->close();
     }
@@ -835,9 +896,35 @@
                 Upd_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )";
     
-        mysqli_query($conn, $sql);
-        
+        if (mysqli_query($conn, $sql))
+        {           
+            $customers = [
+                [
+                    'name' => 'Sean Genesis',
+                    'address' => '231 Visayas Street, Malabon City',
+                    'contact' => '09864325874',
+                    'info' => '60 Years old \n185cm \nMale',
+                    'notes' => 'Round Face Shape'
+                ],
+            ];        
             
+            foreach ($customers as $cust) {
+                $id = generate_CustomerID();
+                
+                $sql = "INSERT INTO customer 
+                        (CustomerID, CustomerName, CustomerAddress, CustomerContact,
+                        CustomerInfo, Notes, Upd_by) 
+                        VALUES
+                        ('$id', '{$cust['name']}', '{$cust['address']}', 
+                        '{$cust['contact']}', '{$cust['info']}', 
+                        '{$cust['notes']}', 'Bien Ven P. Santos')";                
+                mysqli_query($conn, $sql);
+            }
+        }
+        else
+        {
+            echo "<br>There is an error in creating the table: " . $conn->connect_error;
+        }
     
         $conn->close();
     }
@@ -1114,17 +1201,7 @@
 
             mysqli_query($conn, $sql);
         }    
-        $employees = [
-            [
-                'name' => 'Bien Ven P. Santos',
-                'email' => 'BVPSantosOptical@gmail.com',
-                'number' => '09864571325',
-                'role' => 1,
-                'login' => 'BVSantos1',
-                'password' => 'JPSantos123',
-                'branch' => 2025160000,
-                'status' => 'Active'
-            ],
+        $employees = [           
             [
                 'name' => 'Sean Genesis V. Morse',
                 'email' => 'SeanGenesis@gmail.com',
