@@ -1,7 +1,9 @@
 <?php
+include 'setup.php';
 include 'employeeFunctions.php'; 
 include 'ActivityTracker.php';
 include 'loginChecker.php';
+
 
 $id = "";
 $name = "";

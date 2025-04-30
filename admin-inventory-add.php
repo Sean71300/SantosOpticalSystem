@@ -155,24 +155,31 @@ include 'loginChecker.php';
                         <label for="productRemarks" class="form-label">Remarks</label>
                         <input type="text" class="form-control form-control-lg" id="productRemarks" name="productRemarks" required>
                     </div>
-                    <div class="col-md-6">
-                        <label for="productRemarks" class="form-label">Add Image:</label>
-                        
-                        <div class="container d-flex justify-content-center align-items-center flex-column">
-                            <img src="Images/default-product.png" alt="Product Image" class="product-img-preview" style="width: 250px; height: 250px;">
-                            <div >
-                                <label for="productImg" class="btn btn-success">
-                                    <input type="file" name="productImg" id="productImg" accept="image/png, image/jpeg" onchange="productImagePreview(this)" style="display:none;">
-                                    <i class="fas fa-camera me-2"></i> Add Product Image
-                                </label>
-                            </div>
+                    <div class="col-md-6 text-center">
+                        <img src="Images/default-product.png" alt="Product Image" class="product-img-preview">
+                        <div>
+                            <label for="productImg" class="btn btn-success">
+                                <input type="file" name="productImg" id="productImg" accept="image/png, image/jpeg" onchange="productImagePreview(this)" style="display:none;">
+                                <i class="fas fa-camera me-2"></i> Add Product Image
+                            </label>
                         </div>
                     </div>
                 </div>
                 
                 <?php 
                 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-                    addProduct();
+                    $result = addProduct();
+                    if ($result === true): ?>
+                        <div class='alert alert-success alert-dismissible fade show' role='alert'>
+                            <strong>Product added successfully!</strong>
+                            <button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>
+                        </div>
+                    <?php else: ?>
+                        <div class='alert alert-danger alert-dismissible fade show' role='alert'>
+                            <strong>Error: <?php echo $result; ?></strong>
+                            <button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>
+                        </div>
+                    <?php endif;
                 }
                 ?>
                 
@@ -217,9 +224,6 @@ include 'loginChecker.php';
                 reader.readAsDataURL(input.files[0]);
             }
         }
-        
-        var myModal = new bootstrap.Modal(document.getElementById("successModal"));
-        myModal.show();
     </script>
 </body>
 </html>
