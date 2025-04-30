@@ -185,7 +185,7 @@ $lowInventory = getLowInventoryProducts();
                                             echo '<img src="' . htmlspecialchars($product['ProductImage']) . '" alt="Product Image" style="height:100px; width:100px;" class="img-thumbnail">';
                                                 echo '<div class="fw-bold ms-3">';
                                                     echo htmlspecialchars($product['Model']);
-                                                    echo htmlspecialchars($product['Count']);
+                                                    echo "<br> Available Stocks: ".htmlspecialchars($product['Stocks']);
                                                 echo '</div>';
                                             echo '</div>';
                                         }

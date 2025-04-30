@@ -28,7 +28,7 @@ function getEmployeeCount() {
 function getInventoryCount() {
     $conn = connect();
     $count = 0;
-    $query = "SELECT COUNT(DISTINCT ProductID) as count FROM productMstr";
+    $query = "SELECT COUNT(*) as count FROM productMstr";
     $result = mysqli_query($conn, $query);
     if ($result) {
         $row = mysqli_fetch_assoc($result);
@@ -71,11 +71,11 @@ function getRecentActivities($limit = 5) {
 function getLowInventoryProducts() {
     $conn = connect();
     $lowInventory = [];
-    $query = "SELECT pbm.ProductBranchID, pbm.ProductID, pbm.BranchCode, pbm.Count, pm.*
+    $query = "SELECT pbm.ProductBranchID, pbm.ProductID, pbm.BranchCode, pbm.Stocks, pm.*
               FROM ProductBranchMaster pbm 
               JOIN productMstr pm ON pbm.ProductID = pm.ProductID
-              WHERE pbm.Count <= 10 
-              ORDER BY pbm.Count ASC";
+              WHERE pbm.Stocks <= 10 
+              ORDER BY pbm.Stocks ASC";
     $result = mysqli_query($conn, $query);
     if ($result) {
         while ($row = mysqli_fetch_assoc($result)) {

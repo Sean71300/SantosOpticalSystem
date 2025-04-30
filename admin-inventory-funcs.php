@@ -97,8 +97,8 @@ function getInventory($sort = 'ProductID', $order = 'ASC') {
                     pm.Material,
                     pm.Price, 
                     pm.ProductImage,
-                    GROUP_CONCAT(CONCAT(b.BranchName, ': ', pbm.Count) SEPARATOR '<br>') AS BranchDistribution,
-                    SUM(pbm.Count) AS TotalCount,
+                    GROUP_CONCAT(CONCAT(b.BranchName, ': ', pbm.Stocks) SEPARATOR '<br>') AS BranchDistribution,
+                    SUM(pbm.Stocks) AS TotalCount,
                     pm.Upd_by,
                     MAX(pbm.Upd_dt) AS LastUpdated
                 FROM productMstr pm
@@ -158,7 +158,7 @@ function getInventory($sort = 'ProductID', $order = 'ASC') {
             case 'ShapeDescription': $sql .= " ORDER BY sm.Description"; break;
             case 'BrandName': $sql .= " ORDER BY bm.BrandName"; break;
             case 'Model': $sql .= " ORDER BY pm.Model"; break;
-            case 'Count': $sql .= " ORDER BY pbm.Count"; break;
+            case 'Count': $sql .= " ORDER BY pbm.Stocks"; break;
             case 'Upd_dt': $sql .= " ORDER BY pbm.Upd_dt"; break;
             default: $sql .= " ORDER BY pm.ProductID";
         }
@@ -190,7 +190,7 @@ function getInventory($sort = 'ProductID', $order = 'ASC') {
                     <td class='align-middle'>".htmlspecialchars($row['Material'])."</td>
                     <td class='align-middle'>".htmlspecialchars($row['Price'])."</td>
                     <td class='align-middle'><img src='".htmlspecialchars($row['ProductImage'])."' class='product-img'></td>
-                    <td class='align-middle'>".htmlspecialchars($row['Count'])."</td>
+                    <td class='align-middle'>".htmlspecialchars($row['Stocks'])."</td>
                     <td>
                         <form method='post'>
                             <input type='hidden' name='chooseBranch' value='" . htmlspecialchars($branchName) . "' />
@@ -202,7 +202,7 @@ function getInventory($sort = 'ProductID', $order = 'ASC') {
                             <input type='hidden' name='model' value='" . htmlspecialchars($row['Model']) . "' />
                             <input type='hidden' name='material' value='" . htmlspecialchars($row['Material']) . "' />
                             <input type='hidden' name='price' value='" . htmlspecialchars($row['Price']) . "' />
-                            <input type='hidden' name='count' value='" . htmlspecialchars($row['Count']) . "' />
+                            <input type='hidden' name='count' value='" . htmlspecialchars($row['Stocks']) . "' />
                             <input type='hidden' name='productImg' value='" . htmlspecialchars($row['ProductImage']) . "' />
                             <button type='submit' class='btn btn-success' name='editProductBtn' style='font-size:12px'><i class='fa-solid fa-pen'></i></button>
                         </form>

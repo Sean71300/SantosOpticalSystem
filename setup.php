@@ -230,7 +230,7 @@
                 ProductBranchID INT(10) PRIMARY KEY,
                 ProductID INT(10),
                 BranchCode INT(10),
-                Count INT(100),
+                Stocks INT(100),
                 Avail_FL VARCHAR(50), 
                 Upd_by VARCHAR(50),
                 Upd_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -248,7 +248,7 @@
                 $count = rand(3, 50); // Generate a random count between 3 and 50
                 
                 $sql = "INSERT INTO ProductBranchMaster
-                        (ProductBranchID, ProductID, BranchCode, Count, Avail_FL, Upd_by)
+                        (ProductBranchID, ProductID, BranchCode, Stocks, Avail_FL, Upd_by)
                         VALUES
                         ('$id', '$id2', '$id3', '$count', 'Available', 'Bien Ven P. Santos')";
                 mysqli_query($conn, $sql);             
