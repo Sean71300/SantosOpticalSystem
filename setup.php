@@ -831,7 +831,7 @@
                 }
  
                 $shape = rand(1,5);
-                $price = rand(3500, 10000);
+                $price = '₱' . rand(3500, 10000);
                 $materials = [
                     'Magnesium',
                     'Beryllium',
