@@ -1204,6 +1204,46 @@
         $conn->close();
         return $id;
     }
+    function create_CustomerLogTrigger() {
+        $conn = connect();
+        
+        // First, drop the trigger if it already exists
+        $conn->query("DROP TRIGGER IF EXISTS after_customer_insert");
+        
+        // Create the new trigger
+        $triggerSQL = "
+        CREATE TRIGGER after_customer_insert
+        AFTER INSERT ON customer
+        FOR EACH ROW
+        BEGIN
+            DECLARE employee_id INT;
+            
+            -- Get the employee ID from the current session if possible
+            -- This assumes you store employee ID in session when logged in
+            SET employee_id = IFNULL((SELECT EmployeeID FROM employee WHERE LoginName = NEW.Upd_by LIMIT 1), 0);
+            
+            -- Insert log record
+            INSERT INTO Logs (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Upd_dt)
+            VALUES (
+                generate_LogsID(),
+                employee_id,
+                NEW.CustomerID,
+                'customer',
+                2, -- ActivityCode 2 = 'Added' (from your activityMaster table)
+                NOW()
+            );
+        END;
+        ";
+        
+        try {
+            $conn->multi_query($triggerSQL);
+            while ($conn->next_result()) {} // Flush multi_queries
+        } catch (mysqli_sql_exception $e) {
+            echo "Error creating customer log trigger: " . $e->getMessage();
+        }
+        
+        $conn->close();
+    }
 ?>
 
 <?php
@@ -1329,5 +1369,11 @@
     if (mysqli_num_rows($result) == 0) 
     {
         create_LogsTable();
+    }
+    $trigger_check_query = "SHOW TRIGGERS LIKE 'after_customer_insert'";
+    $result = mysqli_query($conn, $trigger_check_query);
+
+    if (mysqli_num_rows($result) == 0) {
+        create_CustomerLogTrigger();
     }
 ?>
