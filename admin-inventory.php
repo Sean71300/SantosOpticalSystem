@@ -277,6 +277,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                             </span>
                                         </th>
                                         <th>Material</th>
+                                        <th>Price</th>
                                         <th>Product Image</th>
                                         <th class="sortable '.($sort == 'Count' ? 'active' : '').'" onclick="sortTable(\'Count\')">
                                             Count
