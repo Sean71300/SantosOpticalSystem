@@ -61,6 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
         $conn = connect();
         $result = $conn->query($sql);
+        EGenerateLogs($employee_id,$id);
 
         if (!$result) {
             $errorMessage = "Invalid query: " . $conn->error;
@@ -71,6 +72,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
             
     } while(false);
 }
+function EGenerateLogs($employee_id,$id)
+    {
+        $conn = connect(); 
+        $Logsid = generate_LogsID(); ;   
+        $upd_by = $_SESSION["full_name"];
+        $sql = "INSERT INTO Logs 
+                (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Upd_dt)
+                VALUES
+                ('$Logsid', '$employee_id', '$id', 'customer', '4', NOW())";
+        
+        mysqli_query($conn, $sql);
+    }
 
 handleCancellation();
 ?>

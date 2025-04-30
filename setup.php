@@ -755,108 +755,164 @@
     // Create Product Master Table
     function create_ProductMstrTable() {
         $conn = connect();
+    
         $sql = "CREATE TABLE productMstr (
-            ProductID INT(10) PRIMARY KEY,
-            CategoryType VARCHAR (50),
-            ShapeID INT (1),
-            BrandID INT (10),                              
-            Model VARCHAR(50),
-            Material VARCHAR(50),
-            Price VARCHAR(20),
-            ProductImage VARCHAR(255),
-            Avail_FL VARCHAR (50),  
-            Upd_by VARCHAR(50),
-            Upd_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (CategoryType) REFERENCES categoryType(CategoryType),
-            FOREIGN KEY (ShapeID) REFERENCES shapeMaster(ShapeID),
-            FOREIGN KEY (BrandID) REFERENCES brandMaster(BrandID)
-            )";
-
+                ProductID INT(10) PRIMARY KEY,
+                CategoryType VARCHAR(50),
+                ShapeID INT(1),
+                BrandID INT(10),                              
+                Model VARCHAR(50),
+                Material VARCHAR(50),
+                Price VARCHAR(20),
+                ProductImage VARCHAR(255),
+                Avail_FL VARCHAR(50),  
+                Upd_by VARCHAR(50),
+                Upd_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (CategoryType) REFERENCES categoryType(CategoryType),
+                FOREIGN KEY (ShapeID) REFERENCES shapeMaster(ShapeID),
+                FOREIGN KEY (BrandID) REFERENCES brandMaster(BrandID)
+                )";
+    
         if (mysqli_query($conn, $sql)) {
-        
-            for ($i = 0; $i <= 11; $i++) {
-                $img_path = 'Images/' . str_pad(69 + $i, 5, '0', STR_PAD_LEFT) . '.jpg';                
+            $products = [
+                [
+                    'model' => 'Minima M-508C _144 867',
+                    'brandID' => 2025150000,
+                    'category' => 'Frame',
+                    'price' => '₱3500',
+                    'material' => 'Magnesium',
+                    'image' => 'Images/00069.jpg'
+                ],
+                [
+                    'model' => 'IMAX 5565 54-17-140',
+                    'brandID' => 2025150001,
+                    'category' => 'Frame',
+                    'price' => '₱4200',
+                    'material' => 'Beryllium',
+                    'image' => 'Images/00070.jpg'
+                ],
+                [
+                    'model' => 'Paul Hueman PHF-300A',
+                    'brandID' => 2025150002,
+                    'category' => 'Frame',
+                    'price' => '₱3800',
+                    'material' => 'Pure aluminum',
+                    'image' => 'Images/00071.jpg'
+                ],
+                [
+                    'model' => 'Caradin CR-2020',
+                    'brandID' => 2025150003,
+                    'category' => 'Frame',
+                    'price' => '₱4500',
+                    'material' => 'Ticral',
+                    'image' => 'Images/00072.jpg'
+                ],
+                [
+                    'model' => 'Lee Cooper LC-101',
+                    'brandID' => 2025150004,
+                    'category' => 'Frame',
+                    'price' => '₱3900',
+                    'material' => 'Stainless',
+                    'image' => 'Images/00073.jpg'
+                ],
+                [
+                    'model' => 'Bobby Jones BJ-505',
+                    'brandID' => 2025150005,
+                    'category' => 'Frame',
+                    'price' => '₱4100',
+                    'material' => 'Nickel titanium',
+                    'image' => 'Images/00074.jpg'
+                ],
+                [
+                    'model' => 'LIGHT TECH 7783L',
+                    'brandID' => 2025150006,
+                    'category' => 'Frame',
+                    'price' => '₱3700',
+                    'material' => 'Monel',
+                    'image' => 'Images/00075.jpg'
+                ],
+                [
+                    'model' => 'Ray-Ban RB2140',
+                    'brandID' => 2025150007,
+                    'category' => 'Sunglasses',
+                    'price' => '₱5200',
+                    'material' => 'Plastic',
+                    'image' => 'Images/00076.jpg'
+                ],
+                [
+                    'model' => 'Oakley OO9438',
+                    'brandID' => 2025150008,
+                    'category' => 'Sunglasses',
+                    'price' => '₱5800',
+                    'material' => 'Gliamide',
+                    'image' => 'Images/00077.jpg'
+                ],
+                [
+                    'model' => 'Persol PO3254',
+                    'brandID' => 2025150009,
+                    'category' => 'Sunglasses',
+                    'price' => '₱5400',
+                    'material' => 'Magnesium',
+                    'image' => 'Images/00078.jpg'
+                ],
+                [
+                    'model' => 'Acuvue Oasys',
+                    'brandID' => 2025150010,
+                    'category' => 'Contact Lenses',
+                    'price' => '₱3200',
+                    'material' => 'Silicone hydrogel',
+                    'image' => 'Images/00079.jpg'
+                ],
+                [
+                    'model' => 'Air Optix Aqua',
+                    'brandID' => 2025150011,
+                    'category' => 'Contact Lenses',
+                    'price' => '₱3400',
+                    'material' => 'Lotrafilcon B',
+                    'image' => 'Images/00080.jpg'
+                ],
+                [
+                    'model' => 'Biofinity',
+                    'brandID' => 2025150012,
+                    'category' => 'Contact Lenses',
+                    'price' => '₱3600',
+                    'material' => 'Comfilcon A',
+                    'image' => 'Images/00081.jpg'
+                ],
+                [
+                    'model' => 'Essilor Varilux',
+                    'brandID' => 2025150013,
+                    'category' => 'Progressive Lens',
+                    'price' => '₱7800',
+                    'material' => 'Plastic',
+                    'image' => 'Images/00082.jpg'
+                ],
+                [
+                    'model' => 'Hoya EnRoute',
+                    'brandID' => 2025150014,
+                    'category' => 'Photochromic Lens',
+                    'price' => '₱8200',
+                    'material' => 'Polycarbonate',
+                    'image' => 'Images/00083.jpg'
+                ]
+            ];
+    
+            foreach ($products as $prod) {
                 $id = generate_ProductMstrID();
-                $model = '';
-
-                switch ($i) {
-                    case 0: 
-                        $model = 'Minima M-508C _144 867';
-                        $brandID = 2025150000;
-                        break;
-                    case 1: 
-                        $model = 'IMAX 5565 54-17-140'; 
-                        $brandID = 2025150001;
-                        break;
-                    case 2: 
-                        $model = 'Paul Hueman';
-                        $brandID = 2025150002; 
-                        break;
-                    case 3: 
-                        $model = 'PAUL HUEMAN PHF-300A Col.5 50-201-42';
-                        $brandID = 2025150002;
-                        break;
-                    case 4: 
-                        $model = 'Caradin'; 
-                        $brandID = 2025150003;
-                        break;
-                    case 5: 
-                        $model = 'Lee Cooper'; 
-                        $brandID = 2025150004;
-                        break;
-                    case 6: 
-                        $model = 'Bobby Jones'; 
-                        $brandID = 2025150005;
-                        break;
-                    case 7: 
-                        $model = 'LIGHT TECH 3PC 7783L 54-16-140 BB 072'; 
-                        $brandID = 2025150006;
-                        break;
-                    case 8: 
-                        $model = 'LIGHT TECH 3PC 7775LBG 007'; 
-                        $brandID = 2025150006;
-                        break;
-                    case 9: 
-                        $model = 'LIGHT TECH'; 
-                        $brandID = 2025150006;
-                        break;
-                    case 10: 
-                        $model = 'LIGHT TECH';
-                        $brandID = 2025150006; 
-                        break;
-                    case 11: 
-                        $model = 'LIGHT TECH';
-                        $brandID = 2025150006; 
-                        break;
-                }
- 
                 $shape = rand(1,5);
-                $price = '₱' . rand(3500, 10000);
-                $materials = [
-                    'Magnesium',
-                    'Beryllium',
-                    'Pure aluminum',
-                    'Ticral',
-                    'Stainless',
-                    'Nickel titanium',
-                    'Monel',
-                    'Plastic',
-                    'Gliamide'
-                ];    
-                $randomMaterial = $materials[array_rand($materials)];
-
+    
                 $sql = "INSERT INTO productMstr
-                            (ProductID, CategoryType, ShapeID, BrandID, Model, Material, Price,
-                            ProductImage, Avail_FL, Upd_by)
-                            VALUES
-                            ('$id', 'Frame', '$shape', '$brandID', 
-                            '$model', '$randomMaterial', '$price', '$img_path', 'Available', 
-                            'Bien Ven P. Santos')";
-
+                        (ProductID, CategoryType, ShapeID, BrandID, Model, Material, Price,
+                        ProductImage, Avail_FL, Upd_by)
+                        VALUES
+                        ('$id', '{$prod['category']}', '$shape', '{$prod['brandID']}', 
+                        '{$prod['model']}', '{$prod['material']}', '{$prod['price']}', 
+                        '{$prod['image']}', 'Available', 'System')";
+    
                 mysqli_query($conn, $sql);
             }
         } else {
-            echo "<br>There is an error in creating the table: " . $conn->connect_error;
+            echo "<br>There is an error in creating the table: " . $conn->error;
         }
         $conn->close();
     }
