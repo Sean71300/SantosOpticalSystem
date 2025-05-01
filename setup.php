@@ -454,6 +454,29 @@
         $conn->close();
     }
 
+    // Generate Order_hdr_ID
+
+    function generate_ArchiveID()
+    {
+        $conn = connect();
+
+        $query = "SELECT COUNT(*) as count FROM archives";
+        $result = $conn->query($query);
+        $row = $result->fetch_assoc();
+        $rowCount = $row["count"];
+
+        // Get the current day
+        $currentYear = date("Y");
+
+        // Generate the ID
+        $genID = (int)($currentYear . str_pad(2, 2, "2", STR_PAD_LEFT) . str_pad($rowCount, 4, "0", STR_PAD_LEFT));
+        
+        $checkQuery = "SELECT ArchiveID FROM archives WHERE ArchiveID = ?";
+        $genID = checkDuplication($genID,$checkQuery);
+        $conn->close();
+        return $genID;
+    }
+
     // Create Category Type Table
 
     function create_BrandMasterTable() {

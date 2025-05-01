@@ -5,11 +5,11 @@ include 'loginChecker.php';
 
 if (isset($_GET["CustomerID"])) {
     $id = $_GET ["CustomerID"];
-    
-    $sqlCustomer = "INSERT INTO archives (TargetID, TargetType, Reason) VALUES (?, 'customer', ?)";
+    $Aid = generate_ArchiveID();
+    $sqlCustomer = "INSERT INTO archives (ArchiveID, TargetID, TargetType, Reason) VALUES (?, ?, 'customer', ?)";
     $stmt = $conn->prepare($sqlCustomer);
     $reasonCustomer = "Inactive customer for over 1 year";
-    $stmt->bind_param("is", $customerID, $reasonCustomer);
+    $stmt->bind_param("iis",$Aid, $customerID, $reasonCustomer);
     $stmt->execute();
     $stmt->close();
 }
