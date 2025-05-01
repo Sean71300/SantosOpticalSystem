@@ -273,74 +273,34 @@
     }
     
     function getLowInventoryProducts() {
-        $link = connect();
-        if (!$link) {
-            die("Database connection failed: " . mysqli_connect_error());
+        $userBranchCode = $_SESSION['branchcode'] ?? null;
+        if (!$userBranchCode) {
+            return [];
         }
-    
-        // Get the employee's branch code from session
-        $employeeID = $_SESSION['id'] ?? '';
-        $branchCode = '';
-        
-        // First get the employee's branch code
-        $sql = "SELECT BranchCode FROM employee WHERE EmployeeID = ?";
-        $stmt = mysqli_prepare($link, $sql);
-        mysqli_stmt_bind_param($stmt, "s", $employeeID);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        
-        if ($row = mysqli_fetch_assoc($result)) {
-            $branchCode = $row['BranchCode'];
-        } else {
-            mysqli_close($link);
-            return []; // Return empty array if branch not found
-        }
-        mysqli_stmt_close($stmt);
-    
-        // Query to get low inventory products for this branch only
-        $sql = "SELECT 
-                    pbm.ProductBranchID, 
-                    pbm.ProductID, 
-                    pbm.BranchCode, 
-                    pbm.Stocks,
-                    pm.CategoryType,
-                    pm.Model,
-                    pm.Price,
-                    pm.ProductImage,
-                    bm.BrandName,
-                    sm.Description AS ShapeDescription,
-                    (SELECT COUNT(*) 
-                     FROM ProductBranchMaster 
-                     WHERE BranchCode = ? AND Stocks <= 10) AS LowInventoryCount
-                FROM ProductBranchMaster pbm
+
+        $conn = connect();
+        $lowInventory = [];
+        $query = "SELECT pbm.ProductBranchID, pbm.ProductID, pbm.BranchCode, pbm.Stocks, pm.*
+                FROM ProductBranchMaster pbm 
                 JOIN productMstr pm ON pbm.ProductID = pm.ProductID
-                JOIN brandMaster bm ON pm.BrandID = bm.BrandID
-                JOIN shapeMaster sm ON pm.ShapeID = sm.ShapeID
-                WHERE pbm.BranchCode = ? AND pbm.Stocks <= 10
+                WHERE pbm.Stocks <= 10 
+                AND pbm.BranchCode = ?
                 ORDER BY pbm.Stocks ASC";
         
-        $stmt = mysqli_prepare($link, $sql);
-        mysqli_stmt_bind_param($stmt, "ss", $branchCode, $branchCode);
+        $stmt = mysqli_prepare($conn, $query);
+        mysqli_stmt_bind_param($stmt, "s", $userBranchCode);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
-        
-        $lowInventory = [];
-        $totalCount = 0;
         
         if ($result) {
             while ($row = mysqli_fetch_assoc($result)) {
                 $lowInventory[] = $row;
-                $totalCount = $row['LowInventoryCount']; // This will be same for all rows
             }
         }
         
         mysqli_stmt_close($stmt);
-        mysqli_close($link);
-        
-        return [
-            'products' => $lowInventory,
-            'total_count' => $totalCount
-        ];
+        mysqli_close($conn);
+        return $lowInventory;
     }
 
     function getCustomerCount() {

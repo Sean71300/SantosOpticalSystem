@@ -161,15 +161,16 @@ $lowInventory = getLowInventoryProducts();
                         <hr class="border-1 border-black opacity-25">
                         <ul class="list-group list-group-flush">
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <div class="container d-flex align-items-center">
+                                <div class="row">
                                     <?php
                                     if (count($lowInventory) > 0) {
                                         foreach ($lowInventory as $product) {
-                                            $imagePath = !empty($product['ProductImage']) ? htmlspecialchars($product['ProductImage']) : 'Images/default.jpg';
-                                            echo '<img src="' . $imagePath . '" alt="Product Image" style="height:100px; width:100px;" class="img-thumbnail">';
-                                            echo '<div class="fw-bold ms-3">';
-                                            echo htmlspecialchars($product['Model']);
-                                            echo "<br> Available Stocks: ".htmlspecialchars($product['Stocks']);
+                                            echo '<div class="container d-flex align-items-center">';
+                                            echo '<img src="' . htmlspecialchars($product['ProductImage']) . '" alt="Product Image" style="height:100px; width:100px;" class="img-thumbnail">';
+                                                echo '<div class="fw-bold ms-3">';
+                                                    echo htmlspecialchars($product['Model']);
+                                                    echo "<br> Available Stocks: ".htmlspecialchars($product['Stocks']);
+                                                echo '</div>';
                                             echo '</div>';
                                         }
                                     } else {
