@@ -75,7 +75,8 @@ function getEmployeeName() { // Function to get employee names from the database
     mysqli_stmt_close($stmt);
 }
 
-function getInventory($sort = 'ProductID', $order = 'ASC') {
+function getInventory($sort = 'ProductID', $order = 'ASC') 
+{
     $link = connect();      
     if (!$link) {
         die("Database connection failed: " . mysqli_connect_error());
@@ -106,7 +107,7 @@ function getInventory($sort = 'ProductID', $order = 'ASC') {
                 JOIN brandMaster bm ON pm.BrandID = bm.BrandID
                 JOIN ProductBranchMaster pbm ON pm.ProductID = pbm.ProductID
                 JOIN BranchMaster b ON pbm.BranchCode = b.BranchCode
-                WHERE pbm.Avail_FL = 'Available'
+                WHERE pbm.Avail_FL = 'Available' AND pm.Avail_FL = 'Available'
                 GROUP BY pm.ProductID, pm.CategoryType, sm.Description, bm.BrandName, 
                             pm.Model, pm.Material, pm.Price, pm.ProductImage, pm.Upd_by";
         
@@ -151,7 +152,7 @@ function getInventory($sort = 'ProductID', $order = 'ASC') {
                 JOIN productMstr pm ON pbm.ProductID = pm.ProductID
                 JOIN shapeMaster sm ON pm.ShapeID = sm.ShapeID
                 JOIN brandMaster bm ON pm.BrandID = bm.BrandID
-                WHERE b.BranchName = ?";
+                WHERE b.BranchName = ? AND pm.Avail_FL = 'Available' AND pbm.Avail_FL = 'Available'";
         
         switch($sort) {
             case 'ProductID': $sql .= " ORDER BY pm.ProductID"; break;
