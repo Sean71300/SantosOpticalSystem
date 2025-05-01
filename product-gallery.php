@@ -16,39 +16,39 @@
         $total = mysqli_num_rows(mysqli_query($conn, "SELECT * FROM `productMstr`"));
         $totalPages = ceil($total / $perPage);
 
-        // Start of card grid
-        echo "<div class='row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4'>";        
-        while($row = mysqli_fetch_assoc($result)) { // Card 
+        // Start of card grid - fewer columns for wider cards
+        echo "<div class='row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4'>";
+        
+        while($row = mysqli_fetch_assoc($result)) {
             echo "<div class='col d-flex'>";
-                echo "<div class='card w-100'>";
-                    echo '<img src="' . $row['ProductImage']. '" class="card-img-top img-fluid" style="height: 350px;" alt="'. $row['Model'] .'">';
+                echo "<div class='card w-100' style='max-width: 380px;'>"; // Increased max-width
+                    echo '<img src="' . $row['ProductImage']. '" class="card-img-top img-fluid" style="height: 280px;" alt="'. $row['Model'] .'">';
                     echo "<div class='card-body d-flex flex-column'>";
-                        echo "<h5 class='card-title' style='min-height: 1rem;'>".$row['Model']."</h5>";
-                        echo "<hr>";                       
-                        echo "<p class='card-text'>".$row['CategoryType']."</p>";
-                        echo "<p class='card-text'>".$row['Material']."</p>";
-                        echo "<p class='card-text'>".$row['Price']."</p>";
-                        echo "<p class='card-text'>".$row['Avail_FL']."</p>";                                
-                    echo "</div>";
-
-                    $avail = $row['Avail_FL'];
-                    if ($avail == 'Available') {
-                        echo "<div class='card-footer mt-auto'>";
-                            echo "<a href='productDetails.php?id=".$row['ProductID']."' class='btn btn-primary w-100'>More details</a>";
+                        echo "<h5 class='card-title' style='min-height: 1.5rem;'>".$row['Model']."</h5>";
+                        echo "<hr>";
+                        echo "<div class='card-text mb-2'>".$row['CategoryType']."</div>";
+                        echo "<div class='card-text mb-2'>".$row['Material']."</div>";
+                        echo "<div class='card-text mb-2'>".$row['Price']."</div>";
+                        if ($row['Avail_FL'] == "Available") {
+                            echo "<div class='card-text mb-2 text-success'>".$row['Avail_FL']."</div>";
                         echo "</div>";
-                    } else {
-                        // If not available, show a disabled button
-                        echo "<div class='card-footer mt-auto'>";
-                            echo "<button class='btn btn-secondary w-100' disabled>Out of Stock</button>";
+                            echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
+                                echo "<a href='#' class='btn btn-primary w-100 py-2'>More details</a>";
+                            echo "</div>";
+                        } else {
+                            echo "<div class='card-text mb-2 text-danger'>".$row['Avail_FL']."</div>";
                         echo "</div>";
-                    }
+                        echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
+                            echo "<a href='#' class='btn btn-secondary w-100 py-2 disabled'>Not Available</a>";
+                        echo "</div>";
+                        }                               
                 echo "</div>";
             echo "</div>";
         }
         
         echo "</div>"; // End of card grid
 
-        // Pagination
+        // Pagination remains the same
         echo "<div class='col-12 mt-5'>";
             echo "<div class='d-flex justify-content-center'>";
                 echo "<ul class='pagination'>";
@@ -90,6 +90,26 @@
         <link rel="stylesheet" href="customCodes/custom.css">
         <link rel="shortcut icon" type="image/x-icon" href="Images/logo.png"/>
         <link rel="stylesheet" href="customCodes/s2.css">
+        <style>
+            /* Custom CSS for wider cards */
+            @media (min-width: 768px) {
+                .container {
+                    max-width: 95%;
+                }
+            }
+            @media (min-width: 1200px) {
+                .container {
+                    max-width: 1400px;
+                }
+            }
+            .card {
+                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+                transition: transform 0.3s ease;
+            }
+            .card:hover {
+                transform: translateY(-5px);
+            }
+        </style>
     </head>
 
     <header>
@@ -105,11 +125,9 @@
             </div>
 
             <div class="grid" style="margin-bottom: 3.5rem;">
-                <div class="row align-items-start">
-                    <?php
-                        pagination();
-                    ?>
-                </div>
+                <?php
+                    pagination();
+                ?>
             </div>          
         </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>

@@ -149,7 +149,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['addProduct'])) {
                 </a>            
             </div>
             
-            <form method="post" enctype="multipart/form-data">
+            <form method="post" enctype="multipart/form-data" id="addForm">
                 <div class="row mb-4">
                     <div class="col-md-6">
                         <label for="productBranch" class="form-label">Branch</label>
@@ -204,7 +204,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['addProduct'])) {
 
                 <div class="row mb-4">
                     <div class="col-md-6 text-center">
-                        <img src="Images/default-product.png" alt="Product Image" class="product-img-preview">
+                        <img src="Images/default-product.png" alt="Product Image" id="imagePreview" class="product-img-preview">
                         <div>
                             <label for="productImg" class="btn btn-success">
                                 <input type="file" name="productImg" id="productImg" accept="image/png, image/jpeg" onchange="productImagePreview(this)" style="display:none;" required>
@@ -214,7 +214,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['addProduct'])) {
                     </div>
                     <div class="col-md-6">
                         <div class="d-flex flex-row-reverse justify-content-end gap-3 mt-5">                    
-                            <button type="reset" class="btn btn-danger btn-action">
+                            <button type="reset" class="btn btn-danger btn-action" onclick="resetForm()">
                                 <i class="fas fa-undo me-2"></i> Reset
                             </button>
                             <button type="submit" class="btn btn-primary btn-action" name="addProduct" value="addProduct">
@@ -239,8 +239,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['addProduct'])) {
                     Are you sure you want to return to inventory list? Any unsaved changes will be lost.
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     <a href="admin-inventory.php" class="btn btn-danger">Yes, Cancel</a>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -270,6 +270,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['addProduct'])) {
                         window.location.href = 'admin-inventory.php';
                     <?php endif; ?>
                 });
+        function resetForm() {
+            setTimeout(() => {
+                document.getElementById('addForm').reset();
+                document.getElementById('productImg').value = '';
+                document.querySelector(".product-img-preview").src = "Images/default-product.png";
+            }, 10);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+        const successModal = document.getElementById('successModal');
+            if (successModal) {
+                const myModal = new bootstrap.Modal(successModal);
+                myModal.show();
             }
         });
     </script>
