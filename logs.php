@@ -230,11 +230,11 @@ $conn->close();
                                                     default: echo 'bg-secondary';
                                                 }
                                             ?> me-2">
-                                            <?php echo ucfirst($log['TargetType']);.":" ?>
+                                            <?php echo ucfirst($log['TargetType']);?>
                                         </span>
                                         <strong><?php echo $log['Employee']; ?></strong> 
                                         <?php echo strtolower($log['Activity']); ?> 
-                                        <?php echo ucfirst($log['TargetType']); ?>
+                                        <?php echo ucfirst($log['TargetType']); ?> :
                                         <span class="log-target"><?php echo $log['TargetName']; ?></span>
                                     </div>
                                 </div>
