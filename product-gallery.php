@@ -29,16 +29,19 @@
                         echo "<div class='card-text mb-2'>".$row['CategoryType']."</div>";
                         echo "<div class='card-text mb-2'>".$row['Material']."</div>";
                         echo "<div class='card-text mb-2'>".$row['Price']."</div>";
-                        $row['Avail_FL'] = ($row['Avail_FL'] == "Available") ? "Available" : "Not Available";
                         if ($row['Avail_FL'] == "Available") {
                             echo "<div class='card-text mb-2 text-success'>".$row['Avail_FL']."</div>";
+                        echo "</div>";
+                            echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
+                                echo "<a href='#' class='btn btn-primary w-100 py-2'>More details</a>";
+                            echo "</div>";
                         } else {
                             echo "<div class='card-text mb-2 text-danger'>".$row['Avail_FL']."</div>";
+                        echo "</div>";
+                        echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
+                            echo "<a href='#' class='btn btn-primary w-100 py-2 disabled'>Not Available.</a>";
+                        echo "</div>";
                         }                               
-                    echo "</div>";
-                    echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
-                        echo "<a href='#' class='btn btn-primary w-100 py-2'>More details</a>";
-                    echo "</div>";
                 echo "</div>";
             echo "</div>";
         }
