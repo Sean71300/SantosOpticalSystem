@@ -71,7 +71,7 @@ if (isset($_GET["CustomerID"])) {
                 // Redirect after 1 second
                 setTimeout(function() {
                     window.location.href = "customerRecords.php";
-                }, 3000);
+                }, 2000);
             });
         </script>
     </head>
@@ -84,8 +84,7 @@ if (isset($_GET["CustomerID"])) {
                         <h5 class="modal-title">Customer Removed Succefully</h5>
                     </div>
                     <div class="modal-body text-center">
-                        <p><i class="fas fa-check-circle fa-4x text-success mb-3"></i></p>
-                        <p>Customer successfully archived.</p>
+                        <p><i class="fas fa-check-circle fa-4x text-success mb-3"></i></p>                        
                     </div>
                 </div>
             </div>

@@ -44,7 +44,7 @@
                         }
                         echo "
                             <button class='btn btn-info btn-sm view-orders' data-customer-id='$row[CustomerID]'>Orders</button>
-
+                        
                     </td>
                 </tr>";
             }            

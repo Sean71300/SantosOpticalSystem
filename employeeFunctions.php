@@ -113,7 +113,12 @@
             ";
         }            
     }
-
+    function setStatus($id){
+        $conn = connect(); 
+        $sql = "UPDATE employee 
+            SET Status = 'Inactive' WHERE EmployeeID = $id";
+        $result = $conn->query($sql);
+    }
     function handleEmployeeFormC() 
     {
 
