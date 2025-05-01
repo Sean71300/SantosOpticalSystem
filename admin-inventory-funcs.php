@@ -349,7 +349,7 @@ function addProduct(){ //Add function to add a new product to the database
             //Insert Logs into logs database
 
 
-            $code = 3;
+            $code = '3';
             GenerateLogs($newProductID,$newProductName,$code);
 
             echo 
@@ -763,7 +763,7 @@ function GenerateLogs($productID,$model,$code)
 function deleteProduct() { //Delete function to delete a product from the database
     $link = connect();
     $productID = $_POST['productID'] ?? '';
-    $code = 5;
+    $code = '5';
     $sql = "SELECT * FROM productMstr WHERE ProductID = $productID"  ;
     $result = mysqli_query($link, $sql);
 
