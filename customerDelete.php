@@ -15,10 +15,15 @@ if (isset($_GET["CustomerID"])) {
 }
 
 $conn = connect(); 
+        $id = $_GET ["CustomerID"];
+        $query = "SELECT * FROM customer WHERE CustomerID = $id";
         $Logsid = generate_LogsID();
         $Eid = $_SESSION["id"];
-        $id = $_GET ["CustomerID"];
-        $name = $_GET ["CustomerName"];
+        $result = mysqli_query($conn, $query);        
+        $row = mysqli_fetch_assoc($result);
+        $name = $row['CustomerName'];
+        
+        mysqli_close($conn);
         $stmt = $conn->prepare("INSERT INTO Logs 
                             (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description, Upd_dt)
                             VALUES
