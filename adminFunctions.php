@@ -2,7 +2,7 @@
 include_once 'setup.php'; // Your database connection file
 
 // Function to count active (non-archived) customers
-function countActiveCustomers() {
+function getCustomerCount() {
     $conn = connect();
     
     $query = "SELECT COUNT(c.CustomerID) AS active_customer_count
