@@ -368,7 +368,14 @@
             // Event listeners
             searchInput.addEventListener('input', function() {
                 performLiveSearch();
-                filterProducts();
+                // Don't filter products here - we only want to filter on form submission
+            });
+            
+            // When search input gets focus, show live search results if there's text
+            searchInput.addEventListener('focus', function() {
+                if (searchInput.value.trim().length > 0) {
+                    performLiveSearch();
+                }
             });
             
             // Hide live search when clicking outside
@@ -382,6 +389,11 @@
             searchInput.addEventListener('keydown', function(e) {
                 const items = liveSearchResults.querySelectorAll('.live-search-item');
                 let currentHighlight = liveSearchResults.querySelector('.live-search-item.highlight');
+                
+                if (e.key === 'Escape') {
+                    liveSearchResults.style.display = 'none';
+                    return;
+                }
                 
                 if (items.length === 0) return;
                 
@@ -410,6 +422,12 @@
                     searchInput.value = currentHighlight.textContent;
                     searchForm.submit();
                 }
+            });
+            
+            // Form submission handler
+            searchForm.addEventListener('submit', function(e) {
+                // Ensure we submit even if there's existing search results
+                return true;
             });
             
             // Initial filter if there's a search term in the URL
