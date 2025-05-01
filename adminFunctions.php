@@ -2,8 +2,7 @@
 function getCustomerCount() {
     $conn = connect();
     $count = 0;
-    $query = "SELECT COUNT(*) as count FROM customer WHERE Status = 'Active';
-          )";
+    $query = "SELECT COUNT(*) as count FROM customer WHERE Status = 'Active'";        
     $result = mysqli_query($conn, $query);
     if ($result) {
         $row = mysqli_fetch_assoc($result);
