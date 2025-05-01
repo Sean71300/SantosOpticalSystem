@@ -25,7 +25,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
         <div class="container-fluid">
             <a class="navbar-brand fw-bold mx-3" href="index.php">
-                <img src="Images/logo.png" alt="Logo" width="60" height="80"> 
+                <img src="8587c7cf05091831/files/public_html/Images/logo.png" alt="Logo" width="60" height="80"> 
                 Santos Optical
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
