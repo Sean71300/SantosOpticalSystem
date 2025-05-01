@@ -17,6 +17,67 @@ if (isset($_POST['searchProduct'])) {
 
 // Store current branch in session
 $_SESSION['current_branch'] = $branchName;
+
+function branchView($sort, $order) {
+    // Specific branch view
+    echo '<table class="table table-hover text-center">
+            <thead class="table-light">
+                <tr>
+                    <th class="sortable '.($sort == 'ProductID' ? 'active' : '').'" onclick="sortTable(\'ProductID\')">
+                        Product ID
+                        <span class="sort-icon">
+                            <i class="fas fa-sort-'.($sort == 'ProductID' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
+                        </span>
+                    </th>
+                    <th class="sortable '.($sort == 'CategoryType' ? 'active' : '').'" onclick="sortTable(\'CategoryType\')">
+                        Category
+                        <span class="sort-icon">
+                            <i class="fas fa-sort-'.($sort == 'CategoryType' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
+                        </span>
+                    </th>
+                    <th class="sortable '.($sort == 'ShapeDescription' ? 'active' : '').'" onclick="sortTable(\'ShapeDescription\')">
+                        Shape
+                        <span class="sort-icon">
+                            <i class="fas fa-sort-'.($sort == 'ShapeDescription' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
+                        </span>
+                    </th>
+                    <th class="sortable '.($sort == 'BrandName' ? 'active' : '').'" onclick="sortTable(\'BrandName\')">
+                        Brand
+                        <span class="sort-icon">
+                            <i class="fas fa-sort-'.($sort == 'BrandName' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
+                        </span>
+                    </th>
+                    <th class="sortable '.($sort == 'Model' ? 'active' : '').'" onclick="sortTable(\'Model\')">
+                        Model
+                        <span class="sort-icon">
+                            <i class="fas fa-sort-'.($sort == 'Model' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
+                        </span>
+                    </th>
+                    <th>Material</th>
+                    <th>Price</th>
+                    <th>Product Image</th>
+                    <th class="sortable '.($sort == 'Count' ? 'active' : '').'" onclick="sortTable(\'Count\')">
+                        Count
+                        <span class="sort-icon">
+                            <i class="fas fa-sort-'.($sort == 'Count' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
+                        </span>
+                    </th>
+                    
+                    <th colspan="2">Action</th>
+                </tr>
+            </thead>
+            <tbody>';
+    
+    getInventory($sort, $order);
+    
+    echo '</tbody></table>';
+}
+
+if (empty($branchName)) {
+branchSelection($sort, $order);                   
+} else {
+branchView($sort, $order);
+}
 ?>
 
 <!DOCTYPE html>
