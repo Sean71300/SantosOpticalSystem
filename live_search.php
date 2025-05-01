@@ -1,33 +1,59 @@
 <?php
 require_once 'connect.php';
 
-header('Content-Type: application/json');
+$conn = connect();
 
-$search = isset($_GET['search']) ? trim($_GET['search']) : '';
+// Get search term and sort value
+$search = isset($_GET['search']) ? mysqli_real_escape_string($conn, $_GET['search']) : '';
+$sort = isset($_GET['sort']) ? $_GET['sort'] : 'name_asc';
 
-if (strlen($search) < 2) {
-    echo json_encode([]);
-    exit;
+// Build the SQL query
+$sql = "SELECT * FROM `productMstr` WHERE 
+        Model LIKE '%$search%' OR 
+        CategoryType LIKE '%$search%' OR 
+        Material LIKE '%$search%'";
+
+// Add sorting
+switch($sort) {
+    case 'price_asc':
+        $sql .= " ORDER BY CAST(REPLACE(REPLACE(Price, '₱', ''), ',', '') AS DECIMAL(10,2)) ASC";
+        break;
+    case 'price_desc':
+        $sql .= " ORDER BY CAST(REPLACE(REPLACE(Price, '₱', ''), ',', '') AS DECIMAL(10,2)) DESC";
+        break;
+    case 'name_asc':
+        $sql .= " ORDER BY Model ASC";
+        break;
+    case 'name_desc':
+        $sql .= " ORDER BY Model DESC";
+        break;
+    default:
+        $sql .= " ORDER BY Model ASC";
 }
 
-try {
-    $conn = connect();
-    $searchTerm = mysqli_real_escape_string($conn, $search);
-    
-    $sql = "SELECT Model, CategoryType 
-            FROM productMstr 
-            WHERE Model LIKE '%$searchTerm%' OR CategoryType LIKE '%$searchTerm%'
-            LIMIT 8";
-    
-    $result = mysqli_query($conn, $sql);
-    $products = [];
-    
-    while ($row = mysqli_fetch_assoc($result)) {
-        $products[] = $row;
+// Limit results for preview
+$sql .= " LIMIT 8";
+
+$result = mysqli_query($conn, $sql);
+
+if (mysqli_num_rows($result) > 0) {
+    while($row = mysqli_fetch_assoc($result)) {
+        echo '<div class="search-result-item d-flex align-items-center" data-id="'.$row['ProductID'].'">';
+        echo '<img src="'.$row['ProductImage'].'" alt="'.$row['Model'].'" class="img-thumbnail">';
+        echo '<div>';
+        echo '<div class="search-result-text fw-bold">'.$row['Model'].'</div>';
+        echo '<div class="search-result-text small text-muted">'.$row['CategoryType'].' • '.$row['Material'].'</div>';
+        
+        // Format price
+        $price = $row['Price'];
+        $numeric_price = preg_replace('/[^0-9.]/', '', $price);
+        $formatted_price = is_numeric($numeric_price) ? '₱' . number_format((float)$numeric_price, 2) : '₱0.00';
+        
+        echo '<div class="search-result-text text-primary">'.$formatted_price.'</div>';
+        echo '</div>';
+        echo '</div>';
     }
-    
-    echo json_encode($products);
-} catch (Exception $e) {
-    echo json_encode([]);
+} else {
+    echo '<div class="p-3 text-center">No products found</div>';
 }
 ?>
