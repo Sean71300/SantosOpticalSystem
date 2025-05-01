@@ -279,7 +279,7 @@
         }
     
         // Get the employee's branch code from session
-        $employeeID = $_SESSION['employeeID'] ?? '';
+        $employeeID = $_SESSION['id'] ?? '';
         $branchCode = '';
         
         // First get the employee's branch code
