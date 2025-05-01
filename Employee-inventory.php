@@ -8,7 +8,7 @@ $sort = $_GET['sort'] ?? 'ProductID';
 $order = $_GET['order'] ?? 'ASC';
 
 // Get employee's branch information
-$employeeID = $_SESSION['employeeID'] ?? '';
+$employeeID = $_SESSION['id'] ?? '';
 $branchName = '';
 $branchCode = '';
 
@@ -153,7 +153,6 @@ if ($link) {
             <div class="filter-container">
                 <div class="branch-info">
                     <h5><i class="fas fa-store me-2"></i> <?= htmlspecialchars($branchName) ?> Branch</h5>
-                    <p class="mb-0">Viewing inventory for your assigned branch only</p>
                 </div>
             </div>
 
