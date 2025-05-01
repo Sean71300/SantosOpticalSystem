@@ -160,7 +160,7 @@
                 ActivityCode INT(10),
                 Description VARCHAR(255),
                 Upd_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (EmployeeID) REFERENCES employee(EmployeeID)
+                FOREIGN KEY (EmployeeID) REFERENCES employee(EmployeeID) 
                 )";    
         mysqli_query($conn, $sql);        
         $conn->close();
@@ -435,25 +435,19 @@
     }
     // Create Archives Table
     function create_archivesTable(){
-        $conn = connect();
-
-        $sql = "CREATE TABLE archives (
-                    ArchiveID INT(10) PRIMARY KEY AUTO_INCREMENT,
-                    TargetID INT(10) NOT NULL,
-                    TargetType ENUM('product', 'employee', 'customer', 'order') NOT NULL,
-                    ArchivedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    FOREIGN KEY (TargetID) REFERENCES (
-                        CASE 
-                            WHEN TargetType = 'product' THEN productMstr(ProductID)
-                            WHEN TargetType = 'employee' THEN employee(EmployeeID)
-                            WHEN TargetType = 'customer' THEN customer(CustomerID)
-                            WHEN TargetType = 'order' THEN Order_hdr(Orderhdr_id)
-                        END
-                    ) ON DELETE CASCADE
-                )";
-        mysqli_query($conn, $sql)        
-        $conn->close();
-    }
+    $conn = connect();
+    
+    $sql = "CREATE TABLE archives (
+            ArchiveID INT(10) PRIMARY KEY AUTO_INCREMENT,
+            TargetID INT(10) NOT NULL,
+            EmployeeID INT(10) NOT NULL,
+            TargetType ENUM('product', 'employee', 'customer', 'order') NOT NULL,
+            ArchivedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (EmployeeID) REFERENCES employee(EmployeeID) ON DELETE CASCADE
+        )";
+    mysqli_query($conn, $sql);
+    $conn->close();
+}
 
     // Generate Order_hdr_ID
 
