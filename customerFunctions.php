@@ -14,7 +14,7 @@
         $sort = in_array($sort, $validColumns) ? $sort : 'CustomerID';
         $order = strtoupper($order) === 'DESC' ? 'DESC' : 'ASC';
 
-         $query = "SELECT * FROM customer WHERE Status = 'Active'
+        $query = "SELECT * FROM customer WHERE Status = 'Active'
         ORDER BY $sort $order";
         $result = $connection->query($sql);
 
