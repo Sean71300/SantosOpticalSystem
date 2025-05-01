@@ -1,13 +1,33 @@
 <?php
+// Add error reporting at the top
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Check if required parameters exist
+if (!isset($_GET['search']) || !isset($_GET['sort'])) {
+    die(json_encode(['error' => 'Missing parameters']));
+}
+
 require_once 'connect.php';
 
 $conn = connect();
 
-// Get search term and sort value
-$search = isset($_GET['search']) ? mysqli_real_escape_string($conn, $_GET['search']) : '';
-$sort = isset($_GET['sort']) ? $_GET['sort'] : 'name_asc';
+// Check connection
+if (!$conn) {
+    die(json_encode(['error' => 'Database connection failed']));
+}
 
-// Build the SQL query
+// Get parameters
+$search = mysqli_real_escape_string($conn, $_GET['search']);
+$sort = mysqli_real_escape_string($conn, $_GET['sort']);
+
+// Validate sort parameter
+$allowed_sorts = ['price_asc', 'price_desc', 'name_asc', 'name_desc'];
+if (!in_array($sort, $allowed_sorts)) {
+    $sort = 'name_asc';
+}
+
+// Build query
 $sql = "SELECT * FROM `productMstr` WHERE 
         Model LIKE '%$search%' OR 
         CategoryType LIKE '%$search%' OR 
@@ -27,14 +47,16 @@ switch($sort) {
     case 'name_desc':
         $sql .= " ORDER BY Model DESC";
         break;
-    default:
-        $sql .= " ORDER BY Model ASC";
 }
 
-// Limit results for preview
+// Limit results
 $sql .= " LIMIT 8";
 
 $result = mysqli_query($conn, $sql);
+
+if (!$result) {
+    die(json_encode(['error' => 'Query failed: ' . mysqli_error($conn)]));
+}
 
 if (mysqli_num_rows($result) > 0) {
     while($row = mysqli_fetch_assoc($result)) {
@@ -56,4 +78,6 @@ if (mysqli_num_rows($result) > 0) {
 } else {
     echo '<div class="p-3 text-center">No products found</div>';
 }
+
+mysqli_close($conn);
 ?>
