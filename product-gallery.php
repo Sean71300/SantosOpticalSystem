@@ -280,7 +280,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     
     <script>
-      document.addEventListener('DOMContentLoaded', function() {
+     document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('searchInput');
     const liveSearchResults = document.getElementById('liveSearchResults');
     const productCards = document.querySelectorAll('.product-card');
@@ -298,13 +298,13 @@
         
         // Search through all product cards
         productCards.forEach(card => {
-            const searchableText = card.getAttribute('data-search').toLowerCase();
-            const cardTitle = card.querySelector('.card-title').textContent;
+            const cardTitle = card.querySelector('.card-title').textContent.toLowerCase();
             
-            if (searchableText.includes(searchTerm)) {
+            // Only match if the product name starts with the search term
+            if (cardTitle.startsWith(searchTerm)) {
                 matches.push({
                     element: card,
-                    title: cardTitle
+                    title: card.querySelector('.card-title').textContent
                 });
             }
         });
@@ -355,11 +355,11 @@
         
         let visibleCount = 0;
         
-        // Filter products
+        // Filter products - now only matching from start of product name
         productCards.forEach(card => {
-            const searchableText = card.getAttribute('data-search').toLowerCase();
+            const cardTitle = card.querySelector('.card-title').textContent.toLowerCase();
             
-            if (searchableText.includes(searchTerm)) {
+            if (cardTitle.startsWith(searchTerm)) {
                 card.classList.remove('hidden');
                 visibleCount++;
             } else {
