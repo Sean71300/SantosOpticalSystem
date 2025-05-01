@@ -10,7 +10,7 @@ if (isset($_GET["CustomerID"])) {
     $id = $_GET["CustomerID"];
     $Aid = generate_ArchiveID();
     $Eid = $_SESSION["id"];
-    
+    setStatus($id);
     // Archive the customer
     $sqlCustomer = "INSERT INTO archives (ArchiveID, TargetID, EmployeeID, TargetType) VALUES (?, ?, ?, 'customer')";
     $stmt = $conn->prepare($sqlCustomer);
