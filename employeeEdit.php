@@ -87,7 +87,7 @@ function EGenerateLogs($employee_id, $id, $name) {
     $stmt = $conn->prepare("INSERT INTO Logs 
                           (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description, Upd_dt)
                           VALUES
-                          (?, ?, ?, 'customer', '4', ?, NOW())");
+                          (?, ?, ?, 'employee', '4', ?, NOW())");
     $stmt->bind_param("ssss", $Logsid, $employee_id, $id, $name);
     $stmt->execute();
     $stmt->close();
