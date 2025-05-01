@@ -11,7 +11,7 @@ if ($isAdmin === true) {
 ?>
 
 <!-- Mobile Menu Toggle Button -->
-<button class="mobile-menu-toggle d-lg-none" id="mobileMenuToggle">
+<button class="mobile-menu-toggle d-lg-none" id="mobileMenuToggle" style="display: none;">
     <i class="fas fa-bars"></i>
 </button>
 
@@ -77,164 +77,13 @@ if ($isAdmin === true) {
                 <span class="sidebar-item-text">System Logs</span>
             </a>
         <?php endif; ?>
-        
-        <!-- Logout Button -->
-        <div class="sidebar-footer">
-            <a href="logout.php" class="sidebar-item text-danger">
-                <i class="fas fa-sign-out-alt"></i> 
-                <span class="sidebar-item-text">Logout</span>
-            </a>
-        </div>
+    </div>
+    
+    <!-- Logout Button - Fixed at bottom -->
+    <div class="sidebar-footer">
+        <a href="logout.php" class="sidebar-item text-danger">
+            <i class="fas fa-sign-out-alt"></i> 
+            <span class="sidebar-item-text">Logout</span>
+        </a>
     </div>
 </div>
-
-<style>
-    /* Base Sidebar Styles */
-    .sidebar {
-        background-color: white;
-        height: 100vh;
-        padding: 20px 0;
-        color: #2c3e50;
-        position: fixed;
-        width: 250px;
-        box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-        transition: all 0.3s ease;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        overflow-y: auto;
-    }
-    
-    .sidebar-brand {
-        padding: 0 20px 20px;
-        border-bottom: 1px solid rgba(0,0,0,0.1);
-    }
-    
-    .sidebar-item {
-        padding: 12px 20px;
-        margin: 5px 0;
-        border-radius: 0;
-        display: flex;
-        align-items: center;
-        color: #2c3e50;
-        transition: all 0.3s;
-        text-decoration: none;
-        white-space: nowrap;
-    }
-    
-    .sidebar-item:hover {
-        background-color: #f8f9fa;
-    }
-    
-    .sidebar-item.active {
-        background-color: #e9ecef;
-        font-weight: 500;
-    }
-    
-    .sidebar-item i {
-        margin-right: 15px;
-        width: 20px;
-        text-align: center;
-    }
-    
-    .sidebar-footer {
-        position: absolute;
-        bottom: 0;
-        width: 100%;
-    }
-    
-    /* Mobile Menu Toggle */
-    .mobile-menu-toggle {
-        display: none;
-        position: fixed;
-        top: 15px;
-        left: 15px;
-        z-index: 1100;
-        background: #4e73df;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        padding: 8px 12px;
-        font-size: 1.2rem;
-    }
-    
-    /* Responsive Styles */
-    @media (max-width: 992px) {
-        .sidebar {
-            transform: translateX(-100%);
-        }
-        
-        .sidebar.active {
-            transform: translateX(0);
-            box-shadow: 5px 0 15px rgba(0,0,0,0.2);
-        }
-        
-        .mobile-menu-toggle {
-            display: block;
-        }
-        
-        /* Adjust main content when sidebar is open */
-        body.sidebar-open {
-            overflow: hidden;
-        }
-        
-        body.sidebar-open::after {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 999;
-        }
-    }
-    
-    /* Smooth transitions */
-    .sidebar-item-text {
-        transition: opacity 0.3s ease;
-    }
-</style>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const sidebar = document.getElementById('sidebar');
-        const mobileToggle = document.getElementById('mobileMenuToggle');
-        const body = document.body;
-        
-        // Toggle sidebar on mobile
-        mobileToggle.addEventListener('click', function(e) {
-            e.stopPropagation();
-            sidebar.classList.toggle('active');
-            body.classList.toggle('sidebar-open');
-        });
-        
-        // Close sidebar when clicking outside
-        document.addEventListener('click', function(e) {
-            if (window.innerWidth <= 992 && 
-                !sidebar.contains(e.target) && 
-                e.target !== mobileToggle) {
-                sidebar.classList.remove('active');
-                body.classList.remove('sidebar-open');
-            }
-        });
-        
-        // Close sidebar when a link is clicked (on mobile)
-        document.querySelectorAll('.sidebar-item').forEach(item => {
-            item.addEventListener('click', function() {
-                if (window.innerWidth <= 992) {
-                    sidebar.classList.remove('active');
-                    body.classList.remove('sidebar-open');
-                }
-            });
-        });
-        
-        // Auto-close sidebar when resizing to larger screens
-        window.addEventListener('resize', function() {
-            if (window.innerWidth > 992) {
-                sidebar.classList.remove('active');
-                body.classList.remove('sidebar-open');
-            }
-        });
-    });
-</script>
