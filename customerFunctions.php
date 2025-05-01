@@ -5,48 +5,48 @@
 
     //read all row from database table
     function customerData($sort = 'CustomerID', $order = 'ASC')
-    {
-        $customerData = "";
-        $connection = connect();
+        {
+            $customerData = "";
+            $connection = connect();
 
-        // Validate sort column to prevent SQL injection
-        $validColumns = ['CustomerID', 'CustomerName', 'CustomerAddress', 'CustomerContact'];
-        $sort = in_array($sort, $validColumns) ? $sort : 'CustomerID';
-        $order = strtoupper($order) === 'DESC' ? 'DESC' : 'ASC';
+            // Validate sort column to prevent SQL injection
+            $validColumns = ['CustomerID', 'CustomerName', 'CustomerAddress', 'CustomerContact'];
+            $sort = in_array($sort, $validColumns) ? $sort : 'CustomerID';
+            $order = strtoupper($order) === 'DESC' ? 'DESC' : 'ASC';
 
-        $sql = "SELECT * FROM customer WHERE Status = 'Active'
-        ORDER BY $sort $order";
-        $result = $connection->query($sql);
+            $sql = "SELECT * FROM customer WHERE Status = 'Active'
+            ORDER BY $sort $order";
+            $result = $connection->query($sql);
 
-        if(!$result) {
-            die ("Invalid query: " . $connection->error);
+            if(!$result) {
+                die ("Invalid query: " . $connection->error);
+            }
+
+            // read data of each row
+            while ($row = $result->fetch_assoc()){
+                echo
+                "<tr>
+                    <td>$row[CustomerID]</td>
+                    <td>$row[CustomerName]</td>
+                    <td>$row[CustomerAddress]</td>
+                    <td>$row[CustomerContact]</td>
+                    <td>";
+                        
+                        
+                        {
+                            echo 
+                            "
+                                <a class='btn btn-primary btn-sm' href='customerEdit.php?CustomerID={$row['CustomerID']}'>Profile</a>
+                                <button class='btn btn-info btn-sm view-orders' data-customer-id='$row[CustomerID]'>Orders</button>
+                                <a class='btn btn-danger btn-sm' href='customerDelete.php?CustomerID={$row['CustomerID']}'>Delete</a>
+                            ";
+                        }
+                        echo "
+
+                    </td>
+                </tr>";
+            }            
         }
-
-        // read data of each row
-        while ($row = $result->fetch_assoc()){
-            echo
-            "<tr>
-                <td>$row[CustomerID]</td>
-                <td>$row[CustomerName]</td>
-                <td>$row[CustomerAddress]</td>
-                <td>$row[CustomerContact]</td>
-                <td>";
-                    
-                if ($isAdmin)    
-                    {
-                        echo 
-                        "
-                            <a class='btn btn-primary btn-sm' href='customerEdit.php?CustomerID={$row['CustomerID']}'>Profile</a>
-                            <button class='btn btn-info btn-sm view-orders' data-customer-id='$row[CustomerID]'>Orders</button>
-                            <a class='btn btn-danger btn-sm' href='customerDelete.php?CustomerID={$row['CustomerID']}'>Delete</a>
-                        ";
-                    }
-                    echo "
-
-                </td>
-            </tr>";
-        }            
-    }
 
     // New function to get ordered products by customer
     function getCustomerOrders($customerID) {
