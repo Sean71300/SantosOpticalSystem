@@ -28,7 +28,7 @@ function getEmployeeCount() {
 function getInventoryCount() {
     $conn = connect();
     $count = 0;
-    $query = "SELECT COUNT(*) as count FROM productMstr WHERE Status = 'Available'";   
+    $query = "SELECT COUNT(*) as count FROM productMstr WHERE Avail_FL = 'Available'";   
     $result = mysqli_query($conn, $query);
     if ($result) {
         $row = mysqli_fetch_assoc($result);

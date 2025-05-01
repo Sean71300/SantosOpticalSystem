@@ -778,17 +778,8 @@ function GenerateLogs($productID,$model,$code)
         $stmt = $conn->prepare($sqlEmployee);
         $stmt->bind_param("iii", $Aid, $productID, $Eid);
         $stmt->execute();
-        $stmt->close();
-        
-        // Get employee name for logs
-        $query = "SELECT EmployeeName FROM employee WHERE EmployeeID = ?";
-        $stmt = $conn->prepare($query);
-        $stmt->bind_param("i", $id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $row = $result->fetch_assoc();
-        $name = $row['EmployeeName'];
-        $stmt->close();
+        $stmt->close();        
+       
     }
 function deleteProduct() 
     { //Delete function to delete a product from the database
