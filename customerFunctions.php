@@ -29,7 +29,7 @@
                 <td>$row[CustomerContact]</td>
                 <td>
                     <a class='btn btn-primary btn-sm' href='customerEdit.php?CustomerID=$row[CustomerID]'>Edit</a>
-                    <a class='btn btn-danger btn-sm' href='customerDelete.php?CustomerID=$row[CustomerID]'>Delete</a>
+                    <a class='btn btn-danger btn-sm' href='customerDelete.php?CustomerID=$row[CustomerID]'>Archive</a>
                     <button class='btn btn-info btn-sm view-orders' data-customer-id='$row[CustomerID]'>View Orders</button>
                 </td>
             </tr>";

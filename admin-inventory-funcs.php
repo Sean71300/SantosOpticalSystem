@@ -83,7 +83,7 @@ function getInventory($sort = 'ProductID', $order = 'ASC') {
     
     $branchName = $_SESSION['current_branch'] ?? '';
     
-    $validSortColumns = ['ProductID', 'CategoryType', 'ShapeDescription', 'BrandName', 'Model', 'TotalCount', 'LastUpdated', 'Count', 'Upd_dt'];
+    $validSortColumns = ['ProductID', 'CategoryType', 'ShapeDescription', 'BrandName', 'Model', 'TotalCount', 'LastUpdated', 'Stocks', 'Upd_dt'];
     $sort = in_array($sort, $validSortColumns) ? $sort : 'ProductID';
     $order = strtoupper($order) === 'DESC' ? 'DESC' : 'ASC';
     
@@ -97,8 +97,8 @@ function getInventory($sort = 'ProductID', $order = 'ASC') {
                     pm.Material,
                     pm.Price, 
                     pm.ProductImage,
-                    GROUP_CONCAT(CONCAT(b.BranchName, ': ', pbm.Count) SEPARATOR '<br>') AS BranchDistribution,
-                    SUM(pbm.Count) AS TotalCount,
+                    GROUP_CONCAT(CONCAT(b.BranchName, ': ', pbm.Stocks) SEPARATOR '<br>') AS BranchDistribution,
+                    SUM(pbm.Stocks) AS TotalCount,
                     pm.Upd_by,
                     MAX(pbm.Upd_dt) AS LastUpdated
                 FROM productMstr pm
@@ -158,7 +158,7 @@ function getInventory($sort = 'ProductID', $order = 'ASC') {
             case 'ShapeDescription': $sql .= " ORDER BY sm.Description"; break;
             case 'BrandName': $sql .= " ORDER BY bm.BrandName"; break;
             case 'Model': $sql .= " ORDER BY pm.Model"; break;
-            case 'Count': $sql .= " ORDER BY pbm.Count"; break;
+            case 'Stocks': $sql .= " ORDER BY pbm.Stocks"; break;
             case 'Upd_dt': $sql .= " ORDER BY pbm.Upd_dt"; break;
             default: $sql .= " ORDER BY pm.ProductID";
         }
@@ -190,7 +190,7 @@ function getInventory($sort = 'ProductID', $order = 'ASC') {
                     <td class='align-middle'>".htmlspecialchars($row['Material'])."</td>
                     <td class='align-middle'>".htmlspecialchars($row['Price'])."</td>
                     <td class='align-middle'><img src='".htmlspecialchars($row['ProductImage'])."' class='product-img'></td>
-                    <td class='align-middle'>".htmlspecialchars($row['Count'])."</td>
+                    <td class='align-middle'>".htmlspecialchars($row['Stocks'])."</td>
                     <td>
                         <form method='post'>
                             <input type='hidden' name='chooseBranch' value='" . htmlspecialchars($branchName) . "' />
@@ -202,7 +202,7 @@ function getInventory($sort = 'ProductID', $order = 'ASC') {
                             <input type='hidden' name='model' value='" . htmlspecialchars($row['Model']) . "' />
                             <input type='hidden' name='material' value='" . htmlspecialchars($row['Material']) . "' />
                             <input type='hidden' name='price' value='" . htmlspecialchars($row['Price']) . "' />
-                            <input type='hidden' name='count' value='" . htmlspecialchars($row['Count']) . "' />
+                            <input type='hidden' name='count' value='" . htmlspecialchars($row['Stocks']) . "' />
                             <input type='hidden' name='productImg' value='" . htmlspecialchars($row['ProductImage']) . "' />
                             <button type='submit' class='btn btn-success' name='editProductBtn' style='font-size:12px'><i class='fa-solid fa-pen'></i></button>
                         </form>
@@ -339,7 +339,7 @@ function addProduct(){ //Add function to add a new product to the database
             mysqli_stmt_close($stmt);
             
             // Insert product-branch mapping into the product branch master database
-            $sql = "INSERT INTO ProductBranchMaster (ProductBranchID, ProductID, BranchCode, Count, Avail_FL, Upd_by, Upd_dt)
+            $sql = "INSERT INTO ProductBranchMaster (ProductBranchID, ProductID, BranchCode, Stocks, Avail_FL, Upd_by, Upd_dt)
                     VALUES (?, ?, ?, ?, ?, ?, ?)"; 
             $stmt = mysqli_prepare($link, $sql);
             mysqli_stmt_bind_param($stmt, "sssisds", $newProductBranchID, $newProductID, $newProductBranchCode, $newProductQty, $avail_FL, $upd_by, $upd_dt);
@@ -365,17 +365,7 @@ function addProduct(){ //Add function to add a new product to the database
                         </div>
                     </div>
                 </div>';
-
-            $logSQL = "INSERT INTO logs (LogsID, EmployeeID, ProductBranchID, ActivityCode, Count, Upd_dt) VALUES (?, ?, ?, ?, ?, ?)";
-            $logStmt = mysqli_prepare($link, $logSQL);
-            $logID = generate_LogsID();
-            $logEmployeeID = getEmployeeID();
-            $logActivityCode = '2'; // Activity code for adding a product
-            $logCount = $newProductQty; // Assuming count is 1 for adding a product
-            $logUpdDT = date('Y-m-d H:i:s');
-            mysqli_stmt_bind_param($logStmt, "ssssss", $logID, $logEmployeeID, $newProductBranchID, $logActivityCode, $logCount, $logUpdDT);
-            mysqli_stmt_execute($logStmt);
-            mysqli_stmt_close($logStmt);
+            
         } else {
             echo 
             '<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
@@ -518,7 +508,7 @@ function editProduct(){ //Edit function to edit an existing product in the datab
                                 <input type="text" class="form-control" id="price" name="price" value="' . htmlspecialchars($price) . '" required>
                             </div>
                             <div class="mb-3">
-                                <label for="count" class="form-label">Count</label>
+                                <label for="count" class="form-label">Stocks</label>
                                 <input type="number" class="form-control" id="count" name="count" value="' . htmlspecialchars($count) . '" min="0" required>
                             </div>
                             <div class="mb-3">
@@ -682,7 +672,7 @@ function confirmEditProduct() {
         mysqli_stmt_close($stmt1);
 
         // Update productbranchmaster table
-        $sql2 = "UPDATE ProductBranchMaster SET ProductBranchID = ?, BranchCode = ?, Count = ?, Avail_FL = ?, Upd_by = ?, Upd_dt = ? WHERE ProductID = ?";
+        $sql2 = "UPDATE ProductBranchMaster SET ProductBranchID = ?, BranchCode = ?, Stocks = ?, Avail_FL = ?, Upd_by = ?, Upd_dt = ? WHERE ProductID = ?";
         $stmt2 = mysqli_prepare($link, $sql2);
         mysqli_stmt_bind_param($stmt2, "sssssss", $productBranchID, $branchCode, $count, $avail_FL, $employeeName, $upd_dt, $productID);
         if (!mysqli_stmt_execute($stmt2)) {
@@ -762,7 +752,7 @@ function deleteProduct() { //Delete function to delete a product from the databa
     $logActivityCode = '3';
     $logCount = 1;
     $logUpdDT = date('Y-m-d H:i:s');
-    $logSQL = "INSERT INTO logs (LogsID, EmployeeID, ProductBranchID, ActivityCode, Count, Upd_dt) VALUES (?, ?, ?, ?, ?, ?)";
+    $logSQL = "INSERT INTO logs (LogsID, EmployeeID, ProductBranchID, ActivityCode, Stocks, Upd_dt) VALUES (?, ?, ?, ?, ?, ?)";
     $logStmt = mysqli_prepare($link, $logSQL);
     mysqli_stmt_bind_param($logStmt, "ssssss", $logID, $logEmployeeID, $logBranchID, $logActivityCode, $logCount, $logUpdDT);
     $logSuccess = mysqli_stmt_execute($logStmt);
