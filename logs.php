@@ -242,7 +242,7 @@ $conn->close();
                                                     case 'order': echo 'order'; break;
                                                     default: echo 'bg-secondary';
                                                 }
-                                            ?> me-2">
+                                            ?>
                                             <?php echo ucfirst($log['TargetType']); ?>
                                         <span class="log-target"><?php echo $log['TargetName']; ?></span>
                                     </div>
