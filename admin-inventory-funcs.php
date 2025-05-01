@@ -1,936 +1,376 @@
 <?php
-include 'setup.php'; // Include the setup.php file
+include 'ActivityTracker.php';
+include 'loginChecker.php';
+include 'admin-inventory-funcs.php';
 
-function getEmployeeID() {
-    $link = connect();
-    $sql = "SELECT EmployeeID FROM employee WHERE LoginName = ?";
-    $stmt = mysqli_prepare($link, $sql);
-    mysqli_stmt_bind_param($stmt, "s", $_SESSION['username']);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-    if ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
-        return $row['EmployeeID'];
-    }
-    mysqli_stmt_close($stmt);
-    mysqli_close($link);
-}
+// Get sort parameters from URL
+$sort = isset($_GET['sort']) ? $_GET['sort'] : 'ProductID';
+$order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
 
-function getBranches() { // For inventory show
-    $link = connect();
-    $sql = "SELECT BranchName from BranchMaster";
-    $result = mysqli_query($link, $sql);
-    echo "<option class='form-select-sm' value='' selected>View All Branches</option>";
-    while($row = mysqli_fetch_array($result)) {
-        echo "<option class='form-select-sm' value='".$row['BranchName']."'>".$row['BranchName']."</option>";
-    }
-}
-
-function getBranch() { // Function to get branches from the database
-    $link = connect();
-    $sql = "SELECT * from BranchMaster";
-    $result = mysqli_query($link, $sql);
-    while($row = mysqli_fetch_array($result)){
-        echo "<option class='form-select-sm' value='".$row['BranchCode']."'>".$row['BranchName']."</option>";
-    }
-}
-
-function getShapes() { // Function to get shapes from the database
-    $link = connect();
-    $sql = "SELECT * from shapeMaster";
-    $result = mysqli_query($link, $sql);
-    while($row = mysqli_fetch_array($result)){
-        echo "<option class='form-select-sm' value='".$row['ShapeID']."'>".$row['Description']."</option>";
-    }
-}
-
-function getBrands() {
-    $link = connect();
-    $sql = "SELECT * from brandMaster";
-    $result = mysqli_query($link, $sql);
-    while($row = mysqli_fetch_array($result)){
-        echo "<option class='form-select-sm' value='".$row['BrandID']."'>".$row['BrandName']."</option>";
-    }
-}
-
-function getCategory() {
-    $link = connect();
-    $sql = "SELECT * from categoryType";
-    $result = mysqli_query($link, $sql);
-    while($row = mysqli_fetch_array($result)){
-        echo "<option class='form-select-sm' value='".$row['CategoryType']."'>".$row['CategoryType']."</option>";
-    }
-}
-
-function getEmployeeName() { // Function to get employee names from the database
-    global $employeeName;
-    $link = connect();
-    $sql = "SELECT EmployeeName from employee WHERE LoginName = ?";
-    $stmt = mysqli_prepare($link, $sql);
-    mysqli_stmt_bind_param($stmt, "s", $_SESSION['username']);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-    if ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
-        $employeeName = $row['EmployeeName'];
-    }
-    mysqli_stmt_close($stmt);
-}
-
-function getInventory($sort = 'ProductID', $order = 'ASC') {
-    $link = connect();      
-    if (!$link) {
-        die("Database connection failed: " . mysqli_connect_error());
-    }
-    
-    $branchName = $_SESSION['current_branch'] ?? '';
-    
-    $validSortColumns = ['ProductID', 'CategoryType', 'ShapeDescription', 'BrandName', 'Model', 'TotalCount', 'LastUpdated', 'Stocks', 'Upd_dt'];
-    $sort = in_array($sort, $validSortColumns) ? $sort : 'ProductID';
-    $order = strtoupper($order) === 'DESC' ? 'DESC' : 'ASC';
-    
-    if (empty($branchName)) {
-        $sql = "SELECT 
-                    pm.ProductID, 
-                    pm.CategoryType, 
-                    sm.Description AS ShapeDescription,
-                    bm.BrandName,
-                    pm.Model, 
-                    pm.Material,
-                    pm.Price, 
-                    pm.ProductImage,
-                    GROUP_CONCAT(CONCAT(b.BranchName, ': ', pbm.Stocks) SEPARATOR '<br>') AS BranchDistribution,
-                    SUM(pbm.Stocks) AS TotalCount,
-                    pm.Upd_by,
-                    MAX(pbm.Upd_dt) AS LastUpdated
-                FROM productMstr pm
-                JOIN shapeMaster sm ON pm.ShapeID = sm.ShapeID
-                JOIN brandMaster bm ON pm.BrandID = bm.BrandID
-                JOIN ProductBranchMaster pbm ON pm.ProductID = pbm.ProductID
-                JOIN BranchMaster b ON pbm.BranchCode = b.BranchCode
-                GROUP BY pm.ProductID, pm.CategoryType, sm.Description, bm.BrandName, 
-                            pm.Model, pm.Material, pm.Price, pm.ProductImage, pm.Upd_by";
-        
-        switch($sort) {
-            case 'ProductID': $sql .= " ORDER BY pm.ProductID"; break;
-            case 'CategoryType': $sql .= " ORDER BY pm.CategoryType"; break;
-            case 'ShapeDescription': $sql .= " ORDER BY sm.Description"; break;
-            case 'BrandName': $sql .= " ORDER BY bm.BrandName"; break;
-            case 'Model': $sql .= " ORDER BY pm.Model"; break;
-            case 'TotalCount': $sql .= " ORDER BY TotalCount"; break;
-            case 'LastUpdated': $sql .= " ORDER BY LastUpdated"; break;
-            case 'Upd_dt': $sql .= " ORDER BY pbm.Upd_dt"; break;
-            default: $sql .= " ORDER BY pm.ProductID";
-        }
-        
-        $sql .= " $order";
-        
-        $result = mysqli_query($link, $sql);
-        
-        if (!$result) {
-            die("Query failed: " . mysqli_error($link));
-        }
-        
-        while ($row = mysqli_fetch_assoc($result)) {
-            echo "<tr>
-                    <td class='align-middle'>".htmlspecialchars($row['ProductID'])."</td>
-                    <td class='align-middle'>".htmlspecialchars($row['CategoryType'])."</td>
-                    <td class='align-middle'>".htmlspecialchars($row['ShapeDescription'])."</td>
-                    <td class='align-middle'>".htmlspecialchars($row['BrandName'])."</td>
-                    <td class='align-middle'>".htmlspecialchars($row['Model'])."</td>
-                    <td class='align-middle'>".htmlspecialchars($row['Material'])."</td>
-                    <td class='align-middle'><img src='".htmlspecialchars($row['ProductImage'])."' class='product-img'></td>
-                    <td class='align-middle'>".htmlspecialchars($row['TotalCount'])."</td>                        
-                </tr>";
-        }
-
-        mysqli_free_result($result);
-    } else {
-        $sql = "SELECT b.BranchCode, pbm.*, pm.*, sm.Description AS ShapeDescription, bm.BrandName
-                FROM BranchMaster b
-                JOIN ProductBranchMaster pbm ON b.BranchCode = pbm.BranchCode
-                JOIN productMstr pm ON pbm.ProductID = pm.ProductID
-                JOIN shapeMaster sm ON pm.ShapeID = sm.ShapeID
-                JOIN brandMaster bm ON pm.BrandID = bm.BrandID
-                WHERE b.BranchName = ?";
-        
-        switch($sort) {
-            case 'ProductID': $sql .= " ORDER BY pm.ProductID"; break;
-            case 'CategoryType': $sql .= " ORDER BY pm.CategoryType"; break;
-            case 'ShapeDescription': $sql .= " ORDER BY sm.Description"; break;
-            case 'BrandName': $sql .= " ORDER BY bm.BrandName"; break;
-            case 'Model': $sql .= " ORDER BY pm.Model"; break;
-            case 'Stocks': $sql .= " ORDER BY pbm.Stocks"; break;
-            case 'Upd_dt': $sql .= " ORDER BY pbm.Upd_dt"; break;
-            default: $sql .= " ORDER BY pm.ProductID";
-        }
-        
-        $sql .= " $order";
-        
-        $stmt = mysqli_prepare($link, $sql);
-        if (!$stmt) {
-            die("Prepare failed: " . mysqli_error($link));
-        }
-        
-        mysqli_stmt_bind_param($stmt, "s", $branchName);
-        if (!mysqli_stmt_execute($stmt)) {
-            die("Execute failed: " . mysqli_stmt_error($stmt));
-        }
-        
-        $result = mysqli_stmt_get_result($stmt);
-        if (!$result) {
-            die("Get result failed: " . mysqli_stmt_error($stmt));
-        }
-
-        while ($row = mysqli_fetch_assoc($result)) {
-            echo "<tr>
-                    <td class='align-middle'>".htmlspecialchars($row['ProductID'])."</td>
-                    <td class='align-middle'>".htmlspecialchars($row['CategoryType'])."</td>
-                    <td class='align-middle'>".htmlspecialchars($row['ShapeDescription'])."</td>
-                    <td class='align-middle'>".htmlspecialchars($row['BrandName'])."</td>
-                    <td class='align-middle'>".htmlspecialchars($row['Model'])."</td>
-                    <td class='align-middle'>".htmlspecialchars($row['Material'])."</td>
-                    <td class='align-middle'>".htmlspecialchars($row['Price'])."</td>
-                    <td class='align-middle'><img src='".htmlspecialchars($row['ProductImage'])."' class='product-img'></td>
-                    <td class='align-middle'>".htmlspecialchars($row['Stocks'])."</td>
-                    <td class='align-middle'>
-                        <form method='post'>
-                            <input type='hidden' name='chooseBranch' value='" . htmlspecialchars($branchName) . "' />
-                            <input type='hidden' name='productBranchID' value='" . htmlspecialchars($row['ProductBranchID']) . "' />
-                            <input type='hidden' name='productID' value='" . htmlspecialchars($row['ProductID']) . "' />
-                            <input type='hidden' name='categoryType' value='" . htmlspecialchars($row['CategoryType']) . "' />
-                            <input type='hidden' name='shape' value='" . htmlspecialchars($row['ShapeDescription']) . "' />
-                            <input type='hidden' name='brandID' value='" . htmlspecialchars($row['BrandID']) . "' />
-                            <input type='hidden' name='model' value='" . htmlspecialchars($row['Model']) . "' />
-                            <input type='hidden' name='material' value='" . htmlspecialchars($row['Material']) . "' />
-                            <input type='hidden' name='price' value='" . htmlspecialchars($row['Price']) . "' />
-                            <input type='hidden' name='count' value='" . htmlspecialchars($row['Stocks']) . "' />
-                            <input type='hidden' name='productImg' value='" . htmlspecialchars($row['ProductImage']) . "' />
-                            <button type='submit' class='btn btn-success mt-2' name='editProductBtn' style='font-size:18px'><i class='fa-solid fa-pen'></i></button>
-                        </form>
-                    </td>
-                    <td class='align-middle'>
-                        <form method='post'>
-                            <input type='hidden' name='chooseBranch' value='" . htmlspecialchars($branchName) . "' />
-                            <input type='hidden' name='productBranchID' value='" . htmlspecialchars($row['ProductBranchID']) . "' />
-                            <input type='hidden' name='productID' value='" . htmlspecialchars($row['ProductID']) . "' />
-                            <button type='submit' class='btn btn-danger mt-2' name='deleteProductBtn' value='deleteProductBtn' style='font-size:18px'><i class='fa-solid fa-trash'></i></button>
-                        </form>
-                    </td>
-                </tr>";
-        }
-        mysqli_stmt_close($stmt);
-    }
-    mysqli_close($link);
-}
-
-function addProduct(){ //Add function to add a new product to the database
-    $link = connect();
-    global $employeeName;
-    getEmployeeName();
-
-    $newProductID = generate_ProductMstrID();
-    $newProductBranchCode = $_POST['productBranch'];
-    $newProductName = $_POST['productName'];
-    $newProductQty = $_POST['productQty'];
-    $newProductShape = $_POST['productShape'];
-    $newProductCategory = $_POST['productCategory'];
-    $newProductMaterial = $_POST['productMaterial'];
-    $newProductPrice = "₱". $_POST['productPrice'];
-    $newProductImg = $_FILES['productImg'];
-    if ($newProductQty > 0) {
-        $avail_FL = 'Available';
-    } else {
-        $avail_FL = 'Not Available';
-    }
-    $upd_by = $employeeName;
-    $date = new DateTime();
-    $upd_dt = $date->format('Y-m-d H:i:s');
-    $newProductBrand = $_POST['productBrand'];
-    $newProductBranchID = generate_ProductBrnchMstrID();
-    
-    if (isset($_POST['addProduct'])) {
-        // Validate and upload the product image
-        $targetDir = "uploads/";
-        $targetFile = $targetDir . basename($newProductImg["name"]);
-        $uploadOk = 1;
-        $imageFileType = strtolower(pathinfo($targetFile, PATHINFO_EXTENSION));
-
-        // Check if image file is a valid image
-        $check = getimagesize($newProductImg["tmp_name"]);
-        if (empty($check)) {
-            echo "Error: Unable to process the image. Please upload a valid image file.";
-            $uploadOk = 0;
-        }
-
-        if ($check === false) {
-            echo "File is not an image.";
-            $uploadOk = 0;
-        }
-
-        // Check file size (limit to 2MB)
-        if ($newProductImg["size"] > 2000000) {
-            echo "Sorry, your file is too large.";
-            $uploadOk = 0;
-        }
-
-        // Allow certain file formats
-        if (!in_array($imageFileType, ["jpg", "png", "jpeg", "gif"])) {
-            echo "Sorry, only JPG, JPEG, PNG & GIF files are allowed.";
-            $uploadOk = 0;
-        }
-
-        // Attempt to upload file
-        if ($uploadOk) {
-            $sourceImage = null;
-            switch ($imageFileType) {
-                case 'jpg':
-                case 'jpeg':
-                    $sourceImage = imagecreatefromjpeg($newProductImg["tmp_name"]);
-                    break;
-                case 'png':
-                    $sourceImage = imagecreatefrompng($newProductImg["tmp_name"]);
-                    break;
-                case 'gif':
-                    $sourceImage = imagecreatefromgif($newProductImg["tmp_name"]);
-                    break;
-                default:
-                    echo "Unsupported image format.";
-                    $uploadOk = 0;
-            }
-
-            if ($sourceImage) {
-                $resizedImage = imagecreatetruecolor(600, 600);
-                $originalWidth = $check[0];
-                $originalHeight = $check[1];
-                imagecopyresampled(
-                    $resizedImage,
-                    $sourceImage,
-                    0, 0, 0, 0,
-                    600, 600,
-                    $originalWidth,
-                    $originalHeight
-                );
-
-                switch ($imageFileType) {
-                    case 'jpg':
-                    case 'jpeg':
-                        imagejpeg($resizedImage, $targetFile);
-                        break;
-                    case 'png':
-                        imagepng($resizedImage, $targetFile);
-                        break;
-                    case 'gif':
-                        imagegif($resizedImage, $targetFile);
-                        break;
-                }
-
-                // Free memory
-                imagedestroy($sourceImage);
-                imagedestroy($resizedImage);
-            }
-        }
-
-        if ($uploadOk && file_exists($targetFile)) {
-            // Insert product details into the product master database
-            $sql = "INSERT INTO productMstr (ProductID, CategoryType, ShapeID, BrandID, Model, Material, Price, ProductImage, Avail_FL, Upd_by, Upd_dt) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            $stmt = mysqli_prepare($link, $sql);
-            mysqli_stmt_bind_param($stmt, "sssssssssss", $newProductID, $newProductCategory, $newProductShape, $newProductBrand, $newProductName, $newProductMaterial, $newProductPrice, $targetFile, $avail_FL, $upd_by, $upd_dt);          
-            mysqli_stmt_execute($stmt);
-            mysqli_stmt_close($stmt);
-            
-            // Insert product-branch mapping into the product branch master database
-            $sql = "INSERT INTO ProductBranchMaster (ProductBranchID, ProductID, BranchCode, Stocks, Avail_FL, Upd_by, Upd_dt)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)"; 
-            $stmt = mysqli_prepare($link, $sql);
-            mysqli_stmt_bind_param($stmt, "sssisds", $newProductBranchID, $newProductID, $newProductBranchCode, $newProductQty, $avail_FL, $upd_by, $upd_dt);
-            mysqli_stmt_execute($stmt);
-            mysqli_stmt_close($stmt);
-
-            //Insert Logs into logs database
-
-            $code = '3';
-            GenerateLogs($newProductID,$newProductName,$code);
-
-            echo 
-                '<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="successModalLabel">Success</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                The product has been added to the database successfully!
-                            </div>
-                            <div class="modal-footer">
-                                <a href="admin-inventory.php" class="btn btn-secondary" data-bs-dismiss="modal">Close</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>';
-            
-        } else {
-            echo 
-            '<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="successModalLabel">Error</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                The product has not been added to the database, please try again or contact tech support.
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            </div>
-                        </div>
-                    </div>
-            </div>';
-        }
-    }
-}
-
-function editShape($currentShapeDescription = '') { // Function to edit shape
-    $link = connect();
-    $sql = "SELECT * FROM shapeMaster";
-    $result = mysqli_query($link, $sql);
-
-    while ($row = mysqli_fetch_array($result)) {
-        $selected = ($row['Description'] === $currentShapeDescription) ? 'selected' : '';
-        echo "<option class='form-select-sm' value='" . htmlspecialchars($row['ShapeID']) . "' $selected>" . 
-             htmlspecialchars($row['Description']) . "</option>";
-    }
-
-    mysqli_close($link);
-}
-
-function editBrand($currentBrand = '') {
-    $link = connect();
-    $sql = "SELECT * FROM brandMaster";
-    $result = mysqli_query($link, $sql);
-
-    while ($row = mysqli_fetch_array($result)) {
-        $selected = ($row['BrandID'] === $currentBrand) ? 'selected' : '';
-        echo "<option class='form-select-sm' value='" . htmlspecialchars($row['BrandID']) . "' $selected>" . 
-             htmlspecialchars($row['BrandName']) . "</option>";
-    }
-
-    mysqli_close($link);
-}
-
-function editCategory($currentCategory = '') {
-    $link = connect();
-    $sql = "SELECT * FROM categoryType";
-    $result = mysqli_query($link, $sql);
-    
-    while ($row = mysqli_fetch_array($result)) {
-        $selected = ($row['CategoryType'] === $currentCategory) ? 'selected' : '';
-        echo "<option class='form-select-sm' value='" . htmlspecialchars($row['CategoryType']) . "' $selected>" . 
-             htmlspecialchars($row['CategoryType']) . "</option>";
-    }
-    
-    mysqli_close($link);
-}
-
-function getBranchCode($currentBranch = '') {
-    $link = connect();
-    $sql = "SELECT BranchCode FROM BranchMaster WHERE BranchName = ?";
-    $stmt = mysqli_prepare($link, $sql);
-    mysqli_stmt_bind_param($stmt, "s", $currentBranch);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-    if ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
-        return $row['BranchCode'];
-    }
-    mysqli_stmt_close($stmt);
-    mysqli_close($link);
-}
-
-function editProduct(){ //Edit function to edit an existing product in the database 
-    $productID = $_POST['productID'] ?? '';
-    $categoryType = $_POST['categoryType'] ?? '';
-    $ShapeDescription = $_POST['shape'] ?? '';
-    $brandID = $_POST['brandID'] ?? '';
-    $model = $_POST['model'] ?? '';
-    $material = $_POST['material'] ?? '';
-    $price = $_POST['price'] ?? '';
-    $price = ltrim($price, '₱');
-    $count = $_POST['count'] ?? '';
-    $productImg = $_POST['productImg'] ?? '';
+// Handle branch selection
+if (isset($_POST['searchProduct'])) {
     $branchName = $_POST['chooseBranch'] ?? '';
-    $productBranchID = $_POST['productBranchID'] ?? '';
-
-    echo '<div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content bg-secondary-subtle">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="editProductModalLabel">Edit Product</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>      
-                    <div class="modal-body" style="margin-top: -1.5rem;">
-                    <hr>
-                        <form method="post" enctype="multipart/form-data">
-                            <input type="hidden" name="productID" value="' . htmlspecialchars($productID) . '" />
-                            <input type="hidden" name="chooseBranch" value="' . htmlspecialchars($branchName) . '" />
-                            <input type="hidden" name="productBranchID" value="' . htmlspecialchars($productBranchID) . '" />
-                            <input type="hidden" name="productImg" value="' . htmlspecialchars($productImg) . '" />
-                            <div class="mb-3">
-                                <label for="categoryType" class="form-label">Category Type</label>
-                                <select class="form-select" id="categoryType" name="categoryType" required>';
-                                    editCategory($categoryType);
-                                    echo '
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label for="ShapeDescription" class="form-label">Shape</label>
-                                <select class="form-select" id="ShapeDescription" name="ShapeDescription" required>';
-                                    editShape($ShapeDescription);
-                                    echo '
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <div class="col-auto" style="width: 5rem"> 
-                                    <label for="brandID" class="col-form-label">Brand:</label>
-                                </div>
-                                <select name="brandID" id="brandID" class="form-select">';
-                                    editBrand($brandID);
-                                    echo '
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label for="model" class="form-label">Model</label>
-                                <input type="text" class="form-control" id="model" name="model" value="' . htmlspecialchars($model) . '" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="material" class="form-label">Material</label>
-                                <input type="text" class="form-control" id="material" name="material" value="' . htmlspecialchars($material) . '" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="price" class="form-label">Price</label>
-                                <input type="text" class="form-control" id="price" name="price" value="' . htmlspecialchars($price) . '" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="count" class="form-label">Stocks</label>
-                                <input type="number" class="form-control" id="count" name="count" value="' . htmlspecialchars($count) . '" min="0" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="productImg" class="form-label">Product Image</label>
-                                <div class="container d-flex align-items-center justify-content-center">
-                                    <img src="' . htmlspecialchars($productImg) . '" alt="Product Image" class="img-thumbnail"/>
-                                </div>
-                                <input type="file" class="form-control mt-3" id="newProductImg" name="newProductImg" accept="image/*">
-                            </div>
-
-                            <hr>
-                            <div class="modal-footer">
-                                <button type="submit" class="btn btn-success w-25" name="saveProductBtn">Save</button>
-                                <button type="button" class="btn btn-danger w-25" data-bs-dismiss="modal">Cancel</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>';
-}
-
-function confirmDeleteProduct() {
-    echo 
-        '<div class="modal fade" id="confirmDeleteProductModal" tabindex="-1" aria-labelledby="confirmDeleteProductModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="confirmDeleteProductModalLabel">Confirm Delete</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <form method="post">
-                        <input type="hidden" name="productID" value="' . htmlspecialchars($_POST['productID']) . '" />
-                        <input type="hidden" name="productBranchID" value="' . htmlspecialchars($_POST['productBranchID']) . '" />
-                        <input type="hidden" name="chooseBranch" value="' . htmlspecialchars($_POST['chooseBranch']) . '" />                      
-                        <div class="modal-body">
-                            Are you sure you want to delete this product?
-                        </div>
-                        <div class="modal-footer">
-                            <button type="submit" class="btn btn-danger" id="confirmDeleteBtn" name="confirmDeleteBtn">Confirm</button>
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>                        
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>';
-}
-
-function confirmEditProduct() {
-    $link = connect();
-    global $employeeName;
-    getEmployeeName();
-
-    $productID = $_POST['productID'] ?? '';
-    $categoryType = $_POST['categoryType'] ?? '';
-    $shape = $_POST['ShapeDescription'] ?? '';
-    $brandID = $_POST['brandID'] ?? '';
-    $model = $_POST['model'] ?? '';
-    $material = $_POST['material'] ?? '';
-    $price = '₱' . $_POST['price'] ?? '';
-    $count = $_POST['count'] ?? '';
-    $avail_FL = ($count > 0) ? 'Available' : 'Not Available';
-    $NewProductImg = $_FILES['newProductImg'];
-    $productImg = $_POST['productImg'] ?? '';
-    $branchName = $_POST['chooseBranch'] ?? '';
-    $branchCode = getBranchCode($branchName);
-    $productBranchID = $_POST['productBranchID'] ?? '';
-    $date = new DateTime();
-    $upd_dt = $date->format('Y-m-d H:i:s');
-
-    $targetDir = "uploads/";
-    $targetFile = $productImg; // Default to existing image
-    $uploadOk = 1;
-
-    // Check if a new file is uploaded
-    if ($NewProductImg && isset($NewProductImg["tmp_name"]) && is_uploaded_file($NewProductImg["tmp_name"])) {
-        $targetFile = $targetDir . basename($NewProductImg["name"]);
-        $imageFileType = strtolower(pathinfo($targetFile, PATHINFO_EXTENSION));
-
-        // Validate the uploaded file
-        $check = getimagesize($NewProductImg["tmp_name"]);
-        if ($check === false) {
-            echo "File is not an image.";
-            $uploadOk = 0;
-        }
-
-        // Check file size (limit to 2MB)
-        if ($NewProductImg["size"] > 2000000) {
-            echo "Sorry, your file is too large.";
-            $uploadOk = 0;
-        }
-
-        // Allow certain file formats
-        if (!in_array($imageFileType, ["jpg", "png", "jpeg", "gif"])) {
-            echo "Sorry, only JPG, JPEG, PNG & GIF files are allowed.";
-            $uploadOk = 0;
-        }
-
-        // Resize and upload the file if valid
-        if ($uploadOk) {
-            $sourceImage = null;
-            switch ($imageFileType) {
-                case 'jpg':
-                case 'jpeg':
-                    $sourceImage = imagecreatefromjpeg($NewProductImg["tmp_name"]);
-                    break;
-                case 'png':
-                    $sourceImage = imagecreatefrompng($NewProductImg["tmp_name"]);
-                    break;
-                case 'gif':
-                    $sourceImage = imagecreatefromgif($NewProductImg["tmp_name"]);
-                    break;
-                default:
-                    echo "Unsupported image format.";
-                    $uploadOk = 0;
-            }
-
-            if ($sourceImage) {
-                $resizedImage = imagecreatetruecolor(600, 600);
-                $originalWidth = $check[0];
-                $originalHeight = $check[1];
-                imagecopyresampled(
-                    $resizedImage,
-                    $sourceImage,
-                    0, 0, 0, 0,
-                    600, 600,
-                    $originalWidth,
-                    $originalHeight
-                );
-
-                switch ($imageFileType) {
-                    case 'jpg':
-                    case 'jpeg':
-                        imagejpeg($resizedImage, $targetFile);
-                        break;
-                    case 'png':
-                        imagepng($resizedImage, $targetFile);
-                        break;
-                    case 'gif':
-                        imagegif($resizedImage, $targetFile);
-                        break;
-                }
-
-                // Free memory
-                imagedestroy($sourceImage);
-                imagedestroy($resizedImage);
-            }
-        }
-    }
-
-    // Proceed with database updates if the file upload is successful
-    if ($uploadOk) {
-        $success = true;
-        // Update productmstr table
-        $sql1 = "UPDATE productMstr SET CategoryType = ?, ShapeID = ?, BrandID = ?, Model = ?, Material = ?, Price = ?, ProductImage = ?, Upd_by = ?, Upd_dt = ? WHERE ProductID = ?";
-        $stmt1 = mysqli_prepare($link, $sql1);
-        mysqli_stmt_bind_param($stmt1, "ssssssssss", $categoryType, $shape, $brandID, $model, $material, $price, $targetFile, $employeeName, $upd_dt, $productID);
-        if (!mysqli_stmt_execute($stmt1)) {
-            $success = false;
-        }
-        mysqli_stmt_close($stmt1);
-        
-        // Update productbranchmaster table
-        $sql2 = "UPDATE ProductBranchMaster SET ProductBranchID = ?, BranchCode = ?, Stocks = ?, Avail_FL = ?, Upd_by = ?, Upd_dt = ? WHERE ProductID = ?";
-        $stmt2 = mysqli_prepare($link, $sql2);
-        mysqli_stmt_bind_param($stmt2, "sssssss", $productBranchID, $branchCode, $count, $avail_FL, $employeeName, $upd_dt, $productID);
-        if (!mysqli_stmt_execute($stmt2)) {
-            $success = false;
-        }
-        mysqli_stmt_close($stmt2);
-        $code = '4';
-        GenerateLogs($productID,$model,$code);
-        // Show success or error modal
-        if ($success) {
-            echo '<div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="editProductModalLabel">Success</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                The product has been updated successfully!
-                            </div>
-                            <div class="modal-footer">                             
-                                <a href="admin-inventory.php?branch='.urlencode($_POST['chooseBranch']).'&sort='.urlencode($_GET['sort'] ?? 'ProductID').'&order='.urlencode($_GET['order'] ?? 'ASC').'" class="btn btn-secondary">Close</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <script>
-                    document.addEventListener("DOMContentLoaded", function() {
-                        const modal = new bootstrap.Modal(document.getElementById("editProductModal"));
-                        modal.show();
-                        
-                        setTimeout(function() {
-                            const urlParams = new URLSearchParams(window.location.search);
-                            window.location.href = window.location.pathname + "?" + urlParams.toString();
-                        }, 2000); // Redirect after 2 seconds
-                    });
-                </script>';
-            // $logSQL = "INSERT INTO logs (LogsID, EmployeeID, ProductBranchID, ActivityCode, Count, Upd_dt) VALUES (?, ?, ?, ?, ?, ?)";
-            // $logStmt = mysqli_prepare($link, $logSQL);
-            // $logID = generate_LogsID();
-            // $logEmployeeID = getEmployeeID();
-            // $logActivityCode = '4';
-            // $logCount = $count;
-            // $logUpdDT = date('Y-m-d H:i:s');
-            // mysqli_stmt_bind_param($logStmt, "ssssss", $logID, $logEmployeeID, $productBranchID, $logActivityCode, $logCount, $logUpdDT);
-            // mysqli_stmt_execute($logStmt);
-            // mysqli_stmt_close($logStmt);
-        } else {
-            echo '<div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="editProductModalLabel">Error</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                An error occurred while updating the product. Please try again.
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>';
-        }
-    }
-
-    mysqli_close($link);
-}
-
-function GenerateLogs($productID,$model,$code)
-    {
-        $conn = connect(); 
-        $Logsid = generate_LogsID();        
-        $employee_id = $_SESSION["id"];
-        $stmt = $conn->prepare("INSERT INTO Logs 
-                            (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description, Upd_dt)
-                            VALUES
-                            (?, ?, ?, 'product', ?, ? , NOW())");
-        $stmt->bind_param("sssss", $Logsid, $employee_id,$productID, $code, $model);
-        $stmt->execute();
-        $stmt->close();
-    }
-
-function deleteProduct() { //Delete function to delete a product from the database
-    $link = connect();
-    $productID = $_POST['productID'] ?? '';
-    $code = '5';
-    $sql = "SELECT * FROM productMstr WHERE ProductID = $productID"  ;
-    $result = mysqli_query($link, $sql);
-
-    while ($row = mysqli_fetch_array($result)) {
-        $model= $row['Model'];
-    }
-    
-    GenerateLogs($productID,$model,$code);
-    
-        $sql = "DELETE FROM ProductBranchMaster WHERE ProductID = ?";
-        $stmt = mysqli_prepare($link, $sql);
-        mysqli_stmt_bind_param($stmt, "s", $productID);
-        mysqli_stmt_execute($stmt);
-        mysqli_stmt_close($stmt);
-
-        $sql = "DELETE FROM productMstr WHERE ProductID = ?";
-        $stmt = mysqli_prepare($link, $sql);
-        mysqli_stmt_bind_param($stmt, "s", $productID);
-        mysqli_stmt_execute($stmt);
-
-    if (mysqli_stmt_close($stmt))
-        {
-        echo '<div class="modal fade" id="deleteProductModal" tabindex="-1" aria-labelledby="deleteProductModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="deleteProductModalLabel">Success</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            The product has been deleted from the database successfully!
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        </div>
-                    </div>
-                </div>
-            </div>';
-    } else {
-        echo '<div class="modal fade" id="deleteProductModal" tabindex="-1" aria-labelledby="deleteProductModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="deleteProductModalLabel">Error</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            An error occurred while logging the deletion. Please try again.
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        </div>
-                    </div>
-                </div>
-            </div>';
-    }
-    mysqli_close($link);
-}
-function branchSelection($sort, $order){
-    // All branches view
-    echo '<table class="table table-hover text-center">
-            <thead class="table-light">
-                <tr>
-                    <th class="sortable '.($sort == 'ProductID' ? 'active' : '').'" onclick="sortTable(\'ProductID\')">
-                        Product ID
-                        <span class="sort-icon">
-                            <i class="fas fa-sort-'.($sort == 'ProductID' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
-                        </span>
-                    </th>
-                    <th class="sortable '.($sort == 'CategoryType' ? 'active' : '').'" onclick="sortTable(\'CategoryType\')">
-                        Category
-                        <span class="sort-icon">
-                            <i class="fas fa-sort-'.($sort == 'CategoryType' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
-                        </span>
-                    </th>
-                    <th class="sortable '.($sort == 'ShapeDescription' ? 'active' : '').'" onclick="sortTable(\'ShapeDescription\')">
-                        Shape
-                        <span class="sort-icon">
-                            <i class="fas fa-sort-'.($sort == 'ShapeDescription' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
-                        </span>
-                    </th>
-                    <th class="sortable '.($sort == 'BrandName' ? 'active' : '').'" onclick="sortTable(\'BrandName\')">
-                        Brand
-                        <span class="sort-icon">
-                            <i class="fas fa-sort-'.($sort == 'BrandName' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
-                        </span>
-                    </th>
-                    <th class="sortable '.($sort == 'Model' ? 'active' : '').'" onclick="sortTable(\'Model\')">
-                        Model
-                        <span class="sort-icon">
-                            <i class="fas fa-sort-'.($sort == 'Model' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
-                        </span>
-                    </th>
-                    <th>Material</th>
-                    <th>Product Image</th>
-                    <th class="sortable '.($sort == 'TotalCount' ? 'active' : '').'" onclick="sortTable(\'TotalCount\')">
-                        Total Count
-                        <span class="sort-icon">
-                            <i class="fas fa-sort-'.($sort == 'TotalCount' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
-                        </span>
-                    </th>
-                </tr>
-            </thead>
-            <tbody>';
-    
-    getInventory($sort, $order);
-    
-    echo '</tbody></table>';
-}
-function branchView($sort, $order) {
-    // Specific branch view
-    echo '<table class="table table-hover text-center">
-            <thead class="table-light">
-                <tr>
-                    <th class="sortable '.($sort == 'ProductID' ? 'active' : '').'" onclick="sortTable(\'ProductID\')">
-                        Product ID
-                        <span class="sort-icon">
-                            <i class="fas fa-sort-'.($sort == 'ProductID' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
-                        </span>
-                    </th>
-                    <th class="sortable '.($sort == 'CategoryType' ? 'active' : '').'" onclick="sortTable(\'CategoryType\')">
-                        Category
-                        <span class="sort-icon">
-                            <i class="fas fa-sort-'.($sort == 'CategoryType' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
-                        </span>
-                    </th>
-                    <th class="sortable '.($sort == 'ShapeDescription' ? 'active' : '').'" onclick="sortTable(\'ShapeDescription\')">
-                        Shape
-                        <span class="sort-icon">
-                            <i class="fas fa-sort-'.($sort == 'ShapeDescription' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
-                        </span>
-                    </th>
-                    <th class="sortable '.($sort == 'BrandName' ? 'active' : '').'" onclick="sortTable(\'BrandName\')">
-                        Brand
-                        <span class="sort-icon">
-                            <i class="fas fa-sort-'.($sort == 'BrandName' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
-                        </span>
-                    </th>
-                    <th class="sortable '.($sort == 'Model' ? 'active' : '').'" onclick="sortTable(\'Model\')">
-                        Model
-                        <span class="sort-icon">
-                            <i class="fas fa-sort-'.($sort == 'Model' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
-                        </span>
-                    </th>
-                    <th>Material</th>
-                    <th>Price</th>
-                    <th>Product Image</th>
-                    <th class="sortable '.($sort == 'Count' ? 'active' : '').'" onclick="sortTable(\'Count\')">
-                        Count
-                        <span class="sort-icon">
-                            <i class="fas fa-sort-'.($sort == 'Count' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
-                        </span>
-                    </th>
-                    
-                    <th colspan="2">Action</th>
-                </tr>
-            </thead>
-            <tbody>';
-    
-    getInventory($sort, $order);
-    
-    echo '</tbody></table>';
-}
-
-if (empty($branchName)) {
-branchSelection($sort, $order);                   
+    $_SESSION['current_branch'] = $branchName;
 } else {
-branchView($sort, $order);
+    $branchName = $_GET['branch'] ?? $_SESSION['current_branch'] ?? '';
 }
-?>          
+
+// Store current branch in session
+$_SESSION['current_branch'] = $branchName;
+?>
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+        <link rel="stylesheet" href="customCodes/custom.css">
+        <link rel="shortcut icon" type="image/x-icon" href="Images/logo.png"/>
+        <title>Admin | Inventories</title>
+        <style>
+            body {
+                background-color: #f5f7fa;
+                display: flex;
+            }
+            .sidebar {
+                background-color: white;
+                height: 100vh;
+                padding: 20px 0;
+                color: #2c3e50;
+                position: fixed;
+                width: 250px;
+                box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            }
+            .sidebar-header {
+                padding: 0 20px 20px;
+                border-bottom: 1px solid rgba(0,0,0,0.1);
+            }
+            .sidebar-item {
+                padding: 12px 20px;
+                margin: 5px 0;
+                border-radius: 0;
+                display: flex;
+                align-items: center;
+                color: #2c3e50;
+                transition: all 0.3s;
+                text-decoration: none;
+            }
+            .sidebar-item:hover {
+                background-color: #f8f9fa;
+                color: #2c3e50;
+            }
+            .sidebar-item.active {
+                background-color: #e9ecef;
+                color: #2c3e50;
+                font-weight: 500;
+            }   
+            .sidebar-item i {
+                margin-right: 10px;
+                width: 20px;
+                text-align: center;
+            }
+            .main-content {
+                margin-left: 250px;
+                padding: 20px;
+                width: calc(100% - 250px);
+            }
+            .table-container {
+                background-color: white;
+                border-radius: 10px;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                padding: 20px;
+            }
+            .product-img {
+                width: 50px;
+                height: 50px;
+                object-fit: cover;
+                border-radius: 4px;
+            }
+            .action-btn {
+                padding: 5px 10px;
+                margin: 0 3px;
+            }
+            .filter-container {
+                background-color: white;
+                border-radius: 10px;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                padding: 20px;
+                margin-bottom: 20px;
+            }
+            .sortable {
+                cursor: pointer;
+                position: relative;
+                padding-right: 25px;
+            }
+            .sortable:hover {
+                background-color: #f8f9fa;
+            }
+            .sort-icon {
+                position: absolute;
+                right: 8px;
+                top: 50%;
+                transform: translateY(-50%);
+                display: none;
+            }
+            .sortable.active .sort-icon {
+                display: inline-block;                
+            }
+        </style>
+    </head>
+
+    <body>
+        <?php include "sidebar.php"; ?>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="fas fa-boxes me-2"></i> Inventory Management</h1>
+                <a class="btn btn-primary" href="admin-inventory-add.php" role="button">
+                    <i class="fas fa-plus me-2"></i> Add Product
+                </a>            
+            </div>
+        
+        <div class="filter-container">
+            <form method="post" class="row g-3" id="branchForm">
+                <div class="col-md-8">
+                    <label for="chooseBranch" class="form-label">Select Branch</label>
+                    <select name="chooseBranch" id="chooseBranch" class="form-select form-select-sm">
+                        <option value='' <?= empty($branchName) ? 'selected' : '' ?>>View All Branches</option>
+                        <?php 
+                        $link = connect();
+                        if (!$link) {
+                            die("Database connection failed: " . mysqli_connect_error());
+                        }
+                        
+                        $sql = "SELECT BranchName FROM BranchMaster";
+                        $result = mysqli_query($link, $sql);
+                        
+                        if (!$result) {
+                            die("Query failed: " . mysqli_error($link));
+                        }
+                        
+                        while($row = mysqli_fetch_assoc($result)) {
+                            $selected = (strcasecmp($row['BranchName'], $branchName) === 0) ? 'selected' : '';
+                            echo "<option value='".htmlspecialchars($row['BranchName'])."' $selected>".htmlspecialchars($row['BranchName'])."</option>";
+                        }
+                        mysqli_close($link);
+                        ?>
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100" name="searchProduct">
+                        <i class="fas fa-search me-2"></i> Search
+                    </button>
+                </div>
+            </form>
+        </div>
+
+            <div class="table-container">
+                <div class="table-responsive">
+                    <?php
+                    // Display inventory table based on branch selection
+                    function branchSelection($sort, $order){
+                        // All branches view
+                        echo '<table class="table table-hover text-center">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="sortable '.($sort == 'ProductID' ? 'active' : '').'" onclick="sortTable(\'ProductID\')">
+                                            Product ID
+                                            <span class="sort-icon">
+                                                <i class="fas fa-sort-'.($sort == 'ProductID' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
+                                            </span>
+                                        </th>
+                                        <th class="sortable '.($sort == 'CategoryType' ? 'active' : '').'" onclick="sortTable(\'CategoryType\')">
+                                            Category
+                                            <span class="sort-icon">
+                                                <i class="fas fa-sort-'.($sort == 'CategoryType' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
+                                            </span>
+                                        </th>
+                                        <th class="sortable '.($sort == 'ShapeDescription' ? 'active' : '').'" onclick="sortTable(\'ShapeDescription\')">
+                                            Shape
+                                            <span class="sort-icon">
+                                                <i class="fas fa-sort-'.($sort == 'ShapeDescription' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
+                                            </span>
+                                        </th>
+                                        <th class="sortable '.($sort == 'BrandName' ? 'active' : '').'" onclick="sortTable(\'BrandName\')">
+                                            Brand
+                                            <span class="sort-icon">
+                                                <i class="fas fa-sort-'.($sort == 'BrandName' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
+                                            </span>
+                                        </th>
+                                        <th class="sortable '.($sort == 'Model' ? 'active' : '').'" onclick="sortTable(\'Model\')">
+                                            Model
+                                            <span class="sort-icon">
+                                                <i class="fas fa-sort-'.($sort == 'Model' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
+                                            </span>
+                                        </th>
+                                        <th>Material</th>
+                                        <th>Product Image</th>
+                                        <th class="sortable '.($sort == 'TotalCount' ? 'active' : '').'" onclick="sortTable(\'TotalCount\')">
+                                            Total Count
+                                            <span class="sort-icon">
+                                                <i class="fas fa-sort-'.($sort == 'TotalCount' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
+                                            </span>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>';
+                        
+                        getInventory($sort, $order);
+                        
+                        echo '</tbody></table>';
+                    }
+                    
+                    function branchView($sort, $order) {
+                        // Specific branch view
+                        echo '<table class="table table-hover text-center">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="sortable '.($sort == 'ProductID' ? 'active' : '').'" onclick="sortTable(\'ProductID\')">
+                                            Product ID
+                                            <span class="sort-icon">
+                                                <i class="fas fa-sort-'.($sort == 'ProductID' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
+                                            </span>
+                                        </th>
+                                        <th class="sortable '.($sort == 'CategoryType' ? 'active' : '').'" onclick="sortTable(\'CategoryType\')">
+                                            Category
+                                            <span class="sort-icon">
+                                                <i class="fas fa-sort-'.($sort == 'CategoryType' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
+                                            </span>
+                                        </th>
+                                        <th class="sortable '.($sort == 'ShapeDescription' ? 'active' : '').'" onclick="sortTable(\'ShapeDescription\')">
+                                            Shape
+                                            <span class="sort-icon">
+                                                <i class="fas fa-sort-'.($sort == 'ShapeDescription' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
+                                            </span>
+                                        </th>
+                                        <th class="sortable '.($sort == 'BrandName' ? 'active' : '').'" onclick="sortTable(\'BrandName\')">
+                                            Brand
+                                            <span class="sort-icon">
+                                                <i class="fas fa-sort-'.($sort == 'BrandName' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
+                                            </span>
+                                        </th>
+                                        <th class="sortable '.($sort == 'Model' ? 'active' : '').'" onclick="sortTable(\'Model\')">
+                                            Model
+                                            <span class="sort-icon">
+                                                <i class="fas fa-sort-'.($sort == 'Model' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
+                                            </span>
+                                        </th>
+                                        <th>Material</th>
+                                        <th>Price</th>
+                                        <th>Product Image</th>
+                                        <th class="sortable '.($sort == 'Count' ? 'active' : '').'" onclick="sortTable(\'Count\')">
+                                            Count
+                                            <span class="sort-icon">
+                                                <i class="fas fa-sort-'.($sort == 'Count' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
+                                            </span>
+                                        </th>
+                                        
+                                        <th colspan="2">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>';
+                        
+                        getInventory($sort, $order);
+                        
+                        echo '</tbody></table>';
+                    }
+
+                    if (empty($branchName)) {
+                    branchSelection($sort, $order);                   
+                    } else {
+                    branchView($sort, $order);
+                    }
+                    ?>
+
+                    <?php
+                        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                            if (isset($_POST['editProductBtn'])) {
+                                editProduct();
+                            }
+                            elseif (isset($_POST['saveProductBtn'])) {
+                                confirmEditProduct(); 
+                            }
+                            elseif (isset($_POST['deleteProductBtn'])) {
+                                confirmDeleteProduct();
+                            }
+                            elseif (isset($_POST['confirmDeleteBtn'])) {
+                                deleteProduct();
+                            }
+                        }
+                    ?>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.min.js"></script>
+
+        <script>
+            // Modal handling
+            document.addEventListener('DOMContentLoaded', function() {
+            // Show modals if they exist
+            const showModal = (modalId) => {
+                const modalElement = document.getElementById(modalId);
+                if (modalElement) {
+                    const modal = new bootstrap.Modal(modalElement);
+                    modal.show();
+                    
+                    // Add event listener for when modal is hidden
+                    modalElement.addEventListener('hidden.bs.modal', function () {
+                        // If this is a success modal, reload the page
+                        if (modalId === 'editProductModal' || modalId === 'deleteProductModal') {
+                            const urlParams = new URLSearchParams(window.location.search);
+                            window.location.href = window.location.pathname + '?' + urlParams.toString();
+                        }
+                    });
+                }
+            };
+
+            showModal('editProductModal');
+            showModal('deleteProductModal');
+            showModal('confirmDeleteProductModal');
+            showModal('confirmEditModal');
+        });
+
+            // Function to handle table sorting
+            function sortTable(column) {
+                const urlParams = new URLSearchParams(window.location.search);
+                let currentSort = urlParams.get('sort') || 'ProductID';
+                let currentOrder = urlParams.get('order') || 'ASC';
+                
+                let newOrder = 'ASC';
+                if (currentSort === column) {
+                    newOrder = currentOrder === 'ASC' ? 'DESC' : 'ASC';
+                }
+                
+                // Update URL parameters
+                urlParams.set('sort', column);
+                urlParams.set('order', newOrder);
+                
+                // Preserve branch selection
+                const branchSelect = document.getElementById('chooseBranch');
+                if (branchSelect && branchSelect.value) {
+                    urlParams.set('branch', branchSelect.value);
+                } else {
+                    urlParams.delete('branch');
+                }
+                
+                // Reload the page with new parameters
+                window.location.href = window.location.pathname + '?' + urlParams.toString();
+            }
+
+            // Add confirmation for delete actions
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    if(!confirm('Are you sure you want to delete this product?')) {
+                        e.preventDefault();
+                    }
+                });
+            });
+        </script>
+    </body>
+</html>
