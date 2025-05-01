@@ -754,7 +754,7 @@ function GenerateLogs($productID,$model,$code)
         $stmt = $conn->prepare("INSERT INTO Logs 
                             (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description, Upd_dt)
                             VALUES
-                            (?, ?, ?, 'product', '?', ? , NOW())");
+                            (?, ?, ?, 'product', ?, ? , NOW())");
         $stmt->bind_param("ssis", $Logsid, $employee_id,$productID, $code, $model);
         $stmt->execute();
         $stmt->close();
