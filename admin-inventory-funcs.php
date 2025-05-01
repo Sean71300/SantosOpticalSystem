@@ -152,7 +152,7 @@ function getInventory($sort = 'ProductID', $order = 'ASC') {
                 JOIN shapeMaster sm ON pm.ShapeID = sm.ShapeID
                 JOIN brandMaster bm ON pm.BrandID = bm.BrandID
                 WHERE b.BranchName = ? 
-                AND pbm.Avail_FL = 'Available';
+                AND pbm.Avail_FL = 'Available";
         
         switch($sort) {
             case 'ProductID': $sql .= " ORDER BY pm.ProductID"; break;
