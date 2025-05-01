@@ -1113,8 +1113,111 @@
         $stmt->close();
         $conn->close();
         return $id;
-    }       
+    }
+
+    function generate_historyID() {
+        $conn = connect();
+
+        $query = "SELECT COUNT(*) as count FROM customerMedicalHistory";
+        $result = $conn->query($query);
+        $row = $result->fetch_assoc();
+        $rowCount = $row["count"];
+
+        // Get the current year
+        $currentYear = date("Y");
+
+        // Generate the ID
+        $genID = (int)($currentYear . str_pad(9, 2, "1", STR_PAD_LEFT) . str_pad($rowCount, 4, "0", STR_PAD_LEFT));
+        
+        $checkQuery = "SELECT history_id FROM customerMedicalHistory WHERE history_id = ?";
+        $genID = checkDuplication($genID,$checkQuery);
+        $conn->close();
+        return $genID;
+    }
+
+    function create_CustomerMedicalHistoryTable() {
+        $conn = connect();
+        $sql = "CREATE TABLE customerMedicalHistory (
+                history_id INT(10) PRIMARY KEY,
+                CustomerID INT NOT NULL,
+                visit_date DATE NOT NULL,
+                eye_condition VARCHAR(100),
+                current_medications TEXT,
+                allergies TEXT,
+                family_eye_history TEXT,
+                previous_eye_surgeries TEXT,
+                systemic_diseases VARCHAR(255) COMMENT 'e.g., diabetes, hypertension',
+                visual_acuity_right VARCHAR(20),
+                visual_acuity_left VARCHAR(20),
+                intraocular_pressure_right DECIMAL(5,2) COMMENT 'in mmHg',
+                intraocular_pressure_left DECIMAL(5,2) COMMENT 'in mmHg',
+                refraction_right VARCHAR(50),
+                refraction_left VARCHAR(50),
+                pupillary_distance INT COMMENT 'in mm',
+                corneal_topography TEXT,
+                fundus_examination TEXT,
+                additional_notes TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                
+                FOREIGN KEY (CustomerID) REFERENCES customer(CustomerID) ON DELETE CASCADE,
+                INDEX (CustomerID),
+                INDEX (visit_date)
+            ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
     
+        if (mysqli_query($conn, $sql)) {
+            $historyID = generate_historyID();
+            $customerID = generate_CustomerID();
+            $inserts = [
+                // Patient 1: Routine eye exam with mild myopia
+                "INSERT INTO customerMedicalHistory (history_id, CustomerID, visit_date, eye_condition, current_medications, allergies, visual_acuity_right, visual_acuity_left, refraction_right, refraction_left, pupillary_distance)
+                VALUES ($historyID, $customerID, CURDATE(), 'Mild myopia', 'None', 'None', '20/40', '20/40', '-1.50 DS', '-1.25 DS', 62)",
+    
+                // Patient 2: Diabetic patient with annual eye screening
+                "INSERT INTO customerMedicalHistory (CustomerID, visit_date, eye_condition, systemic_diseases, visual_acuity_right, visual_acuity_left, intraocular_pressure_right, intraocular_pressure_left, fundus_examination)
+                VALUES ($historyID, $customerID, CURDATE(), 'Diabetic retinopathy screening', 'Diabetes Type 2', '20/25', '20/30', 16.5, 17.0, 'Mild non-proliferative diabetic retinopathy')",
+    
+                // Patient 3: Contact lens fitting
+                "INSERT INTO customerMedicalHistory (CustomerID, visit_date, eye_condition, current_medications, visual_acuity_right, visual_acuity_left, refraction_right, refraction_left, corneal_topography)
+                VALUES ($historyID, $customerID, CURDATE(), 'Contact lens fitting', 'Artificial tears', '20/20', '20/20', 'Plano', 'Plano', 'Regular astigmatism 1.00D @ 180°')",
+    
+                // Patient 4: Glaucoma suspect
+                "INSERT INTO customerMedicalHistory (CustomerID, visit_date, eye_condition, family_eye_history, intraocular_pressure_right, intraocular_pressure_left, additional_notes)
+                VALUES ($historyID, $customerID, CURDATE(), 'Glaucoma suspect', 'Mother has glaucoma', 22.0, 23.5, 'Recommended OCT and visual field testing')",
+    
+                // Patient 5: Cataract evaluation
+                "INSERT INTO customerMedicalHistory (CustomerID, visit_date, eye_condition, previous_eye_surgeries, visual_acuity_right, visual_acuity_left, additional_notes)
+                VALUES ($historyID, $customerID, CURDATE(), 'Cataract evaluation', 'None', '20/60', '20/70', 'Nuclear sclerosis grade 2-3, discuss cataract surgery options')",
+    
+                // Patient 6: Dry eye syndrome
+                "INSERT INTO customerMedicalHistory (CustomerID, visit_date, eye_condition, current_medications, allergies, additional_notes)
+                VALUES ($historyID, $customerID, CURDATE(), 'Dry eye syndrome', 'Restasis', 'Preservatives in eye drops', 'Started on preservative-free artificial tears QID')",
+    
+                // Patient 7: Child's first eye exam
+                "INSERT INTO customerMedicalHistory (CustomerID, visit_date, eye_condition, family_eye_history, visual_acuity_right, visual_acuity_left, pupillary_distance)
+                VALUES ($historyID, $customerID, CURDATE(), 'Pediatric eye exam', 'Father has high myopia', '20/30', '20/40', 54)",
+    
+                // Patient 8: Post-LASIK follow-up
+                "INSERT INTO customerMedicalHistory (CustomerID, visit_date, eye_condition, previous_eye_surgeries, visual_acuity_right, visual_acuity_left, refraction_right, refraction_left)
+                VALUES ($historyID, $customerID, CURDATE(), 'Post-LASIK follow-up', 'LASIK 2019', '20/15', '20/15', 'Plano', 'Plano')",
+    
+                // Patient 9: Macular degeneration monitoring
+                "INSERT INTO customerMedicalHistory (CustomerID, visit_date, eye_condition, family_eye_history, visual_acuity_right, visual_acuity_left, fundus_examination)
+                VALUES ($historyID, $customerID, CURDATE(), 'AMD monitoring', 'Mother had AMD', '20/25', '20/40', 'Few small drusen OU, no geographic atrophy')",
+    
+                // Patient 10: Emergency - corneal abrasion
+                "INSERT INTO customerMedicalHistory (CustomerID, visit_date, eye_condition, current_medications, additional_notes)
+                VALUES ($historyID, $customerID, CURDATE(), 'Corneal abrasion', 'Erythromycin ointment', '2mm corneal abrasion from fingernail trauma, patched for 24 hours')"
+            ];
+            foreach ($inserts as $insert) {
+                mysqli_query($conn, $insert);
+            }
+        }
+        else {
+            echo "<br>There is an error in creating the table: " . $conn->connect_error;
+        }
+        $conn->close();
+    }
 ?>
 
 <?php
@@ -1252,4 +1355,12 @@
         create_LogsTable();
     }    
     
+    // Check if Customer Medical History Table exists
+    $table_check_query = "SHOW TABLES LIKE 'customerMedicalHistory'";
+    $result = mysqli_query($conn, $table_check_query);
+    
+    if (mysqli_num_rows($result) == 0) 
+    {
+        create_CustomerMedicalHistoryTable();
+    }
 ?>
