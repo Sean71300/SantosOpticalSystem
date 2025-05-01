@@ -223,12 +223,11 @@ include 'loginChecker.php';
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            const successModal = document.getElementById('successModal');
-            const myModal = new bootstrap.Modal(successModal);
-            
-            addProduct.addEventListener('click', function() {
+        const successModal = document.getElementById('successModal');
+            if (successModal) {
+                const myModal = new bootstrap.Modal(successModal);
                 myModal.show();
-            });
+            }
         });
     </script>
 </body>
