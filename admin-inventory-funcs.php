@@ -745,8 +745,8 @@ function confirmEditProduct() {
 function deleteProduct() { //Delete function to delete a product from the database
     $link = connect();
     $productID = $_POST['productID'] ?? '';
-    $logBranchID = $_POST['productBranchID'] ?? '';
 
+    $logBranchID = $_POST['productBranchID'] ?? '';
     $logID = generate_LogsID();
     $logEmployeeID = getEmployeeID();
     $logActivityCode = '3';

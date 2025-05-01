@@ -220,10 +220,16 @@ include 'loginChecker.php';
                 };
                 reader.readAsDataURL(input.files[0]);
             }
-
-            var myModal = new bootstrap.Modal(document.getElementById("successModal"));
-            myModal.show();
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const successModal = document.getElementById('successModal');
+            const myModal = new bootstrap.Modal(successModal);
+            
+            addProduct.addEventListener('click', function() {
+                myModal.show();
+            });
+        });
     </script>
 </body>
 </html>
