@@ -3,6 +3,47 @@ include 'ActivityTracker.php';
 include 'admin-inventory-funcs.php'; // Include the functions file
 include 'loginChecker.php';
 
+// Handle form submission at the top
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['addProduct'])) { 
+    $result = addProduct();
+    
+    // Show the appropriate modal based on the result
+    if ($result === true) {
+        echo '<div class="modal fade" id="resultModal" tabindex="-1" aria-labelledby="resultModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title" id="resultModalLabel">Success</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            The product has been added successfully!
+                        </div>
+                        <div class="modal-footer">
+                            <a href="admin-inventory.php" class="btn btn-success">OK</a>
+                        </div>
+                    </div>
+                </div>
+            </div>';
+    } else {
+        echo '<div class="modal fade" id="resultModal" tabindex="-1" aria-labelledby="resultModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title" id="resultModalLabel">Error</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            Error: '.htmlspecialchars($result).'
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>';
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -186,12 +227,6 @@ include 'loginChecker.php';
         </div>
     </div>
 
-    <?php
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') { 
-            addProduct();
-        }
-    ?>
-
     <!-- Cancel Confirmation Modal -->
     <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -220,10 +255,23 @@ include 'loginChecker.php';
                 };
                 reader.readAsDataURL(input.files[0]);
             }
-
-            var myModal = new bootstrap.Modal(document.getElementById("successModal"));
-            myModal.show();
         }
+
+        // Show the result modal if it exists
+        document.addEventListener('DOMContentLoaded', function() {
+            var resultModal = document.getElementById('resultModal');
+            if (resultModal) {
+                var modal = new bootstrap.Modal(resultModal);
+                modal.show();
+                
+                // Redirect on success modal close
+                resultModal.addEventListener('hidden.bs.modal', function (event) {
+                    <?php if (isset($result) && $result === true): ?>
+                        window.location.href = 'admin-inventory.php';
+                    <?php endif; ?>
+                });
+            }
+        });
     </script>
 </body>
 </html>

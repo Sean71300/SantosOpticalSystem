@@ -239,7 +239,7 @@
                 )";
 
         if (mysqli_query($conn, $sql)) {
-            for ($i = 0; $i < 12; $i++) {
+            for ($i = 0; $i < 15; $i++) {
                 $id = generate_ProductBrnchMstrID();    
                 $id2 = 2025140000 + $i; 
                 $id3 = generate_BranchCode();

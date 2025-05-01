@@ -191,7 +191,7 @@ function getInventory($sort = 'ProductID', $order = 'ASC') {
                     <td class='align-middle'>".htmlspecialchars($row['Price'])."</td>
                     <td class='align-middle'><img src='".htmlspecialchars($row['ProductImage'])."' class='product-img'></td>
                     <td class='align-middle'>".htmlspecialchars($row['Stocks'])."</td>
-                    <td>
+                    <td class='align-middle'>
                         <form method='post'>
                             <input type='hidden' name='chooseBranch' value='" . htmlspecialchars($branchName) . "' />
                             <input type='hidden' name='productBranchID' value='" . htmlspecialchars($row['ProductBranchID']) . "' />
@@ -204,15 +204,15 @@ function getInventory($sort = 'ProductID', $order = 'ASC') {
                             <input type='hidden' name='price' value='" . htmlspecialchars($row['Price']) . "' />
                             <input type='hidden' name='count' value='" . htmlspecialchars($row['Stocks']) . "' />
                             <input type='hidden' name='productImg' value='" . htmlspecialchars($row['ProductImage']) . "' />
-                            <button type='submit' class='btn btn-success' name='editProductBtn' style='font-size:12px'><i class='fa-solid fa-pen'></i></button>
+                            <button type='submit' class='btn btn-success' name='editProductBtn' style='font-size:18px'><i class='fa-solid fa-pen'></i></button>
                         </form>
                     </td>
-                    <td>
+                    <td class='align-middle'>
                         <form method='post'>
                             <input type='hidden' name='chooseBranch' value='" . htmlspecialchars($branchName) . "' />
                             <input type='hidden' name='productBranchID' value='" . htmlspecialchars($row['ProductBranchID']) . "' />
                             <input type='hidden' name='productID' value='" . htmlspecialchars($row['ProductID']) . "' />
-                            <button type='submit' class='btn btn-danger' name='deleteProductBtn' value='deleteProductBtn' style='font-size:12px'><i class='fa-solid fa-trash'></i></button>
+                            <button type='submit' class='btn btn-danger' name='deleteProductBtn' value='deleteProductBtn' style='font-size:18px'><i class='fa-solid fa-trash'></i></button>
                         </form>
                     </td>
                 </tr>";
@@ -338,8 +338,6 @@ function addProduct(){ //Add function to add a new product to the database
             mysqli_stmt_execute($stmt);
             mysqli_stmt_close($stmt);
             
-            
-
             // Insert product-branch mapping into the product branch master database
             $sql = "INSERT INTO ProductBranchMaster (ProductBranchID, ProductID, BranchCode, Stocks, Avail_FL, Upd_by, Upd_dt)
                     VALUES (?, ?, ?, ?, ?, ?, ?)"; 
@@ -747,8 +745,8 @@ function confirmEditProduct() {
 function deleteProduct() { //Delete function to delete a product from the database
     $link = connect();
     $productID = $_POST['productID'] ?? '';
-    $logBranchID = $_POST['productBranchID'] ?? '';
 
+    $logBranchID = $_POST['productBranchID'] ?? '';
     $logID = generate_LogsID();
     $logEmployeeID = getEmployeeID();
     $logActivityCode = '3';
