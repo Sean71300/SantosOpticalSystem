@@ -1,6 +1,6 @@
 <?php
     include_once 'setup.php'; 
-  
+    $isAdmin = false;
     $isAdmin = isset($_SESSION['roleid']) && $_SESSION['roleid'] === 1;
 
     //read all row from database table
@@ -14,7 +14,7 @@
         $sort = in_array($sort, $validColumns) ? $sort : 'CustomerID';
         $order = strtoupper($order) === 'DESC' ? 'DESC' : 'ASC';
 
-        $query = "SELECT * FROM customer WHERE Status = 'Active'
+        $sql = "SELECT * FROM customer WHERE Status = 'Active'
         ORDER BY $sort $order";
         $result = $connection->query($sql);
 
@@ -32,7 +32,7 @@
                 <td>$row[CustomerContact]</td>
                 <td>";
                     
-                    
+                if ($isAdmin)    
                     {
                         echo 
                         "
