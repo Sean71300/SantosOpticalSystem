@@ -746,19 +746,6 @@ function deleteProduct() { //Delete function to delete a product from the databa
     $link = connect();
     $productID = $_POST['productID'] ?? '';
 
-    $logBranchID = $_POST['productBranchID'] ?? '';
-    $logID = generate_LogsID();
-    $logEmployeeID = getEmployeeID();
-    $logActivityCode = '3';
-    $logCount = 1;
-    $logUpdDT = date('Y-m-d H:i:s');
-    $logSQL = "INSERT INTO logs (LogsID, EmployeeID, ProductBranchID, ActivityCode, Stocks, Upd_dt) VALUES (?, ?, ?, ?, ?, ?)";
-    $logStmt = mysqli_prepare($link, $logSQL);
-    mysqli_stmt_bind_param($logStmt, "ssssss", $logID, $logEmployeeID, $logBranchID, $logActivityCode, $logCount, $logUpdDT);
-    $logSuccess = mysqli_stmt_execute($logStmt);
-    mysqli_stmt_close($logStmt);
-
-    if ($logSuccess) {
         $sql = "DELETE FROM ProductBranchMaster WHERE ProductID = ?";
         $stmt = mysqli_prepare($link, $sql);
         mysqli_stmt_bind_param($stmt, "s", $productID);
@@ -787,24 +774,24 @@ function deleteProduct() { //Delete function to delete a product from the databa
                     </div>
                 </div>
             </div>';
-    } else {
-        echo '<div class="modal fade" id="deleteProductModal" tabindex="-1" aria-labelledby="deleteProductModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="deleteProductModalLabel">Error</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            An error occurred while logging the deletion. Please try again.
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        </div>
-                    </div>
-                </div>
-            </div>';
-    }
+
+            //LOG HERE
+            // echo '<div class="modal fade" id="deleteProductModal" tabindex="-1" aria-labelledby="deleteProductModalLabel" aria-hidden="true">
+            //         <div class="modal-dialog modal-dialog-centered">
+            //             <div class="modal-content">
+            //                 <div class="modal-header">
+            //                     <h5 class="modal-title" id="deleteProductModalLabel">Error</h5>
+            //                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            //                 </div>
+            //                 <div class="modal-body">
+            //                     An error occurred while logging the deletion. Please try again.
+            //                 </div>
+            //                 <div class="modal-footer">
+            //                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            //                 </div>
+            //             </div>
+            //         </div>
+            //     </div>';
     mysqli_close($link);
 }
 ?>
