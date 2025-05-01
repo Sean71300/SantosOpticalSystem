@@ -835,7 +835,10 @@ function deleteProduct()
         }
         
         GenerateLogs($productID,$model,$code);
-        
+        /*
+
+            Old Delete
+
             $sql = "DELETE FROM ProductBranchMaster WHERE ProductID = ?";
             $stmt = mysqli_prepare($link, $sql);
             mysqli_stmt_bind_param($stmt, "s", $productID);
@@ -846,7 +849,7 @@ function deleteProduct()
             $stmt = mysqli_prepare($link, $sql);
             mysqli_stmt_bind_param($stmt, "s", $productID);
             mysqli_stmt_execute($stmt);
-
+        */
         if (mysqli_stmt_close($stmt))
             {
             echo '<div class="modal fade" id="deleteProductModal" tabindex="-1" aria-labelledby="deleteProductModalLabel" aria-hidden="true">
