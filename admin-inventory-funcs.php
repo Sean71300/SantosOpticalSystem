@@ -776,24 +776,7 @@ function deleteProduct()
         $exists = (bool)$stmt->get_result()->fetch_assoc();
 
         if ($exists){
-            die(
-                echo '<div class="modal fade" id="deleteErrorModal" tabindex="-1" aria-hidden="true">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header bg-danger text-white">
-                                    <h5 class="modal-title">Delete Product Error</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <p><i class="fas fa-exclamation-triangle me-2"></i> Product could not be deleted because it has an active order related to it.</p>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>';
-            );
+            die("Error: ProductBranchID exists in orderDetails");
         }
 
         $link = connect();
