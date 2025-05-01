@@ -234,16 +234,7 @@ $conn->close();
                                         </span>
                                         <strong><?php echo $log['Employee']; ?></strong> 
                                         <?php echo strtolower($log['Activity']); ?> 
-                                        <?php 
-                                                switch($log['TargetType']) {
-                                                    case 'customer': echo 'customer'; break;
-                                                    case 'employee': echo 'employee'; break;
-                                                    case 'product': echo 'product'; break;
-                                                    case 'order': echo 'order'; break;
-                                                    default: echo 'bg-secondary';
-                                                }
-                                            ?> me-2">
-                                            <?php echo ucfirst($log['TargetType']); ?>
+                                        <?php echo ucfirst($log['TargetType']); ?>
                                         <span class="log-target"><?php echo $log['TargetName']; ?></span>
                                     </div>
                                 </div>
