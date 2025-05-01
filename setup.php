@@ -201,17 +201,18 @@
 
         if (mysqli_query($conn, $sql))
         {
-            
-            $sql = "INSERT INTO activityMaster
+            $Code = 0;
+            $Actions = ['Ordered','Pending','Added','Archived','Edited'];
+            foreach ($Actions as $Actions) {
+                ++$Code;
+                $sql = "INSERT INTO activityMaster
                     (ActivityCode, Description)
                     VALUES
-                    ('1','Purchased'),
-                    ('2','Added'),
-                    ('3','Archived'),
-                    ('4','Edited')
-                    ";
+                    ('$Code','Ordered')";
 
-            mysqli_query($conn, $sql);
+                mysqli_query($conn, $Actions);
+            }
+            
         }
         else
         {
