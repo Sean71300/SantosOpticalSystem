@@ -201,17 +201,18 @@
 
         if (mysqli_query($conn, $sql))
         {
-            
-            $sql = "INSERT INTO activityMaster
+            $Code = 0;
+            $Actions = ['Ordered','Pending','Added','Archived','Edited'];
+            foreach ($Actions as $Actions) {
+                ++$Code;
+                $sql = "INSERT INTO activityMaster
                     (ActivityCode, Description)
                     VALUES
-                    ('1','Purchased'),
-                    ('2','Added'),
-                    ('3','Archived'),
-                    ('4','Edited')
-                    ";
+                    ('$Code','Ordered')";
 
-            mysqli_query($conn, $sql);
+                mysqli_query($conn, $Actions);
+            }
+            
         }
         else
         {
@@ -234,17 +235,17 @@
                 Avail_FL VARCHAR(50), 
                 Upd_by VARCHAR(50),
                 Upd_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (ProductID) REFERENCES productMstr(ProductID),
-                FOREIGN KEY (BranchCode) REFERENCES BranchMaster(BranchCode)
+                FOREIGN KEY (ProductID) REFERENCES productMstr(ProductID) ON DELETE CASCADE,
+                FOREIGN KEY (BranchCode) REFERENCES BranchMaster(BranchCode) ON DELETE CASCADE
                 )";
-
+    
         if (mysqli_query($conn, $sql)) {
             for ($i = 0; $i < 15; $i++) {
                 $id = generate_ProductBrnchMstrID();    
                 $id2 = 2025140000 + $i; 
                 $id3 = generate_BranchCode();
                 $id3 = ($id3-4)+(rand(0,3));
-
+    
                 $count = rand(3, 50); // Generate a random count between 3 and 50
                 
                 $sql = "INSERT INTO ProductBranchMaster
@@ -258,7 +259,7 @@
         {
             echo "<br>There is an error in creating the table: " . $conn->connect_error;
         }
-
+    
         $conn->close();
     }
 

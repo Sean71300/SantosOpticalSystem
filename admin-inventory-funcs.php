@@ -106,7 +106,8 @@ function getInventory($sort = 'ProductID', $order = 'ASC') {
                 JOIN brandMaster bm ON pm.BrandID = bm.BrandID
                 JOIN ProductBranchMaster pbm ON pm.ProductID = pbm.ProductID
                 JOIN BranchMaster b ON pbm.BranchCode = b.BranchCode
-                GROUP BY pm.ProductID, pm.CategoryType, sm.Description, bm.BrandName, pm.Model, pm.Material, pm.Price, pm.ProductImage, pm.Upd_by";
+                GROUP BY pm.ProductID, pm.CategoryType, sm.Description, bm.BrandName, 
+                            pm.Model, pm.Material, pm.Price, pm.ProductImage, pm.Upd_by";
         
         switch($sort) {
             case 'ProductID': $sql .= " ORDER BY pm.ProductID"; break;
@@ -745,6 +746,7 @@ function deleteProduct() { //Delete function to delete a product from the databa
     $link = connect();
     $productID = $_POST['productID'] ?? '';
 
+    
         $sql = "DELETE FROM ProductBranchMaster WHERE ProductID = ?";
         $stmt = mysqli_prepare($link, $sql);
         mysqli_stmt_bind_param($stmt, "s", $productID);
@@ -755,8 +757,9 @@ function deleteProduct() { //Delete function to delete a product from the databa
         $stmt = mysqli_prepare($link, $sql);
         mysqli_stmt_bind_param($stmt, "s", $productID);
         mysqli_stmt_execute($stmt);
-        mysqli_stmt_close($stmt);
 
+    if (mysqli_stmt_close($stmt))
+        {
         echo '<div class="modal fade" id="deleteProductModal" tabindex="-1" aria-labelledby="deleteProductModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
@@ -773,24 +776,24 @@ function deleteProduct() { //Delete function to delete a product from the databa
                     </div>
                 </div>
             </div>';
-
-            //LOG HERE
-            // echo '<div class="modal fade" id="deleteProductModal" tabindex="-1" aria-labelledby="deleteProductModalLabel" aria-hidden="true">
-            //         <div class="modal-dialog modal-dialog-centered">
-            //             <div class="modal-content">
-            //                 <div class="modal-header">
-            //                     <h5 class="modal-title" id="deleteProductModalLabel">Error</h5>
-            //                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            //                 </div>
-            //                 <div class="modal-body">
-            //                     An error occurred while logging the deletion. Please try again.
-            //                 </div>
-            //                 <div class="modal-footer">
-            //                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            //                 </div>
-            //             </div>
-            //         </div>
-            //     </div>';
+    } else {
+        echo '<div class="modal fade" id="deleteProductModal" tabindex="-1" aria-labelledby="deleteProductModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="deleteProductModalLabel">Error</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            An error occurred while logging the deletion. Please try again.
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>';
+    }
     mysqli_close($link);
 }
-?>
+?>          
