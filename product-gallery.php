@@ -10,17 +10,11 @@
         $page = (isset($_GET['page'])) ? (int)$_GET['page'] : 1;
         $start = ($page - 1) * $perPage;
         
-        // Get sort and filter parameters from URL
+        // Get sort parameter from URL or default to name A-Z
         $sort = isset($_GET['sort']) ? $_GET['sort'] : 'name_asc';
-        $material_filter = isset($_GET['material']) ? $_GET['material'] : '';
         
         // Build the base SQL query
         $sql = "SELECT * FROM `productMstr`";
-        
-        // Add material filter if selected
-        if (!empty($material_filter)) {
-            $sql .= " WHERE Material = '" . mysqli_real_escape_string($conn, $material_filter) . "'";
-        }
         
         // Add sorting based on the selected option
         switch($sort) {
@@ -44,24 +38,8 @@
         $sql .= " LIMIT $start, $perPage";
         
         $result = mysqli_query($conn, $sql);
-        
-        // Get total count for pagination (with filter if applied)
-        $count_sql = "SELECT COUNT(*) as total FROM `productMstr`";
-        if (!empty($material_filter)) {
-            $count_sql .= " WHERE Material = '" . mysqli_real_escape_string($conn, $material_filter) . "'";
-        }
-        $total_result = mysqli_query($conn, $count_sql);
-        $total_row = mysqli_fetch_assoc($total_result);
-        $total = $total_row['total'];
+        $total = mysqli_num_rows(mysqli_query($conn, "SELECT * FROM `productMstr`"));
         $totalPages = ceil($total / $perPage);
-
-        // Get unique materials for filter dropdown
-        $materials_sql = "SELECT DISTINCT Material FROM `productMstr` ORDER BY Material ASC";
-        $materials_result = mysqli_query($conn, $materials_sql);
-        $materials = [];
-        while ($material_row = mysqli_fetch_assoc($materials_result)) {
-            $materials[] = $material_row['Material'];
-        }
 
         // Start of card grid - fewer columns for wider cards
         echo "<div class='row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4'>";
@@ -99,12 +77,12 @@
         
         echo "</div>"; // End of card grid
 
-        // Pagination remains the same but preserves sort and filter parameters
+        // Pagination remains the same but preserves sort parameter
         echo "<div class='col-12 mt-5'>";
             echo "<div class='d-flex justify-content-center'>";
                 echo "<ul class='pagination'>";
                 if ($page > 1) {
-                    echo "<li class='page-item'><a class='page-link' href='?page=" . ($page - 1) . "&sort=$sort".(!empty($material_filter) ? "&material=$material_filter" : "")."'>Previous</a></li>";
+                    echo "<li class='page-item'><a class='page-link' href='?page=" . ($page - 1) . "&sort=$sort'>Previous</a></li>";
                 } else {
                     echo "<li class='page-item disabled'><a class='page-link'>Previous</a></li>";
                 }
@@ -113,12 +91,12 @@
                     if ($i == $page) {
                         echo "<li class='page-item active' aria-current='page'><a class='page-link disabled'>$i</a></li>"; 
                     } else {
-                        echo "<li class='page-item'><a class='page-link' href='?page=$i&sort=$sort".(!empty($material_filter) ? "&material=$material_filter" : "")."'>$i</a></li>";
+                        echo "<li class='page-item'><a class='page-link' href='?page=$i&sort=$sort'>$i</a></li>";
                     }
                 }
 
                 if ($page < $totalPages) {
-                    echo "<li class='page-item'><a class='page-link' href='?page=" . ($page + 1) . "&sort=$sort".(!empty($material_filter) ? "&material=$material_filter" : "")."'>Next</a></li>";
+                    echo "<li class='page-item'><a class='page-link' href='?page=" . ($page + 1) . "&sort=$sort'>Next</a></li>";
                 } else {
                     echo "<li class='page-item disabled'><a class='page-link'>Next</a></li>";
                 }
@@ -160,18 +138,10 @@
             .card:hover {
                 transform: translateY(-5px);
             }
-            .filter-container {
-                display: flex;
-                gap: 15px;
+            .sort-dropdown {
                 margin-bottom: 20px;
-                justify-content: flex-end;
-            }
-            .filter-box {
                 max-width: 250px;
-            }
-            .clear-filter {
-                align-self: flex-end;
-                margin-bottom: 5px;
+                margin-left: auto;
             }
         </style>
     </head>
@@ -187,62 +157,22 @@
             <div class="container mb-4">
                 <h1 style='text-align: center;'>Gallery</h1>
                 
-                <!-- Filter and Sort Container -->
-                <div class="filter-container">
-                    <!-- Material Filter -->
-                    <div class="filter-box">
-                        <form method="get" action="" class="filter-form">
-                            <div class="input-group">
-                                <label class="input-group-text" for="materialFilter">Filter by Material:</label>
-                                <select class="form-select" id="materialFilter" name="material" onchange="this.form.submit()">
-                                    <option value="">All Materials</option>
-                                    <?php
-                                    $conn = connect();
-                                    $materials_sql = "SELECT DISTINCT Material FROM `productMstr` ORDER BY Material ASC";
-                                    $materials_result = mysqli_query($conn, $materials_sql);
-                                    while ($material_row = mysqli_fetch_assoc($materials_result)) {
-                                        $selected = (isset($_GET['material']) && $_GET['material'] == $material_row['Material']) ? 'selected' : '';
-                                        echo "<option value='".htmlspecialchars($material_row['Material'])."' $selected>".htmlspecialchars($material_row['Material'])."</option>";
-                                    }
-                                    ?>
-                                </select>
-                                <?php if(isset($_GET['page'])): ?>
-                                    <input type="hidden" name="page" value="<?php echo $_GET['page']; ?>">
-                                <?php endif; ?>
-                                <?php if(isset($_GET['sort'])): ?>
-                                    <input type="hidden" name="sort" value="<?php echo $_GET['sort']; ?>">
-                                <?php endif; ?>
-                            </div>
-                        </form>
-                    </div>
-                    
-                    <!-- Sort Dropdown -->
-                    <div class="filter-box">
-                        <form method="get" action="" class="sort-form">
-                            <div class="input-group">
-                                <label class="input-group-text" for="sortSelect">Sort by:</label>
-                                <select class="form-select" id="sortSelect" name="sort" onchange="this.form.submit()">
-                                    <option value="name_asc" <?php echo (isset($_GET['sort']) && $_GET['sort'] == 'name_asc' ? 'selected' : ''; ?>>Name (A-Z)</option>
-                                    <option value="name_desc" <?php echo (isset($_GET['sort']) && $_GET['sort'] == 'name_desc' ? 'selected' : ''; ?>>Name (Z-A)</option>
-                                    <option value="price_asc" <?php echo (isset($_GET['sort']) && $_GET['sort'] == 'price_asc' ? 'selected' : ''; ?>>Price (Low to High)</option>
-                                    <option value="price_desc" <?php echo (isset($_GET['sort']) && $_GET['sort'] == 'price_desc' ? 'selected' : ''; ?>>Price (High to Low)</option>
-                                </select>
-                                <?php if(isset($_GET['page'])): ?>
-                                    <input type="hidden" name="page" value="<?php echo $_GET['page']; ?>">
-                                <?php endif; ?>
-                                <?php if(isset($_GET['material'])): ?>
-                                    <input type="hidden" name="material" value="<?php echo $_GET['material']; ?>">
-                                <?php endif; ?>
-                            </div>
-                        </form>
-                    </div>
-                    
-                    <!-- Clear Filter Button (only shown when a filter is active) -->
-                    <?php if(isset($_GET['material']) && !empty($_GET['material'])): ?>
-                        <div class="clear-filter">
-                            <a href="?page=1&sort=<?php echo isset($_GET['sort']) ? $_GET['sort'] : 'name_asc'; ?>" class="btn btn-outline-secondary">Clear Filter</a>
+                <!-- Sorting Dropdown -->
+                <div class="sort-dropdown">
+                    <form method="get" action="">
+                        <div class="input-group">
+                            <label class="input-group-text" for="sortSelect">Sort by:</label>
+                            <select class="form-select" id="sortSelect" name="sort" onchange="this.form.submit()">
+                                <option value="name_asc" <?php echo (isset($_GET['sort']) && $_GET['sort'] == 'name_asc') ? 'selected' : ''; ?>>Name (A-Z)</option>
+                                <option value="name_desc" <?php echo (isset($_GET['sort']) && $_GET['sort'] == 'name_desc') ? 'selected' : ''; ?>>Name (Z-A)</option>
+                                <option value="price_asc" <?php echo (isset($_GET['sort']) && $_GET['sort'] == 'price_asc') ? 'selected' : ''; ?>>Price (Low to High)</option>
+                                <option value="price_desc" <?php echo (isset($_GET['sort']) && $_GET['sort'] == 'price_desc') ? 'selected' : ''; ?>>Price (High to Low)</option>
+                            </select>
+                            <?php if(isset($_GET['page'])): ?>
+                                <input type="hidden" name="page" value="<?php echo $_GET['page']; ?>">
+                            <?php endif; ?>
                         </div>
-                    <?php endif; ?>
+                    </form>
                 </div>
             </div>
 
