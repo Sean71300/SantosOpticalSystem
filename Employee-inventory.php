@@ -146,7 +146,7 @@ if ($link) {
 
         <!-- Main Content -->
         <div class="main-content">
-            <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex justify-content-between align-items-center">
                 <h1><i class="fas fa-boxes me-2"></i> Inventory Management</h1>            
             </div>
         
