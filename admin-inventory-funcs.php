@@ -755,7 +755,7 @@ function GenerateLogs($productID,$model,$code)
                             (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description, Upd_dt)
                             VALUES
                             (?, ?, ?, 'product', '?', ?, ? , NOW())");
-        $stmt->bind_param("ssss", $Logsid, $employee_id,$code, $productID, $model);
+        $stmt->bind_param("sssss", $Logsid, $employee_id,$code, $productID, $model);
         $stmt->execute();
         $stmt->close();
     }
