@@ -751,7 +751,7 @@ function GenerateLogs($productID)
         $sql = "INSERT INTO Logs 
                 (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Upd_dt)
                 VALUES
-                ('$Logsid', '$employee_id', '$productID', 'product', '3', NOW())";
+                ('$Logsid', '$employee_id', '$productID', 'product', '5', NOW())";
         
         mysqli_query($conn, $sql);
     }
