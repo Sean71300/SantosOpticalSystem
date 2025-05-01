@@ -258,7 +258,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['addProduct'])) {
         }
 
         // Show the result modal if it exists
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function()) {
             var resultModal = document.getElementById('resultModal');
             if (resultModal) {
                 var modal = new bootstrap.Modal(resultModal);
@@ -270,6 +270,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['addProduct'])) {
                         window.location.href = 'admin-inventory.php';
                     <?php endif; ?>
                 });
+            }
+        }
         function resetForm() {
             setTimeout(() => {
                 document.getElementById('addForm').reset();
