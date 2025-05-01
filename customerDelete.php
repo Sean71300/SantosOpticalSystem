@@ -6,15 +6,26 @@ include 'loginChecker.php';
 if (isset($_GET["CustomerID"])) {
     $id = $_GET ["CustomerID"];
     $Aid = generate_ArchiveID();
-    $sqlCustomer = "INSERT INTO archives (ArchiveID, TargetID, TargetType, Reason) VALUES (?, ?, 'customer', ?)";
+    $Eid = $_SESSION["id"];
+    $sqlCustomer = "INSERT INTO archives (ArchiveID, TargetID,EmployeeID, TargetType) VALUES (?, ?, ?,'customer')";
     $stmt = $conn->prepare($sqlCustomer);
-    $reasonCustomer = "Inactive customer for over 1 year";
-    $stmt->bind_param("iis",$Aid, $customerID, $reasonCustomer);
+    $stmt->bind_param("iii",$Aid, $id, $Eid);
     $stmt->execute();
     $stmt->close();
 }
 
-header("location: customerRecords.php");
+$conn = connect(); 
+        $Logsid = generate_LogsID();
+        
+        $stmt = $conn->prepare("INSERT INTO Logs 
+                            (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description, Upd_dt)
+                            VALUES
+                            (?, ?, ?, 'customer', '3', ?, NOW())");
+        $stmt->bind_param("ssss", $Logsid, $employee_id, $id, $name);
+        $stmt->execute();
+        $stmt->close();
+
+header("Refresh: 0.1; url=customerRecords.php");
 exit;
 
 ?>

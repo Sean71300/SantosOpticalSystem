@@ -2,7 +2,13 @@
 function getCustomerCount() {
     $conn = connect();
     $count = 0;
-    $query = "SELECT COUNT(*) as count FROM customer";
+    $query = "SELECT COUNT(*) as count 
+          FROM customer c
+          WHERE NOT EXISTS (
+              SELECT 1 
+              FROM archives a 
+              WHERE a.TargetID = c.CustomerID AND a.TargetType = 'customer'
+          )";
     $result = mysqli_query($conn, $query);
     if ($result) {
         $row = mysqli_fetch_assoc($result);
@@ -15,7 +21,13 @@ function getCustomerCount() {
 function getEmployeeCount() {
     $conn = connect();
     $count = 0;
-    $query = "SELECT COUNT(*) as count FROM employee WHERE Status = 'Active'";
+    $query = "SELECT COUNT(*) as count 
+          FROM employee e
+          WHERE e.Status = 'Active' AND NOT EXISTS (
+              SELECT 1 
+              FROM archives a 
+              WHERE a.TargetID = e.EmployeeID AND a.TargetType = 'employee'
+          )";
     $result = mysqli_query($conn, $query);
     if ($result) {
         $row = mysqli_fetch_assoc($result);
@@ -28,7 +40,13 @@ function getEmployeeCount() {
 function getInventoryCount() {
     $conn = connect();
     $count = 0;
-    $query = "SELECT COUNT(*) as count FROM productMstr";
+    $query = "SELECT COUNT(*) as count 
+          FROM productMstr p
+          WHERE NOT EXISTS (
+              SELECT 1 
+              FROM archives a 
+              WHERE a.TargetID = p.ProductID AND a.TargetType = 'product'
+          )";
     $result = mysqli_query($conn, $query);
     if ($result) {
         $row = mysqli_fetch_assoc($result);
@@ -41,7 +59,13 @@ function getInventoryCount() {
 function getOrderCount() {
     $conn = connect();
     $count = 0;
-    $query = "SELECT COUNT(*) as count FROM Order_hdr";
+    $query = "SELECT COUNT(*) as count 
+          FROM Order_hdr o
+          WHERE NOT EXISTS (
+              SELECT 1 
+              FROM archives a 
+              WHERE a.TargetID = o.OrderID AND a.TargetType = 'order'
+          )";
     $result = mysqli_query($conn, $query);
     if ($result) {
         $row = mysqli_fetch_assoc($result);
