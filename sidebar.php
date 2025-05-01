@@ -93,7 +93,7 @@ if ($isAdmin === true) {
     .sidebar {
         background-color: white;
         height: 100vh;
-        padding: 20px 0;
+        padding: 20px 0 70px; /* Added padding at bottom for logout button */
         color: #2c3e50;
         position: fixed;
         width: 250px;
@@ -102,6 +102,8 @@ if ($isAdmin === true) {
         top: 0;
         left: 0;
         transition: transform 0.3s ease;
+        display: flex;
+        flex-direction: column;
     }
     
     .sidebar-brand {
@@ -112,6 +114,12 @@ if ($isAdmin === true) {
     .sidebar-header {
         padding: 0 20px 20px;
         border-bottom: 1px solid rgba(0,0,0,0.1);
+    }
+    
+    .sidebar-menu {
+        flex: 1;
+        overflow-y: auto;
+        padding-bottom: 20px;
     }
     
     .sidebar-item {
@@ -142,12 +150,13 @@ if ($isAdmin === true) {
     }
     
     .sidebar-footer {
-        position: fixed;
+        position: sticky;
         bottom: 0;
-        width: 250px;
+        width: 100%;
         background: white;
         padding: 10px 0;
         box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+        border-top: 1px solid rgba(0,0,0,0.1);
     }
     
     /* Mobile Menu Toggle */
@@ -169,6 +178,7 @@ if ($isAdmin === true) {
     @media (max-width: 992px) {
         .sidebar {
             transform: translateX(-100%);
+            padding-bottom: 70px; /* Ensure space for logout button */
         }
         
         .sidebar.active {
@@ -194,6 +204,11 @@ if ($isAdmin === true) {
             bottom: 0;
             background: rgba(0,0,0,0.5);
             z-index: 999;
+        }
+        
+        .sidebar-footer {
+            position: sticky;
+            bottom: 0;
         }
     }
     
