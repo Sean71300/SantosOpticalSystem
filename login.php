@@ -65,7 +65,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['cancel'])) {
                                     header("location: Dashboard.php");
                                     exit();
                                 case 2: // Employee
-                                    header("location: employee.php");
+                                    header("location: Dashboard.php");
                                     exit();
                                 default:
                                     $login_err = "Error has occured, please try logging in again.";
