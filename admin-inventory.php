@@ -180,137 +180,111 @@ $_SESSION['current_branch'] = $branchName;
             }
             
             @media (max-width: 992px) {
-            :root {
-                --sidebar-width: 80px;
-            }
-            
-            .sidebar-item span {
-                display: none;
-            }
-            
-            .sidebar-item i {
-                margin-right: 0;
-                font-size: 1.2rem;
-            }
-            
-            .sidebar-header {
-                padding: 0 10px 20px;
-            }
-            
-            .sidebar-header h3 {
-                display: none;
-            }
-            
-            .sidebar-header img {
-                width: 40px;
-                height: 40px;
-            }
-            
-            /* Add mobile-specific table styles */
-            .table-responsive {
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-            }
-            
-            .table td, .table th {
-                white-space: nowrap;
-            }
-            
-            .action-btn {
-                display: block;
-                width: 100%;
-                margin-bottom: 5px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            body {
-                flex-direction: column;
-            }
-            
-            .sidebar {
-                width: 100%;
-                height: auto;
-                position: relative;
-                display: none;
-            }
-            
-            .sidebar.active {
-                display: block;
-            }
-            
-            .main-content {
-                margin-left: 0;
-                width: 100%;
-                padding: 15px 10px;
-            }
-            
-            .menu-toggle {
-                display: block;
-            }
-            
-            .d-flex.justify-content-between {
-                flex-direction: column;
-                gap: 15px;
-            }
-            
-            .filter-container .row > div {
-                margin-bottom: 10px;
-            }
-            
-            .filter-container .row > div:last-child {
-                margin-bottom: 0;
-            }
-            
-            .action-btn {
-                padding: 3px 6px;
-                font-size: 0.75rem;
-            }
-            
-            /* Stack table columns vertically on very small screens */
-            @media (max-width: 576px) {
-                table {
-                    display: block;
+                :root {
+                    --sidebar-width: 80px;
                 }
                 
-                thead {
+                .sidebar-item span {
                     display: none;
                 }
                 
-                tbody, tr, td {
-                    display: block;
-                    width: 100%;
+                .sidebar-item i {
+                    margin-right: 0;
+                    font-size: 1.2rem;
                 }
                 
-                tr {
-                    margin-bottom: 15px;
-                    border: 1px solid #dee2e6;
-                    border-radius: 5px;
+                .sidebar-header {
+                    padding: 0 10px 20px;
                 }
                 
-                td {
-                    text-align: right;
-                    padding-left: 50%;
-                    position: relative;
-                    border-top: 1px solid #dee2e6;
+                .sidebar-header h3 {
+                    display: none;
                 }
                 
-                td::before {
-                    content: attr(data-label);
-                    position: absolute;
-                    left: 10px;
-                    width: calc(50% - 20px);
-                    padding-right: 10px;
-                    text-align: left;
-                    font-weight: bold;
-                }
-                
-                .product-img {
-                    width: 80px;
-                    height: 80px;
+                .sidebar-header img {
+                    width: 40px;
+                    height: 40px;
                 }
             }
-        }
+            
+            @media (max-width: 768px) {
+                body {
+                    flex-direction: column;
+                }
+                
+                .sidebar {
+                    width: 100%;
+                    height: auto;
+                    position: relative;
+                    display: none;
+                }
+                
+                .sidebar.active {
+                    display: block;
+                }
+                
+                .main-content {
+                    margin-left: 0;
+                    width: 100%;
+                    padding: 15px 10px;
+                }
+                
+                .menu-toggle {
+                    display: block;
+                }
+                
+                .d-flex.justify-content-between {
+                    flex-direction: column;
+                    gap: 15px;
+                }
+                
+                .filter-container .row > div {
+                    margin-bottom: 10px;
+                }
+                
+                .filter-container .row > div:last-child {
+                    margin-bottom: 0;
+                }
+                
+                .action-btn {
+                    padding: 3px 6px;
+                    font-size: 0.75rem;
+                }
+            }
+            
+            @media (max-width: 576px) {
+                .product-img {
+                    width: 40px;
+                    height: 40px;
+                }
+                
+                h1 {
+                    font-size: 1.5rem;
+                }
+                
+                .btn {
+                    padding: 0.375rem 0.75rem;
+                    font-size: 0.875rem;
+                }
+            }
+            
+            /* Print Styles */
+            @media print {
+                .sidebar, .menu-toggle, .btn {
+                    display: none !important;
+                }
+                
+                .main-content {
+                    margin-left: 0;
+                    width: 100%;
+                    padding: 0;
+                }
+                
+                .table-container {
+                    box-shadow: none;
+                    padding: 0;
+                }
+            }
         </style>
     </head>
 
@@ -584,58 +558,6 @@ $_SESSION['current_branch'] = $branchName;
                     sidebar.classList.remove('active');
                 }
             });
-            document.addEventListener('DOMContentLoaded', function() {
-        const sidebar = document.querySelector('.sidebar');
-        const menuToggle = document.getElementById('menuToggle');
-        const body = document.body;
-        
-        // Toggle sidebar on mobile
-        if (menuToggle) {
-            menuToggle.addEventListener('click', function(e) {
-                e.stopPropagation();
-                sidebar.classList.toggle('active');
-                body.classList.toggle('sidebar-open');
-            });
-        }
-        
-        // Close sidebar when clicking outside
-        document.addEventListener('click', function(e) {
-            if (window.innerWidth <= 992 && 
-                !sidebar.contains(e.target) && 
-                e.target !== menuToggle) {
-                sidebar.classList.remove('active');
-                body.classList.remove('sidebar-open');
-            }
-        });
-        
-        // Close sidebar when a link is clicked (on mobile)
-        document.querySelectorAll('.sidebar-item').forEach(item => {
-            item.addEventListener('click', function() {
-                if (window.innerWidth <= 992) {
-                    sidebar.classList.remove('active');
-                    body.classList.remove('sidebar-open');
-                }
-            });
-        });
-        
-        // Auto-close sidebar when resizing to larger screens
-        window.addEventListener('resize', function() {
-            if (window.innerWidth > 992) {
-                sidebar.classList.remove('active');
-                body.classList.remove('sidebar-open');
-            }
-        });
-        
-        // For tables on small screens, add data-labels
-        if (window.innerWidth <= 576px) {
-            document.querySelectorAll('td').forEach(td => {
-                const th = td.closest('tr').querySelector(`th:nth-child(${td.cellIndex + 1})`);
-                if (th) {
-                    td.setAttribute('data-label', th.textContent);
-                }
-            });
-        }
-    });
         </script>
     </body>
 </html>
