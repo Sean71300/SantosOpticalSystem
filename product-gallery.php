@@ -26,7 +26,14 @@
                     echo "<div class='card-body d-flex flex-column'>";
                         echo "<h5 class='card-title' style='min-height: 4rem;'>".$row['Model']."</h5>";
                         echo "<div class='card-text mb-2'>".$row['CategoryType']."</div>";
-                        echo "<div class='card-text mb-3'>".$row['Avail_FL']."</div>";                                
+                        echo "<div class='card-text mb-2'>".$row['Material']."</div>";
+                        echo "<div class='card-text mb-2'>".$row['Price']."</div>";
+                        $row['Avail_FL'] = ($row['Avail_FL'] == 1) ? "Available" : "Not Available";
+                        if ($row['Avail_FL'] == "Available") {
+                            echo "<div class='card-text mb-2 text-success'>".$row['Avail_FL']."</div>";
+                        } else {
+                            echo "<div class='card-text mb-2 text-danger'>".$row['Avail_FL']."</div>";
+                        }                               
                     echo "</div>";
                     echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
                         echo "<a href='#' class='btn btn-primary w-100 py-2'>More details</a>";
