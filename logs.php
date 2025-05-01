@@ -3,18 +3,15 @@ include_once 'setup.php';
 include 'ActivityTracker.php';
 include 'loginChecker.php';
 
-// Pagination setup
 $logsPerPage = 10;
 $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($currentPage - 1) * $logsPerPage;
 
-// Build base query
 $query = "SELECT l.LogsID, l.Upd_dt, l.TargetType, l.Description, l.ActivityCode,
                  e.EmployeeName as Employee
           FROM Logs l
           JOIN employee e ON l.EmployeeID = e.EmployeeID";
 
-// Add filters if they exist
 $where = [];
 $params = [];
 $types = '';
@@ -37,12 +34,10 @@ if (isset($_GET['activity']) && !empty($_GET['activity'])) {
     $types .= 'i';
 }
 
-// Add WHERE clause if filters exist
 if (!empty($where)) {
     $query .= " WHERE " . implode(' AND ', $where);
 }
 
-// Get total number of logs (for pagination)
 $conn = connect();
 $totalQuery = "SELECT COUNT(*) as total FROM Logs l" . (!empty($where) ? " WHERE " . implode(' AND ', $where) : "");
 $stmt = $conn->prepare($totalQuery);
@@ -57,7 +52,6 @@ $totalLogs = $totalResult->fetch_assoc()['total'];
 $totalPages = ceil($totalLogs / $logsPerPage);
 $stmt->close();
 
-// Get logs with pagination
 $query .= " ORDER BY l.Upd_dt DESC LIMIT ? OFFSET ?";
 $types .= 'ii';
 $params[] = $logsPerPage;
@@ -73,57 +67,34 @@ $conn->close();
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="customCodes/custom.css">
     <link rel="shortcut icon" type="image/x-icon" href="Images/logo.png"/>
-    <title>System Logs</title>
+    <title>System Logs | Santos Optical</title>
     <style>
         body {
             background-color: #f5f7fa;
+            padding-top: 60px;
         }
         .sidebar {
             background-color: white;
             height: 100vh;
-            padding: 20px 0;
+            padding: 20px 0 70px;
             color: #2c3e50;
             position: fixed;
             width: 250px;
             box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-        }
-        .sidebar-header {
-            padding: 0 20px 20px;
-            border-bottom: 1px solid rgba(0,0,0,0.1);
-        }
-        .sidebar-item {
-            padding: 12px 20px;
-            margin: 5px 0;
-            border-radius: 0;
-            display: flex;
-            align-items: center;
-            color: #2c3e50;
-            transition: all 0.3s;
-            text-decoration: none;
-        }
-        .sidebar-item:hover {
-            background-color: #f8f9fa;
-            color: #2c3e50;
-        }
-        .sidebar-item.active {
-            background-color: #e9ecef;
-            color: #2c3e50;
-            font-weight: 500;
-        }
-        .sidebar-item i {
-            margin-right: 10px;
-            width: 20px;
-            text-align: center;
+            z-index: 1000;
         }
         .main-content {
             margin-left: 250px;
             padding: 20px;
             width: calc(100% - 250px);
+            transition: margin 0.3s ease;
         }
         .logs-container {
             background-color: white;
@@ -159,6 +130,55 @@ $conn->close();
         .badge-order {
             background-color: #d63384;
         }
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+        }
+        @media (max-width: 768px) {
+            .filter-form .col-md-4,
+            .filter-form .col-md-3,
+            .filter-form .col-md-2 {
+                flex: 0 0 100%;
+                max-width: 100%;
+                margin-bottom: 10px;
+            }
+            .log-entry {
+                padding: 10px;
+            }
+            .log-action {
+                font-size: 0.9rem;
+            }
+            .log-time {
+                font-size: 0.75rem;
+            }
+        }
+        @media (max-width: 576px) {
+            .logs-container {
+                padding: 15px;
+            }
+            .d-flex.justify-content-between.align-items-center.mb-4 {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .d-flex.justify-content-between.align-items-center.mb-4 .btn {
+                margin-top: 10px;
+                width: 100%;
+            }
+            .log-entry .d-flex {
+                flex-direction: column;
+            }
+            .log-entry .badge {
+                margin-bottom: 5px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -167,14 +187,13 @@ $conn->close();
     <div class="main-content">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2><i class="fas fa-clipboard-list me-2"></i>System Logs</h2>
-            <a href="admin.php" class="btn btn-outline-secondary">
+            <a href="Dashboard.php" class="btn btn-outline-secondary">
                 <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
             </a>
         </div>
 
         <div class="logs-container">
-            <!-- Search and Filter Form -->
-            <form method="get" action="logs.php" class="mb-4">
+            <form method="get" action="logs.php" class="mb-4 filter-form">
                 <div class="row g-3">
                     <div class="col-md-4">
                         <label for="search" class="form-label">Search</label>
@@ -211,7 +230,6 @@ $conn->close();
                 </div>
             </form>
 
-            <!-- Logs List -->
             <?php if ($logsResult->num_rows > 0): ?>
                 <div class="list-group">
                     <?php while ($log = $logsResult->fetch_assoc()): ?>
@@ -258,7 +276,6 @@ $conn->close();
                     <?php endwhile; ?>
                 </div>
 
-                <!-- Pagination -->
                 <nav aria-label="Logs pagination" class="mt-4">
                     <ul class="pagination justify-content-center">
                         <?php if ($currentPage > 1): ?>
@@ -307,6 +324,45 @@ $conn->close();
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const mobileToggle = document.getElementById('mobileMenuToggle');
+            const body = document.body;
+            
+            if (mobileToggle) {
+                mobileToggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    sidebar.classList.toggle('active');
+                    body.classList.toggle('sidebar-open');
+                });
+            }
+            
+            document.addEventListener('click', function(e) {
+                if (window.innerWidth <= 992 && 
+                    !sidebar.contains(e.target) && 
+                    (!mobileToggle || e.target !== mobileToggle)) {
+                    sidebar.classList.remove('active');
+                    body.classList.remove('sidebar-open');
+                }
+            });
+            
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    if (window.innerWidth <= 992) {
+                        sidebar.classList.remove('active');
+                        body.classList.remove('sidebar-open');
+                    }
+                });
+            });
+            
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 992) {
+                    sidebar.classList.remove('active');
+                    body.classList.remove('sidebar-open');
+                }
+            });
+        });
+    </script>
 </body>
 </html>

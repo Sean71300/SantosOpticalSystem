@@ -348,8 +348,7 @@ function addProduct(){ //Add function to add a new product to the database
 
             //Insert Logs into logs database
 
-
-            $code = 3;
+            $code = '3';
             GenerateLogs($newProductID,$newProductName,$code);
 
             echo 
@@ -674,7 +673,7 @@ function confirmEditProduct() {
             $success = false;
         }
         mysqli_stmt_close($stmt1);
-
+        
         // Update productbranchmaster table
         $sql2 = "UPDATE ProductBranchMaster SET ProductBranchID = ?, BranchCode = ?, Stocks = ?, Avail_FL = ?, Upd_by = ?, Upd_dt = ? WHERE ProductID = ?";
         $stmt2 = mysqli_prepare($link, $sql2);
@@ -683,7 +682,8 @@ function confirmEditProduct() {
             $success = false;
         }
         mysqli_stmt_close($stmt2);
-
+        $code = '4';
+        GenerateLogs($productID,$model,$code);
         // Show success or error modal
         if ($success) {
             echo '<div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel" aria-hidden="true">
@@ -754,8 +754,8 @@ function GenerateLogs($productID,$model,$code)
         $stmt = $conn->prepare("INSERT INTO Logs 
                             (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description, Upd_dt)
                             VALUES
-                            (?, ?, ?, 'product', '?', ?, NOW())");
-        $stmt->bind_param("ssss", $Logsid, $employee_id,$code, $productID, $model);
+                            (?, ?, ?, 'product', ?, ? , NOW())");
+        $stmt->bind_param("sssss", $Logsid, $employee_id,$productID, $code, $model);
         $stmt->execute();
         $stmt->close();
     }
@@ -763,7 +763,7 @@ function GenerateLogs($productID,$model,$code)
 function deleteProduct() { //Delete function to delete a product from the database
     $link = connect();
     $productID = $_POST['productID'] ?? '';
-    $code = 5;
+    $code = '5';
     $sql = "SELECT * FROM productMstr WHERE ProductID = $productID"  ;
     $result = mysqli_query($link, $sql);
 
