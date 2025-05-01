@@ -175,20 +175,21 @@
             }
             #searchResults {
                 position: absolute;
-                top: 100%;
-                left: 0;
-                right: 0;
+                width: 100%;
+                max-width: 500px;
+                left: 50%;
+                transform: translateX(-50%);
                 z-index: 1000;
                 background: white;
                 border: 1px solid #ddd;
                 border-radius: 0 0 5px 5px;
                 box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-                max-height: 300px;
+                max-height: 400px;
                 overflow-y: auto;
                 display: none;
             }
             .search-result-item {
-                padding: 10px 15px;
+                padding: 10px;
                 border-bottom: 1px solid #eee;
                 cursor: pointer;
                 transition: background 0.2s;
@@ -196,63 +197,20 @@
             .search-result-item:hover {
                 background: #f8f9fa;
             }
-            .search-result-item:last-child {
-                border-bottom: none;
-            }
-            .search-result-item .model {
-                font-weight: bold;
-                color: #333;
-            }
-            .search-result-item .category {
-                font-size: 0.85rem;
-                color: #666;
+            .search-result-item img {
+                width: 50px;
+                height: 50px;
+                object-fit: cover;
+                margin-right: 10px;
             }
             .search-highlight {
-                background-color: #fffde7;
+                background-color: yellow;
                 font-weight: bold;
-                padding: 0 2px;
             }
-            .search-loading {
-                padding: 10px;
-                text-align: center;
-                color: #666;
-            }
-
-            .search-container {
-                margin-bottom: 30px;
-                position: relative;
-            }
-            .search-box {
-                max-width: 500px;
-                margin: 0 auto;
-            }
-            #liveResults {
-                position: absolute;
-                width: 100%;
-                max-height: 300px;
-                overflow-y: auto;
-                background: white;
-                border: 1px solid #ddd;
-                border-top: none;
-                border-radius: 0 0 5px 5px;
-                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-                z-index: 1000;
+            .loading-spinner {
                 display: none;
-            }
-            .live-result-item {
+                text-align: center;
                 padding: 10px;
-                cursor: pointer;
-                border-bottom: 1px solid #eee;
-            }
-            .live-result-item:hover {
-                background-color: #f8f9fa;
-            }
-            .live-result-item:last-child {
-                border-bottom: none;
-            }
-            .no-results {
-                padding: 10px;
-                color: #666;
             }
         </style>
     </head>
@@ -268,12 +226,11 @@
             <div class="container mb-4">
                 <h1 style='text-align: center;'>Gallery</h1>
                 
-                <!-- Enhanced Search Box -->
+                <!-- Search Box with Live Preview -->
                 <div class="search-container">
-                    <form method="get" action="" class="search-box">
-                        <div class="input-group">
-                            <input type="text" class="form-control" id="searchInput" name="search" 
-                                   placeholder="Search products..." 
+                    <form method="get" action="" class="search-box" id="searchForm">
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" id="searchInput" name="search" placeholder="Search products..." 
                                    value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>"
                                    autocomplete="off">
                             <button class="btn btn-primary" type="submit">
@@ -282,9 +239,19 @@
                             <?php if(isset($_GET['search']) && !empty($_GET['search'])): ?>
                                 <a href="?" class="btn btn-outline-secondary">Clear</a>
                             <?php endif; ?>
+                            <?php if(isset($_GET['sort'])): ?>
+                                <input type="hidden" name="sort" value="<?php echo $_GET['sort']; ?>">
+                            <?php endif; ?>
                         </div>
-                        <div id="liveResults"></div>
                     </form>
+                    <div id="searchResults">
+                        <div class="loading-spinner">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                        <div id="resultsContainer"></div>
+                    </div>
                 </div>
                 
                 <!-- Sorting Dropdown -->
@@ -309,89 +276,94 @@
                 </div>
             </div>
 
-             <div class="grid" style="margin-bottom: 3.5rem;">
-                <?php pagination(); ?>
+            <div class="grid" style="margin-bottom: 3.5rem;">
+                <?php
+                    pagination();
+                ?>
             </div>          
         </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const searchInput  document.addEventListener('DOMContentLoaded', function() {
-                const searchInput = document.getElementById('searchInput');
-                const liveResults = document.getElementById('liveResults');
-                let controller = null; // For aborting previous fetch requests
+        
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script>
+            $(document).ready(function() {
+                const searchInput = $('#searchInput');
+                const searchResults = $('#searchResults');
+                const resultsContainer = $('#resultsContainer');
+                const loadingSpinner = $('.loading-spinner');
                 
-                // Show live results as user types
-                searchInput.addEventListener('input', function() {
-                    const searchTerm = this.value.trim();
-                    
-                    // Abort previous request if it exists
-                    if (controller) {
-                        controller.abort();
+                // Show/hide search results based on input focus
+                searchInput.on('focus', function() {
+                    if ($(this).val().length > 0) {
+                        searchResults.show();
                     }
+                });
+                
+                $(document).on('click', function(e) {
+                    if (!$(e.target).closest('#searchResults, #searchInput').length) {
+                        searchResults.hide();
+                    }
+                });
+                
+                // Live search functionality
+                searchInput.on('input', function() {
+                    const searchTerm = $(this).val().trim();
                     
-                    // Hide results if search term is too short
-                    if (searchTerm.length < 2) {
-                        liveResults.style.display = 'none';
+                    if (searchTerm.length === 0) {
+                        searchResults.hide();
                         return;
                     }
                     
-                    // Show loading state
-                    liveResults.innerHTML = '<div class="live-result-item">Searching...</div>';
-                    liveResults.style.display = 'block';
+                    loadingSpinner.show();
+                    resultsContainer.hide();
+                    searchResults.show();
                     
-                    // Create new AbortController for this request
-                    controller = new AbortController();
-                    const signal = controller.signal;
+                    // Get current sort value from hidden input or select
+                    let sortValue = $('input[name="sort"]').val() || $('#sortSelect').val();
                     
-                    // Fetch results
-                    fetch(`live_search.php?search=${encodeURIComponent(searchTerm)}`, { signal })
-                        .then(response => {
-                            if (!response.ok) throw new Error('Network response was not ok');
-                            return response.json();
-                        })
-                        .then(data => {
-                            if (data.length > 0) {
-                                let html = '';
-                                data.forEach(item => {
-                                    html += `
-                                        <div class="live-result-item" onclick="selectResult('${item.Model.replace("'", "\\'")}')">
-                                            <strong>${highlightMatches(item.Model, searchTerm)}</strong><br>
-                                            <small>${highlightMatches(item.CategoryType, searchTerm)}</small>
-                                        </div>
-                                    `;
-                                });
-                                liveResults.innerHTML = html;
-                            } else {
-                                liveResults.innerHTML = '<div class="no-results">No matching products found</div>';
+                    $.ajax({
+                        url: 'live_search.php',
+                        method: 'GET',
+                        data: {
+                            search: searchTerm,
+                            sort: sortValue
+                        },
+                        success: function(data) {
+                            resultsContainer.html(data);
+                            resultsContainer.show();
+                            loadingSpinner.hide();
+                            
+                            // Highlight search terms in results
+                            if (searchTerm.length > 0) {
+                                highlightSearchTerms(searchTerm);
                             }
-                        })
-                        .catch(error => {
-                            if (error.name !== 'AbortError') {
-                                liveResults.innerHTML = '<div class="no-results">Error loading results</div>';
-                            }
-                        });
+                        },
+                        error: function() {
+                            resultsContainer.html('<div class="p-3 text-center text-danger">Error loading results</div>');
+                            resultsContainer.show();
+                            loadingSpinner.hide();
+                        }
+                    });
                 });
                 
-                // Hide results when clicking outside
-                document.addEventListener('click', function(e) {
-                    if (e.target !== searchInput) {
-                        liveResults.style.display = 'none';
-                    }
+                // Handle click on search result items
+                resultsContainer.on('click', '.search-result-item', function() {
+                    const productId = $(this).data('id');
+                    window.location.href = 'product_details.php?id=' + productId;
                 });
+                
+                // Function to highlight search terms in results
+                function highlightSearchTerms(term) {
+                    const regex = new RegExp(term, 'gi');
+                    $('.search-result-text').each(function() {
+                        const text = $(this).text();
+                        const highlighted = text.replace(regex, match => 
+                            `<span class="search-highlight">${match}</span>`
+                        );
+                        $(this).html(highlighted);
+                    });
+                }
             });
-            
-            function highlightMatches(text, searchTerm) {
-                if (!text) return '';
-                const regex = new RegExp(`(${searchTerm})`, 'gi');
-                return text.replace(regex, '<span style="background-color: #fffde7;">$1</span>');
-            }
-            
-            function selectResult(term) {
-                document.getElementById('searchInput').value = term;
-                document.getElementById('liveResults').style.display = 'none';
-                document.querySelector('form').submit();
-            }
-    </script>
+        </script>
     </body>
 </html>
