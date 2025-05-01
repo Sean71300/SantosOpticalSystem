@@ -223,7 +223,7 @@
         $sql = "INSERT INTO Logs 
                 (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Upd_dt)
                 VALUES
-                ('$Logsid', '$employee_id', '$id', 'employee', '2', NOW())";
+                ('$Logsid', '$employee_id', '$id', 'employee', '3', NOW())";
         
         mysqli_query($conn, $sql);
     }
