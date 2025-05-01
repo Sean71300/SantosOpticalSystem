@@ -241,6 +241,12 @@ handleCancellation();
                 </div>
             </form>
         </div>
+        <hr>
+        <div class="form-container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="fa-solid fa-book-medical me-2"></i> Medical History </h1>           
+            </div>
+        </div>
     </div>
 
     <!-- Cancel Confirmation Modal -->
