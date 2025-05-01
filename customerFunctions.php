@@ -16,8 +16,7 @@
 
         $sql = "SELECT *
                 FROM customer
-                WHERE CustomerID 
-                )
+                
         ORDER BY $sort $order";
         $result = $connection->query($sql);
 
