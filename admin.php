@@ -29,47 +29,6 @@ $lowInventory = getLowInventoryProducts();
                 background-color: #f5f7fa;
                 padding-top: 60px;
             }
-            .sidebar {
-                background-color: white;
-                height: 100vh;
-                padding: 20px 0;
-                color: #2c3e50;
-                position: fixed;
-                width: 250px;
-                box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-                z-index: 1000;
-                top: 0;
-                left: 0;
-                transition: transform 0.3s ease;
-            }
-            .sidebar-header {
-                padding: 0 20px 20px;
-                border-bottom: 1px solid rgba(0,0,0,0.1);
-            }
-            .sidebar-item {
-                padding: 12px 20px;
-                margin: 5px 0;
-                border-radius: 0;
-                display: flex;
-                align-items: center;
-                color: #2c3e50;
-                transition: all 0.3s;
-                text-decoration: none;
-            }
-            .sidebar-item:hover {
-                background-color: #f8f9fa;
-                color: #2c3e50;
-            }
-            .sidebar-item.active {
-                background-color: #e9ecef;
-                color: #2c3e50;
-                font-weight: 500;
-            }
-            .sidebar-item i {
-                margin-right: 10px;
-                width: 20px;
-                text-align: center;
-            }
             .main-content {
                 margin-left: 250px;
                 padding: 20px;
@@ -102,52 +61,10 @@ $lowInventory = getLowInventoryProducts();
             
             /* Mobile styles */
             @media (max-width: 992px) {
-                .sidebar {
-                    transform: translateX(-100%);
-                }
-                .sidebar.active {
-                    transform: translateX(0);
-                }
                 .main-content {
                     margin-left: 0;
                     width: 100%;
                 }
-                body.sidebar-open {
-                    overflow: hidden;
-                }
-                body.sidebar-open::after {
-                    content: '';
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    bottom: 0;
-                    background: rgba(0,0,0,0.5);
-                    z-index: 999;
-                }
-                .mobile-menu-toggle {
-                    display: block !important;
-                    position: fixed;
-                    top: 15px;
-                    left: 15px;
-                    z-index: 1100;
-                    background: #4e73df;
-                    color: white;
-                    border: none;
-                    border-radius: 5px;
-                    padding: 8px 12px;
-                    font-size: 1.2rem;
-                }
-            }
-            
-            /* Fix for logout button */
-            .sidebar-footer {
-                position: fixed;
-                bottom: 0;
-                width: 250px;
-                background: white;
-                padding: 10px 0;
-                box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
             }
             
             /* Responsive cards */
