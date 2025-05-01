@@ -342,4 +342,17 @@
             'total_count' => $totalCount
         ];
     }
+
+    function getCustomerCount() {
+        $conn = connect();
+        $count = 0;
+        $query = "SELECT COUNT(*) as count FROM customer";
+        $result = mysqli_query($conn, $query);
+        if ($result) {
+            $row = mysqli_fetch_assoc($result);
+            $count = $row['count'];
+        }
+        mysqli_close($conn);
+        return $count;
+    }
 ?>
