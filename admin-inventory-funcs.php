@@ -769,6 +769,7 @@ function GenerateLogs($productID,$model,$code)
     }
 
     function Archive($productID){
+        $conn = connect(); 
         $Aid = generate_ArchiveID();
         $Eid = $_SESSION["id"];
         setStatus($productID);
