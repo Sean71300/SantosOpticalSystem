@@ -5,7 +5,6 @@ include 'loginChecker.php';
 include 'adminFunctions.php';
 
 $isAdmin = isset($_SESSION['roleid']) && $_SESSION['roleid'] === 1;
-if ($isAdmin)
 
 // Get all counts
 $customerCount = getCustomerCount();
