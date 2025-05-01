@@ -31,23 +31,38 @@ $_SESSION['current_branch'] = $branchName;
         <link rel="shortcut icon" type="image/x-icon" href="Images/logo.png"/>
         <title>Admin | Inventories</title>
         <style>
+            :root {
+                --sidebar-width: 250px;
+                --sidebar-collapsed-width: 80px;
+                --mobile-breakpoint: 992px;
+            }
+            
             body {
                 background-color: #f5f7fa;
                 display: flex;
+                flex-direction: column;
+                min-height: 100vh;
             }
+            
+            /* Sidebar Styles */
             .sidebar {
                 background-color: white;
                 height: 100vh;
                 padding: 20px 0;
                 color: #2c3e50;
                 position: fixed;
-                width: 250px;
+                width: var(--sidebar-width);
                 box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+                transition: all 0.3s ease;
+                z-index: 1000;
             }
+            
             .sidebar-header {
                 padding: 0 20px 20px;
                 border-bottom: 1px solid rgba(0,0,0,0.1);
+                text-align: center;
             }
+            
             .sidebar-item {
                 padding: 12px 20px;
                 margin: 5px 0;
@@ -57,42 +72,57 @@ $_SESSION['current_branch'] = $branchName;
                 color: #2c3e50;
                 transition: all 0.3s;
                 text-decoration: none;
+                white-space: nowrap;
+                overflow: hidden;
             }
+            
             .sidebar-item:hover {
                 background-color: #f8f9fa;
                 color: #2c3e50;
             }
+            
             .sidebar-item.active {
                 background-color: #e9ecef;
                 color: #2c3e50;
                 font-weight: 500;
             }   
+            
             .sidebar-item i {
                 margin-right: 10px;
                 width: 20px;
                 text-align: center;
+                flex-shrink: 0;
             }
+            
+            /* Main Content Styles */
             .main-content {
-                margin-left: 250px;
+                margin-left: var(--sidebar-width);
                 padding: 20px;
-                width: calc(100% - 250px);
+                width: calc(100% - var(--sidebar-width));
+                transition: all 0.3s ease;
             }
+            
             .table-container {
                 background-color: white;
                 border-radius: 10px;
                 box-shadow: 0 4px 6px rgba(0,0,0,0.1);
                 padding: 20px;
+                overflow-x: auto;
             }
+            
             .product-img {
                 width: 50px;
                 height: 50px;
                 object-fit: cover;
                 border-radius: 4px;
             }
+            
             .action-btn {
-                padding: 5px 10px;
-                margin: 0 3px;
+                padding: 5px 8px;
+                margin: 2px;
+                font-size: 0.85rem;
             }
+            
             .filter-container {
                 background-color: white;
                 border-radius: 10px;
@@ -100,14 +130,18 @@ $_SESSION['current_branch'] = $branchName;
                 padding: 20px;
                 margin-bottom: 20px;
             }
+            
             .sortable {
                 cursor: pointer;
                 position: relative;
                 padding-right: 25px;
+                white-space: nowrap;
             }
+            
             .sortable:hover {
                 background-color: #f8f9fa;
             }
+            
             .sort-icon {
                 position: absolute;
                 right: 8px;
@@ -115,58 +149,195 @@ $_SESSION['current_branch'] = $branchName;
                 transform: translateY(-50%);
                 display: none;
             }
+            
             .sortable.active .sort-icon {
                 display: inline-block;                
+            }
+            
+            /* Mobile Menu Toggle */
+            .menu-toggle {
+                display: none;
+                position: fixed;
+                top: 15px;
+                left: 15px;
+                z-index: 1100;
+                background: white;
+                border: none;
+                border-radius: 5px;
+                padding: 8px 12px;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            }
+            
+            /* Responsive Styles */
+            @media (max-width: 1200px) {
+                .main-content {
+                    padding: 15px;
+                }
+                
+                .table-container, .filter-container {
+                    padding: 15px;
+                }
+            }
+            
+            @media (max-width: 992px) {
+                :root {
+                    --sidebar-width: 80px;
+                }
+                
+                .sidebar-item span {
+                    display: none;
+                }
+                
+                .sidebar-item i {
+                    margin-right: 0;
+                    font-size: 1.2rem;
+                }
+                
+                .sidebar-header {
+                    padding: 0 10px 20px;
+                }
+                
+                .sidebar-header h3 {
+                    display: none;
+                }
+                
+                .sidebar-header img {
+                    width: 40px;
+                    height: 40px;
+                }
+            }
+            
+            @media (max-width: 768px) {
+                body {
+                    flex-direction: column;
+                }
+                
+                .sidebar {
+                    width: 100%;
+                    height: auto;
+                    position: relative;
+                    display: none;
+                }
+                
+                .sidebar.active {
+                    display: block;
+                }
+                
+                .main-content {
+                    margin-left: 0;
+                    width: 100%;
+                    padding: 15px 10px;
+                }
+                
+                .menu-toggle {
+                    display: block;
+                }
+                
+                .d-flex.justify-content-between {
+                    flex-direction: column;
+                    gap: 15px;
+                }
+                
+                .filter-container .row > div {
+                    margin-bottom: 10px;
+                }
+                
+                .filter-container .row > div:last-child {
+                    margin-bottom: 0;
+                }
+                
+                .action-btn {
+                    padding: 3px 6px;
+                    font-size: 0.75rem;
+                }
+            }
+            
+            @media (max-width: 576px) {
+                .product-img {
+                    width: 40px;
+                    height: 40px;
+                }
+                
+                h1 {
+                    font-size: 1.5rem;
+                }
+                
+                .btn {
+                    padding: 0.375rem 0.75rem;
+                    font-size: 0.875rem;
+                }
+            }
+            
+            /* Print Styles */
+            @media print {
+                .sidebar, .menu-toggle, .btn {
+                    display: none !important;
+                }
+                
+                .main-content {
+                    margin-left: 0;
+                    width: 100%;
+                    padding: 0;
+                }
+                
+                .table-container {
+                    box-shadow: none;
+                    padding: 0;
+                }
             }
         </style>
     </head>
 
     <body>
+        <button class="menu-toggle" id="menuToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+        
         <?php include "sidebar.php"; ?>
 
         <!-- Main Content -->
         <div class="main-content">
-            <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
                 <h1><i class="fas fa-boxes me-2"></i> Inventory Management</h1>
                 <a class="btn btn-primary" href="admin-inventory-add.php" role="button">
                     <i class="fas fa-plus me-2"></i> Add Product
                 </a>            
             </div>
         
-        <div class="filter-container">
-            <form method="post" class="row g-3" id="branchForm">
-                <div class="col-md-8">
-                    <label for="chooseBranch" class="form-label">Select Branch</label>
-                    <select name="chooseBranch" id="chooseBranch" class="form-select form-select-sm">
-                        <option value='' <?= empty($branchName) ? 'selected' : '' ?>>View All Branches</option>
-                        <?php 
-                        $link = connect();
-                        if (!$link) {
-                            die("Database connection failed: " . mysqli_connect_error());
-                        }
-                        
-                        $sql = "SELECT BranchName FROM BranchMaster";
-                        $result = mysqli_query($link, $sql);
-                        
-                        if (!$result) {
-                            die("Query failed: " . mysqli_error($link));
-                        }
-                        
-                        while($row = mysqli_fetch_assoc($result)) {
-                            $selected = (strcasecmp($row['BranchName'], $branchName) === 0) ? 'selected' : '';
-                            echo "<option value='".htmlspecialchars($row['BranchName'])."' $selected>".htmlspecialchars($row['BranchName'])."</option>";
-                        }
-                        mysqli_close($link);
-                        ?>
-                    </select>
-                </div>
-                <div class="col-md-4 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary w-100" name="searchProduct">
-                        <i class="fas fa-search me-2"></i> Search
-                    </button>
-                </div>
-            </form>
-        </div>
+            <div class="filter-container">
+                <form method="post" class="row g-3" id="branchForm">
+                    <div class="col-md-8 col-sm-12">
+                        <label for="chooseBranch" class="form-label">Select Branch</label>
+                        <select name="chooseBranch" id="chooseBranch" class="form-select form-select-sm">
+                            <option value='' <?= empty($branchName) ? 'selected' : '' ?>>View All Branches</option>
+                            <?php 
+                            $link = connect();
+                            if (!$link) {
+                                die("Database connection failed: " . mysqli_connect_error());
+                            }
+                            
+                            $sql = "SELECT BranchName FROM BranchMaster";
+                            $result = mysqli_query($link, $sql);
+                            
+                            if (!$result) {
+                                die("Query failed: " . mysqli_error($link));
+                            }
+                            
+                            while($row = mysqli_fetch_assoc($result)) {
+                                $selected = (strcasecmp($row['BranchName'], $branchName) === 0) ? 'selected' : '';
+                                echo "<option value='".htmlspecialchars($row['BranchName'])."' $selected>".htmlspecialchars($row['BranchName'])."</option>";
+                            }
+                            mysqli_close($link);
+                            ?>
+                        </select>
+                    </div>
+                    <div class="col-md-4 col-sm-12 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100" name="searchProduct">
+                            <i class="fas fa-search me-2"></i> Search
+                        </button>
+                    </div>
+                </form>
+            </div>
 
             <div class="table-container">
                 <div class="table-responsive">
@@ -208,9 +379,9 @@ $_SESSION['current_branch'] = $branchName;
                                             </span>
                                         </th>
                                         <th>Material</th>
-                                        <th>Product Image</th>
+                                        <th>Image</th>
                                         <th class="sortable '.($sort == 'TotalCount' ? 'active' : '').'" onclick="sortTable(\'TotalCount\')">
-                                            Total Count
+                                            Total
                                             <span class="sort-icon">
                                                 <i class="fas fa-sort-'.($sort == 'TotalCount' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
                                             </span>
@@ -230,7 +401,7 @@ $_SESSION['current_branch'] = $branchName;
                                 <thead class="table-light">
                                     <tr>
                                         <th class="sortable '.($sort == 'ProductID' ? 'active' : '').'" onclick="sortTable(\'ProductID\')">
-                                            Product ID
+                                            ID
                                             <span class="sort-icon">
                                                 <i class="fas fa-sort-'.($sort == 'ProductID' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
                                             </span>
@@ -261,15 +432,14 @@ $_SESSION['current_branch'] = $branchName;
                                         </th>
                                         <th>Material</th>
                                         <th>Price</th>
-                                        <th>Product Image</th>
+                                        <th>Image</th>
                                         <th class="sortable '.($sort == 'Count' ? 'active' : '').'" onclick="sortTable(\'Count\')">
-                                            Count
+                                            Qty
                                             <span class="sort-icon">
                                                 <i class="fas fa-sort-'.($sort == 'Count' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
                                             </span>
                                         </th>
-                                        
-                                        <th colspan="2">Action</th>
+                                        <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>';
@@ -280,9 +450,9 @@ $_SESSION['current_branch'] = $branchName;
                     }
 
                     if (empty($branchName)) {
-                    branchSelection($sort, $order);                   
+                        branchSelection($sort, $order);                   
                     } else {
-                    branchView($sort, $order);
+                        branchView($sort, $order);
                     }
                     ?>
 
@@ -310,31 +480,37 @@ $_SESSION['current_branch'] = $branchName;
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.min.js"></script>
 
         <script>
+            // Mobile menu toggle
+            document.getElementById('menuToggle').addEventListener('click', function() {
+                const sidebar = document.querySelector('.sidebar');
+                sidebar.classList.toggle('active');
+            });
+
             // Modal handling
             document.addEventListener('DOMContentLoaded', function() {
-            // Show modals if they exist
-            const showModal = (modalId) => {
-                const modalElement = document.getElementById(modalId);
-                if (modalElement) {
-                    const modal = new bootstrap.Modal(modalElement);
-                    modal.show();
-                    
-                    // Add event listener for when modal is hidden
-                    modalElement.addEventListener('hidden.bs.modal', function () {
-                        // If this is a success modal, reload the page
-                        if (modalId === 'editProductModal' || modalId === 'deleteProductModal') {
-                            const urlParams = new URLSearchParams(window.location.search);
-                            window.location.href = window.location.pathname + '?' + urlParams.toString();
-                        }
-                    });
-                }
-            };
+                // Show modals if they exist
+                const showModal = (modalId) => {
+                    const modalElement = document.getElementById(modalId);
+                    if (modalElement) {
+                        const modal = new bootstrap.Modal(modalElement);
+                        modal.show();
+                        
+                        // Add event listener for when modal is hidden
+                        modalElement.addEventListener('hidden.bs.modal', function () {
+                            // If this is a success modal, reload the page
+                            if (modalId === 'editProductModal' || modalId === 'deleteProductModal') {
+                                const urlParams = new URLSearchParams(window.location.search);
+                                window.location.href = window.location.pathname + '?' + urlParams.toString();
+                            }
+                        });
+                    }
+                };
 
-            showModal('editProductModal');
-            showModal('deleteProductModal');
-            showModal('confirmDeleteProductModal');
-            showModal('confirmEditModal');
-        });
+                showModal('editProductModal');
+                showModal('deleteProductModal');
+                showModal('confirmDeleteProductModal');
+                showModal('confirmEditModal');
+            });
 
             // Function to handle table sorting
             function sortTable(column) {
@@ -370,6 +546,17 @@ $_SESSION['current_branch'] = $branchName;
                         e.preventDefault();
                     }
                 });
+            });
+            
+            // Auto-close sidebar when clicking outside on mobile
+            document.addEventListener('click', function(e) {
+                const sidebar = document.querySelector('.sidebar');
+                const menuToggle = document.getElementById('menuToggle');
+                
+                if (window.innerWidth <= 768 && sidebar.classList.contains('active') && 
+                    !sidebar.contains(e.target) && e.target !== menuToggle) {
+                    sidebar.classList.remove('active');
+                }
             });
         </script>
     </body>
