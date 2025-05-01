@@ -9,35 +9,10 @@
         $perPage = 12; 
         $page = (isset($_GET['page'])) ? (int)$_GET['page'] : 1;
         $start = ($page - 1) * $perPage;
-        
-        // Get sort parameter from URL or default to name A-Z
-        $sort = isset($_GET['sort']) ? $_GET['sort'] : 'name_asc';
-        
-        // Build the base SQL query
-        $sql = "SELECT * FROM `productMstr`";
-        
-        // Add sorting based on the selected option
-        switch($sort) {
-            case 'price_asc':
-                $sql .= " ORDER BY CAST(REPLACE(REPLACE(Price, '₱', ''), ',', '') AS DECIMAL(10,2)) ASC";
-                break;
-            case 'price_desc':
-                $sql .= " ORDER BY CAST(REPLACE(REPLACE(Price, '₱', ''), ',', '') AS DECIMAL(10,2)) DESC";
-                break;
-            case 'name_asc':
-                $sql .= " ORDER BY Model ASC";
-                break;
-            case 'name_desc':
-                $sql .= " ORDER BY Model DESC";
-                break;
-            default:
-                $sql .= " ORDER BY Model ASC";
-        }
-        
-        // Add pagination
-        $sql .= " LIMIT $start, $perPage";
-        
+
+        $sql = "SELECT * FROM `productMstr` LIMIT $start, $perPage";
         $result = mysqli_query($conn, $sql);
+
         $total = mysqli_num_rows(mysqli_query($conn, "SELECT * FROM `productMstr`"));
         $totalPages = ceil($total / $perPage);
 
@@ -46,18 +21,14 @@
         
         while($row = mysqli_fetch_assoc($result)) {
             echo "<div class='col d-flex'>";
-                echo "<div class='card w-100' style='max-width: 380px;'>";
+                echo "<div class='card w-100' style='max-width: 380px;'>"; // Increased max-width
                     echo '<img src="' . $row['ProductImage']. '" class="card-img-top img-fluid" style="height: 280px;" alt="'. $row['Model'] .'">';
                     echo "<div class='card-body d-flex flex-column'>";
                         echo "<h5 class='card-title' style='min-height: 1.5rem;'>".$row['Model']."</h5>";
                         echo "<hr>";
                         echo "<div class='card-text mb-2'>".$row['CategoryType']."</div>";
                         echo "<div class='card-text mb-2'>".$row['Material']."</div>";
-                        // Fixed price display with peso sign handling
-                        $price = $row['Price'];
-                        $numeric_price = preg_replace('/[^0-9.]/', '', $price);
-                        $formatted_price = is_numeric($numeric_price) ? '₱' . number_format((float)$numeric_price, 2) : '₱0.00';
-                        echo "<div class='card-text mb-2'>".$formatted_price."</div>";
+                        echo "<div class='card-text mb-2'>".$row['Price']."</div>";
                         if ($row['Avail_FL'] == "Available") {
                             echo "<div class='card-text mb-2 text-success'>".$row['Avail_FL']."</div>";
                         echo "</div>";
@@ -77,12 +48,12 @@
         
         echo "</div>"; // End of card grid
 
-        // Pagination remains the same but preserves sort parameter
+        // Pagination remains the same
         echo "<div class='col-12 mt-5'>";
             echo "<div class='d-flex justify-content-center'>";
                 echo "<ul class='pagination'>";
                 if ($page > 1) {
-                    echo "<li class='page-item'><a class='page-link' href='?page=" . ($page - 1) . "&sort=$sort'>Previous</a></li>";
+                    echo "<li class='page-item'><a class='page-link' href='?page=" . ($page - 1) . "'>Previous</a></li>";
                 } else {
                     echo "<li class='page-item disabled'><a class='page-link'>Previous</a></li>";
                 }
@@ -91,12 +62,12 @@
                     if ($i == $page) {
                         echo "<li class='page-item active' aria-current='page'><a class='page-link disabled'>$i</a></li>"; 
                     } else {
-                        echo "<li class='page-item'><a class='page-link' href='?page=$i&sort=$sort'>$i</a></li>";
+                        echo "<li class='page-item'><a class='page-link' href='?page=$i'>$i</a></li>";
                     }
                 }
 
                 if ($page < $totalPages) {
-                    echo "<li class='page-item'><a class='page-link' href='?page=" . ($page + 1) . "&sort=$sort'>Next</a></li>";
+                    echo "<li class='page-item'><a class='page-link' href='?page=" . ($page + 1) . "'>Next</a></li>";
                 } else {
                     echo "<li class='page-item disabled'><a class='page-link'>Next</a></li>";
                 }
@@ -138,11 +109,6 @@
             .card:hover {
                 transform: translateY(-5px);
             }
-            .sort-dropdown {
-                margin-bottom: 20px;
-                max-width: 250px;
-                margin-left: auto;
-            }
         </style>
     </head>
 
@@ -156,24 +122,6 @@
         <div class="container" style="margin-top: 2rem;">
             <div class="container mb-4">
                 <h1 style='text-align: center;'>Gallery</h1>
-                
-                <!-- Sorting Dropdown -->
-                <div class="sort-dropdown">
-                    <form method="get" action="">
-                        <div class="input-group">
-                            <label class="input-group-text" for="sortSelect">Sort by:</label>
-                            <select class="form-select" id="sortSelect" name="sort" onchange="this.form.submit()">
-                                <option value="name_asc" <?php echo (isset($_GET['sort']) && $_GET['sort'] == 'name_asc') ? 'selected' : ''; ?>>Name (A-Z)</option>
-                                <option value="name_desc" <?php echo (isset($_GET['sort']) && $_GET['sort'] == 'name_desc') ? 'selected' : ''; ?>>Name (Z-A)</option>
-                                <option value="price_asc" <?php echo (isset($_GET['sort']) && $_GET['sort'] == 'price_asc') ? 'selected' : ''; ?>>Price (Low to High)</option>
-                                <option value="price_desc" <?php echo (isset($_GET['sort']) && $_GET['sort'] == 'price_desc') ? 'selected' : ''; ?>>Price (High to Low)</option>
-                            </select>
-                            <?php if(isset($_GET['page'])): ?>
-                                <input type="hidden" name="page" value="<?php echo $_GET['page']; ?>">
-                            <?php endif; ?>
-                        </div>
-                    </form>
-                </div>
             </div>
 
             <div class="grid" style="margin-bottom: 3.5rem;">
