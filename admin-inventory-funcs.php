@@ -772,14 +772,13 @@ function GenerateLogs($productID,$model,$code)
         $conn = connect(); 
         $Aid = generate_ArchiveID();
         $Eid = $_SESSION["id"];
-        setStatus($productID);
+        
         // Archive the employee
-        $sqlEmployee = "INSERT INTO archives (ArchiveID, TargetID, EmployeeID, TargetType) VALUES (?, ?, ?, 'product')";
-        $stmt = $conn->prepare($sqlEmployee);
+        $sqlProduct = "INSERT INTO archives (ArchiveID, TargetID, EmployeeID, TargetType) VALUES (?, ?, ?, 'product')";
+        $stmt = $conn->prepare($sqlProduct);
         $stmt->bind_param("iii", $Aid, $productID, $Eid);
         $stmt->execute();
         $stmt->close();        
-        setStatus($productID);
     }
 function deleteProduct() 
     { //Delete function to delete a product from the database
@@ -824,6 +823,7 @@ function deleteProduct()
             }
         
         Archive($productID);
+        setStatus($productID);
         $link = connect();
         
         $code = '5';
