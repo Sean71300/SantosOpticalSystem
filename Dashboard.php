@@ -164,7 +164,7 @@ $lowInventory = getLowInventoryProducts();
                     </div>
                 </div>
                 
-                <?php if ($isAdmin): ?>
+                
                 <div class="col-md-4">
                     <div class="dashboard-card recent-activity">    
                         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -196,7 +196,7 @@ $lowInventory = getLowInventoryProducts();
                             </li>
                         </ul>
                     </div>
-
+                <?php if ($isAdmin): ?>                    
                     <div class="dashboard-card recent-activity">    
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Recent Activity</h5>
