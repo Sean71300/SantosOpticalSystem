@@ -2,7 +2,7 @@
 function getCustomerCount() {
     $conn = connect();
     $count = 0;
-    $query = "SELECT *
+    $query = "SELECT COUNT(*)
                 FROM customer
                 WHERE CustomerID NOT IN (
                 SELECT TargetID 
