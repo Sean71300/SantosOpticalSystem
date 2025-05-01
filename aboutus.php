@@ -7,19 +7,36 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>About Us</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
         <link rel="stylesheet" href="customCodes/custom.css">
         <link rel="stylesheet" href="customCodes/s1.css">
         <link rel="stylesheet" href="customCodes/s2.css">
         <link rel="shortcut icon" type="image/x-icon" href="Images/logo.png"/>
 
         <style>
-        
+            /* Base styles */
+            body {
+                overflow-x: hidden;
+            }
+            
             .aboutus2-section {
                 animation: fadeIn 2s ease-in-out;
+                padding: 0 15px;
+                text-align: center;
+            }
+
+            .aboutus2-section h1 {
+                font-size: 2.5rem;
+                margin-bottom: 1rem;
+            }
+
+            .aboutus2-section h5 {
+                font-size: 1.2rem;
+                line-height: 1.6;
             }
 
             /* Fade-In Effect */
@@ -34,34 +51,85 @@
                 }
             }
 
-           
+            /* Image responsiveness */
+            .services-img {
+                width: 100%;
+                height: auto;
+                max-height: 500px;
+                object-fit: cover;
+            }
+
             .branch-image {
                 transition: transform 0.3s ease;
+                width: 100%;
+                height: 200px;
+                object-fit: cover;
+                border-radius: 8px 8px 0 0;
             }
 
             .branch-image:hover {
-                transform: scale(1.1);
+                transform: scale(1.05);
             }
 
-          
+            /* Branch cards */
             .branch-card {
                 transition: transform 0.3s ease-in-out, box-shadow 0.3s ease;
+                margin-bottom: 30px;
+                border-radius: 8px;
+                overflow: hidden;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+                background: white;
             }
 
             .branch-card:hover {
                 transform: translateY(-10px);
-                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
             }
 
-    
+            .branch-info {
+                padding: 15px;
+                text-align: center;
+                font-size: 1rem;
+                line-height: 1.5;
+            }
+
+            .map-icon {
+                position: absolute;
+                bottom: 10px;
+                right: 10px;
+                width: 30px;
+                height: 30px;
+                cursor: pointer;
+            }
+
+            .image-container {
+                position: relative;
+            }
+
+            /* Navigation buttons */
+            .button-container {
+                display: flex;
+                justify-content: center;
+                gap: 20px;
+                padding: 20px 0;
+                flex-wrap: wrap;
+            }
+
             .nav-button {
-             
+                padding: 10px 25px;
+                border-radius: 30px;
+                text-decoration: none;
+                font-weight: 600;
+                transition: all 0.3s ease;
+                text-align: center;
+                min-width: 150px;
             }
 
-      
-
+            /* Doctor section */
             .doctor-section {
                 animation: slideInFromLeft 2s ease-in-out;
+                padding: 30px;
+                border-radius: 10px;
             }
 
             @keyframes slideInFromLeft {
@@ -77,6 +145,62 @@
                 text-align: center;
                 font-size: 2rem;
                 margin-bottom: 30px;
+                padding: 0 15px;
+            }
+
+            /* Responsive adjustments */
+            @media (max-width: 992px) {
+                .aboutus2-section h1 {
+                    font-size: 2rem;
+                }
+                
+                .aboutus2-section h5 {
+                    font-size: 1rem;
+                }
+                
+                .doctor-section p {
+                    font-size: 1.1rem !important;
+                }
+            }
+
+            @media (max-width: 768px) {
+                .doctor-section {
+                    text-align: center;
+                }
+                
+                .doctor-section img {
+                    margin-bottom: 20px;
+                    max-width: 250px;
+                }
+                
+                .aboutus-h2 {
+                    font-size: 1.8rem;
+                }
+                
+                .branch-info {
+                    font-size: 0.9rem;
+                }
+            }
+
+            @media (max-width: 576px) {
+                .aboutus2-section h1 {
+                    font-size: 1.8rem;
+                }
+                
+                .button-container {
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 10px;
+                }
+                
+                .nav-button {
+                    width: 80%;
+                    padding: 8px 15px;
+                }
+                
+                .branch-image {
+                    height: 150px;
+                }
             }
         </style>
     </head>
@@ -87,13 +211,13 @@
             <a href="ourservices.php" class="nav-button" data-aos="zoom-in" data-aos-delay="200">Our Services</a>
         </div>
         
-        <div class="container-fluid position-relative">
+        <div class="container-fluid position-relative px-0">
             <div class="aboutus-section" data-aos="fade-up">
                 <img src="Images/au1.png" alt="Services Image" class="services-img">
             </div>
         </div><br><br>
 
-        <div class="d-flex justify-content-center align-items-center">
+        <div class="container">
             <div class="aboutus2-section">
                 <h1>ABOUT US</h1>
                 <h5>Santos Optical Clinic emphasizes personalized customer service. 
@@ -103,10 +227,10 @@
 
         <div class="container my-6 doctor-section" style="background-color: aliceblue;" data-aos="slide-left">
             <div class="row align-items-center text-center text-md-start">
-              <div class="col-md-4 mb-3 mb-md-2">
+              <div class="col-md-4 mb-3 mb-md-2 d-flex justify-content-center">
                 <img src="Images/owner.png" alt="Doctor" class="img-fluid rounded shadow">
               </div>
-              <div class="col-md-7">
+              <div class="col-md-8">
                 <p class="fs-4">
                   Santos Optical Clinic, owned by <b> Bien Ven P. Santos,</b> is a prominent provider of optical services,
                   and has been serving its community since its establishment as a sole proprietorship in 2001.
@@ -117,48 +241,56 @@
 
         <div class="container" data-aos="fade-up">
           <h2 class="aboutus-h2">SO BRANCHES</h2>
-          <div class="row justify-content-center">
-              <div class="col-sm-6 col-md-4 col-lg-3 branch-card" data-aos="fade-up" data-aos-delay="100">
-                <div class="image-container">
-                  <img src="Images/pascual st.jpg" alt="Pascual St, Malabon" class="branch-image">
-                  <img src="Images/loc.png" alt="Map Icon" class="map-icon">
-                </div>
-                <div class="branch-info">
-                  Pascual St, Malabon<br>
-                  02 88183480
-                </div>
-              </div>
-
-              <div class="col-sm-6 col-md-4 col-lg-3 branch-card" data-aos="fade-up" data-aos-delay="200">
-                <div class="image-container">
-                  <img src="Images/quiapo.jpg" alt="Quiapo, Manila" class="branch-image">
-                  <img src="Images/loc.png" alt="Map Icon" class="map-icon">
-                </div>
-                <div class="branch-info">
-                  Quiapo, Manila<br>
-                  09328447068
+          <div class="row justify-content-center g-4">
+              <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                <div class="branch-card" data-aos="fade-up" data-aos-delay="100">
+                  <div class="image-container">
+                    <img src="Images/pascual st.jpg" alt="Pascual St, Malabon" class="branch-image">
+                    <img src="Images/loc.png" alt="Map Icon" class="map-icon">
+                  </div>
+                  <div class="branch-info">
+                    Pascual St, Malabon<br>
+                    02 88183480
+                  </div>
                 </div>
               </div>
 
-              <div class="col-sm-6 col-md-4 col-lg-3 branch-card" data-aos="fade-up" data-aos-delay="300">
-                <div class="image-container">
-                  <img src="Images/bayan.jpg" alt="Bayan, Malabon" class="branch-image">
-                  <img src="Images/loc.png" alt="Map Icon" class="map-icon">
-                </div>
-                <div class="branch-info">
-                  Bayan, Malabon<br>
-                  02 86321972
+              <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                <div class="branch-card" data-aos="fade-up" data-aos-delay="200">
+                  <div class="image-container">
+                    <img src="Images/quiapo.jpg" alt="Quiapo, Manila" class="branch-image">
+                    <img src="Images/loc.png" alt="Map Icon" class="map-icon">
+                  </div>
+                  <div class="branch-info">
+                    Quiapo, Manila<br>
+                    09328447068
+                  </div>
                 </div>
               </div>
 
-              <div class="col-sm-6 col-md-4 col-lg-3 branch-card" data-aos="fade-up" data-aos-delay="400">
-                <div class="image-container">
-                  <img src="Images/tangos.png" alt="Tangos, Navotas" class="branch-image">
-                  <img src="Images/loc.png" alt="Map Icon" class="map-icon">
+              <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                <div class="branch-card" data-aos="fade-up" data-aos-delay="300">
+                  <div class="image-container">
+                    <img src="Images/bayan.jpg" alt="Bayan, Malabon" class="branch-image">
+                    <img src="Images/loc.png" alt="Map Icon" class="map-icon">
+                  </div>
+                  <div class="branch-info">
+                    Bayan, Malabon<br>
+                    02 86321972
+                  </div>
                 </div>
-                <div class="branch-info">
-                  Tangos, Navotas<br>
-                  09328447068
+              </div>
+
+              <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                <div class="branch-card" data-aos="fade-up" data-aos-delay="400">
+                  <div class="image-container">
+                    <img src="Images/tangos.png" alt="Tangos, Navotas" class="branch-image">
+                    <img src="Images/loc.png" alt="Map Icon" class="map-icon">
+                  </div>
+                  <div class="branch-info">
+                    Tangos, Navotas<br>
+                    09328447068
+                  </div>
                 </div>
               </div>
           </div>
@@ -169,7 +301,13 @@
             AOS.init({
                 duration: 1000, 
                 easing: 'ease-in-out',
-                once: true 
+                once: true,
+                disable: window.innerWidth < 768 // Disable animations on mobile for better performance
+            });
+            
+            // Re-init AOS when window is resized
+            window.addEventListener('resize', function() {
+                AOS.refresh();
             });
         </script>
 

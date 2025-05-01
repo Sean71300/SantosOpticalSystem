@@ -2,7 +2,6 @@
 include 'ActivityTracker.php';
 include 'admin-inventory-funcs.php'; // Include the functions file
 include 'loginChecker.php';
-
 ?>
 
 <!DOCTYPE html>
@@ -19,8 +18,9 @@ include 'loginChecker.php';
     <style>
         body {
             background-color: #f5f7fa;
-            display: flex;
         }
+        
+        /* Sidebar adjustments for mobile */
         .sidebar {
             background-color: white;
             height: 100vh;
@@ -29,7 +29,23 @@ include 'loginChecker.php';
             position: fixed;
             width: 250px;
             box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            z-index: 1000;
+            transition: transform 0.3s ease;
         }
+        
+        @media (max-width: 991.98px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0 !important;
+                width: 100% !important;
+            }
+        }
+        
         .sidebar-header {
             padding: 0 20px 20px;
             border-bottom: 1px solid rgba(0,0,0,0.1);
@@ -58,23 +74,33 @@ include 'loginChecker.php';
             width: 20px;
             text-align: center;
         }
+        
+        /* Main content adjustments */
         .main-content {
             margin-left: 250px;
             padding: 20px;
             width: calc(100% - 250px);
+            transition: all 0.3s;
         }
+        
+        /* Form container */
         .form-container {
             background-color: white;
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             padding: 30px;
+            margin-top: 20px;
         }
+        
+        /* Form elements */
         .form-label {
             font-weight: 500;
         }
+        
         .btn-action {
             min-width: 120px;
         }
+        
         /* Spinner for input number */
         input::-webkit-outer-spin-button,
         input::-webkit-inner-spin-button {
@@ -84,17 +110,75 @@ include 'loginChecker.php';
         input[type=number] {
             -moz-appearance: textfield;
         }
+        
+        /* Product image preview */
         .product-img-preview {
-            width: 150px;
-            height: 150px;
+            max-width: 100%;
+            height: auto;
+            max-height: 200px;
             object-fit: contain;
             border: 1px solid #ddd;
             border-radius: 4px;
             margin-bottom: 15px;
         }
+        
+        /* Mobile menu toggle */
+        .mobile-menu-toggle {
+            display: none;
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 1050;
+            background: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        @media (max-width: 991.98px) {
+            .mobile-menu-toggle {
+                display: block;
+            }
+        }
+        
+        /* Responsive form adjustments */
+        @media (max-width: 767.98px) {
+            .form-container {
+                padding: 20px 15px;
+            }
+            
+            .d-flex.justify-content-between {
+                flex-direction: column;
+                align-items: flex-start !important;
+            }
+            
+            .d-flex.justify-content-between h1 {
+                margin-bottom: 15px;
+            }
+            
+            .d-flex.flex-row-reverse {
+                flex-direction: column !important;
+                gap: 10px !important;
+            }
+            
+            .btn-action {
+                width: 100%;
+            }
+            
+            .product-img-container {
+                margin-bottom: 20px;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Mobile Menu Toggle Button -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+
     <?php include "sidebar.php"?>
 
     <!-- Main Content -->
@@ -110,7 +194,7 @@ include 'loginChecker.php';
             
             <form method="post" enctype="multipart/form-data" id="addForm">
                 <div class="row mb-4">
-                    <div class="col-md-6">
+                    <div class="col-md-6 mb-3 mb-md-0">
                         <label for="productBranch" class="form-label">Branch</label>
                         <select name="productBranch" id="productBranch" class="form-select form-control-lg" required>
                             <?php getBranch(); ?>
@@ -123,7 +207,7 @@ include 'loginChecker.php';
                 </div>
                 
                 <div class="row mb-4">
-                    <div class="col-md-6">
+                    <div class="col-md-6 mb-3 mb-md-0">
                         <label for="productBrand" class="form-label">Brand</label>
                         <select name="productBrand" id="productBrand" class="form-select form-control-lg" required>
                             <?php getBrands(); ?>
@@ -136,7 +220,7 @@ include 'loginChecker.php';
                 </div>
                 
                 <div class="row mb-4">
-                    <div class="col-md-6">
+                    <div class="col-md-6 mb-3 mb-md-0">
                         <label for="productCategory" class="form-label">Category</label>
                         <select name="productCategory" id="productCategory" class="form-select form-control-lg" required>
                             <?php getCategory(); ?>
@@ -151,7 +235,7 @@ include 'loginChecker.php';
                 </div>
                 
                 <div class="row mb-4">
-                    <div class="col-md-6">
+                    <div class="col-md-6 mb-3 mb-md-0">
                         <label for="productMaterial" class="form-label">Material</label>
                         <input type="text" class="form-control form-control-lg" id="productMaterial" name="productMaterial" required>
                     </div>
@@ -161,8 +245,8 @@ include 'loginChecker.php';
                     </div>
                 </div>
 
-                <div class="row mb-4">
-                    <div class="col-md-6 text-center">
+                <div class="row">
+                    <div class="col-md-6 text-center mb-4 mb-md-0 product-img-container">
                         <img src="Images/default-product.png" alt="Product Image" id="imagePreview" class="product-img-preview">
                         <div>
                             <label for="productImg" class="btn btn-success">
@@ -171,8 +255,8 @@ include 'loginChecker.php';
                             </label>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="d-flex flex-row-reverse justify-content-end gap-3 mt-5">                    
+                    <div class="col-md-6 d-flex align-items-end">
+                        <div class="d-flex flex-row-reverse justify-content-end gap-3 w-100">                    
                             <button type="reset" class="btn btn-danger btn-action" onclick="resetForm()">
                                 <i class="fas fa-undo me-2"></i> Reset
                             </button>
@@ -216,7 +300,7 @@ include 'loginChecker.php';
             if (input.files && input.files[0]) {
                 var reader = new FileReader();
                 reader.onload = function(e) {
-                    document.querySelector(".product-img-preview").src = e.target.result;
+                    document.getElementById('imagePreview').src = e.target.result;
                 };
                 reader.readAsDataURL(input.files[0]);
             }
@@ -226,12 +310,16 @@ include 'loginChecker.php';
             setTimeout(() => {
                 document.getElementById('addForm').reset();
                 document.getElementById('productImg').value = '';
-                document.querySelector(".product-img-preview").src = "Images/default-product.png";
+                document.getElementById('imagePreview').src = "Images/default-product.png";
             }, 10);
         }
 
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('active');
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
-        const successModal = document.getElementById('successModal');
+            const successModal = document.getElementById('successModal');
             if (successModal) {
                 const myModal = new bootstrap.Modal(successModal);
                 myModal.show();
