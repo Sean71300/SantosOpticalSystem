@@ -20,8 +20,8 @@
         echo "<div class='row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4'>";        
         while($row = mysqli_fetch_assoc($result)) { // Card 
             echo "<div class='col d-flex'>";
-                echo "<div class='card' style='width: 18.5rem; height: 29.5rem;'>";
-                    echo '<img src="' . $row['ProductImage']. '" class="card-img-top img-fluid" style="height: 250px; object-fit: contain;" alt="'. $row['Model'] .'">';
+                echo "<div class='card w-100'>";
+                    echo '<img src="' . $row['ProductImage']. '" class="card-img-top img-fluid" style="object-fit: contain;" alt="'. $row['Model'] .'">';
                     echo "<div class='card-body d-flex flex-column'>";
                         echo "<h5 class='card-title' style='min-height: 4rem;'>".$row['Model']."</h5>";                       
                         echo "<p class='card-text'>".$row['CategoryType']."</p>";
