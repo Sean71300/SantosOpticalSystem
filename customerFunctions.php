@@ -33,7 +33,7 @@
                     <td>$row[CustomerContact]</td>
                     <td>";
                         
-                        
+                    if ($isAdmin)
                         {
                             echo 
                             "
