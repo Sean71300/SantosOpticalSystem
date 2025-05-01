@@ -4,6 +4,8 @@ include 'ActivityTracker.php';
 include 'loginChecker.php';
 include 'adminFunctions.php';
 
+$isAdmin = isset($_SESSION['roleid']) && $_SESSION['roleid'] === 1;
+
 // Get all counts
 $customerCount = getCustomerCount();
 $employeeCount = getEmployeeCount();
@@ -162,6 +164,7 @@ $lowInventory = getLowInventoryProducts();
                     </div>
                 </div>
                 
+                <?php if ($isAdmin): ?>
                 <div class="col-md-4">
                     <div class="dashboard-card recent-activity">    
                         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -214,6 +217,7 @@ $lowInventory = getLowInventoryProducts();
                         </ul>
                     </div>
                 </div>
+                <?php endif; ?>
             </div>
         </div>
 
