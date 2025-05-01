@@ -2,6 +2,12 @@
 include_once 'setup.php';
 include 'ActivityTracker.php';
 include 'loginChecker.php';
+include 'employeeFunctions.php';
+
+$customerCount = getCustomerCount();
+$inventoryCount = getInventoryCount();
+$orderCount = getOrderCount();
+$lowInventory = getLowInventoryProducts();
 ?>
 
 <!DOCTYPE html>
@@ -105,18 +111,6 @@ include 'loginChecker.php';
                         <h5>Customers</h5>
                         <div class="stat-number"><?php echo number_format($customerCount); ?></div>
                         <a href="customerRecords.php" class="btn btn-sm btn-outline-primary mt-2">View All</a>
-                    </div>
-                </div>
-                
-                <!-- Employees Card -->
-                <div class="col-md-3">
-                    <div class="dashboard-card">
-                        <div class="card-icon text-success">
-                            <i class="fas fa-user-tie"></i>
-                        </div>
-                        <h5>Employees</h5>
-                        <div class="stat-number"><?php echo number_format($employeeCount); ?></div>
-                        <a href="employeeRecords.php" class="btn btn-sm btn-outline-success mt-2">View All</a>
                     </div>
                 </div>
                 
