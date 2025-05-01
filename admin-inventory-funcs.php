@@ -673,10 +673,7 @@ function confirmEditProduct() {
             $success = false;
         }
         mysqli_stmt_close($stmt1);
-
-        $code = '4';
-        GenerateLogs($productID,$model,$code);
-
+        
         // Update productbranchmaster table
         $sql2 = "UPDATE ProductBranchMaster SET ProductBranchID = ?, BranchCode = ?, Stocks = ?, Avail_FL = ?, Upd_by = ?, Upd_dt = ? WHERE ProductID = ?";
         $stmt2 = mysqli_prepare($link, $sql2);
