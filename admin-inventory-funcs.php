@@ -106,6 +106,7 @@ function getInventory($sort = 'ProductID', $order = 'ASC') {
                 JOIN brandMaster bm ON pm.BrandID = bm.BrandID
                 JOIN ProductBranchMaster pbm ON pm.ProductID = pbm.ProductID
                 JOIN BranchMaster b ON pbm.BranchCode = b.BranchCode
+                WHERE pbm.Avail_FL = 'Available'
                 GROUP BY pm.ProductID, pm.CategoryType, sm.Description, bm.BrandName, 
                             pm.Model, pm.Material, pm.Price, pm.ProductImage, pm.Upd_by";
         
@@ -759,7 +760,35 @@ function GenerateLogs($productID,$model,$code)
         $stmt->execute();
         $stmt->close();
     }
+    
+    function setStatus($id){
+        $conn = connect(); 
+        $sql = "UPDATE productMstr 
+            SET Avail_FL = 'Unavailable' WHERE ProductID = $id";
+        $result = $conn->query($sql);
+    }
 
+    function Archive($productID){
+        $Aid = generate_ArchiveID();
+        $Eid = $_SESSION["id"];
+        setStatus($productID);
+        // Archive the employee
+        $sqlEmployee = "INSERT INTO archives (ArchiveID, TargetID, EmployeeID, TargetType) VALUES (?, ?, ?, 'product')";
+        $stmt = $conn->prepare($sqlEmployee);
+        $stmt->bind_param("iii", $Aid, $productID, $Eid);
+        $stmt->execute();
+        $stmt->close();
+        
+        // Get employee name for logs
+        $query = "SELECT EmployeeName FROM employee WHERE EmployeeID = ?";
+        $stmt = $conn->prepare($query);
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        $name = $row['EmployeeName'];
+        $stmt->close();
+    }
 function deleteProduct() 
     { //Delete function to delete a product from the database
         $productID = $_POST['productID'] ?? '';
@@ -802,6 +831,7 @@ function deleteProduct()
         exit();         
             }
         
+        Archive($productID);
         $link = connect();
         
         $code = '5';
