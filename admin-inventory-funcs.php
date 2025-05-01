@@ -348,6 +348,10 @@ function addProduct(){ //Add function to add a new product to the database
 
             //Insert Logs into logs database
 
+
+            $code = 3;
+            GenerateLogs($newProductID,$newProductName,$code);
+
             echo 
                 '<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered">
@@ -742,7 +746,7 @@ function confirmEditProduct() {
     mysqli_close($link);
 }
 
-function GenerateLogs($productID,$model)
+function GenerateLogs($productID,$model,$code)
     {
         $conn = connect(); 
         $Logsid = generate_LogsID();        
@@ -750,8 +754,8 @@ function GenerateLogs($productID,$model)
         $stmt = $conn->prepare("INSERT INTO Logs 
                             (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description, Upd_dt)
                             VALUES
-                            (?, ?, ?, 'product', '5', ?, NOW())");
-        $stmt->bind_param("ssss", $Logsid, $employee_id, $productID, $model);
+                            (?, ?, ?, 'product', '?', ?, NOW())");
+        $stmt->bind_param("ssss", $Logsid, $employee_id,$code, $productID, $model);
         $stmt->execute();
         $stmt->close();
     }
@@ -759,6 +763,7 @@ function GenerateLogs($productID,$model)
 function deleteProduct() { //Delete function to delete a product from the database
     $link = connect();
     $productID = $_POST['productID'] ?? '';
+    $code = 5;
     $sql = "SELECT * FROM productMstr WHERE ProductID = $productID"  ;
     $result = mysqli_query($link, $sql);
 
@@ -766,7 +771,7 @@ function deleteProduct() { //Delete function to delete a product from the databa
         $model= $row['Model'];
     }
     
-    GenerateLogs($productID,$model);
+    GenerateLogs($productID,$model,$code);
     
         $sql = "DELETE FROM ProductBranchMaster WHERE ProductID = ?";
         $stmt = mysqli_prepare($link, $sql);
