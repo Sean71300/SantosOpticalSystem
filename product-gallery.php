@@ -24,7 +24,7 @@
                 echo "<div class='card w-100' style='max-width: 380px;'>"; // Increased max-width
                     echo '<img src="' . $row['ProductImage']. '" class="card-img-top img-fluid" style="height: 280px;" alt="'. $row['Model'] .'">';
                     echo "<div class='card-body d-flex flex-column'>";
-                        echo "<h5 class='card-title' style='min-height: 4rem;'>".$row['Model']."</h5>";
+                        echo "<h5 class='card-title' style='min-height: 1rem;'>".$row['Model']."</h5>";
                         echo "<hr>";
                         echo "<div class='card-text mb-2'>".$row['CategoryType']."</div>";
                         echo "<div class='card-text mb-2'>".$row['Material']."</div>";
