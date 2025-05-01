@@ -62,7 +62,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['cancel'])) {
                             // Improved role-based redirection
                             switch ($roleid) {
                                 case 1: // Admin
-                                    header("location: admin.php");
+                                    header("location: Dashboard.php");
                                     exit();
                                 case 2: // Employee
                                     header("location: employee.php");

@@ -57,10 +57,10 @@ $current_page = basename($_SERVER['PHP_SELF']);
                         echo  '</button>';
                         echo  '<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">';
                         if ($_SESSION["roleid"] == 1) {
-                            echo '<li><a class="dropdown-item" href="admin.php">Admin page</a></li>';
+                            echo '<li><a class="dropdown-item" href="Dashboard.php">Admin page</a></li>';
                         }
                         else if ($_SESSION["roleid"] == 2) {
-                            echo '<li><a class="dropdown-item" href="admin.php">Employee page</a></li>';
+                            echo '<li><a class="dropdown-item" href="Dashboard.php">Employee page</a></li>';
                         }
                         echo  '<li><a class="dropdown-item" href="logout.php">Log Out</a></li>';
                         echo  '</ul>';

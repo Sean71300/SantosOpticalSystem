@@ -167,7 +167,7 @@ $conn->close();
     <div class="main-content">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2><i class="fas fa-clipboard-list me-2"></i>System Logs</h2>
-            <a href="admin.php" class="btn btn-outline-secondary">
+            <a href="Dashboard.php" class="btn btn-outline-secondary">
                 <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
             </a>
         </div>

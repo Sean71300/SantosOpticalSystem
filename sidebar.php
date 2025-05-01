@@ -37,7 +37,7 @@ if ($isAdmin === true) {
         $isAdmin = isset($_SESSION['roleid']) && $_SESSION['roleid'] === 1;
         ?>
         
-        <a href="admin.php" class="sidebar-item <?php echo ($current_page == 'admin.php') ? 'active' : ''; ?>">
+        <a href="Dashboard.php" class="sidebar-item <?php echo ($current_page == 'Dashboard.php') ? 'active' : ''; ?>">
             <i class="fas fa-tachometer-alt"></i> 
             <span class="sidebar-item-text">Dashboard</span>
         </a>
