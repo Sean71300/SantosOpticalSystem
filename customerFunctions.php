@@ -134,13 +134,21 @@
         $employee_id = $_SESSION["id"];
         $sql = "INSERT INTO customer 
                 (CustomerID,CustomerName,CustomerAddress,CustomerContact,
-                CustomerInfo,Notes,Upd_by) 
+                CustomerInfo,Notes,Upd_by,Status) 
                 VALUES
-                ('$id','$name','$address','$phone','$info','$notes','$upd_by')";
+                ('$id','$name','$address','$phone','$info','$notes','$upd_by','Active')";
         
         mysqli_query($conn, $sql);
         GenerateLogs($employee_id,$id,$name);
     }
+
+    function setStatus($id){
+        $conn = connect(); 
+        $sql = "UPDATE customer 
+            SET Status = 'inactive' WHERE CustomerID = $id";
+        $result = $conn->query($sql);
+    }
+
     function GenerateLogs($employee_id,$id,$name)
     {
         $conn = connect(); 
