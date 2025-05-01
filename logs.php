@@ -246,7 +246,7 @@ $conn->close();
                                                 case 6: $activity = 'archived'; break;
                                                 default: $activity = 'performed an action on';
                                             }                                            
-                                            echo " : <strong>" . $activity . "</strong> " . $log['Description'] $log['Description']; 
+                                            echo " : <strong>" . $activity . "</strong> " . $log['Description'] . $log['Description']; 
                                         ?>
                                     </div>
                                 </div>
