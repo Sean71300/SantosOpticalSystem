@@ -759,7 +759,13 @@ function GenerateLogs($productID,$model)
 function deleteProduct() { //Delete function to delete a product from the database
     $link = connect();
     $productID = $_POST['productID'] ?? '';
-    $model = $_POST['model'] ?? '';
+    $sql = "SELECT * FROM productMstr WHERE ProductID = $productID"  ;
+    $result = mysqli_query($link, $sql);
+
+    while ($row = mysqli_fetch_array($result)) {
+        $model= $row['Model'];
+    }
+    
     GenerateLogs($productID,$model);
     
         $sql = "DELETE FROM ProductBranchMaster WHERE ProductID = ?";
