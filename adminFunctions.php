@@ -64,7 +64,7 @@ function getOrderCount() {
           WHERE NOT EXISTS (
               SELECT 1 
               FROM archives a 
-              WHERE a.TargetID = o.OrderID AND a.TargetType = 'order'
+              WHERE a.TargetID = o.Orderhdr_id AND a.TargetType = 'order'
           )";
     $result = mysqli_query($conn, $query);
     if ($result) {
