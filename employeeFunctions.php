@@ -242,7 +242,7 @@
     function getInventoryCount() {
         $conn = connect();
         $count = 0;
-        $branchCode = $_SESSION['branchCode'] ?? '';
+        $branchCode = $_SESSION['branchcode'];
 
         $query = "SELECT COUNT(*) as count 
                  FROM ProductBranchMaster 
@@ -260,7 +260,7 @@
     function getOrderCount() {
         $conn = connect();
         $count = 0;
-        $branchCode = $_SESSION['branchCode'] ?? ''; 
+        $branchCode = $_SESSION['branchcode']; 
         $query = "SELECT COUNT(*) as count FROM Order_hdr WHERE BranchCode = '$branchCode'";
 
         $result = mysqli_query($conn, $query);
@@ -273,7 +273,7 @@
     }
     
     function getLowInventoryProducts() {
-        $userBranchCode = $_SESSION['branchcode'] ?? null;
+        $userBranchCode = $_SESSION['branchcode'];
         if (!$userBranchCode) {
             return [];
         }
