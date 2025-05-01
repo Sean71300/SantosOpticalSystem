@@ -745,15 +745,16 @@ function confirmEditProduct() {
 function GenerateLogs($productID)
     {
         $conn = connect(); 
-        $Logsid = generate_LogsID(); ;   
-        $upd_by = $_SESSION["full_name"];
+        $Logsid = generate_LogsID();
+        $model = $_POST['model'] ?? '';
         $employee_id = $_SESSION["id"];
-        $sql = "INSERT INTO Logs 
-                (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Upd_dt)
-                VALUES
-                ('$Logsid', '$employee_id', '$productID', 'product', '5', NOW())";
-        
-        mysqli_query($conn, $sql);
+        $stmt = $conn->prepare("INSERT INTO Logs 
+                            (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description, Upd_dt)
+                            VALUES
+                            (?, ?, ?, 'products', '5', ?, NOW())");
+        $stmt->bind_param("ssss", $Logsid, $employee_id, $productID, $model);
+        $stmt->execute();
+        $stmt->close();
     }
 
 function deleteProduct() { //Delete function to delete a product from the database
