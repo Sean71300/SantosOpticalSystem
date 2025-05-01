@@ -16,22 +16,30 @@
         $total = mysqli_num_rows(mysqli_query($conn, "SELECT * FROM `productMstr`"));
         $totalPages = ceil($total / $perPage);
 
+        // Start of card grid
+        echo "<div class='row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4'>";
+        
         while($row = mysqli_fetch_assoc($result)) {
-            echo "<div class='col g-3 justify-content-center'>";
-                    echo "<div class='card' style='width: 18.5rem; height: 29.5rem;'>";
-                        echo '<img src="' . $row['ProductImage']. '"class="card-img-top" style="height: 250px;" alt="'. $row['Model'] .'">';
-                            echo "<div class='card-body'>";
-                                echo "<h5 class='card-title overflow-hidden' style='height:4rem;'>".$row['Model']."</h5>";
-                                echo "<p class='card-text'>".$row['CategoryType']."</p>";
-                                echo "<p class='card-text'>".$row['Avail_FL']."</p>";                                
-                            echo "</div>";
-                        echo "<a href='#' class='btn btn-primary'>More details</a>";
+            echo "<div class='col d-flex'>";
+                echo "<div class='card w-100'>";
+                    echo '<img src="' . $row['ProductImage']. '" class="card-img-top img-fluid" style="height: 250px; object-fit: contain;" alt="'. $row['Model'] .'">';
+                    echo "<div class='card-body d-flex flex-column'>";
+                        echo "<h5 class='card-title' style='min-height: 4rem;'>".$row['Model']."</h5>";
+                        echo "<p class='card-text'>".$row['CategoryType']."</p>";
+                        echo "<p class='card-text'>".$row['Avail_FL']."</p>";                                
+                    echo "</div>";
+                    echo "<div class='card-footer mt-auto'>";
+                        echo "<a href='#' class='btn btn-primary w-100'>More details</a>";
+                    echo "</div>";
                 echo "</div>";
             echo "</div>";
         }
+        
+        echo "</div>"; // End of card grid
 
-        echo "<div class='col-12'>";
-            echo "<div class='d-flex justify-content-center mt-5'>";
+        // Pagination
+        echo "<div class='col-12 mt-5'>";
+            echo "<div class='d-flex justify-content-center'>";
                 echo "<ul class='pagination'>";
                 if ($page > 1) {
                     echo "<li class='page-item'><a class='page-link' href='?page=" . ($page - 1) . "'>Previous</a></li>";
@@ -41,7 +49,6 @@
 
                 for ($i = 1; $i <= $totalPages; $i++) {                       
                     if ($i == $page) {
-                        
                         echo "<li class='page-item active' aria-current='page'><a class='page-link disabled'>$i</a></li>"; 
                     } else {
                         echo "<li class='page-item'><a class='page-link' href='?page=$i'>$i</a></li>";
@@ -54,9 +61,9 @@
                     echo "<li class='page-item disabled'><a class='page-link'>Next</a></li>";
                 }
                 echo "</ul>";
-                }
             echo "</div>";
         echo "</div>"; 
+    }
 ?>
 
 <!DOCTYPE html>
