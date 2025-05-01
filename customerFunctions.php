@@ -145,7 +145,7 @@
     function setStatus($id){
         $conn = connect(); 
         $sql = "UPDATE customer 
-            SET Status = 'inactive' WHERE CustomerID = $id";
+            SET Status = 'Inactive' WHERE CustomerID = $id";
         $result = $conn->query($sql);
     }
 
