@@ -817,7 +817,7 @@
                     'name' => 'Sean Genesis V. Morse',
                     'email' => 'SeanGenesis@gmail.com',
                     'number' => '09438945698',
-                    'role' => 2,
+                    'role' => 1,
                     'login' => 'SGMorse1',
                     'password' => 'Morse123',
                     'branch' => 2025160001,
