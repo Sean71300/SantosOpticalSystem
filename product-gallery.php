@@ -10,19 +10,20 @@
         $page = (isset($_GET['page'])) ? (int)$_GET['page'] : 1;
         $start = ($page - 1) * $perPage;
         
-        // Get sort and search parameters from URL
+      
         $sort = isset($_GET['sort']) ? $_GET['sort'] : 'name_asc';
         $search = isset($_GET['search']) ? mysqli_real_escape_string($conn, $_GET['search']) : '';
         
-        // Build the base SQL query
+   
         $sql = "SELECT * FROM `productMstr`";
         
-        // Add search condition if search term exists
+  
         if (!empty($search)) {
-            $sql .= " WHERE Model LIKE '%$search%' OR CategoryType LIKE '%$search%' OR Material LIKE '%$search%'";
+          
+            $sql .= " WHERE Model LIKE '$search%'";
         }
         
-        // Add sorting based on the selected option
+      
         switch($sort) {
             case 'price_asc':
                 $sql .= " ORDER BY CAST(REPLACE(REPLACE(Price, '₱', ''), ',', '') AS DECIMAL(10,2)) ASC";
@@ -45,22 +46,23 @@
         
         $result = mysqli_query($conn, $sql);
         
-        // For total count, we need a separate query without LIMIT
+    
         $countSql = "SELECT COUNT(*) as total FROM `productMstr`";
         if (!empty($search)) {
-            $countSql .= " WHERE Model LIKE '%$search%' OR CategoryType LIKE '%$search%' OR Material LIKE '%$search%'";
+        
+            $countSql .= " WHERE Model LIKE '$search%'";
         }
         $countResult = mysqli_query($conn, $countSql);
         $totalData = mysqli_fetch_assoc($countResult);
         $total = $totalData['total'];
         $totalPages = ceil($total / $perPage);
 
-        // Start of card grid
+      
         echo "<div class='row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4' id='productGrid'>";
         
         if ($total > 0) {
             while($row = mysqli_fetch_assoc($result)) {
-                // Create a searchable string for each product
+              
                 $searchableText = strtolower($row['Model']);
                 echo "<div class='col d-flex product-card' data-search='".htmlspecialchars($searchableText, ENT_QUOTES)."'>";
                     echo "<div class='card w-100' style='max-width: 380px;'>";
@@ -70,7 +72,7 @@
                             echo "<hr>";
                             echo "<div class='card-text mb-2'>".$row['CategoryType']."</div>";
                             echo "<div class='card-text mb-2'>".$row['Material']."</div>";
-                            // Fixed price display with peso sign handling
+                      
                             $price = $row['Price'];
                             $numeric_price = preg_replace('/[^0-9.]/', '', $price);
                             $formatted_price = is_numeric($numeric_price) ? '₱' . number_format((float)$numeric_price, 2) : '₱0.00';
@@ -144,7 +146,7 @@
         <link rel="shortcut icon" type="image/x-icon" href="Images/logo.png"/>
         <link rel="stylesheet" href="customCodes/s2.css">
         <style>
-            /* Custom CSS for wider cards */
+         
             @media (min-width: 768px) {
                 .container {
                     max-width: 95%;
@@ -174,11 +176,11 @@
                 max-width: 500px;
                 margin: 0 auto;
             }
-            /* Style for hidden products during live search */
+   
             .product-card.hidden {
                 display: none;
             }
-            /* Style for the live search container */
+        
             #liveSearchResults {
                 position: absolute;
                 width: 100%;
@@ -219,7 +221,7 @@
             <div class="container mb-4">
                 <h1 style='text-align: center;'>Gallery</h1>
                 
-                <!-- Search Box with Live Preview -->
+           
                 <div class="search-container">
                     <form method="get" action="" class="search-box position-relative" id="searchForm">
                         <div class="input-group mb-3">
@@ -240,7 +242,7 @@
                     </form>
                 </div>
                 
-                <!-- Sorting Dropdown -->
+        
                 <div class="sort-dropdown">
                     <form method="get" action="">
                         <div class="input-group">
@@ -277,7 +279,7 @@
             const productCards = document.querySelectorAll('.product-card');
             const searchForm = document.getElementById('searchForm');
             
-            // Function to perform live search
+         
             function performLiveSearch() {
                 const searchTerm = searchInput.value.trim().toLowerCase();
                 
@@ -288,11 +290,11 @@
                 
                 const matches = [];
                 
-                // Search through all product cards
+      
                 productCards.forEach(card => {
                     const cardTitle = card.querySelector('.card-title').textContent.toLowerCase();
                     
-                    // Only match if the product name starts with the search term
+             
                     if (cardTitle.startsWith(searchTerm)) {
                         matches.push({
                             element: card,
@@ -301,7 +303,7 @@
                     }
                 });
                 
-                // Display results in the live search box
+        
                 if (matches.length > 0) {
                     liveSearchResults.innerHTML = '';
                     matches.slice(0, 5).forEach(match => {
@@ -309,7 +311,7 @@
                         resultItem.className = 'live-search-item';
                         resultItem.textContent = match.title;
                         
-                        // Click handler for live search items - submits the form
+                       
                         resultItem.addEventListener('click', function() {
                             searchInput.value = match.title;
                             searchForm.submit();
@@ -332,12 +334,12 @@
                 }
             }
             
-            // Function to filter products based on search term
+     
             function filterProducts() {
                 const searchTerm = searchInput.value.trim().toLowerCase();
                 
                 if (searchTerm.length === 0) {
-                    // Show all products if search is empty
+            
                     productCards.forEach(card => {
                         card.classList.remove('hidden');
                     });
@@ -346,7 +348,6 @@
                 
                 let visibleCount = 0;
                 
-                // Filter products - now only matching from start of product name
                 productCards.forEach(card => {
                     const cardTitle = card.querySelector('.card-title').textContent.toLowerCase();
                     
@@ -358,30 +359,41 @@
                     }
                 });
                 
-                // Show "no results" message if no products match
                 const noResultsElement = document.querySelector('.no-results');
                 if (noResultsElement) {
                     noResultsElement.style.display = visibleCount > 0 ? 'none' : 'block';
                 }
             }
             
-            // Event listeners
+          
             searchInput.addEventListener('input', function() {
                 performLiveSearch();
-                filterProducts();
+            
             });
             
-            // Hide live search when clicking outside
+          
+            searchInput.addEventListener('focus', function() {
+                if (searchInput.value.trim().length > 0) {
+                    performLiveSearch();
+                }
+            });
+            
+    
             document.addEventListener('click', function(e) {
                 if (!searchInput.contains(e.target) && !liveSearchResults.contains(e.target)) {
                     liveSearchResults.style.display = 'none';
                 }
             });
             
-            // Keyboard navigation for live search
+   
             searchInput.addEventListener('keydown', function(e) {
                 const items = liveSearchResults.querySelectorAll('.live-search-item');
                 let currentHighlight = liveSearchResults.querySelector('.live-search-item.highlight');
+                
+                if (e.key === 'Escape') {
+                    liveSearchResults.style.display = 'none';
+                    return;
+                }
                 
                 if (items.length === 0) return;
                 
@@ -412,7 +424,12 @@
                 }
             });
             
-            // Initial filter if there's a search term in the URL
+     
+            searchForm.addEventListener('submit', function(e) {
+             
+                return true;
+            });
+            
             if (searchInput.value) {
                 filterProducts();
             }
