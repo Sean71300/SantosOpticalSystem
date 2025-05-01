@@ -216,17 +216,18 @@
             GenerateLogs($employee_id,$id,$name);
         }
         function GenerateLogs($employee_id,$id,$name)
-    {
-        $conn = connect(); 
-        $Logsid = generate_LogsID(); ;   
-        $upd_by = $_SESSION["full_name"];
-        $sql = "INSERT INTO Logs 
-                (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description, Upd_dt)
-                VALUES
-                ('$Logsid', '$employee_id', '$id', 'employee', '3','$name', NOW())";
-        
-        mysqli_query($conn, $sql);
-    }
+            {
+                $conn = connect(); 
+                $Logsid = generate_LogsID();
+                
+                $stmt = $conn->prepare("INSERT INTO Logs 
+                                    (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description, Upd_dt)
+                                    VALUES
+                                    (?, ?, ?, 'customer', '3', ?, NOW())");
+                $stmt->bind_param("ssss", $Logsid, $employee_id, $id, $name);
+                $stmt->execute();
+                $stmt->close();
+            }
     function handleCancellation() 
     {
         if (isset($_POST['confirm_cancel'])) {

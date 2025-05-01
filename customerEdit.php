@@ -76,14 +76,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 function EGenerateLogs($employee_id,$id,$name)
     {
         $conn = connect(); 
-        $Logsid = generate_LogsID(); ;   
-        $upd_by = $_SESSION["full_name"];
-        $sql = "INSERT INTO Logs 
-                (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description, Upd_dt)
-                VALUES
-                ('$Logsid', '$employee_id', '$id', 'customer', '4','$name', NOW())";
+        $Logsid = generate_LogsID();
         
-        mysqli_query($conn, $sql);
+        $stmt = $conn->prepare("INSERT INTO Logs 
+                            (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description, Upd_dt)
+                            VALUES
+                            (?, ?, ?, 'customer', '4', ?, NOW())");
+        $stmt->bind_param("ssss", $Logsid, $employee_id, $id, $name);
+        $stmt->execute();
+        $stmt->close();
     }
 
 handleCancellation();

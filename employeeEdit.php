@@ -80,18 +80,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
     } while (false);    
 }
-function EGenerateLogs($employee_id,$id,$name)
-    {
-        $conn = connect(); 
-        $Logsid = generate_LogsID(); ;   
-        $upd_by = $_SESSION["full_name"];
-        $sql = "INSERT INTO Logs 
-                (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description, Upd_dt)
-                VALUES
-                ('$Logsid', '$employee_id', '$id', 'employee', '4',$name, NOW())";
-        
-        mysqli_query($conn, $sql);
-    }
+function EGenerateLogs($employee_id, $id, $name) {
+    $conn = connect(); 
+    $Logsid = generate_LogsID();
+    
+    $stmt = $conn->prepare("INSERT INTO Logs 
+                          (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description, Upd_dt)
+                          VALUES
+                          (?, ?, ?, 'customer', '4', ?, NOW())");
+    $stmt->bind_param("ssss", $Logsid, $employee_id, $id, $name);
+    $stmt->execute();
+    $stmt->close();
+}
 handleCancellation();
 ?>
 
