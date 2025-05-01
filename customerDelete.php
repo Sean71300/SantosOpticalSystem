@@ -27,7 +27,7 @@ $conn = connect();
         $stmt->execute();
         $stmt->close();
 
-header(" url=customerRecords.php");
+header("Refresh: 0.1; url=customerRecords.php");
 exit;
 
 ?>
