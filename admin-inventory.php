@@ -1,4 +1,4 @@
-<?php
+<div?php
 include 'ActivityTracker.php';
 include 'loginChecker.php';
 include 'admin-inventory-funcs.php';
@@ -133,40 +133,40 @@ $_SESSION['current_branch'] = $branchName;
                 </a>            
             </div>
         
-        <div class="filter-container">
-            <form method="post" class="row g-3" id="branchForm">
-                <div class="col-md-8">
-                    <label for="chooseBranch" class="form-label">Select Branch</label>
-                    <select name="chooseBranch" id="chooseBranch" class="form-select form-select-sm">
-                        <option value='' <?= empty($branchName) ? 'selected' : '' ?>>View All Branches</option>
-                        <?php 
-                        $link = connect();
-                        if (!$link) {
-                            die("Database connection failed: " . mysqli_connect_error());
-                        }
-                        
-                        $sql = "SELECT BranchName FROM BranchMaster";
-                        $result = mysqli_query($link, $sql);
-                        
-                        if (!$result) {
-                            die("Query failed: " . mysqli_error($link));
-                        }
-                        
-                        while($row = mysqli_fetch_assoc($result)) {
-                            $selected = (strcasecmp($row['BranchName'], $branchName) === 0) ? 'selected' : '';
-                            echo "<option value='".htmlspecialchars($row['BranchName'])."' $selected>".htmlspecialchars($row['BranchName'])."</option>";
-                        }
-                        mysqli_close($link);
-                        ?>
-                    </select>
-                </div>
-                <div class="col-md-4 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary w-100" name="searchProduct">
-                        <i class="fas fa-search me-2"></i> Search
-                    </button>
-                </div>
-            </form>
-        </div>
+            <div class="filter-container">
+                <form method="post" class="row g-3" id="branchForm">
+                    <div class="col-md-8">
+                        <label for="chooseBranch" class="form-label">Select Branch</label>
+                        <select name="chooseBranch" id="chooseBranch" class="form-select form-select-sm">
+                            <option value='' <?= empty($branchName) ? 'selected' : '' ?>>View All Branches</option>
+                            <?php 
+                            $link = connect();
+                            if (!$link) {
+                                die("Database connection failed: " . mysqli_connect_error());
+                            }
+                            
+                            $sql = "SELECT BranchName FROM BranchMaster";
+                            $result = mysqli_query($link, $sql);
+                            
+                            if (!$result) {
+                                die("Query failed: " . mysqli_error($link));
+                            }
+                            
+                            while($row = mysqli_fetch_assoc($result)) {
+                                $selected = (strcasecmp($row['BranchName'], $branchName) === 0) ? 'selected' : '';
+                                echo "<option value='".htmlspecialchars($row['BranchName'])."' $selected>".htmlspecialchars($row['BranchName'])."</option>";
+                            }
+                            mysqli_close($link);
+                            ?>
+                        </select>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100" name="searchProduct">
+                            <i class="fas fa-search me-2"></i> Search
+                        </button>
+                    </div>
+                </form>
+            </div>
 
             <div class="table-container">
                 <div class="table-responsive">
@@ -303,11 +303,45 @@ $_SESSION['current_branch'] = $branchName;
                         }
                     ?>
                 </div>
+            </div>           
+        </div>
+
+        <div id="lowInventoryModal" class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header bg-warning">
+                        <h5 class="modal-title">Low Inventory Alert</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>The following products are running low on stock:</p>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Product ID</th>
+                                        <th>Product Name</th>
+                                        <th>Branch Code</th>
+                                        <th>Current Stock</th>
+                                        <th>Category</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="lowInventoryTableBody">
+                                    <!-- Data will be inserted here by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.min.js"></script>
+        
 
         <script>
             // Modal handling
@@ -372,5 +406,7 @@ $_SESSION['current_branch'] = $branchName;
                 });
             });
         </script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.min.js"></script>
     </body>
 </html>

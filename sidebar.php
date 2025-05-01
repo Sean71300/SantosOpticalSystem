@@ -45,11 +45,11 @@ if ($isAdmin === true) {
             <a href="employeeRecords.php" class="sidebar-item <?php echo ($current_page == 'employeeRecords.php') ? 'active' : ''; ?>">
                 <i class="fas fa-user-tie"></i> Manage Employees
             </a>
+                
+            <a href="admin-inventory.php" class="sidebar-item <?php echo ($current_page == 'admin-inventory.php') ? 'active' : ''; ?>">
+                <i class="fas fa-boxes"></i> Manage Inventory
+            </a>
         <?php endif; ?>
-        
-        <a href="admin-inventory.php" class="sidebar-item <?php echo ($current_page == 'admin-inventory.php') ? 'active' : ''; ?>">
-            <i class="fas fa-boxes"></i> Manage Inventory
-        </a>
         
         <a href="order.php" class="sidebar-item <?php echo ($current_page == 'order.php') ? 'active' : ''; ?>">
             <i class="fas fa-shopping-cart"></i> Manage Orders
