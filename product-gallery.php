@@ -5,9 +5,12 @@
 
     function pagination() {
         $conn = connect();
+        if (!$conn) {
+            die("Database connection failed");
+        }
 
         $perPage = 12; 
-        $page = (isset($_GET['page'])) ? (int)$_GET['page'] : 1;
+        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
         $start = ($page - 1) * $perPage;
         
         // Get sort and filter parameters from URL
@@ -19,7 +22,8 @@
         
         // Add material filter if selected
         if (!empty($material_filter)) {
-            $sql .= " WHERE Material = '" . mysqli_real_escape_string($conn, $material_filter) . "'";
+            $material_filter = mysqli_real_escape_string($conn, $material_filter);
+            $sql .= " WHERE Material = '$material_filter'";
         }
         
         // Add sorting based on the selected option
@@ -44,13 +48,19 @@
         $sql .= " LIMIT $start, $perPage";
         
         $result = mysqli_query($conn, $sql);
+        if (!$result) {
+            die("Query failed: " . mysqli_error($conn));
+        }
         
         // Get total count for pagination (with filter if applied)
         $count_sql = "SELECT COUNT(*) as total FROM `productMstr`";
         if (!empty($material_filter)) {
-            $count_sql .= " WHERE Material = '" . mysqli_real_escape_string($conn, $material_filter) . "'";
+            $count_sql .= " WHERE Material = '$material_filter'";
         }
         $total_result = mysqli_query($conn, $count_sql);
+        if (!$total_result) {
+            die("Count query failed: " . mysqli_error($conn));
+        }
         $total_row = mysqli_fetch_assoc($total_result);
         $total = $total_row['total'];
         $totalPages = ceil($total / $perPage);
@@ -58,36 +68,39 @@
         // Get unique materials for filter dropdown
         $materials_sql = "SELECT DISTINCT Material FROM `productMstr` ORDER BY Material ASC";
         $materials_result = mysqli_query($conn, $materials_sql);
+        if (!$materials_result) {
+            die("Materials query failed: " . mysqli_error($conn));
+        }
         $materials = [];
         while ($material_row = mysqli_fetch_assoc($materials_result)) {
             $materials[] = $material_row['Material'];
         }
 
-        // Start of card grid - fewer columns for wider cards
+        // Start of card grid
         echo "<div class='row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4'>";
         
         while($row = mysqli_fetch_assoc($result)) {
             echo "<div class='col d-flex'>";
                 echo "<div class='card w-100' style='max-width: 380px;'>";
-                    echo '<img src="' . $row['ProductImage']. '" class="card-img-top img-fluid" style="height: 280px;" alt="'. $row['Model'] .'">';
+                    echo '<img src="' . htmlspecialchars($row['ProductImage']) . '" class="card-img-top img-fluid" style="height: 280px;" alt="'. htmlspecialchars($row['Model']) .'">';
                     echo "<div class='card-body d-flex flex-column'>";
-                        echo "<h5 class='card-title' style='min-height: 1.5rem;'>".$row['Model']."</h5>";
+                        echo "<h5 class='card-title' style='min-height: 1.5rem;'>".htmlspecialchars($row['Model'])."</h5>";
                         echo "<hr>";
-                        echo "<div class='card-text mb-2'>".$row['CategoryType']."</div>";
-                        echo "<div class='card-text mb-2'>".$row['Material']."</div>";
-                        // Fixed price display with peso sign handling
+                        echo "<div class='card-text mb-2'>".htmlspecialchars($row['CategoryType'])."</div>";
+                        echo "<div class='card-text mb-2'>".htmlspecialchars($row['Material'])."</div>";
+                        // Price display
                         $price = $row['Price'];
                         $numeric_price = preg_replace('/[^0-9.]/', '', $price);
                         $formatted_price = is_numeric($numeric_price) ? '₱' . number_format((float)$numeric_price, 2) : '₱0.00';
-                        echo "<div class='card-text mb-2'>".$formatted_price."</div>";
+                        echo "<div class='card-text mb-2'>".htmlspecialchars($formatted_price)."</div>";
                         if ($row['Avail_FL'] == "Available") {
-                            echo "<div class='card-text mb-2 text-success'>".$row['Avail_FL']."</div>";
+                            echo "<div class='card-text mb-2 text-success'>".htmlspecialchars($row['Avail_FL'])."</div>";
                         echo "</div>";
                             echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
                                 echo "<a href='#' class='btn btn-primary w-100 py-2'>More details</a>";
                             echo "</div>";
                         } else {
-                            echo "<div class='card-text mb-2 text-danger'>".$row['Avail_FL']."</div>";
+                            echo "<div class='card-text mb-2 text-danger'>".htmlspecialchars($row['Avail_FL'])."</div>";
                         echo "</div>";
                         echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
                             echo "<a href='#' class='btn btn-secondary w-100 py-2 disabled'>Not Available</a>";
@@ -99,12 +112,12 @@
         
         echo "</div>"; // End of card grid
 
-        // Pagination remains the same but preserves sort and filter parameters
+        // Pagination
         echo "<div class='col-12 mt-5'>";
             echo "<div class='d-flex justify-content-center'>";
                 echo "<ul class='pagination'>";
                 if ($page > 1) {
-                    echo "<li class='page-item'><a class='page-link' href='?page=" . ($page - 1) . "&sort=$sort".(!empty($material_filter) ? "&material=$material_filter" : "")."'>Previous</a></li>";
+                    echo "<li class='page-item'><a class='page-link' href='?page=" . ($page - 1) . "&sort=$sort".(!empty($material_filter) ? "&material=".urlencode($material_filter) : "")."'>Previous</a></li>";
                 } else {
                     echo "<li class='page-item disabled'><a class='page-link'>Previous</a></li>";
                 }
@@ -113,18 +126,20 @@
                     if ($i == $page) {
                         echo "<li class='page-item active' aria-current='page'><a class='page-link disabled'>$i</a></li>"; 
                     } else {
-                        echo "<li class='page-item'><a class='page-link' href='?page=$i&sort=$sort".(!empty($material_filter) ? "&material=$material_filter" : "")."'>$i</a></li>";
+                        echo "<li class='page-item'><a class='page-link' href='?page=$i&sort=$sort".(!empty($material_filter) ? "&material=".urlencode($material_filter) : "")."'>$i</a></li>";
                     }
                 }
 
                 if ($page < $totalPages) {
-                    echo "<li class='page-item'><a class='page-link' href='?page=" . ($page + 1) . "&sort=$sort".(!empty($material_filter) ? "&material=$material_filter" : "")."'>Next</a></li>";
+                    echo "<li class='page-item'><a class='page-link' href='?page=" . ($page + 1) . "&sort=$sort".(!empty($material_filter) ? "&material=".urlencode($material_filter) : "")."'>Next</a></li>";
                 } else {
                     echo "<li class='page-item disabled'><a class='page-link'>Next</a></li>";
                 }
                 echo "</ul>";
             echo "</div>";
         echo "</div>"; 
+        
+        mysqli_close($conn);
     }
 ?>
 
@@ -142,7 +157,6 @@
         <link rel="shortcut icon" type="image/x-icon" href="Images/logo.png"/>
         <link rel="stylesheet" href="customCodes/s2.css">
         <style>
-            /* Custom CSS for wider cards */
             @media (min-width: 768px) {
                 .container {
                     max-width: 95%;
@@ -165,9 +179,11 @@
                 gap: 15px;
                 margin-bottom: 20px;
                 justify-content: flex-end;
+                flex-wrap: wrap;
             }
             .filter-box {
                 max-width: 250px;
+                min-width: 200px;
             }
             .clear-filter {
                 align-self: flex-end;
@@ -198,19 +214,24 @@
                                     <option value="">All Materials</option>
                                     <?php
                                     $conn = connect();
-                                    $materials_sql = "SELECT DISTINCT Material FROM `productMstr` ORDER BY Material ASC";
-                                    $materials_result = mysqli_query($conn, $materials_sql);
-                                    while ($material_row = mysqli_fetch_assoc($materials_result)) {
-                                        $selected = (isset($_GET['material']) && $_GET['material'] == $material_row['Material']) ? 'selected' : '';
-                                        echo "<option value='".htmlspecialchars($material_row['Material'])."' $selected>".htmlspecialchars($material_row['Material'])."</option>";
+                                    if ($conn) {
+                                        $materials_sql = "SELECT DISTINCT Material FROM `productMstr` ORDER BY Material ASC";
+                                        $materials_result = mysqli_query($conn, $materials_sql);
+                                        if ($materials_result) {
+                                            while ($material_row = mysqli_fetch_assoc($materials_result)) {
+                                                $selected = (isset($_GET['material']) && $_GET['material'] == $material_row['Material']) ? 'selected' : '';
+                                                echo "<option value='".htmlspecialchars($material_row['Material'])."' $selected>".htmlspecialchars($material_row['Material'])."</option>";
+                                            }
+                                        }
+                                        mysqli_close($conn);
                                     }
                                     ?>
                                 </select>
                                 <?php if(isset($_GET['page'])): ?>
-                                    <input type="hidden" name="page" value="<?php echo $_GET['page']; ?>">
+                                    <input type="hidden" name="page" value="<?php echo (int)$_GET['page']; ?>">
                                 <?php endif; ?>
                                 <?php if(isset($_GET['sort'])): ?>
-                                    <input type="hidden" name="sort" value="<?php echo $_GET['sort']; ?>">
+                                    <input type="hidden" name="sort" value="<?php echo htmlspecialchars($_GET['sort']); ?>">
                                 <?php endif; ?>
                             </div>
                         </form>
@@ -228,19 +249,19 @@
                                     <option value="price_desc" <?php echo (isset($_GET['sort']) && $_GET['sort'] == 'price_desc' ? 'selected' : ''; ?>>Price (High to Low)</option>
                                 </select>
                                 <?php if(isset($_GET['page'])): ?>
-                                    <input type="hidden" name="page" value="<?php echo $_GET['page']; ?>">
+                                    <input type="hidden" name="page" value="<?php echo (int)$_GET['page']; ?>">
                                 <?php endif; ?>
                                 <?php if(isset($_GET['material'])): ?>
-                                    <input type="hidden" name="material" value="<?php echo $_GET['material']; ?>">
+                                    <input type="hidden" name="material" value="<?php echo htmlspecialchars($_GET['material']); ?>">
                                 <?php endif; ?>
                             </div>
                         </form>
                     </div>
                     
-                    <!-- Clear Filter Button (only shown when a filter is active) -->
+                    <!-- Clear Filter Button -->
                     <?php if(isset($_GET['material']) && !empty($_GET['material'])): ?>
                         <div class="clear-filter">
-                            <a href="?page=1&sort=<?php echo isset($_GET['sort']) ? $_GET['sort'] : 'name_asc'; ?>" class="btn btn-outline-secondary">Clear Filter</a>
+                            <a href="?page=1&sort=<?php echo isset($_GET['sort']) ? htmlspecialchars($_GET['sort']) : 'name_asc'; ?>" class="btn btn-outline-secondary">Clear Filter</a>
                         </div>
                     <?php endif; ?>
                 </div>
