@@ -1162,59 +1162,138 @@
                 
                 FOREIGN KEY (CustomerID) REFERENCES customer(CustomerID) ON DELETE CASCADE,
                 INDEX (CustomerID),
-                INDEX (visit_date),
-                ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
-        
+                INDEX (visit_date))";
+    
         if (mysqli_query($conn, $sql)) {
-            $historyID = generate_historyID();
-            $customerID = generate_CustomerID();
-            $inserts = [
-                // Patient 1: Routine eye exam with mild myopia
-                "INSERT INTO customerMedicalHistory (history_id, CustomerID, visit_date, eye_condition, current_medications, allergies, visual_acuity_right, visual_acuity_left, refraction_right, refraction_left, pupillary_distance)
-                VALUES ($historyID, $customerID, CURDATE(), 'Mild myopia', 'None', 'None', '20/40', '20/40', '-1.50 DS', '-1.25 DS', 62)",
-    
-                // Patient 2: Diabetic patient with annual eye screening
-                "INSERT INTO customerMedicalHistory (CustomerID, visit_date, eye_condition, systemic_diseases, visual_acuity_right, visual_acuity_left, intraocular_pressure_right, intraocular_pressure_left, fundus_examination)
-                VALUES ($historyID, $customerID, CURDATE(), 'Diabetic retinopathy screening', 'Diabetes Type 2', '20/25', '20/30', 16.5, 17.0, 'Mild non-proliferative diabetic retinopathy')",
-    
-                // Patient 3: Contact lens fitting
-                "INSERT INTO customerMedicalHistory (CustomerID, visit_date, eye_condition, current_medications, visual_acuity_right, visual_acuity_left, refraction_right, refraction_left, corneal_topography)
-                VALUES ($historyID, $customerID, CURDATE(), 'Contact lens fitting', 'Artificial tears', '20/20', '20/20', 'Plano', 'Plano', 'Regular astigmatism 1.00D @ 180°')",
-    
-                // Patient 4: Glaucoma suspect
-                "INSERT INTO customerMedicalHistory (CustomerID, visit_date, eye_condition, family_eye_history, intraocular_pressure_right, intraocular_pressure_left, additional_notes)
-                VALUES ($historyID, $customerID, CURDATE(), 'Glaucoma suspect', 'Mother has glaucoma', 22.0, 23.5, 'Recommended OCT and visual field testing')",
-    
-                // Patient 5: Cataract evaluation
-                "INSERT INTO customerMedicalHistory (CustomerID, visit_date, eye_condition, previous_eye_surgeries, visual_acuity_right, visual_acuity_left, additional_notes)
-                VALUES ($historyID, $customerID, CURDATE(), 'Cataract evaluation', 'None', '20/60', '20/70', 'Nuclear sclerosis grade 2-3, discuss cataract surgery options')",
-    
-                // Patient 6: Dry eye syndrome
-                "INSERT INTO customerMedicalHistory (CustomerID, visit_date, eye_condition, current_medications, allergies, additional_notes)
-                VALUES ($historyID, $customerID, CURDATE(), 'Dry eye syndrome', 'Restasis', 'Preservatives in eye drops', 'Started on preservative-free artificial tears QID')",
-    
-                // Patient 7: Child's first eye exam
-                "INSERT INTO customerMedicalHistory (CustomerID, visit_date, eye_condition, family_eye_history, visual_acuity_right, visual_acuity_left, pupillary_distance)
-                VALUES ($historyID, $customerID, CURDATE(), 'Pediatric eye exam', 'Father has high myopia', '20/30', '20/40', 54)",
-    
-                // Patient 8: Post-LASIK follow-up
-                "INSERT INTO customerMedicalHistory (CustomerID, visit_date, eye_condition, previous_eye_surgeries, visual_acuity_right, visual_acuity_left, refraction_right, refraction_left)
-                VALUES ($historyID, $customerID, CURDATE(), 'Post-LASIK follow-up', 'LASIK 2019', '20/15', '20/15', 'Plano', 'Plano')",
-    
-                // Patient 9: Macular degeneration monitoring
-                "INSERT INTO customerMedicalHistory (CustomerID, visit_date, eye_condition, family_eye_history, visual_acuity_right, visual_acuity_left, fundus_examination)
-                VALUES ($historyID, $customerID, CURDATE(), 'AMD monitoring', 'Mother had AMD', '20/25', '20/40', 'Few small drusen OU, no geographic atrophy')",
-    
-                // Patient 10: Emergency - corneal abrasion
-                "INSERT INTO customerMedicalHistory (CustomerID, visit_date, eye_condition, current_medications, additional_notes)
-                VALUES ($historyID, $customerID, CURDATE(), 'Corneal abrasion', 'Erythromycin ointment', '2mm corneal abrasion from fingernail trauma, patched for 24 hours')"
-            ];
-            foreach ($inserts as $insert) {
-                mysqli_query($conn, $insert);
+            // Get existing customer IDs from the database
+            $customerIDs = [];
+            $customerQuery = "SELECT CustomerID FROM customer LIMIT 10";
+            $result = $conn->query($customerQuery);
+            while ($row = $result->fetch_assoc()) {
+                $customerIDs[] = $row['CustomerID'];
             }
-        }
-        else {
-            echo "<br>There is an error in creating the table: " . $conn->connect_error;
+    
+            // Sample medical history data
+            $medicalHistories = [
+                // Patient 1: Routine eye exam with mild myopia
+                [
+                    'visit_date' => date('Y-m-d', strtotime('-1 month')),
+                    'eye_condition' => 'Mild myopia',
+                    'current_medications' => 'None',
+                    'allergies' => 'None',
+                    'visual_acuity_right' => '20/40',
+                    'visual_acuity_left' => '20/40',
+                    'refraction_right' => '-1.50 DS',
+                    'refraction_left' => '-1.25 DS',
+                    'pupillary_distance' => 62
+                ],
+                // Patient 2: Diabetic patient with annual eye screening
+                [
+                    'visit_date' => date('Y-m-d', strtotime('-2 months')),
+                    'eye_condition' => 'Diabetic retinopathy screening',
+                    'systemic_diseases' => 'Diabetes Type 2',
+                    'visual_acuity_right' => '20/25',
+                    'visual_acuity_left' => '20/30',
+                    'intraocular_pressure_right' => 16.5,
+                    'intraocular_pressure_left' => 17.0,
+                    'fundus_examination' => 'Mild non-proliferative diabetic retinopathy'
+                ],
+                // Patient 3: Contact lens fitting
+                [
+                    'visit_date' => date('Y-m-d', strtotime('-3 months')),
+                    'eye_condition' => 'Contact lens fitting',
+                    'current_medications' => 'Artificial tears',
+                    'visual_acuity_right' => '20/20',
+                    'visual_acuity_left' => '20/20',
+                    'refraction_right' => 'Plano',
+                    'refraction_left' => 'Plano',
+                    'corneal_topography' => 'Regular astigmatism 1.00D @ 180°'
+                ],
+                // Patient 4: Glaucoma suspect
+                [
+                    'visit_date' => date('Y-m-d', strtotime('-4 months')),
+                    'eye_condition' => 'Glaucoma suspect',
+                    'family_eye_history' => 'Mother has glaucoma',
+                    'intraocular_pressure_right' => 22.0,
+                    'intraocular_pressure_left' => 23.5,
+                    'additional_notes' => 'Recommended OCT and visual field testing'
+                ],
+                // Patient 5: Cataract evaluation
+                [
+                    'visit_date' => date('Y-m-d', strtotime('-5 months')),
+                    'eye_condition' => 'Cataract evaluation',
+                    'previous_eye_surgeries' => 'None',
+                    'visual_acuity_right' => '20/60',
+                    'visual_acuity_left' => '20/70',
+                    'additional_notes' => 'Nuclear sclerosis grade 2-3, discuss cataract surgery options'
+                ],
+                // Patient 6: Dry eye syndrome
+                [
+                    'visit_date' => date('Y-m-d', strtotime('-6 months')),
+                    'eye_condition' => 'Dry eye syndrome',
+                    'current_medications' => 'Restasis',
+                    'allergies' => 'Preservatives in eye drops',
+                    'additional_notes' => 'Started on preservative-free artificial tears QID'
+                ],
+                // Patient 7: Child's first eye exam
+                [
+                    'visit_date' => date('Y-m-d', strtotime('-7 months')),
+                    'eye_condition' => 'Pediatric eye exam',
+                    'family_eye_history' => 'Father has high myopia',
+                    'visual_acuity_right' => '20/30',
+                    'visual_acuity_left' => '20/40',
+                    'pupillary_distance' => 54
+                ],
+                // Patient 8: Post-LASIK follow-up
+                [
+                    'visit_date' => date('Y-m-d', strtotime('-8 months')),
+                    'eye_condition' => 'Post-LASIK follow-up',
+                    'previous_eye_surgeries' => 'LASIK 2019',
+                    'visual_acuity_right' => '20/15',
+                    'visual_acuity_left' => '20/15',
+                    'refraction_right' => 'Plano',
+                    'refraction_left' => 'Plano'
+                ],
+                // Patient 9: Macular degeneration monitoring
+                [
+                    'visit_date' => date('Y-m-d', strtotime('-9 months')),
+                    'eye_condition' => 'AMD monitoring',
+                    'family_eye_history' => 'Mother had AMD',
+                    'visual_acuity_right' => '20/25',
+                    'visual_acuity_left' => '20/40',
+                    'fundus_examination' => 'Few small drusen OU, no geographic atrophy'
+                ],
+                // Patient 10: Emergency - corneal abrasion
+                [
+                    'visit_date' => date('Y-m-d', strtotime('-10 months')),
+                    'eye_condition' => 'Corneal abrasion',
+                    'current_medications' => 'Erythromycin ointment',
+                    'additional_notes' => '2mm corneal abrasion from fingernail trauma, patched for 24 hours'
+                ]
+            ];
+    
+            // Insert sample data
+            foreach ($medicalHistories as $index => $history) {
+                $historyID = generate_historyID();
+                $customerID = $customerIDs[$index] ?? generate_CustomerID(); // Use existing customer ID or generate new one
+                
+                $fields = ['history_id', 'CustomerID', 'visit_date'];
+                $values = [$historyID, $customerID, "'" . $history['visit_date'] . "'"];
+                
+                foreach ($history as $key => $value) {
+                    if ($key !== 'visit_date') {
+                        $fields[] = $key;
+                        $values[] = "'" . mysqli_real_escape_string($conn, $value) . "'";
+                    }
+                }
+                
+                $sql = "INSERT INTO customerMedicalHistory (" . implode(', ', $fields) . ") 
+                        VALUES (" . implode(', ', $values) . ")";
+                
+                mysqli_query($conn, $sql);
+            }
+        } else {
+            echo "<br>There is an error in creating the table: " . $conn->error;
         }
         $conn->close();
     }
