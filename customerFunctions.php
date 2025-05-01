@@ -29,7 +29,7 @@
                 <td>$row[CustomerContact]</td>
                 <td>
                     <a class='btn btn-primary btn-sm' href='customerEdit.php?CustomerID=$row[CustomerID]'>Edit</a>
-                    <a class='btn btn-danger btn-sm' href='customerDelete.php?CustomerID=$row[CustomerID]'>Archive</a>
+                    <a class='btn btn-danger btn-sm' href='customerDelete.php?CustomerID=$row[CustomerID]'>Delete</a>
                     <button class='btn btn-info btn-sm view-orders' data-customer-id='$row[CustomerID]'>View Orders</button>
                 </td>
             </tr>";
@@ -121,17 +121,17 @@
                 ('$id','$name','$address','$phone','$info','$notes','$upd_by')";
         
         mysqli_query($conn, $sql);
-        GenerateLogs($employee_id,$id);
+        GenerateLogs($employee_id,$id,$name);
     }
-    function GenerateLogs($employee_id,$id)
+    function GenerateLogs($employee_id,$id,$name)
     {
         $conn = connect(); 
         $Logsid = generate_LogsID(); ;   
         $upd_by = $_SESSION["full_name"];
         $sql = "INSERT INTO Logs 
-                (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Upd_dt)
+                (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description, Upd_dt)
                 VALUES
-                ('$Logsid', '$employee_id', '$id', 'customer', '3', NOW())";
+                ('$Logsid', '$employee_id', '$id', 'customer', '3',$name, NOW())";
         
         mysqli_query($conn, $sql);
     }
