@@ -167,10 +167,55 @@
             }
             .search-container {
                 margin-bottom: 30px;
+                position: relative;
             }
             .search-box {
                 max-width: 500px;
                 margin: 0 auto;
+            }
+            #searchResults {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                z-index: 1000;
+                background: white;
+                border: 1px solid #ddd;
+                border-radius: 0 0 5px 5px;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+                max-height: 300px;
+                overflow-y: auto;
+                display: none;
+            }
+            .search-result-item {
+                padding: 10px 15px;
+                border-bottom: 1px solid #eee;
+                cursor: pointer;
+                transition: background 0.2s;
+            }
+            .search-result-item:hover {
+                background: #f8f9fa;
+            }
+            .search-result-item:last-child {
+                border-bottom: none;
+            }
+            .search-result-item .model {
+                font-weight: bold;
+                color: #333;
+            }
+            .search-result-item .category {
+                font-size: 0.85rem;
+                color: #666;
+            }
+            .search-highlight {
+                background-color: #fffde7;
+                font-weight: bold;
+                padding: 0 2px;
+            }
+            .search-loading {
+                padding: 10px;
+                text-align: center;
+                color: #666;
             }
         </style>
     </head>
@@ -186,12 +231,13 @@
             <div class="container mb-4">
                 <h1 style='text-align: center;'>Gallery</h1>
                 
-                <!-- Search Box -->
+                <!-- Enhanced Search Box -->
                 <div class="search-container">
-                    <form method="get" action="" class="search-box">
-                        <div class="input-group mb-3">
-                            <input type="text" class="form-control" name="search" placeholder="Search products..." 
-                                   value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>">
+                    <form method="get" action="" class="search-box" id="searchForm">
+                        <div class="input-group mb-3" style="position: relative;">
+                            <input type="text" class="form-control" id="searchInput" name="search" placeholder="Search products..." 
+                                   value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>"
+                                   autocomplete="off">
                             <button class="btn btn-primary" type="submit">
                                 <i class="fas fa-search"></i>
                             </button>
@@ -202,6 +248,7 @@
                                 <input type="hidden" name="sort" value="<?php echo $_GET['sort']; ?>">
                             <?php endif; ?>
                         </div>
+                        <div id="searchResults"></div>
                     </form>
                 </div>
                 
@@ -234,5 +281,83 @@
             </div>          
         </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            const searchResults = document.getElementById('searchResults');
+            let typingTimer;
+            const doneTypingInterval = 300; // 300ms delay after typing stops
+            
+            // Show live search results as user types
+            searchInput.addEventListener('input', function() {
+                clearTimeout(typingTimer);
+                const searchTerm = this.value.trim();
+                
+                if (searchTerm.length < 2) {
+                    searchResults.style.display = 'none';
+                    return;
+                }
+                
+                // Show loading indicator
+                searchResults.innerHTML = '<div class="search-loading"><i class="fas fa-spinner fa-spin"></i> Searching...</div>';
+                searchResults.style.display = 'block';
+                
+                typingTimer = setTimeout(function() {
+                    fetchSearchResults(searchTerm);
+                }, doneTypingInterval);
+            });
+            
+            // Hide results when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!searchInput.contains(e.target) {
+                    searchResults.style.display = 'none';
+                }
+            });
+            
+            // Submit form when a result is clicked
+            searchResults.addEventListener('click', function(e) {
+                if (e.target.closest('.search-result-item')) {
+                    const item = e.target.closest('.search-result-item');
+                    searchInput.value = item.dataset.searchterm;
+                    document.getElementById('searchForm').submit();
+                }
+            });
+            
+            function fetchSearchResults(searchTerm) {
+                fetch(`search_suggestions.php?search=${encodeURIComponent(searchTerm)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.length > 0) {
+                            let html = '';
+                            data.forEach(item => {
+                                // Highlight matching text
+                                const highlightedModel = highlightText(item.Model, searchTerm);
+                                const highlightedCategory = highlightText(item.CategoryType, searchTerm);
+                                
+                                html += `
+                                    <div class="search-result-item" data-searchterm="${item.Model}">
+                                        <div class="model">${highlightedModel}</div>
+                                        <div class="category">${highlightedCategory}</div>
+                                    </div>
+                                `;
+                            });
+                            searchResults.innerHTML = html;
+                        } else {
+                            searchResults.innerHTML = '<div class="search-result-item">No matching products found</div>';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        searchResults.innerHTML = '<div class="search-result-item">Error loading results</div>';
+                    });
+            }
+            
+            function highlightText(text, searchTerm) {
+                if (!text) return '';
+                const regex = new RegExp(`(${searchTerm})`, 'gi');
+                return text.replace(regex, '<span class="search-highlight">$1</span>');
+            }
+        });
+    </script>
     </body>
 </html>
