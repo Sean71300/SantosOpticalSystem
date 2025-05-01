@@ -17,7 +17,7 @@
         $sql = "SELECT * 
         FROM customer c
         WHERE NOT EXISTS (
-            SELECT 1 
+            SELECT * 
             FROM archives a 
             WHERE a.TargetID = c.CustomerID AND a.TargetType = 'customer'
         )
