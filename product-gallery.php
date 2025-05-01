@@ -39,7 +39,7 @@
                             echo "<div class='card-text mb-2 text-danger'>".$row['Avail_FL']."</div>";
                         echo "</div>";
                         echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
-                            echo "<a href='#' class='btn btn-primary w-100 py-2 disabled'>Not Available.</a>";
+                            echo "<a href='#' class='btn btn-secondary w-100 py-2 disabled'>Not Available</a>";
                         echo "</div>";
                         }                               
                 echo "</div>";
