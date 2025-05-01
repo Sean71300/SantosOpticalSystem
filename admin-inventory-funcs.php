@@ -204,7 +204,7 @@ function getInventory($sort = 'ProductID', $order = 'ASC') {
                             <input type='hidden' name='price' value='" . htmlspecialchars($row['Price']) . "' />
                             <input type='hidden' name='count' value='" . htmlspecialchars($row['Stocks']) . "' />
                             <input type='hidden' name='productImg' value='" . htmlspecialchars($row['ProductImage']) . "' />
-                            <button type='submit' class='btn btn-success' name='editProductBtn' style='font-size:12px'><i class='fa-solid fa-pen'></i></button>
+                            <button type='submit' class='btn btn-success align-middle' name='editProductBtn' style='font-size:12px'><i class='fa-solid fa-pen'></i></button>
                         </form>
                     </td>
                     <td>
@@ -212,7 +212,7 @@ function getInventory($sort = 'ProductID', $order = 'ASC') {
                             <input type='hidden' name='chooseBranch' value='" . htmlspecialchars($branchName) . "' />
                             <input type='hidden' name='productBranchID' value='" . htmlspecialchars($row['ProductBranchID']) . "' />
                             <input type='hidden' name='productID' value='" . htmlspecialchars($row['ProductID']) . "' />
-                            <button type='submit' class='btn btn-danger' name='deleteProductBtn' value='deleteProductBtn' style='font-size:12px'><i class='fa-solid fa-trash'></i></button>
+                            <button type='submit' class='btn btn-danger align-middle' name='deleteProductBtn' value='deleteProductBtn' style='font-size:12px'><i class='fa-solid fa-trash'></i></button>
                         </form>
                     </td>
                 </tr>";
