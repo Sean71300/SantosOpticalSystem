@@ -20,13 +20,17 @@ $data = [
     'values' => []
 ];
 
-// Get sales data for the selected period
+// Get sales data for the selected period from Order_hdr and orderDetails
 $query = "SELECT 
-            DATE(OrderDate) as day, 
-            SUM(TotalAmount) as total 
-          FROM orders 
-          WHERE OrderDate >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
-          GROUP BY DATE(OrderDate) 
+            DATE(o.Created_dt) as day, 
+            SUM(od.Quantity * (REPLACE(REPLACE(p.Price, '₱', ''), ',', '')) as total 
+          FROM Order_hdr o
+          JOIN orderDetails od ON o.Orderhdr_id = od.OrderHdr_id
+          JOIN ProductBranchMaster pbm ON od.ProductBranchID = pbm.ProductBranchID
+          JOIN productMstr p ON pbm.ProductID = p.ProductID
+          WHERE o.Created_dt >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
+          AND od.ActivityCode = 1  -- Only include orders with ActivityCode = 1 (Ordered)
+          GROUP BY DATE(o.Created_dt) 
           ORDER BY day ASC";
 
 $stmt = $conn->prepare($query);
