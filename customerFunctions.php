@@ -19,7 +19,6 @@
                 WHERE CustomerID NOT IN (
                 SELECT TargetID 
                 FROM archives 
-                WHERE TargetType = 'customer'
                 )
         ORDER BY $sort $order";
         $result = $connection->query($sql);
