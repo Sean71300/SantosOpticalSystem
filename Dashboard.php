@@ -5,6 +5,7 @@ include 'loginChecker.php';
 include 'adminFunctions.php';
 
 $isAdmin = isset($_SESSION['roleid']) && $_SESSION['roleid'] === 1;
+if ($isAdmin)
 
 // Get all counts
 $customerCount = getCustomerCount();
@@ -148,7 +149,7 @@ $lowInventory = getLowInventoryProducts();
                         </div>
                         <h5>Orders</h5>
                         <div class="stat-number"><?php echo number_format($orderCount); ?></div>
-                        <a href="#" class="btn btn-sm btn-outline-info mt-2">View All</a>
+                        <a href="order.php" class="btn btn-sm btn-outline-info mt-2">View All</a>
                     </div>
                 </div>
             </div>
