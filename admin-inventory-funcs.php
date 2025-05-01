@@ -891,7 +891,8 @@ function GenerateLogs($productID,$model,$code)
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body">
-                                    <p><i class="fas fa-exclamation-triangle me-2"></i> Product could not be deleted because it has an active order related to it.</p>
+                                    <p><i class="fas fa-exclamation-triangle me-2"></i> Product could not be deleted because it has an 
+                                    active order related to it. Complete product order first.</p>
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
