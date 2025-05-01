@@ -2,15 +2,6 @@
 include_once 'setup.php';
 include 'ActivityTracker.php';
 include 'loginChecker.php';
-include 'adminFunctions.php';
-
-// Get all counts
-$customerCount = getCustomerCount();
-$employeeCount = getEmployeeCount();
-$inventoryCount = getInventoryCount();
-$orderCount = getOrderCount();
-$recentActivities = getRecentActivities();
-$lowInventory = getLowInventoryProducts();
 ?>
 
 <!DOCTYPE html>
@@ -21,7 +12,7 @@ $lowInventory = getLowInventoryProducts();
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
         <link rel="stylesheet" href="customCodes/custom.css">
         <link rel="shortcut icon" type="image/x-icon" href="Images/logo.png"/>
-        <title>Admin | Dashboard</title>
+        <title>Employee | Dashboard</title>
         <style>
             body {
                 background-color: #f5f7fa;
@@ -97,7 +88,6 @@ $lowInventory = getLowInventoryProducts();
     <body>
         <?php include "sidebar.php"; ?>
 
-        <!-- Main Content -->
         <div class="main-content">
             <?php
                 $username = $_SESSION["username"];
