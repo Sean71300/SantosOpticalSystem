@@ -6,6 +6,9 @@
     //read all row from database table
     function customerData($sort = 'CustomerID', $order = 'ASC')
         {
+            $isAdmin = false;
+            $isAdmin = isset($_SESSION['roleid']) && $_SESSION['roleid'] === 1;        
+            
             $customerData = "";
             $connection = connect();
 
