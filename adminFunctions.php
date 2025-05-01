@@ -75,7 +75,7 @@ function getOrderCount() {
     return $count;
 }
 
-function getRecentActivities($limit = 5) {
+function getRecentActivities($limit = 20) {
     $conn = connect();
     $activities = [];
     $query = "SELECT * FROM Logs 
