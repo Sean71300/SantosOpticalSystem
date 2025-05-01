@@ -233,7 +233,7 @@ $lowInventory = getLowInventoryProducts();
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <div>
                                     <small><?php echo date('M j, g:i A', strtotime($activity['Upd_dt'])); ?></small>
-                                    <div><?php echo htmlspecialchars($activity['Description']) ." ". ($activity['TargetType']); ?></div>
+                                    <div><?php echo htmlspecialchars($activity['Description']) ." ". ($activity['TargetType']). " # " . ($activity['TargetID']); ?></div>
                                 </div>
                                 <span class="badge bg-primary rounded-pill">New</span>
                             </li>

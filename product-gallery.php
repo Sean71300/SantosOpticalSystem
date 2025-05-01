@@ -56,11 +56,13 @@
         $totalPages = ceil($total / $perPage);
 
         // Start of card grid
-        echo "<div class='row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4'>";
+        echo "<div class='row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4' id='productGrid'>";
         
         if ($total > 0) {
             while($row = mysqli_fetch_assoc($result)) {
-                echo "<div class='col d-flex'>";
+                // Create a searchable string for each product
+                $searchableText = strtolower($row['Model'].' '.$row['CategoryType'].' '.$row['Material']);
+                echo "<div class='col d-flex product-card' data-search='".htmlspecialchars($searchableText, ENT_QUOTES)."'>";
                     echo "<div class='card w-100' style='max-width: 380px;'>";
                         echo '<img src="' . $row['ProductImage']. '" class="card-img-top img-fluid" style="height: 280px;" alt="'. $row['Model'] .'">';
                         echo "<div class='card-body d-flex flex-column'>";
@@ -90,7 +92,7 @@
                 echo "</div>";
             }
         } else {
-            echo "<div class='col-12 text-center py-5'>";
+            echo "<div class='col-12 text-center py-5 no-results'>";
             echo "<h4>No products found matching your search.</h4>";
             echo "</div>";
         }
@@ -167,93 +169,51 @@
             }
             .search-container {
                 margin-bottom: 30px;
-                position: relative;
             }
             .search-box {
                 max-width: 500px;
                 margin: 0 auto;
             }
-            #searchResults {
-                position: absolute;
-                top: 100%;
-                left: 0;
-                right: 0;
-                z-index: 1000;
-                background: white;
-                border: 1px solid #ddd;
-                border-radius: 0 0 5px 5px;
-                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-                max-height: 300px;
-                overflow-y: auto;
+            /* Style for hidden products during live search */
+            .product-card.hidden {
                 display: none;
             }
-            .search-result-item {
-                padding: 10px 15px;
-                border-bottom: 1px solid #eee;
-                cursor: pointer;
-                transition: background 0.2s;
-            }
-            .search-result-item:hover {
-                background: #f8f9fa;
-            }
-            .search-result-item:last-child {
-                border-bottom: none;
-            }
-            .search-result-item .model {
-                font-weight: bold;
-                color: #333;
-            }
-            .search-result-item .category {
-                font-size: 0.85rem;
-                color: #666;
-            }
-            .search-highlight {
-                background-color: #fffde7;
-                font-weight: bold;
-                padding: 0 2px;
-            }
-            .search-loading {
-                padding: 10px;
-                text-align: center;
-                color: #666;
-            }
-
-            .search-container {
-                margin-bottom: 30px;
-                position: relative;
-            }
-            .search-box {
-                max-width: 500px;
-                margin: 0 auto;
-            }
-            #liveResults {
+            /* Style for the live search container */
+            #liveSearchResults {
                 position: absolute;
                 width: 100%;
-                max-height: 300px;
-                overflow-y: auto;
+                max-width: 500px;
+                left: 50%;
+                transform: translateX(-50%);
+                z-index: 1000;
                 background: white;
                 border: 1px solid #ddd;
-                border-top: none;
                 border-radius: 0 0 5px 5px;
                 box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-                z-index: 1000;
+                max-height: 300px;
+                overflow-y: auto;
                 display: none;
             }
-            .live-result-item {
+            .live-search-item {
                 padding: 10px;
-                cursor: pointer;
                 border-bottom: 1px solid #eee;
+                cursor: pointer;
             }
-            .live-result-item:hover {
+            .live-search-item:hover {
                 background-color: #f8f9fa;
             }
-            .live-result-item:last-child {
-                border-bottom: none;
+            .live-search-item.highlight {
+                background-color: #e9ecef;
             }
-            .no-results {
-                padding: 10px;
-                color: #666;
+            .search-highlight {
+                background-color: yellow;
+                font-weight: bold;
             }
+
+            .search-highlight {
+    background-color: yellow;
+    font-weight: bold;
+}
         </style>
     </head>
 
@@ -268,12 +228,11 @@
             <div class="container mb-4">
                 <h1 style='text-align: center;'>Gallery</h1>
                 
-                <!-- Enhanced Search Box -->
+                <!-- Search Box with Live Preview -->
                 <div class="search-container">
-                    <form method="get" action="" class="search-box">
-                        <div class="input-group">
-                            <input type="text" class="form-control" id="searchInput" name="search" 
-                                   placeholder="Search products..." 
+                    <form method="get" action="" class="search-box position-relative">
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" id="searchInput" name="search" placeholder="Search products..." 
                                    value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>"
                                    autocomplete="off">
                             <button class="btn btn-primary" type="submit">
@@ -282,8 +241,11 @@
                             <?php if(isset($_GET['search']) && !empty($_GET['search'])): ?>
                                 <a href="?" class="btn btn-outline-secondary">Clear</a>
                             <?php endif; ?>
+                            <?php if(isset($_GET['sort'])): ?>
+                                <input type="hidden" name="sort" value="<?php echo $_GET['sort']; ?>">
+                            <?php endif; ?>
                         </div>
-                        <div id="liveResults"></div>
+                        <div id="liveSearchResults"></div>
                     </form>
                 </div>
                 
@@ -309,89 +271,162 @@
                 </div>
             </div>
 
-             <div class="grid" style="margin-bottom: 3.5rem;">
-                <?php pagination(); ?>
+            <div class="grid" style="margin-bottom: 3.5rem;">
+                <?php
+                    pagination();
+                ?>
             </div>          
         </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const searchInput  document.addEventListener('DOMContentLoaded', function() {
-                const searchInput = document.getElementById('searchInput');
-                const liveResults = document.getElementById('liveResults');
-                let controller = null; // For aborting previous fetch requests
+      document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const liveSearchResults = document.getElementById('liveSearchResults');
+    const productCards = document.querySelectorAll('.product-card');
+    
+    // Function to perform live search
+    function performLiveSearch() {
+        const searchTerm = searchInput.value.trim().toLowerCase();
+        
+        if (searchTerm.length === 0) {
+            liveSearchResults.style.display = 'none';
+            return;
+        }
+        
+        const matches = [];
+        
+        // Search through all product cards
+        productCards.forEach(card => {
+            const searchableText = card.getAttribute('data-search').toLowerCase();
+            const cardTitle = card.querySelector('.card-title').textContent;
+            
+            if (searchableText.includes(searchTerm)) {
+                matches.push({
+                    element: card,
+                    title: cardTitle
+                });
+            }
+        });
+        
+        // Display results in the live search box
+        if (matches.length > 0) {
+            liveSearchResults.innerHTML = '';
+            matches.slice(0, 5).forEach(match => {
+                const resultItem = document.createElement('div');
+                resultItem.className = 'live-search-item';
+                resultItem.textContent = match.title;
                 
-                // Show live results as user types
-                searchInput.addEventListener('input', function() {
-                    const searchTerm = this.value.trim();
-                    
-                    // Abort previous request if it exists
-                    if (controller) {
-                        controller.abort();
-                    }
-                    
-                    // Hide results if search term is too short
-                    if (searchTerm.length < 2) {
-                        liveResults.style.display = 'none';
-                        return;
-                    }
-                    
-                    // Show loading state
-                    liveResults.innerHTML = '<div class="live-result-item">Searching...</div>';
-                    liveResults.style.display = 'block';
-                    
-                    // Create new AbortController for this request
-                    controller = new AbortController();
-                    const signal = controller.signal;
-                    
-                    // Fetch results
-                    fetch(`live_search.php?search=${encodeURIComponent(searchTerm)}`, { signal })
-                        .then(response => {
-                            if (!response.ok) throw new Error('Network response was not ok');
-                            return response.json();
-                        })
-                        .then(data => {
-                            if (data.length > 0) {
-                                let html = '';
-                                data.forEach(item => {
-                                    html += `
-                                        <div class="live-result-item" onclick="selectResult('${item.Model.replace("'", "\\'")}')">
-                                            <strong>${highlightMatches(item.Model, searchTerm)}</strong><br>
-                                            <small>${highlightMatches(item.CategoryType, searchTerm)}</small>
-                                        </div>
-                                    `;
-                                });
-                                liveResults.innerHTML = html;
-                            } else {
-                                liveResults.innerHTML = '<div class="no-results">No matching products found</div>';
-                            }
-                        })
-                        .catch(error => {
-                            if (error.name !== 'AbortError') {
-                                liveResults.innerHTML = '<div class="no-results">Error loading results</div>';
-                            }
-                        });
+                // Click handler for live search items
+                resultItem.addEventListener('click', function() {
+                    searchInput.value = match.title;
+                    filterProducts();
+                    liveSearchResults.style.display = 'none';
                 });
                 
-                // Hide results when clicking outside
-                document.addEventListener('click', function(e) {
-                    if (e.target !== searchInput) {
-                        liveResults.style.display = 'none';
-                    }
-                });
+                liveSearchResults.appendChild(resultItem);
             });
             
-            function highlightMatches(text, searchTerm) {
-                if (!text) return '';
-                const regex = new RegExp(`(${searchTerm})`, 'gi');
-                return text.replace(regex, '<span style="background-color: #fffde7;">$1</span>');
+            if (matches.length > 5) {
+                const moreItem = document.createElement('div');
+                moreItem.className = 'live-search-item text-center text-muted small';
+                moreItem.textContent = `+${matches.length - 5} more items...`;
+                liveSearchResults.appendChild(moreItem);
             }
             
-            function selectResult(term) {
-                document.getElementById('searchInput').value = term;
-                document.getElementById('liveResults').style.display = 'none';
-                document.querySelector('form').submit();
+            liveSearchResults.style.display = 'block';
+        } else {
+            liveSearchResults.innerHTML = '<div class="live-search-item text-muted">No matches found</div>';
+            liveSearchResults.style.display = 'block';
+        }
+    }
+    
+    // Function to filter products based on search term
+    function filterProducts() {
+        const searchTerm = searchInput.value.trim().toLowerCase();
+        
+        if (searchTerm.length === 0) {
+            // Show all products if search is empty
+            productCards.forEach(card => {
+                card.classList.remove('hidden');
+            });
+            return;
+        }
+        
+        let visibleCount = 0;
+        
+        // Filter products
+        productCards.forEach(card => {
+            const searchableText = card.getAttribute('data-search').toLowerCase();
+            
+            if (searchableText.includes(searchTerm)) {
+                card.classList.remove('hidden');
+                visibleCount++;
+            } else {
+                card.classList.add('hidden');
             }
+        });
+        
+        // Show "no results" message if no products match
+        const noResultsElement = document.querySelector('.no-results');
+        if (noResultsElement) {
+            noResultsElement.style.display = visibleCount > 0 ? 'none' : 'block';
+        }
+    }
+    
+    // Event listeners
+    searchInput.addEventListener('input', function() {
+        performLiveSearch();
+        filterProducts();
+    });
+    
+    // Hide live search when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!searchInput.contains(e.target) && !liveSearchResults.contains(e.target)) {
+            liveSearchResults.style.display = 'none';
+        }
+    });
+    
+    // Keyboard navigation for live search
+    searchInput.addEventListener('keydown', function(e) {
+        const items = liveSearchResults.querySelectorAll('.live-search-item');
+        let currentHighlight = liveSearchResults.querySelector('.live-search-item.highlight');
+        
+        if (items.length === 0) return;
+        
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (!currentHighlight) {
+                items[0].classList.add('highlight');
+            } else {
+                currentHighlight.classList.remove('highlight');
+                const next = currentHighlight.nextElementSibling || items[0];
+                next.classList.add('highlight');
+                next.scrollIntoView({ block: 'nearest' });
+            }
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (!currentHighlight) {
+                items[items.length - 1].classList.add('highlight');
+            } else {
+                currentHighlight.classList.remove('highlight');
+                const prev = currentHighlight.previousElementSibling || items[items.length - 1];
+                prev.classList.add('highlight');
+                prev.scrollIntoView({ block: 'nearest' });
+            }
+        } else if (e.key === 'Enter' && currentHighlight) {
+            e.preventDefault();
+            searchInput.value = currentHighlight.textContent;
+            filterProducts();
+            liveSearchResults.style.display = 'none';
+        }
+    });
+    
+    // Initial filter if there's a search term in the URL
+    if (searchInput.value) {
+        filterProducts();
+    }
+});
     </script>
     </body>
 </html>
