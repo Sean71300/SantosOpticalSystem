@@ -209,6 +209,11 @@
                 background-color: yellow;
                 font-weight: bold;
             }
+
+            .search-highlight {
+    background-color: yellow;
+    font-weight: bold;
+}
         </style>
     </head>
 
@@ -275,168 +280,153 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const searchInput = document.getElementById('searchInput');
-            const liveSearchResults = document.getElementById('liveSearchResults');
-            const productCards = document.querySelectorAll('.product-card');
+      document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const liveSearchResults = document.getElementById('liveSearchResults');
+    const productCards = document.querySelectorAll('.product-card');
+    
+    // Function to perform live search
+    function performLiveSearch() {
+        const searchTerm = searchInput.value.trim().toLowerCase();
+        
+        if (searchTerm.length === 0) {
+            liveSearchResults.style.display = 'none';
+            return;
+        }
+        
+        const matches = [];
+        
+        // Search through all product cards
+        productCards.forEach(card => {
+            const searchableText = card.getAttribute('data-search').toLowerCase();
+            const cardTitle = card.querySelector('.card-title').textContent;
             
-            // Function to highlight matching text
-            function highlightText(text, searchTerm) {
-                if (!searchTerm) return text;
-                const regex = new RegExp(`(${searchTerm})`, 'gi');
-                return text.replace(regex, '<span class="search-highlight">$1</span>');
-            }
-            
-            // Function to perform live search
-            function performLiveSearch() {
-                const searchTerm = searchInput.value.trim().toLowerCase();
-                
-                if (searchTerm.length === 0) {
-                    liveSearchResults.style.display = 'none';
-                    return;
-                }
-                
-                const matches = [];
-                
-                // Search through all product cards
-                productCards.forEach(card => {
-                    const searchableText = card.getAttribute('data-search').toLowerCase();
-                    const cardTitle = card.querySelector('.card-title').textContent;
-                    const cardCategory = card.querySelectorAll('.card-text')[0].textContent;
-                    const cardMaterial = card.querySelectorAll('.card-text')[1].textContent;
-                    
-                    if (searchableText.includes(searchTerm)) {
-                        matches.push({
-                            element: card,
-                            title: cardTitle,
-                            category: cardCategory,
-                            material: cardMaterial
-                        });
-                    }
+            if (searchableText.includes(searchTerm)) {
+                matches.push({
+                    element: card,
+                    title: cardTitle
                 });
-                
-                // Display results in the live search box
-                if (matches.length > 0) {
-                    liveSearchResults.innerHTML = '';
-                    matches.slice(0, 5).forEach(match => {
-                        const resultItem = document.createElement('div');
-                        resultItem.className = 'live-search-item';
-                        resultItem.innerHTML = `
-                            <div><strong>${highlightText(match.title, searchTerm)}</strong></div>
-                            <div class="text-muted small">${highlightText(match.category, searchTerm)} • ${highlightText(match.material, searchTerm)}</div>
-                        `;
-                        
-                        // Click handler for live search items
-                        resultItem.addEventListener('click', function() {
-                            searchInput.value = match.title;
-                            filterProducts();
-                            liveSearchResults.style.display = 'none';
-                        });
-                        
-                        liveSearchResults.appendChild(resultItem);
-                    });
-                    
-                    if (matches.length > 5) {
-                        const moreItem = document.createElement('div');
-                        moreItem.className = 'live-search-item text-center text-muted small';
-                        moreItem.textContent = `+${matches.length - 5} more items...`;
-                        liveSearchResults.appendChild(moreItem);
-                    }
-                    
-                    liveSearchResults.style.display = 'block';
-                } else {
-                    liveSearchResults.innerHTML = '<div class="live-search-item text-muted">No matches found</div>';
-                    liveSearchResults.style.display = 'block';
-                }
-            }
-            
-            // Function to filter products based on search term
-            function filterProducts() {
-                const searchTerm = searchInput.value.trim().toLowerCase();
-                
-                if (searchTerm.length === 0) {
-                    // Show all products if search is empty
-                    productCards.forEach(card => {
-                        card.classList.remove('hidden');
-                    });
-                    return;
-                }
-                
-                let visibleCount = 0;
-                
-                // Filter products
-                productCards.forEach(card => {
-                    const searchableText = card.getAttribute('data-search').toLowerCase();
-                    
-                    if (searchableText.includes(searchTerm)) {
-                        card.classList.remove('hidden');
-                        visibleCount++;
-                    } else {
-                        card.classList.add('hidden');
-                    }
-                });
-                
-                // Show "no results" message if no products match
-                const noResultsElement = document.querySelector('.no-results');
-                if (noResultsElement) {
-                    noResultsElement.style.display = visibleCount > 0 ? 'none' : 'block';
-                }
-            }
-            
-            // Event listeners
-            searchInput.addEventListener('input', function() {
-                performLiveSearch();
-                filterProducts();
-            });
-            
-            // Hide live search when clicking outside
-            document.addEventListener('click', function(e) {
-                if (!searchInput.contains(e.target) && !liveSearchResults.contains(e.target)) {
-                    liveSearchResults.style.display = 'none';
-                }
-            });
-            
-            // Keyboard navigation for live search
-            searchInput.addEventListener('keydown', function(e) {
-                const items = liveSearchResults.querySelectorAll('.live-search-item');
-                let currentHighlight = liveSearchResults.querySelector('.live-search-item.highlight');
-                
-                if (items.length === 0) return;
-                
-                if (e.key === 'ArrowDown') {
-                    e.preventDefault();
-                    if (!currentHighlight) {
-                        items[0].classList.add('highlight');
-                    } else {
-                        currentHighlight.classList.remove('highlight');
-                        const next = currentHighlight.nextElementSibling || items[0];
-                        next.classList.add('highlight');
-                        next.scrollIntoView({ block: 'nearest' });
-                    }
-                } else if (e.key === 'ArrowUp') {
-                    e.preventDefault();
-                    if (!currentHighlight) {
-                        items[items.length - 1].classList.add('highlight');
-                    } else {
-                        currentHighlight.classList.remove('highlight');
-                        const prev = currentHighlight.previousElementSibling || items[items.length - 1];
-                        prev.classList.add('highlight');
-                        prev.scrollIntoView({ block: 'nearest' });
-                    }
-                } else if (e.key === 'Enter' && currentHighlight) {
-                    e.preventDefault();
-                    const highlightedText = currentHighlight.querySelector('strong').textContent;
-                    searchInput.value = highlightedText;
-                    filterProducts();
-                    liveSearchResults.style.display = 'none';
-                }
-            });
-            
-            // Initial filter if there's a search term in the URL
-            if (searchInput.value) {
-                filterProducts();
             }
         });
+        
+        // Display results in the live search box
+        if (matches.length > 0) {
+            liveSearchResults.innerHTML = '';
+            matches.slice(0, 5).forEach(match => {
+                const resultItem = document.createElement('div');
+                resultItem.className = 'live-search-item';
+                resultItem.textContent = match.title;
+                
+                // Click handler for live search items
+                resultItem.addEventListener('click', function() {
+                    searchInput.value = match.title;
+                    filterProducts();
+                    liveSearchResults.style.display = 'none';
+                });
+                
+                liveSearchResults.appendChild(resultItem);
+            });
+            
+            if (matches.length > 5) {
+                const moreItem = document.createElement('div');
+                moreItem.className = 'live-search-item text-center text-muted small';
+                moreItem.textContent = `+${matches.length - 5} more items...`;
+                liveSearchResults.appendChild(moreItem);
+            }
+            
+            liveSearchResults.style.display = 'block';
+        } else {
+            liveSearchResults.innerHTML = '<div class="live-search-item text-muted">No matches found</div>';
+            liveSearchResults.style.display = 'block';
+        }
+    }
+    
+    // Function to filter products based on search term
+    function filterProducts() {
+        const searchTerm = searchInput.value.trim().toLowerCase();
+        
+        if (searchTerm.length === 0) {
+            // Show all products if search is empty
+            productCards.forEach(card => {
+                card.classList.remove('hidden');
+            });
+            return;
+        }
+        
+        let visibleCount = 0;
+        
+        // Filter products
+        productCards.forEach(card => {
+            const searchableText = card.getAttribute('data-search').toLowerCase();
+            
+            if (searchableText.includes(searchTerm)) {
+                card.classList.remove('hidden');
+                visibleCount++;
+            } else {
+                card.classList.add('hidden');
+            }
+        });
+        
+        // Show "no results" message if no products match
+        const noResultsElement = document.querySelector('.no-results');
+        if (noResultsElement) {
+            noResultsElement.style.display = visibleCount > 0 ? 'none' : 'block';
+        }
+    }
+    
+    // Event listeners
+    searchInput.addEventListener('input', function() {
+        performLiveSearch();
+        filterProducts();
+    });
+    
+    // Hide live search when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!searchInput.contains(e.target) && !liveSearchResults.contains(e.target)) {
+            liveSearchResults.style.display = 'none';
+        }
+    });
+    
+    // Keyboard navigation for live search
+    searchInput.addEventListener('keydown', function(e) {
+        const items = liveSearchResults.querySelectorAll('.live-search-item');
+        let currentHighlight = liveSearchResults.querySelector('.live-search-item.highlight');
+        
+        if (items.length === 0) return;
+        
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (!currentHighlight) {
+                items[0].classList.add('highlight');
+            } else {
+                currentHighlight.classList.remove('highlight');
+                const next = currentHighlight.nextElementSibling || items[0];
+                next.classList.add('highlight');
+                next.scrollIntoView({ block: 'nearest' });
+            }
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (!currentHighlight) {
+                items[items.length - 1].classList.add('highlight');
+            } else {
+                currentHighlight.classList.remove('highlight');
+                const prev = currentHighlight.previousElementSibling || items[items.length - 1];
+                prev.classList.add('highlight');
+                prev.scrollIntoView({ block: 'nearest' });
+            }
+        } else if (e.key === 'Enter' && currentHighlight) {
+            e.preventDefault();
+            searchInput.value = currentHighlight.textContent;
+            filterProducts();
+            liveSearchResults.style.display = 'none';
+        }
+    });
+    
+    // Initial filter if there's a search term in the URL
+    if (searchInput.value) {
+        filterProducts();
+    }
+});
     </script>
     </body>
 </html>
