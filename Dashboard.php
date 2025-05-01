@@ -114,6 +114,7 @@ $lowInventory = getLowInventoryProducts();
                 </div>
                 
                 <!-- Employees Card -->
+                <?php if ($isAdmin): ?>
                 <div class="col-md-3">
                     <div class="dashboard-card">
                         <div class="card-icon text-success">
@@ -124,7 +125,7 @@ $lowInventory = getLowInventoryProducts();
                         <a href="employeeRecords.php" class="btn btn-sm btn-outline-success mt-2">View All</a>
                     </div>
                 </div>
-                
+                <?php endif; ?>
                 <!-- Inventory Card -->
                 <div class="col-md-3">
                     <div class="dashboard-card">
