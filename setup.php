@@ -1162,8 +1162,7 @@
                 
                 FOREIGN KEY (CustomerID) REFERENCES customer(CustomerID) ON DELETE CASCADE,
                 INDEX (CustomerID),
-                INDEX (visit_date)
-                )";
+                INDEX (visit_date));";
         
         if (mysqli_query($conn, $sql)) {
             $historyID = generate_historyID();
