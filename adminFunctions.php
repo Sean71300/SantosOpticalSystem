@@ -15,13 +15,7 @@ function getCustomerCount() {
 function getEmployeeCount() {
     $conn = connect();
     $count = 0;
-    $query = "SELECT COUNT(*) as count 
-          FROM employee e
-          WHERE e.Status = 'Active' AND NOT EXISTS (
-              SELECT 1 
-              FROM archives a 
-              WHERE a.TargetID = e.EmployeeID AND a.TargetType = 'employee'
-          )";
+    $query = "SELECT COUNT(*) as count FROM employee WHERE Status = 'Active'";     
     $result = mysqli_query($conn, $query);
     if ($result) {
         $row = mysqli_fetch_assoc($result);

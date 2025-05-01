@@ -22,7 +22,8 @@
                     ELSE 2 
                 END AS RoleOrder
                 FROM employee e
-                LEFT JOIN BranchMaster b ON e.BranchCode = b.BranchCode ";
+                LEFT JOIN BranchMaster b ON e.BranchCode = b.BranchCode 
+                WHERE e.Status = 'Active'";
     
         // Special sorting logic for each column
         switch($sort) {
