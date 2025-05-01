@@ -52,11 +52,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['cancel'])) {
                             $_SESSION["upd_dt"] = $upd_dt;
                             $_SESSION['last_activity'] = time();
 
-                            if ($roleid == 1 || 2) {
+                            if ($roleid == 1) {
                                 header("location: admin.php");
                                 exit();
-                            }else {
-                                $login_err = "Error has occurred, please try again.";
+                            }elseif ($roleid == 2) {
+                                header("location: employee.php");
+                                exit();
+                            } else {
+                                $login_err = "Error has occured, please try again.";
                             }
                         } else {
                             $login_err = "The password you entered was not valid.";
