@@ -28,7 +28,7 @@
                         echo "<div class='card-text mb-2'>".$row['CategoryType']."</div>";
                         echo "<div class='card-text mb-2'>".$row['Material']."</div>";
                         echo "<div class='card-text mb-2'>".$row['Price']."</div>";
-                        $row['Avail_FL'] = ($row['Avail_FL'] == 1) ? "Available" : "Not Available";
+                        $row['Avail_FL'] = ($row['Avail_FL'] == "Available") ? "Available" : "Not Available";
                         if ($row['Avail_FL'] == "Available") {
                             echo "<div class='card-text mb-2 text-success'>".$row['Avail_FL']."</div>";
                         } else {
