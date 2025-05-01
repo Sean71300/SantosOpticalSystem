@@ -2,12 +2,7 @@
 function getCustomerCount() {
     $conn = connect();
     $count = 0;
-    $query = "SELECT COUNT(*) as count 
-          FROM customer c
-          WHERE NOT EXISTS (
-              SELECT 1 
-              FROM archives a 
-              WHERE a.TargetID = c.CustomerID AND a.TargetType = 'customer'
+    $query = "SELECT COUNT(*) as count FROM customer WHERE Status = 'Active';
           )";
     $result = mysqli_query($conn, $query);
     if ($result) {

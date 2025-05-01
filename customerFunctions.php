@@ -14,13 +14,7 @@
         $sort = in_array($sort, $validColumns) ? $sort : 'CustomerID';
         $order = strtoupper($order) === 'DESC' ? 'DESC' : 'ASC';
 
-        $sql = "SELECT *
-                FROM customer
-                WHERE CustomerID NOT IN (
-                SELECT TargetID 
-                FROM archives 
-                WHERE TargetType = 'customer'
-                )
+         $query = "SELECT * FROM customer WHERE Status = 'Active'
         ORDER BY $sort $order";
         $result = $connection->query($sql);
 
