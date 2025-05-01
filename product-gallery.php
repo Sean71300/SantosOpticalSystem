@@ -21,7 +21,7 @@
         while($row = mysqli_fetch_assoc($result)) { // Card 
             echo "<div class='col d-flex'>";
                 echo "<div class='card w-100'>";
-                    echo '<img src="' . $row['ProductImage']. '" class="card-img-top img-fluid" style="object-fit: contain;" alt="'. $row['Model'] .'">';
+                    echo '<img src="' . $row['ProductImage']. '" class="card-img-top img-fluid" style="height: 350px; object-fit: contain;" alt="'. $row['Model'] .'">';
                     echo "<div class='card-body d-flex flex-column'>";
                         echo "<h5 class='card-title' style='min-height: 4rem;'>".$row['Model']."</h5>";                       
                         echo "<p class='card-text'>".$row['CategoryType']."</p>";
