@@ -17,7 +17,7 @@
         $totalPages = ceil($total / $perPage);
 
         // Start of card grid
-        echo "<div class='row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4'>";        
+        echo "<div class='row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-6'>";        
         while($row = mysqli_fetch_assoc($result)) { // Card 
             echo "<div class='col d-flex'>";
                 echo "<div class='card w-100'>";
