@@ -19,18 +19,29 @@
         // Start of card grid
         echo "<div class='row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4'>";
         
-        while($row = mysqli_fetch_assoc($result)) {
+        while($row = mysqli_fetch_assoc($result)) { // Card 
             echo "<div class='col d-flex'>";
                 echo "<div class='card w-100'>";
                     echo '<img src="' . $row['ProductImage']. '" class="card-img-top img-fluid" style="height: 250px; object-fit: contain;" alt="'. $row['Model'] .'">';
                     echo "<div class='card-body d-flex flex-column'>";
-                        echo "<h5 class='card-title' style='min-height: 4rem;'>".$row['Model']."</h5>";
+                        echo "<h5 class='card-title' style='min-height: 4rem;'>".$row['Model']."</h5>";                       
                         echo "<p class='card-text'>".$row['CategoryType']."</p>";
+                        echo "<p class='card-text'>".$row['Material']."</p>";
+                        echo "<p class='card-text'>".$row['Price']."</p>";
                         echo "<p class='card-text'>".$row['Avail_FL']."</p>";                                
                     echo "</div>";
-                    echo "<div class='card-footer mt-auto'>";
-                        echo "<a href='#' class='btn btn-primary w-100'>More details</a>";
-                    echo "</div>";
+
+                    $avail = $row['Avail_FL'];
+                    if ($avail == 'Available') {
+                        echo "<div class='card-footer mt-auto'>";
+                            echo "<a href='productDetails.php?id=".$row['ProductID']."' class='btn btn-primary w-100'>More details</a>";
+                        echo "</div>";
+                    } else {
+                        // If not available, show a disabled button
+                        echo "<div class='card-footer mt-auto'>";
+                            echo "<button class='btn btn-secondary w-100' disabled>Out of Stock</button>";
+                        echo "</div>";
+                    }
                 echo "</div>";
             echo "</div>";
         }
