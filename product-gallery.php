@@ -56,11 +56,13 @@
         $totalPages = ceil($total / $perPage);
 
         // Start of card grid
-        echo "<div class='row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4'>";
+        echo "<div class='row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4' id='productGrid'>";
         
         if ($total > 0) {
             while($row = mysqli_fetch_assoc($result)) {
-                echo "<div class='col d-flex'>";
+                // Create a searchable string for each product
+                $searchableText = strtolower($row['Model'].' '.$row['CategoryType'].' '.$row['Material']);
+                echo "<div class='col d-flex product-card' data-search='".htmlspecialchars($searchableText, ENT_QUOTES)."'>";
                     echo "<div class='card w-100' style='max-width: 380px;'>";
                         echo '<img src="' . $row['ProductImage']. '" class="card-img-top img-fluid" style="height: 280px;" alt="'. $row['Model'] .'">';
                         echo "<div class='card-body d-flex flex-column'>";
@@ -90,7 +92,7 @@
                 echo "</div>";
             }
         } else {
-            echo "<div class='col-12 text-center py-5'>";
+            echo "<div class='col-12 text-center py-5 no-results'>";
             echo "<h4>No products found matching your search.</h4>";
             echo "</div>";
         }
@@ -167,13 +169,17 @@
             }
             .search-container {
                 margin-bottom: 30px;
-                position: relative;
             }
             .search-box {
                 max-width: 500px;
                 margin: 0 auto;
             }
-            #searchResults {
+            /* Style for hidden products during live search */
+            .product-card.hidden {
+                display: none;
+            }
+            /* Style for the live search container */
+            #liveSearchResults {
                 position: absolute;
                 width: 100%;
                 max-width: 500px;
@@ -184,33 +190,24 @@
                 border: 1px solid #ddd;
                 border-radius: 0 0 5px 5px;
                 box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-                max-height: 400px;
+                max-height: 300px;
                 overflow-y: auto;
                 display: none;
             }
-            .search-result-item {
+            .live-search-item {
                 padding: 10px;
                 border-bottom: 1px solid #eee;
                 cursor: pointer;
-                transition: background 0.2s;
             }
-            .search-result-item:hover {
-                background: #f8f9fa;
+            .live-search-item:hover {
+                background-color: #f8f9fa;
             }
-            .search-result-item img {
-                width: 50px;
-                height: 50px;
-                object-fit: cover;
-                margin-right: 10px;
+            .live-search-item.highlight {
+                background-color: #e9ecef;
             }
             .search-highlight {
                 background-color: yellow;
                 font-weight: bold;
-            }
-            .loading-spinner {
-                display: none;
-                text-align: center;
-                padding: 10px;
             }
         </style>
     </head>
@@ -228,7 +225,7 @@
                 
                 <!-- Search Box with Live Preview -->
                 <div class="search-container">
-                    <form method="get" action="" class="search-box" id="searchForm">
+                    <form method="get" action="" class="search-box position-relative">
                         <div class="input-group mb-3">
                             <input type="text" class="form-control" id="searchInput" name="search" placeholder="Search products..." 
                                    value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>"
@@ -243,15 +240,8 @@
                                 <input type="hidden" name="sort" value="<?php echo $_GET['sort']; ?>">
                             <?php endif; ?>
                         </div>
+                        <div id="liveSearchResults"></div>
                     </form>
-                    <div id="searchResults">
-                        <div class="loading-spinner">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                        </div>
-                        <div id="resultsContainer"></div>
-                    </div>
                 </div>
                 
                 <!-- Sorting Dropdown -->
@@ -282,88 +272,171 @@
                 ?>
             </div>          
         </div>
-        
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <script>
-            $(document).ready(function() {
-                const searchInput = $('#searchInput');
-                const searchResults = $('#searchResults');
-                const resultsContainer = $('#resultsContainer');
-                const loadingSpinner = $('.loading-spinner');
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            const liveSearchResults = document.getElementById('liveSearchResults');
+            const productCards = document.querySelectorAll('.product-card');
+            
+            // Function to highlight matching text
+            function highlightText(text, searchTerm) {
+                if (!searchTerm) return text;
+                const regex = new RegExp(`(${searchTerm})`, 'gi');
+                return text.replace(regex, '<span class="search-highlight">$1</span>');
+            }
+            
+            // Function to perform live search
+            function performLiveSearch() {
+                const searchTerm = searchInput.value.trim().toLowerCase();
                 
-                // Show/hide search results based on input focus
-                searchInput.on('focus', function() {
-                    if ($(this).val().length > 0) {
-                        searchResults.show();
+                if (searchTerm.length === 0) {
+                    liveSearchResults.style.display = 'none';
+                    return;
+                }
+                
+                const matches = [];
+                
+                // Search through all product cards
+                productCards.forEach(card => {
+                    const searchableText = card.getAttribute('data-search').toLowerCase();
+                    const cardTitle = card.querySelector('.card-title').textContent;
+                    const cardCategory = card.querySelectorAll('.card-text')[0].textContent;
+                    const cardMaterial = card.querySelectorAll('.card-text')[1].textContent;
+                    
+                    if (searchableText.includes(searchTerm)) {
+                        matches.push({
+                            element: card,
+                            title: cardTitle,
+                            category: cardCategory,
+                            material: cardMaterial
+                        });
                     }
                 });
                 
-                $(document).on('click', function(e) {
-                    if (!$(e.target).closest('#searchResults, #searchInput').length) {
-                        searchResults.hide();
-                    }
-                });
-                
-                // Live search functionality
-                searchInput.on('input', function() {
-                    const searchTerm = $(this).val().trim();
-                    
-                    if (searchTerm.length === 0) {
-                        searchResults.hide();
-                        return;
-                    }
-                    
-                    loadingSpinner.show();
-                    resultsContainer.hide();
-                    searchResults.show();
-                    
-                    // Get current sort value from hidden input or select
-                    let sortValue = $('input[name="sort"]').val() || $('#sortSelect').val();
-                    
-                    $.ajax({
-                        url: 'live_search.php',
-                        method: 'GET',
-                        data: {
-                            search: searchTerm,
-                            sort: sortValue
-                        },
-                        success: function(data) {
-                            resultsContainer.html(data);
-                            resultsContainer.show();
-                            loadingSpinner.hide();
-                            
-                            // Highlight search terms in results
-                            if (searchTerm.length > 0) {
-                                highlightSearchTerms(searchTerm);
-                            }
-                        },
-                        error: function() {
-                            resultsContainer.html('<div class="p-3 text-center text-danger">Error loading results</div>');
-                            resultsContainer.show();
-                            loadingSpinner.hide();
-                        }
+                // Display results in the live search box
+                if (matches.length > 0) {
+                    liveSearchResults.innerHTML = '';
+                    matches.slice(0, 5).forEach(match => {
+                        const resultItem = document.createElement('div');
+                        resultItem.className = 'live-search-item';
+                        resultItem.innerHTML = `
+                            <div><strong>${highlightText(match.title, searchTerm)}</strong></div>
+                            <div class="text-muted small">${highlightText(match.category, searchTerm)} • ${highlightText(match.material, searchTerm)}</div>
+                        `;
+                        
+                        // Click handler for live search items
+                        resultItem.addEventListener('click', function() {
+                            searchInput.value = match.title;
+                            filterProducts();
+                            liveSearchResults.style.display = 'none';
+                        });
+                        
+                        liveSearchResults.appendChild(resultItem);
                     });
-                });
+                    
+                    if (matches.length > 5) {
+                        const moreItem = document.createElement('div');
+                        moreItem.className = 'live-search-item text-center text-muted small';
+                        moreItem.textContent = `+${matches.length - 5} more items...`;
+                        liveSearchResults.appendChild(moreItem);
+                    }
+                    
+                    liveSearchResults.style.display = 'block';
+                } else {
+                    liveSearchResults.innerHTML = '<div class="live-search-item text-muted">No matches found</div>';
+                    liveSearchResults.style.display = 'block';
+                }
+            }
+            
+            // Function to filter products based on search term
+            function filterProducts() {
+                const searchTerm = searchInput.value.trim().toLowerCase();
                 
-                // Handle click on search result items
-                resultsContainer.on('click', '.search-result-item', function() {
-                    const productId = $(this).data('id');
-                    window.location.href = 'product_details.php?id=' + productId;
-                });
-                
-                // Function to highlight search terms in results
-                function highlightSearchTerms(term) {
-                    const regex = new RegExp(term, 'gi');
-                    $('.search-result-text').each(function() {
-                        const text = $(this).text();
-                        const highlighted = text.replace(regex, match => 
-                            `<span class="search-highlight">${match}</span>`
-                        );
-                        $(this).html(highlighted);
+                if (searchTerm.length === 0) {
+                    // Show all products if search is empty
+                    productCards.forEach(card => {
+                        card.classList.remove('hidden');
                     });
+                    return;
+                }
+                
+                let visibleCount = 0;
+                
+                // Filter products
+                productCards.forEach(card => {
+                    const searchableText = card.getAttribute('data-search').toLowerCase();
+                    
+                    if (searchableText.includes(searchTerm)) {
+                        card.classList.remove('hidden');
+                        visibleCount++;
+                    } else {
+                        card.classList.add('hidden');
+                    }
+                });
+                
+                // Show "no results" message if no products match
+                const noResultsElement = document.querySelector('.no-results');
+                if (noResultsElement) {
+                    noResultsElement.style.display = visibleCount > 0 ? 'none' : 'block';
+                }
+            }
+            
+            // Event listeners
+            searchInput.addEventListener('input', function() {
+                performLiveSearch();
+                filterProducts();
+            });
+            
+            // Hide live search when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!searchInput.contains(e.target) && !liveSearchResults.contains(e.target)) {
+                    liveSearchResults.style.display = 'none';
                 }
             });
-        </script>
+            
+            // Keyboard navigation for live search
+            searchInput.addEventListener('keydown', function(e) {
+                const items = liveSearchResults.querySelectorAll('.live-search-item');
+                let currentHighlight = liveSearchResults.querySelector('.live-search-item.highlight');
+                
+                if (items.length === 0) return;
+                
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    if (!currentHighlight) {
+                        items[0].classList.add('highlight');
+                    } else {
+                        currentHighlight.classList.remove('highlight');
+                        const next = currentHighlight.nextElementSibling || items[0];
+                        next.classList.add('highlight');
+                        next.scrollIntoView({ block: 'nearest' });
+                    }
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    if (!currentHighlight) {
+                        items[items.length - 1].classList.add('highlight');
+                    } else {
+                        currentHighlight.classList.remove('highlight');
+                        const prev = currentHighlight.previousElementSibling || items[items.length - 1];
+                        prev.classList.add('highlight');
+                        prev.scrollIntoView({ block: 'nearest' });
+                    }
+                } else if (e.key === 'Enter' && currentHighlight) {
+                    e.preventDefault();
+                    const highlightedText = currentHighlight.querySelector('strong').textContent;
+                    searchInput.value = highlightedText;
+                    filterProducts();
+                    liveSearchResults.style.display = 'none';
+                }
+            });
+            
+            // Initial filter if there's a search term in the URL
+            if (searchInput.value) {
+                filterProducts();
+            }
+        });
+    </script>
     </body>
 </html>
