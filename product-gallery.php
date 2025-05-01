@@ -5,13 +5,11 @@
 
     function getAvailableMaterials() {
         $conn = connect();
-        $sql = "SELECT DISTINCT Material FROM `productMstr` WHERE Avail_FL = 'Available' ORDER BY Material ASC";
+        $sql = "SELECT DISTINCT Material FROM `productMstr` WHERE Avail_FL = 'Available' AND Material IS NOT NULL AND Material != '' ORDER BY Material ASC";
         $result = mysqli_query($conn, $sql);
-        $materials = [];
+        $materials = array();
         while($row = mysqli_fetch_assoc($result)) {
-            if (!empty($row['Material'])) {
-                $materials[] = $row['Material'];
-            }
+            $materials[] = $row['Material'];
         }
         $conn->close();
         return $materials;
@@ -77,25 +75,25 @@
             while($row = mysqli_fetch_assoc($result)) {
                 echo "<div class='col d-flex'>";
                     echo "<div class='card w-100' style='max-width: 380px;'>";
-                        echo '<img src="' . $row['ProductImage']. '" class="card-img-top img-fluid" style="height: 280px;" alt="'. $row['Model'] .'">';
+                        echo '<img src="' . $row['ProductImage'] . '" class="card-img-top img-fluid" style="height: 280px;" alt="'. htmlspecialchars($row['Model']) .'">';
                         echo "<div class='card-body d-flex flex-column'>";
-                            echo "<h5 class='card-title' style='min-height: 1.5rem;'>".$row['Model']."</h5>";
+                            echo "<h5 class='card-title' style='min-height: 1.5rem;'>".htmlspecialchars($row['Model'])."</h5>";
                             echo "<hr>";
-                            echo "<div class='card-text mb-2'>".$row['CategoryType']."</div>";
-                            echo "<div class='card-text mb-2'>".$row['Material']."</div>";
+                            echo "<div class='card-text mb-2'>".htmlspecialchars($row['CategoryType'])."</div>";
+                            echo "<div class='card-text mb-2'>".htmlspecialchars($row['Material'])."</div>";
                             // Fixed price display with peso sign handling
                             $price = $row['Price'];
                             $numeric_price = preg_replace('/[^0-9.]/', '', $price);
                             $formatted_price = is_numeric($numeric_price) ? '₱' . number_format((float)$numeric_price, 2) : '₱0.00';
-                            echo "<div class='card-text mb-2'>".$formatted_price."</div>";
+                            echo "<div class='card-text mb-2'>".htmlspecialchars($formatted_price)."</div>";
                             if ($row['Avail_FL'] == "Available") {
-                                echo "<div class='card-text mb-2 text-success'>".$row['Avail_FL']."</div>";
+                                echo "<div class='card-text mb-2 text-success'>".htmlspecialchars($row['Avail_FL'])."</div>";
                             echo "</div>";
                                 echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
                                     echo "<a href='#' class='btn btn-primary w-100 py-2'>More details</a>";
                                 echo "</div>";
                             } else {
-                                echo "<div class='card-text mb-2 text-danger'>".$row['Avail_FL']."</div>";
+                                echo "<div class='card-text mb-2 text-danger'>".htmlspecialchars($row['Avail_FL'])."</div>";
                             echo "</div>";
                             echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
                                 echo "<a href='#' class='btn btn-secondary w-100 py-2 disabled'>Not Available</a>";
@@ -117,7 +115,7 @@
             echo "<div class='d-flex justify-content-center'>";
                 echo "<ul class='pagination'>";
                 if ($page > 1) {
-                    echo "<li class='page-item'><a class='page-link' href='?page=" . ($page - 1) . "&sort=$sort".(!empty($materialFilter) ? "&material=$materialFilter" : "")."'>Previous</a></li>";
+                    echo "<li class='page-item'><a class='page-link' href='?page=" . ($page - 1) . "&sort=$sort".(!empty($materialFilter) ? "&material=".urlencode($materialFilter) : "")."'>Previous</a></li>";
                 } else {
                     echo "<li class='page-item disabled'><a class='page-link'>Previous</a></li>";
                 }
@@ -126,12 +124,12 @@
                     if ($i == $page) {
                         echo "<li class='page-item active' aria-current='page'><a class='page-link disabled'>$i</a></li>"; 
                     } else {
-                        echo "<li class='page-item'><a class='page-link' href='?page=$i&sort=$sort".(!empty($materialFilter) ? "&material=$materialFilter" : "")."'>$i</a></li>";
+                        echo "<li class='page-item'><a class='page-link' href='?page=$i&sort=$sort".(!empty($materialFilter) ? "&material=".urlencode($materialFilter) : "")."'>$i</a></li>";
                     }
                 }
 
                 if ($page < $totalPages) {
-                    echo "<li class='page-item'><a class='page-link' href='?page=" . ($page + 1) . "&sort=$sort".(!empty($materialFilter) ? "&material=$materialFilter" : "")."'>Next</a></li>";
+                    echo "<li class='page-item'><a class='page-link' href='?page=" . ($page + 1) . "&sort=$sort".(!empty($materialFilter) ? "&material=".urlencode($materialFilter) : "")."'>Next</a></li>";
                 } else {
                     echo "<li class='page-item disabled'><a class='page-link'>Next</a></li>";
                 }
@@ -218,16 +216,16 @@
                                         $materials = getAvailableMaterials();
                                         foreach ($materials as $material) {
                                             $selected = (isset($_GET['material']) && $_GET['material'] == $material) ? 'selected' : '';
-                                            echo "<option value='".htmlspecialchars($material)."' $selected>$material</option>";
+                                            echo "<option value='".htmlspecialchars($material)."' $selected>".htmlspecialchars($material)."</option>";
                                         }
                                     ?>
                                 </select>
                                 <?php 
                                     if(isset($_GET['page'])) {
-                                        echo '<input type="hidden" name="page" value="'.$_GET['page'].'">';
+                                        echo '<input type="hidden" name="page" value="'.htmlspecialchars($_GET['page']).'">';
                                     }
                                     if(isset($_GET['sort'])) {
-                                        echo '<input type="hidden" name="sort" value="'.$_GET['sort'].'">';
+                                        echo '<input type="hidden" name="sort" value="'.htmlspecialchars($_GET['sort']).'">';
                                     }
                                 ?>
                             </div>
@@ -247,10 +245,10 @@
                                 </select>
                                 <?php 
                                     if(isset($_GET['page'])) {
-                                        echo '<input type="hidden" name="page" value="'.$_GET['page'].'">';
+                                        echo '<input type="hidden" name="page" value="'.htmlspecialchars($_GET['page']).'">';
                                     }
                                     if(isset($_GET['material'])) {
-                                        echo '<input type="hidden" name="material" value="'.$_GET['material'].'">';
+                                        echo '<input type="hidden" name="material" value="'.htmlspecialchars($_GET['material']).'">';
                                     }
                                 ?>
                             </div>
