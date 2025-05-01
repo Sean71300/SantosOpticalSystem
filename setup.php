@@ -433,7 +433,26 @@
         $conn->close();
         return $genID;
     }
+    // Create Archives Table
+    function create_archivesTable() {
+        $conn = connect();
 
+        $sql = "CREATE TABLE archives (
+                    ArchiveID INT(10) PRIMARY KEY AUTO_INCREMENT,
+                    TargetID INT(10) NOT NULL,
+                    TargetType ENUM('product', 'employee', 'customer', 'order') NOT NULL,
+                    ArchivedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (TargetID) REFERENCES (
+                        CASE 
+                            WHEN TargetType = 'product' THEN productMstr(ProductID)
+                            WHEN TargetType = 'employee' THEN employee(EmployeeID)
+                            WHEN TargetType = 'customer' THEN customer(CustomerID)
+                            WHEN TargetType = 'order' THEN Order_hdr(Orderhdr_id)
+                        END
+                    ) ON DELETE CASCADE
+                )";
+        $conn->close();
+    }
 
     // Create Category Type Table
 
@@ -1441,5 +1460,12 @@
     if (mysqli_num_rows($result) == 0) 
     {
         create_CustomerMedicalHistoryTable();
+    }
+    // Check if Archives Table exists
+    $table_check_query = "SHOW TABLES LIKE 'archives'";
+    $result = mysqli_query($conn, $table_check_query);
+
+    if (mysqli_num_rows($result) == 0) {
+        create_archivesTable();
     }
 ?>

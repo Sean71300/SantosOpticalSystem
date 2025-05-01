@@ -5,11 +5,13 @@ include 'loginChecker.php';
 
 if (isset($_GET["CustomerID"])) {
     $id = $_GET ["CustomerID"];
-
-    $conn=connect();
-
-    $sql = "DELETE FROM customer WHERE customerId=$id";
-    $conn->query($sql);
+    
+    $sqlCustomer = "INSERT INTO archives (TargetID, TargetType, Reason) VALUES (?, 'customer', ?)";
+    $stmt = $conn->prepare($sqlCustomer);
+    $reasonCustomer = "Inactive customer for over 1 year";
+    $stmt->bind_param("is", $customerID, $reasonCustomer);
+    $stmt->execute();
+    $stmt->close();
 }
 
 header("location: customerRecords.php");
