@@ -779,7 +779,7 @@ function GenerateLogs($productID,$model,$code)
         $stmt->bind_param("iii", $Aid, $productID, $Eid);
         $stmt->execute();
         $stmt->close();        
-       
+        setStatus($productID);
     }
 function deleteProduct() 
     { //Delete function to delete a product from the database
