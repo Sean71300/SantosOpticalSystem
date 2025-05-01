@@ -83,6 +83,8 @@ if (isset($_GET["EmployeeID"])) {
                     <div class="modal-header bg-success text-white">
                         <h5 class="modal-title">Employee Removed Succefully</h5>
                     </div>                    
+                    <div class="modal-body text-center">
+                    </div>
                 </div>
             </div>
         </div>
