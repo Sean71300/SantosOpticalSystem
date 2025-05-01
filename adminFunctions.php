@@ -1,31 +1,21 @@
 <?php
-include_once 'setup.php'; // Your database connection file
-
-// Function to count active (non-archived) customers
 function getCustomerCount() {
     $conn = connect();
-    
-    $query = "SELECT COUNT(c.CustomerID) AS active_customer_count
-              FROM customer c
-              WHERE NOT EXISTS (
-                  SELECT 1 
-                  FROM archives a 
-                  WHERE a.TargetID = c.CustomerID 
-                  AND a.TargetType = 'customer'
-              )";
-    
-    $result = $conn->query($query);
-    
-    if (!$result) {
-        // Error handling
-        error_log("Database error: " . $conn->error);
-        return 0;
+    $count = 0;
+    $query = "SELECT COUNT(*) as count 
+          FROM customer c
+          WHERE NOT EXISTS (
+              SELECT 1 
+              FROM archives a 
+              WHERE a.TargetID = c.CustomerID AND a.TargetType = 'customer'
+          )";
+    $result = mysqli_query($conn, $query);
+    if ($result) {
+        $row = mysqli_fetch_assoc($result);
+        $count = $row['count'];
     }
-    
-    $row = $result->fetch_assoc();
-    $conn->close();
-    
-    return $row['active_customer_count'];
+    mysqli_close($conn);
+    return $count;
 }
 
 function getEmployeeCount() {

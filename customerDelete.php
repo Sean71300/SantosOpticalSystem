@@ -81,7 +81,7 @@ if (isset($_GET["CustomerID"])) {
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header bg-success text-white">
-                        <h5 class="modal-title">Success</h5>
+                        <h5 class="modal-title">Customer Removed Succefully</h5>
                     </div>
                     <div class="modal-body text-center">
                         <p><i class="fas fa-check-circle fa-4x text-success mb-3"></i></p>
