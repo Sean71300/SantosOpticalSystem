@@ -296,7 +296,7 @@ $lowInventory = getLowInventoryProducts();
                                         intersect: false,
                                         callbacks: {
                                             label: function(context) {
-                                                return '$' + context.parsed.y.toLocaleString();
+                                                return '₱' + context.parsed.y.toLocaleString();
                                             }
                                         }
                                     }
