@@ -158,9 +158,9 @@
                 TargetID INT(10),
                 TargetType ENUM('customer', 'employee', 'product', 'order') NOT NULL,
                 ActivityCode INT(10),
+                Description VARCHAR(255),
                 Upd_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (EmployeeID) REFERENCES employee(EmployeeID),                
-                FOREIGN KEY (ActivityCode) REFERENCES activityMaster(ActivityCode)
+                FOREIGN KEY (EmployeeID) REFERENCES employee(EmployeeID)
                 )";    
         mysqli_query($conn, $sql);        
         $conn->close();

@@ -213,17 +213,17 @@
                     '$role','$username','$hashed_pw','2025160000','Active','$upd_by')";
             
             mysqli_query($conn, $sql);
-            GenerateLogs($employee_id,$id);
+            GenerateLogs($employee_id,$id,$name);
         }
-        function GenerateLogs($employee_id,$id)
+        function GenerateLogs($employee_id,$id,$name)
     {
         $conn = connect(); 
         $Logsid = generate_LogsID(); ;   
         $upd_by = $_SESSION["full_name"];
         $sql = "INSERT INTO Logs 
-                (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Upd_dt)
+                (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description, Upd_dt)
                 VALUES
-                ('$Logsid', '$employee_id', '$id', 'employee', '3', NOW())";
+                ('$Logsid', '$employee_id', '$id', 'customer', '3',$name, NOW())";
         
         mysqli_query($conn, $sql);
     }
