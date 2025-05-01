@@ -181,26 +181,6 @@ $lowInventory = getLowInventoryProducts();
                             </li>
                         </ul>
                     </div>
-
-                    <div class="dashboard-card recent-activity">    
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Recent Activity</h5>
-                            <a href="logs.php" class="btn btn-sm btn-outline-secondary">
-                                <i class="fas fa-list me-1"></i> Show All Logs
-                            </a>
-                        </div>
-                        <ul class="list-group list-group-flush">
-                            <?php foreach ($recentActivities as $activity): ?>
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <div>
-                                    <small><?php echo date('M j, g:i A', strtotime($activity['Upd_dt'])); ?></small>
-                                    <div><?php echo htmlspecialchars($activity['Description']); ?></div>
-                                </div>
-                                <span class="badge bg-primary rounded-pill">New</span>
-                            </li>
-                            <?php endforeach; ?>
-                        </ul>
-                    </div>
                 </div>
             </div>
         </div>
