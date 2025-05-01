@@ -751,7 +751,7 @@ function GenerateLogs($productID)
         $stmt = $conn->prepare("INSERT INTO Logs 
                             (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description, Upd_dt)
                             VALUES
-                            (?, ?, ?, 'products', '5', ?, NOW())");
+                            (?, ?, ?, 'product', '5', ?, NOW())");
         $stmt->bind_param("ssss", $Logsid, $employee_id, $productID, $model);
         $stmt->execute();
         $stmt->close();
