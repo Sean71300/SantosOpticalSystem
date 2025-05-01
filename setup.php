@@ -1163,7 +1163,7 @@
                 FOREIGN KEY (CustomerID) REFERENCES customer(CustomerID) ON DELETE CASCADE,
                 INDEX (CustomerID),
                 INDEX (visit_date)
-                ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
+                )";
         
         if (mysqli_query($conn, $sql)) {
             $historyID = generate_historyID();
