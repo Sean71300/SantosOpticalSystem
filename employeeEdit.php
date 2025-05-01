@@ -88,7 +88,7 @@ function EGenerateLogs($employee_id,$id,$name)
         $sql = "INSERT INTO Logs 
                 (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description, Upd_dt)
                 VALUES
-                ('$Logsid', '$employee_id', '$id', 'customer', '3',$name, NOW())";
+                ('$Logsid', '$employee_id', '$id', 'employee', '4',$name, NOW())";
         
         mysqli_query($conn, $sql);
     }
