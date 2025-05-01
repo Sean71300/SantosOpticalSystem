@@ -14,13 +14,13 @@
         $sort = in_array($sort, $validColumns) ? $sort : 'CustomerID';
         $order = strtoupper($order) === 'DESC' ? 'DESC' : 'ASC';
 
-        $sql = "SELECT * 
-        FROM customer c
-        WHERE NOT EXISTS (
-            SELECT * 
-            FROM archives a 
-            WHERE a.TargetID = c.CustomerID AND a.TargetType = 'customer'
-        )
+        $sql = "SELECT *
+                FROM customer
+                WHERE CustomerID NOT IN (
+                SELECT TargetID 
+                FROM archives 
+                WHERE TargetType = 'customer'
+                )
         ORDER BY $sort $order";
         $result = $connection->query($sql);
 
