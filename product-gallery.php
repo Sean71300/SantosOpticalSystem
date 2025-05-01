@@ -17,12 +17,12 @@
         $totalPages = ceil($total / $perPage);
 
         // Start of card grid - fewer columns for wider cards
-        echo "<div class='row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4'>";
+        echo "<div class='row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4'>";
         
         while($row = mysqli_fetch_assoc($result)) {
             echo "<div class='col d-flex'>";
                 echo "<div class='card w-100' style='max-width: 380px;'>"; // Increased max-width
-                    echo '<img src="' . $row['ProductImage']. '" class="card-img-top img-fluid" style="height: 300px; width: 300px; object-fit: contain;" alt="'. $row['Model'] .'">';
+                    echo '<img src="' . $row['ProductImage']. '" class="card-img-top img-fluid" style="height: 280px; object-fit: contain;" alt="'. $row['Model'] .'">';
                     echo "<div class='card-body d-flex flex-column'>";
                         echo "<h5 class='card-title' style='min-height: 4rem;'>".$row['Model']."</h5>";
                         echo "<div class='card-text mb-2'>".$row['CategoryType']."</div>";
