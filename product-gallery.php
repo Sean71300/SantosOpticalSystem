@@ -17,7 +17,7 @@
         $totalPages = ceil($total / $perPage);
 
         while($row = mysqli_fetch_assoc($result)) {
-            echo "<div class='col g-3'>";
+            echo "<div class='col g-3 align-self-center'>";
                     echo "<div class='card' style='width: 18.5rem; height: 29.5rem;'>";
                         echo '<img src="' . $row['ProductImage']. '"class="card-img-top" style="height: 250px;" alt="'. $row['Model'] .'">';
                             echo "<div class='card-body'>";
