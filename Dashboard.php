@@ -25,6 +25,7 @@ $lowInventory = getLowInventoryProducts();
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
         <link rel="stylesheet" href="customCodes/custom.css">
         <link rel="shortcut icon" type="image/x-icon" href="Images/logo.png"/>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <title>Dashboard</title>
         <style>
             body {
@@ -59,6 +60,17 @@ $lowInventory = getLowInventoryProducts();
             .recent-activity {
                 max-height: 400px;
                 overflow-y: auto;
+            }
+            .chart-period.active {
+                background-color: #0d6efd;
+                color: white;
+            }
+            #chartLoading {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: 100%;
             }
             
             /* Mobile styles */
@@ -157,13 +169,25 @@ $lowInventory = getLowInventoryProducts();
             <div class="row mt-4">
                 <div class="col-md-8">
                     <div class="dashboard-card">
-                        <h5><i class="fas fa-chart-line me-2"></i>Sales Overview</h5>
-                        <div class="mt-3" style="height: 300px; background-color: #f8f9fa; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                            [Sales Chart Placeholder]
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Sales Overview</h5>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-sm btn-outline-secondary chart-period" data-period="7">7 Days</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary chart-period active" data-period="30">30 Days</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary chart-period" data-period="90">90 Days</button>
+                            </div>
+                        </div>
+                        <div class="mt-3" style="height: 300px;">
+                            <canvas id="salesChart"></canvas>
+                            <div id="chartLoading" class="text-center py-5">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-2">Loading sales data...</p>
+                            </div>
                         </div>
                     </div>
                 </div>
-                
                 
                 <div class="col-md-4">
                     <div class="dashboard-card recent-activity">    
@@ -222,10 +246,112 @@ $lowInventory = getLowInventoryProducts();
         </div>
 
         <script>
+            // Sales Chart Implementation
+            function renderSalesChart(period = 30) {
+                const ctx = document.getElementById('salesChart');
+                const loadingElement = document.getElementById('chartLoading');
+                
+                // Show loading state
+                ctx.style.display = 'none';
+                loadingElement.style.display = 'block';
+                
+                fetch(`getSalesData.php?period=${period}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Hide loading state
+                        loadingElement.style.display = 'none';
+                        ctx.style.display = 'block';
+                        
+                        // Destroy previous chart if it exists
+                        if (window.salesChart instanceof Chart) {
+                            window.salesChart.destroy();
+                        }
+                        
+                        window.salesChart = new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: data.labels,
+                                datasets: [{
+                                    label: 'Sales Amount',
+                                    data: data.values,
+                                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                    borderColor: 'rgba(54, 162, 235, 1)',
+                                    borderWidth: 2,
+                                    tension: 0.4,
+                                    fill: true,
+                                    pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                                    pointRadius: 4,
+                                    pointHoverRadius: 6
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        display: false
+                                    },
+                                    tooltip: {
+                                        mode: 'index',
+                                        intersect: false,
+                                        callbacks: {
+                                            label: function(context) {
+                                                return '$' + context.parsed.y.toLocaleString();
+                                            }
+                                        }
+                                    }
+                                },
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        ticks: {
+                                            callback: function(value) {
+                                                return '$' + value.toLocaleString();
+                                            }
+                                        },
+                                        grid: {
+                                            drawBorder: false
+                                        }
+                                    },
+                                    x: {
+                                        grid: {
+                                            display: false
+                                        }
+                                    }
+                                },
+                                interaction: {
+                                    mode: 'nearest',
+                                    axis: 'x',
+                                    intersect: false
+                                }
+                            }
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error loading sales data:', error);
+                        loadingElement.innerHTML = 
+                            '<div class="text-danger p-4"><i class="fas fa-exclamation-triangle me-2"></i>Could not load sales data</div>';
+                    });
+            }
+
             document.addEventListener('DOMContentLoaded', function() {
                 const sidebar = document.getElementById('sidebar');
                 const mobileToggle = document.getElementById('mobileMenuToggle');
                 const body = document.body;
+                
+                // Initialize sales chart
+                renderSalesChart(30);
+                
+                // Period selector buttons
+                document.querySelectorAll('.chart-period').forEach(button => {
+                    button.addEventListener('click', function() {
+                        document.querySelectorAll('.chart-period').forEach(btn => {
+                            btn.classList.remove('active');
+                        });
+                        this.classList.add('active');
+                        renderSalesChart(this.dataset.period);
+                    });
+                });
                 
                 // Toggle sidebar on mobile
                 if (mobileToggle) {
