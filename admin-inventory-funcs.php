@@ -752,7 +752,7 @@ function deleteProduct() { //Delete function to delete a product from the databa
     $logActivityCode = '3';
     $logCount = 1;
     $logUpdDT = date('Y-m-d H:i:s');
-    $logSQL = "INSERT INTO logs (LogsID, EmployeeID, ProductBranchID, ActivityCode, Stocks, Upd_dt) VALUES (?, ?, ?, ?, ?, ?)";
+    $logSQL = "INSERT INTO Logs (LogsID, EmployeeID, ProductBranchID, ActivityCode, Stocks, Upd_dt) VALUES (?, ?, ?, ?, ?, ?)";
     $logStmt = mysqli_prepare($link, $logSQL);
     mysqli_stmt_bind_param($logStmt, "ssssss", $logID, $logEmployeeID, $logBranchID, $logActivityCode, $logCount, $logUpdDT);
     $logSuccess = mysqli_stmt_execute($logStmt);
