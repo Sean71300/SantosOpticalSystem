@@ -27,7 +27,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['cancel'])) {
     }
 
     if (empty($username_err) && empty($password_err)) {
-        $sql = "SELECT EmployeeID, EmployeeName, EmployeePicture, EmployeeEmail, EmployeeNumber, RoleID, LoginName, Password, BranchCode, Status, Upd_by, Upd_dt FROM employee WHERE LoginName = ?";
+        $sql = "SELECT EmployeeID, EmployeeName, EmployeePicture, EmployeeEmail, EmployeeNumber, 
+                       RoleID, LoginName, Password, BranchCode, Status, Upd_by, Upd_dt 
+                FROM employee 
+                WHERE LoginName = ? AND Status = 'Active'";  // Added status check
+
         if ($stmt = mysqli_prepare($link, $sql)) {
             mysqli_stmt_bind_param($stmt, "s", $param_username);
             $param_username = $username;
@@ -35,9 +39,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['cancel'])) {
             if (mysqli_stmt_execute($stmt)) {
                 mysqli_stmt_store_result($stmt);
                 if (mysqli_stmt_num_rows($stmt) == 1) {
-                    mysqli_stmt_bind_result($stmt, $id, $full_name, $img, $email, $number, $roleid, $username, $hashed_password, $branchcode, $status, $upd_by, $upd_dt);
+                    mysqli_stmt_bind_result($stmt, $id, $full_name, $img, $email, $number, 
+                                           $roleid, $username, $hashed_password, $branchcode, 
+                                           $status, $upd_by, $upd_dt);
                     if (mysqli_stmt_fetch($stmt)) {
                         if (password_verify($password, $hashed_password)) {
+                            // Set session variables
                             $_SESSION["loggedin"] = true;
                             $_SESSION["id"] = $id;
                             $_SESSION["full_name"] = $full_name;
@@ -52,21 +59,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['cancel'])) {
                             $_SESSION["upd_dt"] = $upd_dt;
                             $_SESSION['last_activity'] = time();
 
-                            if ($roleid == 1) {
-                                header("location: admin.php");
-                                exit();
-                            }elseif ($roleid == 2) {
-                                header("location: employee.php");
-                                exit();
-                            } else {
-                                $login_err = "Error has occured, please try again.";
+                            // Improved role-based redirection
+                            switch ($roleid) {
+                                case 1: // Admin
+                                    header("location: admin.php");
+                                    exit();
+                                case 2: // Employee
+                                    header("location: employee.php");
+                                    exit();
+                                default:
+                                    $login_err = "Error has occured, please try logging in again.";
+                                    session_destroy();
                             }
                         } else {
                             $login_err = "The password you entered was not valid.";
                         }
                     }
                 } else {
-                    $login_err = "No account found with that username.";
+                    $login_err = "No active account found with that username.";
                 }
             } else {
                 $login_err = "Oops! Something went wrong. Please try again later.";
