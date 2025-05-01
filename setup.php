@@ -436,192 +436,49 @@
 
     // Create Category Type Table
 
-    function create_BrandMasterTable()
-    {
-        $conn = connect();
+    function create_BrandMasterTable() {
+    $conn = connect();
 
-        $sql = "CREATE TABLE brandMaster (
-                BrandID INT(10) PRIMARY KEY,
-                BrandName VARCHAR(500)
-                )";
-       
-        if (mysqli_query($conn, $sql))
-        {            
-            $genID = generate_BrandID();
-            $sql = "INSERT INTO brandMaster
-                    (BrandID,BrandName)
-                    VALUES
-                    ('$genID','Minima'
-                    )";
-            mysqli_query($conn, $sql);
+    $sql = "CREATE TABLE brandMaster (
+            BrandID INT(10) PRIMARY KEY,
+            BrandName VARCHAR(500)
+            )";
 
-            $genID = generate_BrandID();
-            $sql = "INSERT INTO brandMaster
-                    (BrandID,BrandName)
-                    VALUES
-                    ('$genID','IMAX'
-                    )";
-            mysqli_query($conn, $sql);
+    if (mysqli_query($conn, $sql)) {
+        $brands = [
+            'Minima',
+            'IMAX',
+            'Paul Hueman',
+            'Caradin',
+            'Lee Cooper',
+            'Bobby Jones',
+            'Light Tech',
+            'Ray-Ban',
+            'Oakley',
+            'Persol',
+            'Acuvue',
+            'Air Optix',
+            'Biofinity',
+            'Essilor',
+            'Hoya',
+            'Zeiss',
+            'Bausch + Lomb',
+            'Rodenstock',
+            'Maui Jim',
+            'Nikon'
+        ];
 
+        foreach ($brands as $brandName) {
             $genID = generate_BrandID();
-            $sql = "INSERT INTO brandMaster
-                    (BrandID,BrandName)
-                    VALUES
-                    ('$genID','Paul Hueman'
-                    )";
-            mysqli_query($conn, $sql);
-
-            $genID = generate_BrandID();
-            $sql = "INSERT INTO brandMaster
-                    (BrandID,BrandName)
-                    VALUES
-                    ('$genID','Caradin'
-                    )";
-            mysqli_query($conn, $sql);
-
-            $genID = generate_BrandID();
-            $sql = "INSERT INTO brandMaster
-                    (BrandID,BrandName)
-                    VALUES
-                    ('$genID','Lee Cooper'
-                    )";
-            mysqli_query($conn, $sql);
-
-            $genID = generate_BrandID();
-            $sql = "INSERT INTO brandMaster
-                    (BrandID,BrandName)
-                    VALUES
-                    ('$genID','Bobby Jones'
-                    )";
-            mysqli_query($conn, $sql);
-
-            $genID = generate_BrandID();
-            $sql = "INSERT INTO brandMaster
-                    (BrandID,BrandName)
-                    VALUES
-                    ('$genID','Light Tech'
-                    )";
-            mysqli_query($conn, $sql);
-
-            $genID = generate_BrandID();
-            $sql = "INSERT INTO brandMaster
-                    (BrandID,BrandName)
-                    VALUES
-                    ('$genID','Ray-Ban'
-                    )";
-            mysqli_query($conn, $sql);
-
-            $genID = generate_BrandID();
-            $sql = "INSERT INTO brandMaster
-                    (BrandID,BrandName)
-                    VALUES
-                    ('$genID','Oakley'
-                    )";
-            mysqli_query($conn, $sql);
-
-            $genID = generate_BrandID();
-            $sql = "INSERT INTO brandMaster
-                    (BrandID,BrandName)
-                    VALUES
-                    ('$genID','Persol'
-                    )";
-            mysqli_query($conn, $sql);
-
-            $genID = generate_BrandID();
-            $sql = "INSERT INTO brandMaster
-                    (BrandID,BrandName)
-                    VALUES
-                    ('$genID','Acuvue'
-                    )";
-            mysqli_query($conn, $sql);
-
-            $genID = generate_BrandID();
-            $sql = "INSERT INTO brandMaster
-                    (BrandID,BrandName)
-                    VALUES
-                    ('$genID','Air Optix'
-                    )";
-            mysqli_query($conn, $sql);
-
-            $genID = generate_BrandID();
-            $sql = "INSERT INTO brandMaster
-                    (BrandID,BrandName)
-                    VALUES
-                    ('$genID','Biofinity'
-                    )";
-            mysqli_query($conn, $sql);
-
-            $genID = generate_BrandID();
-            $sql = "INSERT INTO brandMaster
-                    (BrandID,BrandName)
-                    VALUES
-                    ('$genID','EyeMo'
-                    )";
-            mysqli_query($conn, $sql);
-
-            $genID = generate_BrandID();
-            $sql = "INSERT INTO brandMaster
-                    (BrandID,BrandName)
-                    VALUES
-                    ('$genID','Essilor'
-                    )";
-            mysqli_query($conn, $sql);
-
-            $genID = generate_BrandID();
-            $sql = "INSERT INTO brandMaster
-                    (BrandID,BrandName)
-                    VALUES
-                    ('$genID','Hoya'
-                    )";
-            mysqli_query($conn, $sql);
-
-            $genID = generate_BrandID();
-            $sql = "INSERT INTO brandMaster
-                    (BrandID,BrandName)
-                    VALUES
-                    ('$genID','Zeiss'
-                    )";
-            mysqli_query($conn, $sql);
-
-            $genID = generate_BrandID();
-            $sql = "INSERT INTO brandMaster
-                    (BrandID,BrandName)
-                    VALUES
-                    ('$genID','Bausch + Lomb'
-                    )";
-            mysqli_query($conn, $sql);
-
-            $genID = generate_BrandID();
-            $sql = "INSERT INTO brandMaster
-                    (BrandID,BrandName)
-                    VALUES
-                    ('$genID','Rodenstock'
-                    )";
-            mysqli_query($conn, $sql);
-
-            $genID = generate_BrandID();
-            $sql = "INSERT INTO brandMaster
-                    (BrandID,BrandName)
-                    VALUES
-                    ('$genID','Maui Jim'
-                    )";
-            mysqli_query($conn, $sql);
-
-            $genID = generate_BrandID();
-            $sql = "INSERT INTO brandMaster
-                    (BrandID,BrandName)
-                    VALUES
-                    ('$genID','Nikon'
-                    )";
+            $sql = "INSERT INTO brandMaster (BrandID, BrandName) VALUES ('$genID', '$brandName')";
             mysqli_query($conn, $sql);
         }
-        else
-        {
-            echo "<br>There is an error in creating the table: " . $conn->connect_error;
-        }
-
-        $conn->close();
+    } else {
+        echo "<br>There is an error in creating the table: " . $conn->connect_error;
     }
+
+    $conn->close();
+}
 
     // Generate Brand ID
 

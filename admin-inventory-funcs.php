@@ -338,6 +338,8 @@ function addProduct(){ //Add function to add a new product to the database
             mysqli_stmt_execute($stmt);
             mysqli_stmt_close($stmt);
             
+            
+
             // Insert product-branch mapping into the product branch master database
             $sql = "INSERT INTO ProductBranchMaster (ProductBranchID, ProductID, BranchCode, Stocks, Avail_FL, Upd_by, Upd_dt)
                     VALUES (?, ?, ?, ?, ?, ?, ?)"; 
