@@ -19,7 +19,8 @@
         
         // Add search condition if search term exists
         if (!empty($search)) {
-            $sql .= " WHERE Model LIKE '%$search%' OR CategoryType LIKE '%$search%' OR Material LIKE '%$search%'";
+            // Changed to only match products where Model STARTS WITH the search term
+            $sql .= " WHERE Model LIKE '$search%'";
         }
         
         // Add sorting based on the selected option
@@ -48,7 +49,8 @@
         // For total count, we need a separate query without LIMIT
         $countSql = "SELECT COUNT(*) as total FROM `productMstr`";
         if (!empty($search)) {
-            $countSql .= " WHERE Model LIKE '%$search%' OR CategoryType LIKE '%$search%' OR Material LIKE '%$search%'";
+            // Changed to match the same pattern as the main query
+            $countSql .= " WHERE Model LIKE '$search%'";
         }
         $countResult = mysqli_query($conn, $countSql);
         $totalData = mysqli_fetch_assoc($countResult);
