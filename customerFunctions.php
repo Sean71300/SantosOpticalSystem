@@ -166,4 +166,67 @@
         }
     }
     
+    //Medical Records
+
+    function getMedicalRecords($customerID) {
+        $connection = connect();
+        $records = array();
+    
+        $sql = "SELECT * FROM customerMedicalHistory WHERE CustomerID = ? ORDER BY visit_date DESC";
+        
+        $stmt = $connection->prepare($sql);
+        $stmt->bind_param("i", $customerID);
+        $stmt->execute();
+        $result = $stmt->get_result();
+    
+        if ($result->num_rows > 0) {
+            echo '<div class="form-container">';
+            echo '<div class="d-flex justify-content-between align-items-center mb-4">';
+            echo '<h3><i class="fas fa-calendar-check me-2"></i> Medical History Records</h3>';
+            echo '</div>';
+            
+            while ($row = $result->fetch_assoc()) {
+                echo '<div class="medical-record-card mb-4 p-4 border rounded">';
+                echo '<div class="row mb-3">';
+                echo '<div class="col-md-6">';
+                echo '<label class="form-label">Visit Date</label>';
+                echo '<p class="form-control-static">' . htmlspecialchars($row['visit_date']) . '</p>';
+                echo '</div>';
+                echo '<div class="col-md-6">';
+                echo '<label class="form-label">Eye Condition</label>';
+                echo '<p class="form-control-static">' . htmlspecialchars($row['eye_condition'] ?? 'N/A') . '</p>';
+                echo '</div>';
+                echo '</div>';
+                
+                echo '<div class="row mb-3">';
+                echo '<div class="col-md-6">';
+                echo '<label class="form-label">Visual Acuity (Right)</label>';
+                echo '<p class="form-control-static">' . htmlspecialchars($row['visual_acuity_right'] ?? 'N/A') . '</p>';
+                echo '</div>';
+                echo '<div class="col-md-6">';
+                echo '<label class="form-label">Visual Acuity (Left)</label>';
+                echo '<p class="form-control-static">' . htmlspecialchars($row['visual_acuity_left'] ?? 'N/A') . '</p>';
+                echo '</div>';
+                echo '</div>';
+                
+                // Add more fields as needed
+                if (!empty($row['additional_notes'])) {
+                    echo '<div class="row mb-3">';
+                    echo '<div class="col-12">';
+                    echo '<label class="form-label">Additional Notes</label>';
+                    echo '<p class="form-control-static">' . nl2br(htmlspecialchars($row['additional_notes'])) . '</p>';
+                    echo '</div>';
+                    echo '</div>';
+                }
+                
+                echo '</div>'; // Close medical-record-card
+            }
+            echo '</div>'; // Close form-container
+        } else {
+            echo '<div class="alert alert-info">No medical records found for this customer.</div>';
+        }
+        
+        $stmt->close();
+        $connection->close();
+    }
 ?>
