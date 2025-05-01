@@ -1,7 +1,5 @@
 <?php
     include_once 'setup.php'; 
-    $isAdmin = false;
-    $isAdmin = isset($_SESSION['roleid']) && $_SESSION['roleid'] === 2;
 
     //read all row from database table
     function customerData($sort = 'CustomerID', $order = 'ASC')
@@ -40,11 +38,12 @@
                             echo 
                             "
                                 <a class='btn btn-primary btn-sm' href='customerEdit.php?CustomerID={$row['CustomerID']}'>Profile</a>
-                                <button class='btn btn-info btn-sm view-orders' data-customer-id='$row[CustomerID]'>Orders</button>
                                 <a class='btn btn-danger btn-sm' href='customerDelete.php?CustomerID={$row['CustomerID']}'>Delete</a>
+
                             ";
                         }
                         echo "
+                            <button class='btn btn-info btn-sm view-orders' data-customer-id='$row[CustomerID]'>Orders</button>
 
                     </td>
                 </tr>";
