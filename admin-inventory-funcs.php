@@ -822,4 +822,55 @@ function deleteProduct() { //Delete function to delete a product from the databa
     }
     mysqli_close($link);
 }
+function branchSelection($sort, $order){
+    // All branches view
+    echo '<table class="table table-hover text-center">
+            <thead class="table-light">
+                <tr>
+                    <th class="sortable '.($sort == 'ProductID' ? 'active' : '').'" onclick="sortTable(\'ProductID\')">
+                        Product ID
+                        <span class="sort-icon">
+                            <i class="fas fa-sort-'.($sort == 'ProductID' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
+                        </span>
+                    </th>
+                    <th class="sortable '.($sort == 'CategoryType' ? 'active' : '').'" onclick="sortTable(\'CategoryType\')">
+                        Category
+                        <span class="sort-icon">
+                            <i class="fas fa-sort-'.($sort == 'CategoryType' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
+                        </span>
+                    </th>
+                    <th class="sortable '.($sort == 'ShapeDescription' ? 'active' : '').'" onclick="sortTable(\'ShapeDescription\')">
+                        Shape
+                        <span class="sort-icon">
+                            <i class="fas fa-sort-'.($sort == 'ShapeDescription' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
+                        </span>
+                    </th>
+                    <th class="sortable '.($sort == 'BrandName' ? 'active' : '').'" onclick="sortTable(\'BrandName\')">
+                        Brand
+                        <span class="sort-icon">
+                            <i class="fas fa-sort-'.($sort == 'BrandName' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
+                        </span>
+                    </th>
+                    <th class="sortable '.($sort == 'Model' ? 'active' : '').'" onclick="sortTable(\'Model\')">
+                        Model
+                        <span class="sort-icon">
+                            <i class="fas fa-sort-'.($sort == 'Model' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
+                        </span>
+                    </th>
+                    <th>Material</th>
+                    <th>Product Image</th>
+                    <th class="sortable '.($sort == 'TotalCount' ? 'active' : '').'" onclick="sortTable(\'TotalCount\')">
+                        Total Count
+                        <span class="sort-icon">
+                            <i class="fas fa-sort-'.($sort == 'TotalCount' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
+                        </span>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>';
+    
+    getInventory($sort, $order);
+    
+    echo '</tbody></table>';
+}
 ?>          
