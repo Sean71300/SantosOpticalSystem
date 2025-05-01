@@ -761,10 +761,10 @@ function GenerateLogs($productID,$model,$code)
         $stmt->close();
     }
     
-    function setStatus($id){
+    function setStatus($productID){
         $conn = connect(); 
         $sql = "UPDATE productMstr 
-            SET Avail_FL = 'Unavailable' WHERE ProductID = $id";
+            SET Avail_FL = 'Unavailable' WHERE ProductID = $productID";
         $result = $conn->query($sql);
     }
 
