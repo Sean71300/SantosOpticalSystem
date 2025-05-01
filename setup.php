@@ -434,7 +434,7 @@
         return $genID;
     }
     // Create Archives Table
-    function create_archivesTable() {
+    function create_archivesTable(){
         $conn = connect();
 
         $sql = "CREATE TABLE archives (
@@ -451,6 +451,7 @@
                         END
                     ) ON DELETE CASCADE
                 )";
+        mysqli_query($conn, $sql)        
         $conn->close();
     }
 
