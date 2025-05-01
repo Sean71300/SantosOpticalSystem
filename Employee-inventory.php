@@ -1,7 +1,36 @@
 <?php
 include 'ActivityTracker.php';
 include 'loginChecker.php';
-include 'admin-inventory-funcs.php'; // Include the functions file+
+include 'employee-inventory-funcs.php'; // Use the employee-specific functions
+
+// Get sort parameters from URL
+$sort = $_GET['sort'] ?? 'ProductID';
+$order = $_GET['order'] ?? 'ASC';
+
+// Get employee's branch information
+$employeeID = $_SESSION['employeeID'] ?? '';
+$branchName = '';
+$branchCode = '';
+
+// Get the employee's branch details
+$link = connect();
+if ($link) {
+    $sql = "SELECT e.BranchCode, b.BranchName 
+            FROM employee e
+            JOIN BranchMaster b ON e.BranchCode = b.BranchCode
+            WHERE e.EmployeeID = ?";
+    $stmt = mysqli_prepare($link, $sql);
+    mysqli_stmt_bind_param($stmt, "s", $employeeID);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    
+    if ($row = mysqli_fetch_assoc($result)) {
+        $branchCode = $row['BranchCode'];
+        $branchName = $row['BranchName'];
+    }
+    mysqli_stmt_close($stmt);
+    mysqli_close($link);
+}
 ?>
 
 <!DOCTYPE html>
@@ -103,6 +132,12 @@ include 'admin-inventory-funcs.php'; // Include the functions file+
             .sortable.active .sort-icon {
                 display: inline-block;                
             }
+            .branch-info {
+                background-color: #e9f5ff;
+                padding: 15px;
+                border-radius: 8px;
+                margin-bottom: 20px;
+            }
         </style>
     </head>
 
@@ -116,11 +151,63 @@ include 'admin-inventory-funcs.php'; // Include the functions file+
             </div>
         
             <div class="filter-container">
-                
+                <div class="branch-info">
+                    <h5><i class="fas fa-store me-2"></i> <?= htmlspecialchars($branchName) ?> Branch</h5>
+                    <p class="mb-0">Viewing inventory for your assigned branch only</p>
+                </div>
             </div>
 
             <div class="table-container">
-                
+                <div class="table-responsive">
+                    <table class="table table-hover text-center">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="sortable <?= ($sort == 'ProductID' ? 'active' : '') ?>" onclick="sortTable('ProductID')">
+                                    Product ID
+                                    <span class="sort-icon">
+                                        <i class="fas fa-sort-<?= ($sort == 'ProductID' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up') ?>"></i>
+                                    </span>
+                                </th>
+                                <th class="sortable <?= ($sort == 'CategoryType' ? 'active' : '') ?>" onclick="sortTable('CategoryType')">
+                                    Category
+                                    <span class="sort-icon">
+                                        <i class="fas fa-sort-<?= ($sort == 'CategoryType' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up') ?>"></i>
+                                    </span>
+                                </th>
+                                <th class="sortable <?= ($sort == 'ShapeDescription' ? 'active' : '') ?>" onclick="sortTable('ShapeDescription')">
+                                    Shape
+                                    <span class="sort-icon">
+                                        <i class="fas fa-sort-<?= ($sort == 'ShapeDescription' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up') ?>"></i>
+                                    </span>
+                                </th>
+                                <th class="sortable <?= ($sort == 'BrandName' ? 'active' : '') ?>" onclick="sortTable('BrandName')">
+                                    Brand
+                                    <span class="sort-icon">
+                                        <i class="fas fa-sort-<?= ($sort == 'BrandName' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up') ?>"></i>
+                                    </span>
+                                </th>
+                                <th class="sortable <?= ($sort == 'Model' ? 'active' : '') ?>" onclick="sortTable('Model')">
+                                    Model
+                                    <span class="sort-icon">
+                                        <i class="fas fa-sort-<?= ($sort == 'Model' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up') ?>"></i>
+                                    </span>
+                                </th>
+                                <th>Material</th>
+                                <th>Price</th>
+                                <th>Product Image</th>
+                                <th class="sortable <?= ($sort == 'Stocks' ? 'active' : '') ?>" onclick="sortTable('Stocks')">
+                                    Stocks
+                                    <span class="sort-icon">
+                                        <i class="fas fa-sort-<?= ($sort == 'Stocks' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up') ?>"></i>
+                                    </span>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php getInventory($sort, $order); ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>           
         </div>
 
@@ -141,7 +228,6 @@ include 'admin-inventory-funcs.php'; // Include the functions file+
                                     <tr>
                                         <th>Product ID</th>
                                         <th>Product Name</th>
-                                        <th>Branch Code</th>
                                         <th>Current Stock</th>
                                         <th>Category</th>
                                     </tr>
@@ -175,25 +261,16 @@ include 'admin-inventory-funcs.php'; // Include the functions file+
                 urlParams.set('sort', column);
                 urlParams.set('order', newOrder);
                 
-                // Preserve branch selection
-                const branchSelect = document.getElementById('chooseBranch');
-                if (branchSelect && branchSelect.value) {
-                    urlParams.set('branch', branchSelect.value);
-                } else {
-                    urlParams.delete('branch');
-                }
-                
                 // Reload the page with new parameters
                 window.location.href = window.location.pathname + '?' + urlParams.toString();
             }
 
-            // Add confirmation for delete actions
-            document.querySelectorAll('.delete-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    if(!confirm('Are you sure you want to delete this product?')) {
-                        e.preventDefault();
-                    }
-                });
+            // Show low inventory modal if there are low stock items
+            document.addEventListener('DOMContentLoaded', function() {
+                // You can add logic here to check for low inventory and show the modal if needed
+                // Example: fetch('/api/low-inventory?branch=<?= $branchCode ?>')
+                //          .then(response => response.json())
+                //          .then(data => { if(data.length > 0) show modal })
             });
         </script>
         <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
