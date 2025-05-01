@@ -2,56 +2,87 @@
 include_once 'setup.php';
 include 'ActivityTracker.php';
 include 'loginChecker.php';
-// Check if user is admin
-
 
 // Pagination setup
 $logsPerPage = 10;
 $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($currentPage - 1) * $logsPerPage;
 
-// Get total number of logs
+// Build base query
+$query = "SELECT l.LogsID, l.Upd_dt, l.TargetType, l.Description, 
+                 e.EmployeeName as Employee
+          FROM Logs l
+          JOIN employee e ON l.EmployeeID = e.EmployeeID";
+
+// Add filters if they exist
+$where = [];
+$params = [];
+$types = '';
+
+if (isset($_GET['search']) && !empty($_GET['search'])) {
+    $where[] = "l.Description LIKE ?";
+    $params[] = '%' . $_GET['search'] . '%';
+    $types .= 's';
+}
+
+if (isset($_GET['type']) && !empty($_GET['type'])) {
+    $where[] = "l.TargetType = ?";
+    $params[] = $_GET['type'];
+    $types .= 's';
+}
+
+if (isset($_GET['activity']) && !empty($_GET['activity'])) {
+    $where[] = "l.ActivityCode = ?";
+    $params[] = $_GET['activity'];
+    $types .= 'i';
+}
+
+// Add WHERE clause if filters exist
+if (!empty($where)) {
+    $query .= " WHERE " . implode(' AND ', $where);
+}
+
+// Get total number of logs (for pagination)
 $conn = connect();
-$totalLogsQuery = "SELECT COUNT(*) as total FROM Logs";
-$totalResult = $conn->query($totalLogsQuery);
+$totalQuery = "SELECT COUNT(*) as total FROM Logs l" . (!empty($where) ? " WHERE " . implode(' AND ', $where) : "");
+$stmt = $conn->prepare($totalQuery);
+
+if (!empty($params)) {
+    $stmt->bind_param($types, ...$params);
+}
+
+$stmt->execute();
+$totalResult = $stmt->get_result();
 $totalLogs = $totalResult->fetch_assoc()['total'];
 $totalPages = ceil($totalLogs / $logsPerPage);
+$stmt->close();
 
 // Get logs with pagination
-$logsQuery = "SELECT l.LogsID, l.Upd_dt, l.TargetType, l.TargetID, 
-                     a.Description as Activity, 
-                     e.EmployeeName as Employee,
-                     CASE 
-                         WHEN l.TargetType = 'customer' THEN c.CustomerName
-                         WHEN l.TargetType = 'employee' THEN e2.EmployeeName
-                         WHEN l.TargetType = 'product' THEN p.Model
-                         ELSE 'Order #' || l.TargetID
-                     END as TargetName
-              FROM Logs l
-              JOIN activityMaster a ON l.ActivityCode = a.ActivityCode
-              JOIN employee e ON l.EmployeeID = e.EmployeeID
-              LEFT JOIN customer c ON l.TargetType = 'customer' AND l.TargetID = c.CustomerID
-              LEFT JOIN employee e2 ON l.TargetType = 'employee' AND l.TargetID = e2.EmployeeID
-              LEFT JOIN productMstr p ON l.TargetType = 'product' AND l.TargetID = p.ProductID
-              ORDER BY l.Upd_dt DESC
-              LIMIT $logsPerPage OFFSET $offset";
-$logsResult = $conn->query($logsQuery);
+$query .= " ORDER BY l.Upd_dt DESC LIMIT ? OFFSET ?";
+$types .= 'ii';
+$params[] = $logsPerPage;
+$params[] = $offset;
+
+$stmt = $conn->prepare($query);
+$stmt->bind_param($types, ...$params);
+$stmt->execute();
+$logsResult = $stmt->get_result();
 $conn->close();
 ?>
 
 <!DOCTYPE html>
 <html>
 <head>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="customCodes/custom.css">
     <link rel="shortcut icon" type="image/x-icon" href="Images/logo.png"/>
     <title>System Logs</title>
     <style>
         body {
-                background-color: #f5f7fa;
-            }
+            background-color: #f5f7fa;
+        }
         .sidebar {
             background-color: white;
             height: 100vh;
@@ -94,34 +125,6 @@ $conn->close();
             padding: 20px;
             width: calc(100% - 250px);
         }
-        .dashboard-card {
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-            padding: 20px;
-            background-color: white;
-            transition: transform 0.3s;
-        }
-        .dashboard-card:hover {
-            transform: translateY(-5px);
-        }
-        .card-icon {
-            font-size: 2rem;
-            margin-bottom: 15px;
-        }
-        .stat-number {
-            font-size: 2rem;
-            font-weight: bold;
-        }
-        .recent-activity {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        .main-content {
-            margin-left: 250px;
-            padding: 20px;
-            width: calc(100% - 250px);
-        }
         .logs-container {
             background-color: white;
             border-radius: 10px;
@@ -143,9 +146,6 @@ $conn->close();
         }
         .log-action {
             font-weight: 500;
-        }
-        .log-target {
-            color: #0d6efd;
         }
         .badge-customer {
             background-color: #20c997;
@@ -195,10 +195,12 @@ $conn->close();
                         <label for="activity" class="form-label">Filter by Activity</label>
                         <select class="form-select" id="activity" name="activity">
                             <option value="">All Activities</option>
-                            <option value="1" <?php echo (isset($_GET['activity']) && $_GET['activity'] == '1') ? 'selected' : '' ?>>Purchased</option>
-                            <option value="2" <?php echo (isset($_GET['activity']) && $_GET['activity'] == '2') ? 'selected' : '' ?>>Added</option>
-                            <option value="3" <?php echo (isset($_GET['activity']) && $_GET['activity'] == '3') ? 'selected' : '' ?>>Archived</option>
+                            <option value="1" <?php echo (isset($_GET['activity']) && $_GET['activity'] == '1') ? 'selected' : '' ?>>Ordered</option>
+                            <option value="2" <?php echo (isset($_GET['activity']) && $_GET['activity'] == '2') ? 'selected' : '' ?>>Pending</option>
+                            <option value="3" <?php echo (isset($_GET['activity']) && $_GET['activity'] == '3') ? 'selected' : '' ?>>Added</option>
                             <option value="4" <?php echo (isset($_GET['activity']) && $_GET['activity'] == '4') ? 'selected' : '' ?>>Edited</option>
+                            <option value="5" <?php echo (isset($_GET['activity']) && $_GET['activity'] == '5') ? 'selected' : '' ?>>Deleted</option>
+                            <option value="6" <?php echo (isset($_GET['activity']) && $_GET['activity'] == '6') ? 'selected' : '' ?>>Archived</option>
                         </select>
                     </div>
                     <div class="col-md-2 d-flex align-items-end">
@@ -230,12 +232,10 @@ $conn->close();
                                                     default: echo 'bg-secondary';
                                                 }
                                             ?> me-2">
-                                            <?php echo ucfirst($log['TargetType']);?>
+                                            <?php echo ucfirst($log['TargetType']); ?>
                                         </span>
-                                        <strong><?php echo $log['Employee']; ?></strong> 
-                                        <?php echo strtolower($log['Activity']); ?> 
-                                        <?php echo ucfirst($log['TargetType']); ?>:
-                                        <span class="log-target"><?php echo $log['TargetName']; ?></span>
+                                        <strong><?php echo $log['Employee']; ?></strong> - 
+                                        <?php echo $log['Description']; ?>
                                     </div>
                                 </div>
                                 <span class="badge bg-light text-dark">
@@ -251,7 +251,12 @@ $conn->close();
                     <ul class="pagination justify-content-center">
                         <?php if ($currentPage > 1): ?>
                             <li class="page-item">
-                                <a class="page-link" href="?page=<?php echo $currentPage - 1; ?>" aria-label="Previous">
+                                <a class="page-link" href="?<?php 
+                                    echo http_build_query(array_merge(
+                                        $_GET,
+                                        ['page' => $currentPage - 1]
+                                    )); 
+                                ?>" aria-label="Previous">
                                     <span aria-hidden="true">&laquo;</span>
                                 </a>
                             </li>
@@ -259,13 +264,23 @@ $conn->close();
 
                         <?php for ($i = 1; $i <= $totalPages; $i++): ?>
                             <li class="page-item <?php echo ($i == $currentPage) ? 'active' : ''; ?>">
-                                <a class="page-link" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                                <a class="page-link" href="?<?php 
+                                    echo http_build_query(array_merge(
+                                        $_GET,
+                                        ['page' => $i]
+                                    )); 
+                                ?>"><?php echo $i; ?></a>
                             </li>
                         <?php endfor; ?>
 
                         <?php if ($currentPage < $totalPages): ?>
                             <li class="page-item">
-                                <a class="page-link" href="?page=<?php echo $currentPage + 1; ?>" aria-label="Next">
+                                <a class="page-link" href="?<?php 
+                                    echo http_build_query(array_merge(
+                                        $_GET,
+                                        ['page' => $currentPage + 1]
+                                    )); 
+                                ?>" aria-label="Next">
                                     <span aria-hidden="true">&raquo;</span>
                                 </a>
                             </li>
