@@ -189,17 +189,19 @@
             
             while ($row = $result->fetch_assoc()) {
                 echo '<div class="medical-record-card mb-4 p-4 border rounded">';
-                echo '<h5 class="mb-4"><i class="fas fa-calendar-day me-2"></i> '.htmlspecialchars($row['visit_date']).'</h5>';
+                echo '<h5 class="mb-4"><i class="fas fa-calendar-day me-2"></i> ';
+                echo '<input type="date" class="form-control form-control-lg" value="'.htmlspecialchars($row['visit_date']).'" readonly>';
+                echo '</h5>';
                 
                 // Basic Information
                 echo '<div class="row mb-3">';
                 echo '<div class="col-md-6">';
                 echo '<label class="form-label">Eye Condition</label>';
-                echo '<p class="form-control-static">'.(!empty($row['eye_condition']) ? htmlspecialchars($row['eye_condition']) : 'No record.').'</p>';
+                echo '<textarea class="form-control form-control-lg" rows="1" readonly>'.(!empty($row['eye_condition']) ? htmlspecialchars($row['eye_condition']) : 'No record.').'</textarea>';
                 echo '</div>';
                 echo '<div class="col-md-6">';
                 echo '<label class="form-label">Systemic Diseases</label>';
-                echo '<p class="form-control-static">'.(!empty($row['systemic_diseases']) ? htmlspecialchars($row['systemic_diseases']) : 'No record.').'</p>';
+                echo '<textarea class="form-control form-control-lg" rows="1" readonly>'.(!empty($row['systemic_diseases']) ? htmlspecialchars($row['systemic_diseases']) : 'No record.').'</textarea>';
                 echo '</div>';
                 echo '</div>';
                 
@@ -207,15 +209,15 @@
                 echo '<div class="row mb-3">';
                 echo '<div class="col-md-4">';
                 echo '<label class="form-label">Visual Acuity (Right)</label>';
-                echo '<p class="form-control-static">'.(!empty($row['visual_acuity_right']) ? htmlspecialchars($row['visual_acuity_right']) : 'No record.').'</p>';
+                echo '<textarea class="form-control form-control-lg" rows="1" readonly>'.(!empty($row['visual_acuity_right']) ? htmlspecialchars($row['visual_acuity_right']) : 'No record.').'</textarea>';
                 echo '</div>';
                 echo '<div class="col-md-4">';
                 echo '<label class="form-label">Visual Acuity (Left)</label>';
-                echo '<p class="form-control-static">'.(!empty($row['visual_acuity_left']) ? htmlspecialchars($row['visual_acuity_left']) : 'No record.').'</p>';
+                echo '<textarea class="form-control form-control-lg" rows="1" readonly>'.(!empty($row['visual_acuity_left']) ? htmlspecialchars($row['visual_acuity_left']) : 'No record.').'</textarea>';
                 echo '</div>';
                 echo '<div class="col-md-4">';
                 echo '<label class="form-label">Pupillary Distance (mm)</label>';
-                echo '<p class="form-control-static">'.(!empty($row['pupillary_distance']) ? htmlspecialchars($row['pupillary_distance']) : 'No record.').'</p>';
+                echo '<textarea class="form-control form-control-lg" rows="1" readonly>'.(!empty($row['pupillary_distance']) ? htmlspecialchars($row['pupillary_distance']) : 'No record.').'</textarea>';
                 echo '</div>';
                 echo '</div>';
                 
@@ -223,11 +225,11 @@
                 echo '<div class="row mb-3">';
                 echo '<div class="col-md-6">';
                 echo '<label class="form-label">Intraocular Pressure - Right (mmHg)</label>';
-                echo '<p class="form-control-static">'.(!empty($row['intraocular_pressure_right']) ? htmlspecialchars($row['intraocular_pressure_right']) : 'No record.').'</p>';
+                echo '<textarea class="form-control form-control-lg" rows="1" readonly>'.(!empty($row['intraocular_pressure_right']) ? htmlspecialchars($row['intraocular_pressure_right']) : 'No record.').'</textarea>';
                 echo '</div>';
                 echo '<div class="col-md-6">';
                 echo '<label class="form-label">Intraocular Pressure - Left (mmHg)</label>';
-                echo '<p class="form-control-static">'.(!empty($row['intraocular_pressure_left']) ? htmlspecialchars($row['intraocular_pressure_left']) : 'No record.').'</p>';
+                echo '<textarea class="form-control form-control-lg" rows="1" readonly>'.(!empty($row['intraocular_pressure_left']) ? htmlspecialchars($row['intraocular_pressure_left']) : 'No record.').'</textarea>';
                 echo '</div>';
                 echo '</div>';
                 
@@ -235,11 +237,11 @@
                 echo '<div class="row mb-3">';
                 echo '<div class="col-md-6">';
                 echo '<label class="form-label">Refraction (Right)</label>';
-                echo '<p class="form-control-static">'.(!empty($row['refraction_right']) ? htmlspecialchars($row['refraction_right']) : 'No record.').'</p>';
+                echo '<textarea class="form-control form-control-lg" rows="1" readonly>'.(!empty($row['refraction_right']) ? htmlspecialchars($row['refraction_right']) : 'No record.').'</textarea>';
                 echo '</div>';
                 echo '<div class="col-md-6">';
                 echo '<label class="form-label">Refraction (Left)</label>';
-                echo '<p class="form-control-static">'.(!empty($row['refraction_left']) ? htmlspecialchars($row['refraction_left']) : 'No record.').'</p>';
+                echo '<textarea class="form-control form-control-lg" rows="1" readonly>'.(!empty($row['refraction_left']) ? htmlspecialchars($row['refraction_left']) : 'No record.').'</textarea>';
                 echo '</div>';
                 echo '</div>';
                 
@@ -247,11 +249,11 @@
                 echo '<div class="row mb-3">';
                 echo '<div class="col-md-6">';
                 echo '<label class="form-label">Current Medications</label>';
-                echo '<p class="form-control-static">'.(!empty($row['current_medications']) ? nl2br(htmlspecialchars($row['current_medications'])) : 'No record.').'</p>';
+                echo '<textarea class="form-control form-control-lg" rows="2" readonly>'.(!empty($row['current_medications']) ? htmlspecialchars($row['current_medications']) : 'No record.').'</textarea>';
                 echo '</div>';
                 echo '<div class="col-md-6">';
                 echo '<label class="form-label">Allergies</label>';
-                echo '<p class="form-control-static">'.(!empty($row['allergies']) ? nl2br(htmlspecialchars($row['allergies'])) : 'No record.').'</p>';
+                echo '<textarea class="form-control form-control-lg" rows="2" readonly>'.(!empty($row['allergies']) ? htmlspecialchars($row['allergies']) : 'No record.').'</textarea>';
                 echo '</div>';
                 echo '</div>';
                 
@@ -259,11 +261,11 @@
                 echo '<div class="row mb-3">';
                 echo '<div class="col-md-6">';
                 echo '<label class="form-label">Family Eye History</label>';
-                echo '<p class="form-control-static">'.(!empty($row['family_eye_history']) ? nl2br(htmlspecialchars($row['family_eye_history'])) : 'No record.').'</p>';
+                echo '<textarea class="form-control form-control-lg" rows="2" readonly>'.(!empty($row['family_eye_history']) ? htmlspecialchars($row['family_eye_history']) : 'No record.').'</textarea>';
                 echo '</div>';
                 echo '<div class="col-md-6">';
                 echo '<label class="form-label">Previous Eye Surgeries</label>';
-                echo '<p class="form-control-static">'.(!empty($row['previous_eye_surgeries']) ? nl2br(htmlspecialchars($row['previous_eye_surgeries'])) : 'No record.').'</p>';
+                echo '<textarea class="form-control form-control-lg" rows="2" readonly>'.(!empty($row['previous_eye_surgeries']) ? htmlspecialchars($row['previous_eye_surgeries']) : 'No record.').'</textarea>';
                 echo '</div>';
                 echo '</div>';
                 
@@ -271,23 +273,21 @@
                 echo '<div class="row mb-3">';
                 echo '<div class="col-md-6">';
                 echo '<label class="form-label">Corneal Topography</label>';
-                echo '<p class="form-control-static">'.(!empty($row['corneal_topography']) ? nl2br(htmlspecialchars($row['corneal_topography'])) : 'No record.').'</p>';
+                echo '<textarea class="form-control form-control-lg" rows="2" readonly>'.(!empty($row['corneal_topography']) ? htmlspecialchars($row['corneal_topography']) : 'No record.').'</textarea>';
                 echo '</div>';
                 echo '<div class="col-md-6">';
                 echo '<label class="form-label">Fundus Examination</label>';
-                echo '<p class="form-control-static">'.(!empty($row['fundus_examination']) ? nl2br(htmlspecialchars($row['fundus_examination'])) : 'No record.').'</p>';
+                echo '<textarea class="form-control form-control-lg" rows="2" readonly>'.(!empty($row['fundus_examination']) ? htmlspecialchars($row['fundus_examination']) : 'No record.').'</textarea>';
                 echo '</div>';
                 echo '</div>';
                 
                 // Additional Notes
-                if (!empty($row['additional_notes'])) {
-                    echo '<div class="row mb-3">';
-                    echo '<div class="col-12">';
-                    echo '<label class="form-label">Additional Notes</label>';
-                    echo '<p class="form-control-static">'.nl2br(htmlspecialchars($row['additional_notes'])).'</p>';
-                    echo '</div>';
-                    echo '</div>';
-                }
+                echo '<div class="row mb-3">';
+                echo '<div class="col-12">';
+                echo '<label class="form-label">Additional Notes</label>';
+                echo '<textarea class="form-control form-control-lg" rows="3" readonly>'.(!empty($row['additional_notes']) ? htmlspecialchars($row['additional_notes']) : 'No record.').'</textarea>';
+                echo '</div>';
+                echo '</div>';
                 
                 echo '</div>'; // Close medical-record-card
             }
