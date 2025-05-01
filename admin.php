@@ -30,8 +30,7 @@ $lowInventory = getLowInventoryProducts();
         
         <style>
             :root {
-                --sidebar-width: 250px;
-                --sidebar-collapsed-width: 80px;
+
                 --primary-color: #4e73df;
                 --secondary-color: #858796;
                 --success-color: #1cc88a;
@@ -46,53 +45,7 @@ $lowInventory = getLowInventoryProducts();
                 overflow-x: hidden;
             }
             
-            /* Sidebar Styles */
-            .sidebar {
-                background-color: white;
-                height: 100vh;
-                padding: 20px 0;
-                color: #2c3e50;
-                position: fixed;
-                width: var(--sidebar-width);
-                box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-                transition: all 0.3s;
-                z-index: 1000;
-            }
             
-            .sidebar-header {
-                padding: 0 20px 20px;
-                border-bottom: 1px solid rgba(0,0,0,0.1);
-            }
-            
-            .sidebar-item {
-                padding: 12px 20px;
-                margin: 5px 0;
-                border-radius: 0;
-                display: flex;
-                align-items: center;
-                color: #2c3e50;
-                transition: all 0.3s;
-                text-decoration: none;
-                white-space: nowrap;
-            }
-            
-            .sidebar-item:hover {
-                background-color: #f8f9fa;
-                color: #2c3e50;
-            }
-            
-            .sidebar-item.active {
-                background-color: #e9ecef;
-                color: #2c3e50;
-                font-weight: 500;
-            }
-            
-            .sidebar-item i {
-                margin-right: 10px;
-                width: 20px;
-                text-align: center;
-                flex-shrink: 0;
-            }
             
             /* Main Content */
             .main-content {
@@ -170,15 +123,8 @@ $lowInventory = getLowInventoryProducts();
             
             /* Responsive Adjustments */
             @media (max-width: 992px) {
-                .sidebar {
-                    transform: translateX(-100%);
-                    width: var(--sidebar-width);
-                }
                 
-                .sidebar.active {
-                    transform: translateX(0);
-                }
-                
+                                
                 .main-content {
                     margin-left: 0;
                     width: 100%;
