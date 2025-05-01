@@ -136,7 +136,7 @@ $lowInventory = getLowInventoryProducts();
                         </div>
                         <h5>Inventory</h5>
                         <div class="stat-number"><?php echo number_format($inventoryCount); ?></div>
-                        <a href="admin-inventory.php" class="btn btn-sm btn-outline-warning mt-2">View All</a>
+                        <a href="<?php echo ($isAdmin) ? 'admin-inventory.php' : 'Employee-inventory.php'; ?> "class="btn btn-sm btn-outline-warning mt-2">View All</a>
                     </div>
                 </div>
                 
