@@ -777,10 +777,7 @@ function deleteProduct()
 
         if ($exists) {
             die(echo '
-                <div class='alert alert-success alert-dismissible fade show' role='alert'>
-                    <strong>Could not delete products that still has active orders related with it.</strong>
-                    <button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>
-                </div>
+                <div>test</div>
             ');
         }
         
