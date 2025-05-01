@@ -241,6 +241,9 @@ handleCancellation();
                 </div>
             </form>
         </div>
+        <div class="form-container">
+            Lorem ipsum
+        </div>
     </div>
 
     <!-- Cancel Confirmation Modal -->
