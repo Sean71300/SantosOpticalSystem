@@ -248,12 +248,8 @@ handleCancellation();
 
         <div class="form-container">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1><i class="fa-solid fa-book-medical me-2"></i> Medical History</h1>
-                <a href="addMedicalRecord.php?customerID=<?php echo $id; ?>" class="btn btn-primary">
-                    <i class="fas fa-plus me-2"></i> Add Record
-                </a>
+                <?php getMedicalRecords($id); ?>
             </div>
-            <?php getMedicalRecords($id); ?>
         </div>
     </div>
 
