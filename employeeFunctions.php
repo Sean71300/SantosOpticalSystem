@@ -223,7 +223,7 @@
                 $stmt = $conn->prepare("INSERT INTO Logs 
                                     (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description, Upd_dt)
                                     VALUES
-                                    (?, ?, ?, 'customer', '3', ?, NOW())");
+                                    (?, ?, ?, 'employee', '3', ?, NOW())");
                 $stmt->bind_param("ssss", $Logsid, $employee_id, $id, $name);
                 $stmt->execute();
                 $stmt->close();
