@@ -314,7 +314,7 @@
                     (OrderDtlID, OrderHdr_id , ProductBranchID, Quantity, 
                     ActivityCode, Status)
                     VALUES
-                    ('$id','$id2', '$id3', '5' , '2', 'Available'
+                    ('$id','$id2', '$id3', '5' , '2', 'Pending'
                     )";
 
             mysqli_query($conn, $sql);
