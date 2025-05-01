@@ -9,7 +9,7 @@ $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($currentPage - 1) * $logsPerPage;
 
 // Build base query
-$query = "SELECT l.LogsID, l.Upd_dt, l.TargetType, l.Description, 
+$query = "SELECT l.LogsID, l.Upd_dt, l.TargetType, l.Description, l.ActivityCode,
                  e.EmployeeName as Employee
           FROM Logs l
           JOIN employee e ON l.EmployeeID = e.EmployeeID";
@@ -235,7 +235,19 @@ $conn->close();
                                             <?php echo ucfirst($log['TargetType']); ?>
                                         </span>
                                         <strong><?php echo $log['Employee']; ?></strong> - 
-                                        <?php echo $log['Description']; ?>
+                                        <?php 
+                                            $activity = '';
+                                            switch($log['ActivityCode']) {
+                                                case 1: $activity = 'ordered'; break;
+                                                case 2: $activity = 'marked as pending'; break;
+                                                case 3: $activity = 'added'; break;
+                                                case 4: $activity = 'edited'; break;
+                                                case 5: $activity = 'deleted'; break;
+                                                case 6: $activity = 'archived'; break;
+                                                default: $activity = 'performed an action on';
+                                            }
+                                            echo "<strong>" . $activity . "</strong> " . $log['Description']; 
+                                        ?>
                                     </div>
                                 </div>
                                 <span class="badge bg-light text-dark">
