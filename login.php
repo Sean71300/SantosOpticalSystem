@@ -82,6 +82,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['cancel'])) {
     <title>Login | Santos Optical</title>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="shortcut icon" type="image/x-icon" href="Images/logo.png"/>
     <style>
     :root {
         --primary-color: #43a047; /* green for sign in */

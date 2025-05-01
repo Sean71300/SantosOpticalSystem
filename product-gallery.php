@@ -70,7 +70,7 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
         <link rel="stylesheet" href="customCodes/s1.css">
         <link rel="stylesheet" href="customCodes/custom.css">
-        <link rel="shortcut icon" type="image/x-icon" href="images/logo.png"/>
+        <link rel="shortcut icon" type="image/x-icon" href="Images/logo.png"/>
         <link rel="stylesheet" href="customCodes/s2.css">
     </head>
 

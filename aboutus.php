@@ -14,6 +14,7 @@
         <link rel="stylesheet" href="customCodes/custom.css">
         <link rel="stylesheet" href="customCodes/s1.css">
         <link rel="stylesheet" href="customCodes/s2.css">
+        <link rel="shortcut icon" type="image/x-icon" href="Images/logo.png"/>
 
         <style>
         
