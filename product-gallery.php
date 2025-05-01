@@ -44,33 +44,34 @@
         // Start of card grid - fewer columns for wider cards
         echo "<div class='row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4'>";
         
-        while($row = mysqli_fetch_assoc($result)) {
-            echo "<div class='col d-flex'>";
-                echo "<div class='card w-100' style='max-width: 380px;'>"; // Increased max-width
-                    echo '<img src="' . $row['ProductImage']. '" class="card-img-top img-fluid" style="height: 280px;" alt="'. $row['Model'] .'">';
-                    echo "<div class='card-body d-flex flex-column'>";
-                        echo "<h5 class='card-title' style='min-height: 1.5rem;'>".$row['Model']."</h5>";
-                        echo "<hr>";
-                        echo "<div class='card-text mb-2'>".$row['CategoryType']."</div>";
-                        echo "<div class='card-text mb-2'>".$row['Material']."</div>";
-                        echo "<div class='card-text mb-2'>$".number_format($row['Price'], 2)."</div>";
-                        if ($row['Avail_FL'] == "Available") {
-                            echo "<div class='card-text mb-2 text-success'>".$row['Avail_FL']."</div>";
-                        echo "</div>";
-                            echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
-                                echo "<a href='#' class='btn btn-primary w-100 py-2'>More details</a>";
-                            echo "</div>";
-                        } else {
-                            echo "<div class='card-text mb-2 text-danger'>".$row['Avail_FL']."</div>";
-                        echo "</div>";
-                        echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
-                            echo "<a href='#' class='btn btn-secondary w-100 py-2 disabled'>Not Available</a>";
-                        echo "</div>";
-                        }                               
+      while($row = mysqli_fetch_assoc($result)) {
+    echo "<div class='col d-flex'>";
+        echo "<div class='card w-100' style='max-width: 380px;'>";
+            echo '<img src="' . $row['ProductImage']. '" class="card-img-top img-fluid" style="height: 280px;" alt="'. $row['Model'] .'">';
+            echo "<div class='card-body d-flex flex-column'>";
+                echo "<h5 class='card-title' style='min-height: 1.5rem;'>".$row['Model']."</h5>";
+                echo "<hr>";
+                echo "<div class='card-text mb-2'>".$row['CategoryType']."</div>";
+                echo "<div class='card-text mb-2'>".$row['Material']."</div>";
+                // Fixed price display with error handling
+                $price = is_numeric($row['Price']) ? (float)$row['Price'] : 0;
+                echo "<div class='card-text mb-2'>$".number_format($price, 2)."</div>";
+                if ($row['Avail_FL'] == "Available") {
+                    echo "<div class='card-text mb-2 text-success'>".$row['Avail_FL']."</div>";
                 echo "</div>";
-            echo "</div>";
-        }
-        
+                    echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
+                        echo "<a href='#' class='btn btn-primary w-100 py-2'>More details</a>";
+                    echo "</div>";
+                } else {
+                    echo "<div class='card-text mb-2 text-danger'>".$row['Avail_FL']."</div>";
+                echo "</div>";
+                echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
+                    echo "<a href='#' class='btn btn-secondary w-100 py-2 disabled'>Not Available</a>";
+                echo "</div>";
+                }                               
+        echo "</div>";
+    echo "</div>";
+}
         echo "</div>"; // End of card grid
 
         // Pagination remains the same but preserves sort parameter
