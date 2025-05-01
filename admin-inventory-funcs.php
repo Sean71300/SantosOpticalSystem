@@ -204,7 +204,7 @@ function getInventory($sort = 'ProductID', $order = 'ASC') {
                             <input type='hidden' name='price' value='" . htmlspecialchars($row['Price']) . "' />
                             <input type='hidden' name='count' value='" . htmlspecialchars($row['Stocks']) . "' />
                             <input type='hidden' name='productImg' value='" . htmlspecialchars($row['ProductImage']) . "' />
-                            <button type='submit' class='btn btn-success' name='editProductBtn' style='font-size:18px'><i class='fa-solid fa-pen'></i></button>
+                            <button type='submit' class='btn btn-success mt-2' name='editProductBtn' style='font-size:18px'><i class='fa-solid fa-pen'></i></button>
                         </form>
                     </td>
                     <td class='align-middle'>
@@ -212,7 +212,7 @@ function getInventory($sort = 'ProductID', $order = 'ASC') {
                             <input type='hidden' name='chooseBranch' value='" . htmlspecialchars($branchName) . "' />
                             <input type='hidden' name='productBranchID' value='" . htmlspecialchars($row['ProductBranchID']) . "' />
                             <input type='hidden' name='productID' value='" . htmlspecialchars($row['ProductID']) . "' />
-                            <button type='submit' class='btn btn-danger' name='deleteProductBtn' value='deleteProductBtn' style='font-size:18px'><i class='fa-solid fa-trash'></i></button>
+                            <button type='submit' class='btn btn-danger mt-2' name='deleteProductBtn' value='deleteProductBtn' style='font-size:18px'><i class='fa-solid fa-trash'></i></button>
                         </form>
                     </td>
                 </tr>";
@@ -746,19 +746,7 @@ function deleteProduct() { //Delete function to delete a product from the databa
     $link = connect();
     $productID = $_POST['productID'] ?? '';
 
-    $logBranchID = $_POST['productBranchID'] ?? '';
-    $logID = generate_LogsID();
-    $logEmployeeID = getEmployeeID();
-    $logActivityCode = '3';
-    $logCount = 1;
-    $logUpdDT = date('Y-m-d H:i:s');
-    $logSQL = "INSERT INTO Logs (LogsID, EmployeeID, ProductBranchID, ActivityCode, Stocks, Upd_dt) VALUES (?, ?, ?, ?, ?, ?)";
-    $logStmt = mysqli_prepare($link, $logSQL);
-    mysqli_stmt_bind_param($logStmt, "ssssss", $logID, $logEmployeeID, $logBranchID, $logActivityCode, $logCount, $logUpdDT);
-    $logSuccess = mysqli_stmt_execute($logStmt);
-    mysqli_stmt_close($logStmt);
-
-    if ($logSuccess) {
+    
         $sql = "DELETE FROM ProductBranchMaster WHERE ProductID = ?";
         $stmt = mysqli_prepare($link, $sql);
         mysqli_stmt_bind_param($stmt, "s", $productID);
@@ -769,8 +757,9 @@ function deleteProduct() { //Delete function to delete a product from the databa
         $stmt = mysqli_prepare($link, $sql);
         mysqli_stmt_bind_param($stmt, "s", $productID);
         mysqli_stmt_execute($stmt);
-        mysqli_stmt_close($stmt);
 
+    if (mysqli_stmt_close($stmt))
+        {
         echo '<div class="modal fade" id="deleteProductModal" tabindex="-1" aria-labelledby="deleteProductModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
@@ -807,4 +796,4 @@ function deleteProduct() { //Delete function to delete a product from the databa
     }
     mysqli_close($link);
 }
-?>
+?>          
