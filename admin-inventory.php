@@ -1,4 +1,4 @@
-<div?php
+<?php
 include 'ActivityTracker.php';
 include 'loginChecker.php';
 include 'admin-inventory-funcs.php';
