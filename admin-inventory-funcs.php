@@ -742,11 +742,10 @@ function confirmEditProduct() {
     mysqli_close($link);
 }
 
-function GenerateLogs($productID)
+function GenerateLogs($productID,$model)
     {
         $conn = connect(); 
-        $Logsid = generate_LogsID();
-        $model = $_POST['model'] ?? '';
+        $Logsid = generate_LogsID();        
         $employee_id = $_SESSION["id"];
         $stmt = $conn->prepare("INSERT INTO Logs 
                             (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description, Upd_dt)
@@ -760,8 +759,8 @@ function GenerateLogs($productID)
 function deleteProduct() { //Delete function to delete a product from the database
     $link = connect();
     $productID = $_POST['productID'] ?? '';
-    
-    GenerateLogs($productID);
+    $model = $_POST['model'] ?? '';
+    GenerateLogs($productID,$model);
     
         $sql = "DELETE FROM ProductBranchMaster WHERE ProductID = ?";
         $stmt = mysqli_prepare($link, $sql);
