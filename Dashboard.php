@@ -136,7 +136,7 @@ $lowInventory = getLowInventoryProducts();
                         </div>
                         <h5>Inventory</h5>
                         <div class="stat-number"><?php echo number_format($inventoryCount); ?></div>
-                        <a href="<?php echo ($isAdmin) ? 'admin-inventory.php' : 'Employee-inventory.php'; ?> "class="btn btn-sm btn-outline-warning mt-2">View All</a>
+                        <a href="<?php echo ($isAdmin) ? 'admin-inventory.php' : 'Employee-inventory.php'; ?>"class="btn btn-sm btn-outline-warning mt-2">View All</a>
                     </div>
                 </div>
                 
@@ -169,7 +169,7 @@ $lowInventory = getLowInventoryProducts();
                     <div class="dashboard-card recent-activity">    
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5 class="mb-0"><i class="fa-solid fa-circle-exclamation me-2"></i>Low Stocks</h5>
-                            <a href="admin-inventory.php" class="btn btn-sm btn-outline-secondary">
+                            <a href="<?php echo ($isAdmin) ? 'admin-inventory.php' : 'Employee-inventory.php'; ?>" class="btn btn-sm btn-outline-secondary">
                             <i class="fa-solid fa-boxes-stacked"></i> Show Inventory
                             </a>
                         </div>
