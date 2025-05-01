@@ -2,13 +2,13 @@
 function getCustomerCount() {
     $conn = connect();
     $count = 0;
-    $query = "SELECT COUNT(*)
-                FROM customer
-                WHERE CustomerID NOT IN (
-                SELECT TargetID 
-                FROM archives 
-                WHERE TargetType = 'customer'
-                )";
+    $query = "SELECT COUNT(*) as count 
+          FROM customer c
+          WHERE NOT EXISTS (
+              SELECT 1 
+              FROM archives a 
+              WHERE a.TargetID = c.CustomerID AND a.TargetType = 'customer'
+          )";
     $result = mysqli_query($conn, $query);
     if ($result) {
         $row = mysqli_fetch_assoc($result);
