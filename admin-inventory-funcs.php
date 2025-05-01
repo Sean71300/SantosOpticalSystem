@@ -106,8 +106,7 @@ function getInventory($sort = 'ProductID', $order = 'ASC') {
                 JOIN brandMaster bm ON pm.BrandID = bm.BrandID
                 JOIN ProductBranchMaster pbm ON pm.ProductID = pbm.ProductID
                 JOIN BranchMaster b ON pbm.BranchCode = b.BranchCode
-                GROUP BY pm.ProductID, pm.CategoryType, sm.Description, bm.BrandName, 
-                            pm.Model, pm.Material, pm.Price, pm.ProductImage, pm.Upd_by";
+                GROUP BY pm.ProductID, pm.CategoryType, sm.Description, bm.BrandName, pm.Model, pm.Material, pm.Price, pm.ProductImage, pm.Upd_by";
         
         switch($sort) {
             case 'ProductID': $sql .= " ORDER BY pm.ProductID"; break;

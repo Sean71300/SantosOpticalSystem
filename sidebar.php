@@ -53,7 +53,7 @@ if ($isAdmin === true) {
 
         <?php if (!$isAdmin): ?>
             <a href="Employee-inventory.php" class="sidebar-item <?php echo ($current_page == 'Employee-inventory.php') ? 'active' : ''; ?>">
-                <i class="fas fa-box"></i> Inventory
+                <i class="fas fa-box"></i> Manage Inventory
             </a>
         <?php endif; ?>
         
