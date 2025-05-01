@@ -29,7 +29,7 @@ $query = "SELECT
           JOIN ProductBranchMaster pbm ON od.ProductBranchID = pbm.ProductBranchID
           JOIN productMstr p ON pbm.ProductID = p.ProductID
           WHERE o.Created_dt >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
-          AND od.ActivityCode = 1  -- Only include orders with ActivityCode = 1 (Ordered)
+          AND od.ActivityCode = 2  -- Only include orders with ActivityCode = 1 (Ordered)
           GROUP BY DATE(o.Created_dt) 
           ORDER BY day ASC";
 
