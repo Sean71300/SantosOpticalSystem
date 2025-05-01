@@ -33,69 +33,145 @@ include 'loginChecker.php';
             transition: transform 0.3s ease;
         }
         
-        @media (max-width: 992px) {
-        .sidebar {
-            transform: translateX(-100%);
+        @media (max-width: 991.98px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0 !important;
+                width: 100% !important;
+            }
         }
         
-        .sidebar.active {
-            transform: translateX(0);
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+        .sidebar-item {
+            padding: 12px 20px;
+            margin: 5px 0;
+            border-radius: 0;
+            display: flex;
+            align-items: center;
+            color: #2c3e50;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+        .sidebar-item:hover {
+            background-color: #f8f9fa;
+            color: #2c3e50;
+        }
+        .sidebar-item.active {
+            background-color: #e9ecef;
+            color: #2c3e50;
+            font-weight: 500;
+        }   
+        .sidebar-item i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
         }
         
+        /* Main content adjustments */
         .main-content {
-            margin-left: 0 !important;
-            width: 100% !important;
-        }
-        
-        .mobile-menu-toggle {
-            display: block !important;
-        }
-        
-        /* Adjust form layout */
-        .form-container {
+            margin-left: 250px;
             padding: 20px;
+            width: calc(100% - 250px);
+            transition: all 0.3s;
         }
         
-        .product-img-container {
-            margin-bottom: 20px;
-        }
-    }
-    
-    @media (max-width: 768px) {
+        /* Form container */
         .form-container {
-            padding: 15px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-top: 20px;
         }
         
-        .d-flex.justify-content-between {
-            flex-direction: column;
-            align-items: flex-start !important;
-        }
-        
-        .d-flex.justify-content-between h1 {
-            margin-bottom: 15px;
-        }
-        
-        .d-flex.flex-row-reverse {
-            flex-direction: column !important;
-            gap: 10px !important;
+        /* Form elements */
+        .form-label {
+            font-weight: 500;
         }
         
         .btn-action {
-            width: 100%;
-        }
-    }
-    
-    @media (max-width: 576px) {
-        .form-control-lg, .form-select-lg {
-            font-size: 1rem;
-            padding: 0.5rem 1rem;
+            min-width: 120px;
         }
         
-        .product-img-preview {
-            max-height: 150px;
+        /* Spinner for input number */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;            
         }
-    }
-</style>
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+        
+        /* Product image preview */
+        .product-img-preview {
+            max-width: 100%;
+            height: auto;
+            max-height: 200px;
+            object-fit: contain;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        
+        /* Mobile menu toggle */
+        .mobile-menu-toggle {
+            display: none;
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 1050;
+            background: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        @media (max-width: 991.98px) {
+            .mobile-menu-toggle {
+                display: block;
+            }
+        }
+        
+        /* Responsive form adjustments */
+        @media (max-width: 767.98px) {
+            .form-container {
+                padding: 20px 15px;
+            }
+            
+            .d-flex.justify-content-between {
+                flex-direction: column;
+                align-items: flex-start !important;
+            }
+            
+            .d-flex.justify-content-between h1 {
+                margin-bottom: 15px;
+            }
+            
+            .d-flex.flex-row-reverse {
+                flex-direction: column !important;
+                gap: 10px !important;
+            }
+            
+            .btn-action {
+                width: 100%;
+            }
+            
+            .product-img-container {
+                margin-bottom: 20px;
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- Mobile Menu Toggle Button -->
@@ -249,34 +325,6 @@ include 'loginChecker.php';
                 myModal.show();
             }
         });
-        function toggleSidebar() {
-        const sidebar = document.querySelector('.sidebar');
-        const body = document.body;
-        sidebar.classList.toggle('active');
-        body.classList.toggle('sidebar-open');
-    }
-
-    // Close sidebar when clicking outside
-    document.addEventListener('click', function(e) {
-        const sidebar = document.querySelector('.sidebar');
-        const menuToggle = document.querySelector('.mobile-menu-toggle');
-        
-        if (window.innerWidth <= 992 && 
-            !sidebar.contains(e.target) && 
-            e.target !== menuToggle && 
-            !menuToggle.contains(e.target)) {
-            sidebar.classList.remove('active');
-            document.body.classList.remove('sidebar-open');
-        }
-    });
-
-    // Auto-close sidebar when resizing to larger screens
-    window.addEventListener('resize', function() {
-        if (window.innerWidth > 992) {
-            document.querySelector('.sidebar').classList.remove('active');
-            document.body.classList.remove('sidebar-open');
-        }
-    });
     </script>
 </body>
 </html>
