@@ -10,17 +10,11 @@
         $page = (isset($_GET['page'])) ? (int)$_GET['page'] : 1;
         $start = ($page - 1) * $perPage;
         
-        // Get sort and filter parameters from URL
+        // Get sort parameter from URL or default to name A-Z
         $sort = isset($_GET['sort']) ? $_GET['sort'] : 'name_asc';
-        $material_filter = isset($_GET['material']) ? $_GET['material'] : '';
         
         // Build the base SQL query
         $sql = "SELECT * FROM `productMstr`";
-        
-        // Add material filter if selected
-        if (!empty($material_filter) {
-            $sql .= " WHERE Material = '" . mysqli_real_escape_string($conn, $material_filter) . "'";
-        }
         
         // Add sorting based on the selected option
         switch($sort) {
@@ -44,15 +38,7 @@
         $sql .= " LIMIT $start, $perPage";
         
         $result = mysqli_query($conn, $sql);
-        
-        // For total count, we need to consider the filter
-        $count_sql = "SELECT COUNT(*) as total FROM `productMstr`";
-        if (!empty($material_filter)) {
-            $count_sql .= " WHERE Material = '" . mysqli_real_escape_string($conn, $material_filter) . "'";
-        }
-        $count_result = mysqli_query($conn, $count_sql);
-        $total_row = mysqli_fetch_assoc($count_result);
-        $total = $total_row['total'];
+        $total = mysqli_num_rows(mysqli_query($conn, "SELECT * FROM `productMstr`"));
         $totalPages = ceil($total / $perPage);
 
         // Start of card grid - fewer columns for wider cards
@@ -91,22 +77,12 @@
         
         echo "</div>"; // End of card grid
 
-        // Build query parameters for pagination links
-        $query_params = [];
-        if (!empty($sort)) {
-            $query_params['sort'] = $sort;
-        }
-        if (!empty($material_filter)) {
-            $query_params['material'] = $material_filter;
-        }
-        $query_string = !empty($query_params) ? '&' . http_build_query($query_params) : '';
-
-        // Pagination with preserved sort and filter parameters
+        // Pagination remains the same but preserves sort parameter
         echo "<div class='col-12 mt-5'>";
             echo "<div class='d-flex justify-content-center'>";
                 echo "<ul class='pagination'>";
                 if ($page > 1) {
-                    echo "<li class='page-item'><a class='page-link' href='?page=" . ($page - 1) . $query_string . "'>Previous</a></li>";
+                    echo "<li class='page-item'><a class='page-link' href='?page=" . ($page - 1) . "&sort=$sort'>Previous</a></li>";
                 } else {
                     echo "<li class='page-item disabled'><a class='page-link'>Previous</a></li>";
                 }
@@ -115,29 +91,18 @@
                     if ($i == $page) {
                         echo "<li class='page-item active' aria-current='page'><a class='page-link disabled'>$i</a></li>"; 
                     } else {
-                        echo "<li class='page-item'><a class='page-link' href='?page=$i" . $query_string . "'>$i</a></li>";
+                        echo "<li class='page-item'><a class='page-link' href='?page=$i&sort=$sort'>$i</a></li>";
                     }
                 }
 
                 if ($page < $totalPages) {
-                    echo "<li class='page-item'><a class='page-link' href='?page=" . ($page + 1) . $query_string . "'>Next</a></li>";
+                    echo "<li class='page-item'><a class='page-link' href='?page=" . ($page + 1) . "&sort=$sort'>Next</a></li>";
                 } else {
                     echo "<li class='page-item disabled'><a class='page-link'>Next</a></li>";
                 }
                 echo "</ul>";
             echo "</div>";
         echo "</div>"; 
-    }
-
-    function getUniqueMaterials() {
-        $conn = connect();
-        $sql = "SELECT DISTINCT Material FROM `productMstr` ORDER BY Material";
-        $result = mysqli_query($conn, $sql);
-        $materials = [];
-        while($row = mysqli_fetch_assoc($result)) {
-            $materials[] = $row['Material'];
-        }
-        return $materials;
     }
 ?>
 
@@ -178,18 +143,6 @@
                 max-width: 250px;
                 margin-left: auto;
             }
-            .filter-container {
-                display: flex;
-                justify-content: space-between;
-                flex-wrap: wrap;
-                margin-bottom: 20px;
-            }
-            .material-filter {
-                max-width: 250px;
-            }
-            .reset-btn {
-                align-self: flex-end;
-            }
         </style>
     </head>
 
@@ -204,65 +157,22 @@
             <div class="container mb-4">
                 <h1 style='text-align: center;'>Gallery</h1>
                 
-                <!-- Filter and Sort Container -->
-                <div class="filter-container">
-                    <!-- Material Filter -->
-                    <div class="material-filter">
-                        <form method="get" action="">
-                            <div class="input-group">
-                                <label class="input-group-text" for="materialSelect">Filter by Material:</label>
-                                <select class="form-select" id="materialSelect" name="material" onchange="this.form.submit()">
-                                    <option value="">All Materials</option>
-                                    <?php
-                                        $materials = getUniqueMaterials();
-                                        $selected_material = isset($_GET['material']) ? $_GET['material'] : '';
-                                        foreach($materials as $material) {
-                                            $selected = ($material == $selected_material) ? 'selected' : '';
-                                            echo "<option value=\"" . htmlspecialchars($material) . "\" $selected>" . htmlspecialchars($material) . "</option>";
-                                        }
-                                    ?>
-                                </select>
-                                <?php 
-                                    if(isset($_GET['page'])) {
-                                        echo '<input type="hidden" name="page" value="' . $_GET['page'] . '">';
-                                    }
-                                    if(isset($_GET['sort'])) {
-                                        echo '<input type="hidden" name="sort" value="' . $_GET['sort'] . '">';
-                                    }
-                                ?>
-                            </div>
-                        </form>
-                    </div>
-                    
-                    <!-- Reset Button -->
-                    <?php if(isset($_GET['material']) || isset($_GET['sort'])): ?>
-                    <div class="reset-btn">
-                        <a href="?" class="btn btn-outline-secondary">Reset Filters</a>
-                    </div>
-                    <?php endif; ?>
-                    
-                    <!-- Sorting Dropdown -->
-                    <div class="sort-dropdown">
-                        <form method="get" action="">
-                            <div class="input-group">
-                                <label class="input-group-text" for="sortSelect">Sort by:</label>
-                                <select class="form-select" id="sortSelect" name="sort" onchange="this.form.submit()">
-                                    <option value="name_asc" <?php echo (isset($_GET['sort']) && $_GET['sort'] == 'name_asc') ? 'selected' : ''; ?>>Name (A-Z)</option>
-                                    <option value="name_desc" <?php echo (isset($_GET['sort']) && $_GET['sort'] == 'name_desc') ? 'selected' : ''; ?>>Name (Z-A)</option>
-                                    <option value="price_asc" <?php echo (isset($_GET['sort']) && $_GET['sort'] == 'price_asc') ? 'selected' : ''; ?>>Price (Low to High)</option>
-                                    <option value="price_desc" <?php echo (isset($_GET['sort']) && $_GET['sort'] == 'price_desc') ? 'selected' : ''; ?>>Price (High to Low)</option>
-                                </select>
-                                <?php 
-                                    if(isset($_GET['page'])) {
-                                        echo '<input type="hidden" name="page" value="' . $_GET['page'] . '">';
-                                    }
-                                    if(isset($_GET['material'])) {
-                                        echo '<input type="hidden" name="material" value="' . $_GET['material'] . '">';
-                                    }
-                                ?>
-                            </div>
-                        </form>
-                    </div>
+                <!-- Sorting Dropdown -->
+                <div class="sort-dropdown">
+                    <form method="get" action="">
+                        <div class="input-group">
+                            <label class="input-group-text" for="sortSelect">Sort by:</label>
+                            <select class="form-select" id="sortSelect" name="sort" onchange="this.form.submit()">
+                                <option value="name_asc" <?php echo (isset($_GET['sort']) && $_GET['sort'] == 'name_asc') ? 'selected' : ''; ?>>Name (A-Z)</option>
+                                <option value="name_desc" <?php echo (isset($_GET['sort']) && $_GET['sort'] == 'name_desc') ? 'selected' : ''; ?>>Name (Z-A)</option>
+                                <option value="price_asc" <?php echo (isset($_GET['sort']) && $_GET['sort'] == 'price_asc') ? 'selected' : ''; ?>>Price (Low to High)</option>
+                                <option value="price_desc" <?php echo (isset($_GET['sort']) && $_GET['sort'] == 'price_desc') ? 'selected' : ''; ?>>Price (High to Low)</option>
+                            </select>
+                            <?php if(isset($_GET['page'])): ?>
+                                <input type="hidden" name="page" value="<?php echo $_GET['page']; ?>">
+                            <?php endif; ?>
+                        </div>
+                    </form>
                 </div>
             </div>
 
@@ -275,3 +185,4 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     </body>
 </html>
+
