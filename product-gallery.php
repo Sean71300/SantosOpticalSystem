@@ -87,7 +87,7 @@
             </div>
 
             <div class="grid" style="margin-bottom: 3.5rem;">
-                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                <div class="row align-items-start justify-content-center">
                     <?php
                         pagination();
                     ?>
