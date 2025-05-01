@@ -1,7 +1,7 @@
 <?php
     include_once 'setup.php'; 
     $isAdmin = false;
-    $isAdmin = isset($_SESSION['roleid']) && $_SESSION['roleid'] === 1;
+    $isAdmin = isset($_SESSION['roleid']) && $_SESSION['roleid'] === 2;
 
     //read all row from database table
     function customerData($sort = 'CustomerID', $order = 'ASC')
