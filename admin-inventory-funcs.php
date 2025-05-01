@@ -761,6 +761,109 @@ function GenerateLogs($productID,$model,$code)
     }
 
     function deleteProduct() 
+{ 
+    $productID = $_POST['productID'] ?? '';
+    if (empty($productID)) {
+        die("Error: No product ID provided");
+    }
+
+    $conn = connect();
+    
+    // First check if product exists in ProductBranchMaster
+    $stmt = $conn->prepare("SELECT ProductBranchID FROM ProductBranchMaster WHERE productID = ?");
+    $stmt->bind_param("s", $productID);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    
+    if (!$row) {
+        die("Error: Product not found in inventory");
+    }
+    
+    $PBID = $row['ProductBranchID'];
+
+    // Check for active orders
+    $stmt = $conn->prepare("SELECT 1 FROM orderDetails WHERE ProductBranchID = ? LIMIT 1");
+    $stmt->bind_param("s", $PBID);
+    $stmt->execute();
+    $exists = (bool)$stmt->get_result()->fetch_assoc();
+
+    if ($exists) {
+        echo '<div class="modal fade" id="deleteErrorModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title">Delete Product Error</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p><i class="fas fa-exclamation-triangle me-2"></i> Product could not be deleted because it has an active order related to it.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    var myModal = new bootstrap.Modal(document.getElementById("deleteErrorModal"));
+                    myModal.show();
+                });
+            </script>';
+        exit();
+    }
+
+    // Get product info for logs
+    $stmt = $conn->prepare("SELECT Model FROM productMstr WHERE ProductID = ?");
+    $stmt->bind_param("s", $productID);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $product = $result->fetch_assoc();
+    
+    if (!$product) {
+        die("Error: Product details not found");
+    }
+    
+    $model = $product['Model'];
+    $code = '5';
+    GenerateLogs($productID, $model, $code);
+    
+    // Delete from ProductBranchMaster
+    $stmt = $conn->prepare("DELETE FROM ProductBranchMaster WHERE ProductID = ?");
+    $stmt->bind_param("s", $productID);
+    $stmt->execute();
+    
+    // Delete from productMstr
+    $stmt = $conn->prepare("DELETE FROM productMstr WHERE ProductID = ?");
+    $stmt->bind_param("s", $productID);
+    $stmt->execute();
+
+    echo '<div class="modal fade" id="deleteProductModal" tabindex="-1" aria-labelledby="deleteProductModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteProductModalLabel">Success</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        The product has been deleted from the database successfully!
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                var myModal = new bootstrap.Modal(document.getElementById("deleteProductModal"));
+                myModal.show();
+            });
+        </script>';
+
+    $conn->close();
+}
     { 
         $productID = $_POST['productID'] ?? '';
     
