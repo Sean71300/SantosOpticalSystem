@@ -94,7 +94,7 @@
         <div class="container text-center my-4">
             <div class="row justify-content-center">
                 <div class="col-md-3">
-                    <button class="category-btn best-sellers">Bronny James</button>
+                    <button class="category-btn best-sellers">BEST SELLER</button>
                 </div>
                 <div class="col-md-3">
                     <button class="category-btn new-arrivals">NEW ARRIVALS</button>
