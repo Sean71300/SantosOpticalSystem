@@ -202,7 +202,7 @@
         if (mysqli_query($conn, $sql))
         {
             $Code = 0;
-            $Actions = ['Ordered','Pending','Added','Edited','Deleted','Archived'];
+            $Actions = ['Complete','Pending','Added','Edited','Deleted','Archived',''];
             foreach ($Actions as $actName) {
                 ++$Code;
                 $sql = "INSERT INTO activityMaster
