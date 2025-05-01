@@ -43,7 +43,7 @@
                         echo 
                         "
                             <a class='btn btn-primary btn-sm' href='customerEdit.php?CustomerID={$row['CustomerID']}'>Profile</a>
-                            <button class='btn btn-info btn-sm view-orders text-light' data-customer-id='$row[CustomerID]'>Orders</button>
+                            <button class='btn btn-info btn-sm view-orders' data-customer-id='$row[CustomerID]'>Orders</button>
                             <a class='btn btn-danger btn-sm' href='customerDelete.php?CustomerID={$row['CustomerID']}'>Delete</a>
                         ";
                     }
