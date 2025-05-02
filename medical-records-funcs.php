@@ -1,6 +1,5 @@
 <?php
 include_once 'setup.php';
-include 'customerFunctions.php';
 include 'customerEdit.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
