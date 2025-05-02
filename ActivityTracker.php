@@ -22,18 +22,7 @@ if (isset($_SESSION['LAST_ACTIVITY'])) {
 // Update last activity time stamp
 $_SESSION['LAST_ACTIVITY'] = time();
 
-class ActivityTracker1 {
-    public static function logActivity($employeeID, $targetID, $targetType, $actionType, $description) {
-        // Your existing implementation
-        $conn = connect();
-        $sql = "INSERT INTO Logs (EmployeeID, TargetID, TargetType, ActionType, Description, Timestamp) 
-                VALUES (?, ?, ?, ?, ?, NOW())";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param('iisis', $employeeID, $targetID, $targetType, $actionType, $description);
-        $stmt->execute();
-        $conn->close();
-    }
-}
+
 ?>
 
 <script>

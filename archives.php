@@ -7,6 +7,19 @@ $logsPerPage = 10;
 $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($currentPage - 1) * $logsPerPage;
 
+class ActivityTracker1 {
+    public static function logActivity($employeeID, $targetID, $targetType, $actionType, $description) {
+        // Your existing implementation
+        $conn = connect();
+        $sql = "INSERT INTO Logs (EmployeeID, TargetID, TargetType, ActionType, Description, Timestamp) 
+                VALUES (?, ?, ?, ?, ?, NOW())";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param('iisis', $employeeID, $targetID, $targetType, $actionType, $description);
+        $stmt->execute();
+        $conn->close();
+    }
+}
+
 if (isset($_POST['action'])) {
     $conn = connect();
     
