@@ -19,34 +19,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (empty($customerId) || empty($productId) || empty($quantity) || empty($branchCode)) {
             $errorMessage = "All fields are required!";
         } else {
+            // Generate a new Order_hdr ID
+            $orderId = generate_Order_hdr_ID();
+            
             // Create order header
-            $orderQuery = "INSERT INTO Order_hdr (CustomerID, BranchCode, Created_by) VALUES (?, ?, ?)";
+            $orderQuery = "INSERT INTO Order_hdr (Orderhdr_id, CustomerID, BranchCode, Created_by) VALUES (?, ?, ?, ?)";
             $stmt = $conn->prepare($orderQuery);
-            $stmt->bind_param('iss', $customerId, $branchCode, $createdBy);
-            $stmt->execute();
-            $orderId = $conn->insert_id;
-            $stmt->close();
+            $stmt->bind_param('iiss', $orderId, $customerId, $branchCode, $createdBy);
             
-            // Create order detail
-            $detailQuery = "INSERT INTO orderDetails (OrderHdr_id, ProductBranchID, Quantity, Status) 
-                            VALUES (?, (SELECT ProductBranchID FROM ProductBranchMaster WHERE ProductID = ? AND BranchCode = ? LIMIT 1), ?, 'Pending')";
-            $stmt = $conn->prepare($detailQuery);
-            $stmt->bind_param('iiii', $orderId, $productId, $branchCode, $quantity);
-            $stmt->execute();
+            if (!$stmt->execute()) {
+                $errorMessage = "Error creating order: " . $conn->error;
+            } else {
+                // Generate order detail ID
+                $orderDetailId = generate_OrderDtlID();
+                
+                // Get ProductBranchID
+                $productBranchQuery = "SELECT ProductBranchID FROM ProductBranchMaster WHERE ProductID = ? AND BranchCode = ? LIMIT 1";
+                $stmt2 = $conn->prepare($productBranchQuery);
+                $stmt2->bind_param('is', $productId, $branchCode);
+                $stmt2->execute();
+                $result = $stmt2->get_result();
+                $productBranch = $result->fetch_assoc();
+                $stmt2->close();
+                
+                if ($productBranch) {
+                    $productBranchId = $productBranch['ProductBranchID'];
+                    
+                    // Create order detail
+                    $detailQuery = "INSERT INTO orderDetails (OrderDtlID, OrderHdr_id, ProductBranchID, Quantity, ActivityCode, Status) 
+                                    VALUES (?, ?, ?, ?, 2, 'Pending')";
+                    $stmt3 = $conn->prepare($detailQuery);
+                    $stmt3->bind_param('iiii', $orderDetailId, $orderId, $productBranchId, $quantity);
+                    
+                    if (!$stmt3->execute()) {
+                        $errorMessage = "Error creating order details: " . $conn->error;
+                    } else {
+                        // Update stock
+                        $updateQuery = "UPDATE ProductBranchMaster SET Stocks = Stocks - ? WHERE ProductID = ? AND BranchCode = ?";
+                        $stmt4 = $conn->prepare($updateQuery);
+                        $stmt4->bind_param('iis', $quantity, $productId, $branchCode);
+                        
+                        if (!$stmt4->execute()) {
+                            $errorMessage = "Error updating stock: " . $conn->error;
+                        } else {
+                            // Log activity
+                            logActivity($_SESSION['employee_id'], $orderId, 'order', 4, "Created new order #$orderId");
+                            
+                            // Redirect to order details
+                            header("Location: orderDetails.php?id=$orderId");
+                            exit();
+                        }
+                        $stmt4->close();
+                    }
+                    $stmt3->close();
+                } else {
+                    $errorMessage = "Product not found in selected branch inventory!";
+                }
+            }
             $stmt->close();
-            
-            // Update stock
-            $updateQuery = "UPDATE ProductBranchMaster SET Stocks = Stocks - ? WHERE ProductID = ? AND BranchCode = ?";
-            $stmt = $conn->prepare($updateQuery);
-            $stmt->bind_param('iis', $quantity, $productId, $branchCode);
-            $stmt->execute();
-            $stmt->close();
-            
             $conn->close();
-            
-            // Redirect to order details
-            header("Location: orderDetails.php?id=$orderId");
-            exit();
         }
     }
 }
