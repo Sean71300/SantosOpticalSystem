@@ -336,6 +336,43 @@
     height: auto;
     object-fit: contain;
 }
+
+            .modal-product-image-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 300px;
+    margin-bottom: 20px;
+}
+
+.detail-label {
+    font-weight: bold;
+    color: #555;
+}
+
+.detail-row {
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.available {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 5px 10px;
+    border-radius: 4px;
+}
+
+.not-available {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 5px 10px;
+    border-radius: 4px;
+}
+
+.modal-lg-custom {
+    max-width: 800px;
+}
         </style>
     </head>
 
@@ -346,66 +383,65 @@
     </header>
 
     <body>
-      <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
+   <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-lg-custom">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="productModalLabel">Product Details</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-                    <div class="modal-body">
+            <div class="modal-body">
                 <div class="row">
-                  <div class="col-md-6">
-    <div class="modal-product-image-container ratio ratio-1x1"> 
-        <img id="modalProductImage" src="" class="modal-product-image" alt="Product Image" 
-             style="width: 150%; height: 150%; object-fit: contain;">
-    </div>
-</div>
-                            <div class="col-md-6 product-details">
-                                <div class="detail-row">
-                                    <h3 id="modalProductName"></h3>
-                                    <span id="modalProductAvailability" class="availability-badge"></span>
-                                </div>
-                                <div class="detail-row">
-                                    <div class="row">
-                                        <div class="col-4 detail-label">Category:</div>
-                                        <div class="col-8" id="modalProductCategory"></div>
-                                    </div>
-                                </div>
-                                <div class="detail-row">
-                                    <div class="row">
-                                        <div class="col-4 detail-label">Material:</div>
-                                        <div class="col-8" id="modalProductMaterial"></div>
-                                    </div>
-                                </div>
-                                <div class="detail-row">
-                                    <div class="row">
-                                        <div class="col-4 detail-label">Price:</div>
-                                        <div class="col-8" id="modalProductPrice"></div>
-                                    </div>
-                                </div>
-                                <div class="detail-row">
-                                    <div class="row">
-                                        <div class="col-4 detail-label">Stock Left:</div>
-                                        <div class="col-8" id="modalProductStock"></div>
-                                    </div>
-                                </div>
-                                <div class="detail-row">
-                                    <div class="row">
-                                        <div class="col-4 detail-label">Good for Face Shape:</div>
-                                        <div class="col-8" id="modalProductFaceShape"></div>
-                                    </div>
-                                </div>
+                    <div class="col-md-6 text-center">
+                        <div class="modal-product-image-container mb-3">
+                            <img id="modalProductImage" src="" class="img-fluid" alt="Product Image" style="max-height: 300px;">
+                        </div>
+                    </div>
+                    <div class="col-md-6 product-details">
+                        <div class="detail-row mb-3">
+                            <h3 id="modalProductName" class="mb-2"></h3>
+                            <span id="modalProductAvailability" class="badge"></span>
+                        </div>
+                        <div class="detail-row mb-3">
+                            <div class="row">
+                                <div class="col-5 detail-label">Category:</div>
+                                <div class="col-7" id="modalProductCategory"></div>
+                            </div>
+                        </div>
+                        <div class="detail-row mb-3">
+                            <div class="row">
+                                <div class="col-5 detail-label">Material:</div>
+                                <div class="col-7" id="modalProductMaterial"></div>
+                            </div>
+                        </div>
+                        <div class="detail-row mb-3">
+                            <div class="row">
+                                <div class="col-5 detail-label">Price:</div>
+                                <div class="col-7" id="modalProductPrice"></div>
+                            </div>
+                        </div>
+                        <div class="detail-row mb-3">
+                            <div class="row">
+                                <div class="col-5 detail-label">Stock Left:</div>
+                                <div class="col-7" id="modalProductStock"></div>
+                            </div>
+                        </div>
+                        <div class="detail-row mb-3">
+                            <div class="row">
+                                <div class="col-5 detail-label">Good for Face Shape:</div>
+                                <div class="col-7" id="modalProductFaceShape"></div>
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary">Add to Cart</button>
-                    </div>
                 </div>
             </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Add to Cart</button>
+            </div>
         </div>
+    </div>
+</div>
 
         <div class="container" style="margin-top: 2rem;">
             <div class="container mb-4">
