@@ -1,390 +1,351 @@
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
-include 'setup.php';
-include 'ActivityTracker.php';
+include_once 'setup.php';
+include 'ActivityTracker.php'; 
 include 'loginChecker.php';
 
-// Check if customer ID is provided
-if (!isset($_GET['customer_id'])) {
-    header("Location: customers.php");
-    exit();
-}
-
-$customer_id = $_GET['customer_id'];
-
-// Fetch customer details with notes
-$customer_query = "SELECT * FROM customer WHERE CustomerID = ?";
-$stmt = $conn->prepare($customer_query);
-$stmt->bind_param("i", $customer_id);
+// Get the logged-in employee's branch
+$employeeBranch = '';
+$conn = connect();
+$employeeQuery = "SELECT BranchCode FROM employee WHERE LoginName = ?";
+$stmt = $conn->prepare($employeeQuery);
+$stmt->bind_param('s', $_SESSION['login_user']);
 $stmt->execute();
-$customer_result = $stmt->get_result();
+$result = $stmt->get_result();
+if ($row = $result->fetch_assoc()) {
+    $employeeBranch = $row['BranchCode'];
+}
+$stmt->close();
 
-if ($customer_result->num_rows === 0) {
-    header("Location: customers.php");
-    exit();
+// Get customer details if customer_id is provided
+$customerDetails = [];
+if (isset($_GET['customer_id'])) {
+    $customerId = $_GET['customer_id'];
+    $customerQuery = "SELECT * FROM customer WHERE CustomerID = ?";
+    $stmt = $conn->prepare($customerQuery);
+    $stmt->bind_param('i', $customerId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $customerDetails = $result->fetch_assoc();
+    $stmt->close();
 }
 
-$customer = $customer_result->fetch_assoc();
-
-// Handle form submissions
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['check_availability'])) {
-        // Handle availability check
-        $_SESSION['selected_branch'] = $_POST['branch_code'];
-        $_SESSION['selected_shape'] = $_POST['shape_filter'] ?? '';
-        header("Location: ".$_SERVER['PHP_SELF']."?customer_id=".$customer_id);
-        exit();
-    } elseif (isset($_POST['create_order'])) {
-        // Handle order creation
-        $product_id = $_POST['product_id'] ?? null;
-        $quantity = $_POST['quantity'] ?? 1;
-        $branch_code = $_POST['branch_code'];
-        
-        if (empty($product_id)) {
-            $errorMessage = "Please select a product.";
-        } else {
-            // Start transaction
-            $conn->begin_transaction();
-            
-            try {
-                // Verify product availability
-                $check_query = "SELECT pb.ProductBranchID, pb.Stocks 
-                               FROM ProductBranchMaster pb
-                               WHERE pb.ProductID = ? 
-                               AND pb.BranchCode = ?
-                               AND pb.Stocks >= ?";
-                $stmt = $conn->prepare($check_query);
-                $stmt->bind_param("iii", $product_id, $branch_code, $quantity);
-                $stmt->execute();
-                $check_result = $stmt->get_result();
-                
-                if ($check_result->num_rows === 0) {
-                    throw new Exception("Selected product is not available at the chosen branch or insufficient stock");
-                }
-                
-                $stock_row = $check_result->fetch_assoc();
-                
-                // Create order header
-                $order_hdr_query = "INSERT INTO Order_hdr (CustomerID, BranchCode, Created_by) 
-                                    VALUES (?, ?, ?)";
-                $stmt = $conn->prepare($order_hdr_query);
-                $stmt->bind_param("iis", $customer_id, $branch_code, $_SESSION['EmployeeName']);
-                $stmt->execute();
-                $order_id = $conn->insert_id;
-                
-                // Add order detail
-                $order_detail_query = "INSERT INTO orderDetails 
-                                      (OrderHdr_id, ProductBranchID, Quantity, ActivityCode, Status) 
-                                      VALUES (?, ?, ?, 2, 'Pending')";
-                $stmt = $conn->prepare($order_detail_query);
-                $stmt->bind_param("iii", $order_id, $stock_row['ProductBranchID'], $quantity);
-                $stmt->execute();
-                
-                // Update stock
-                $update_stock_query = "UPDATE ProductBranchMaster 
-                                      SET Stocks = Stocks - ? 
-                                      WHERE ProductBranchID = ?";
-                $stmt = $conn->prepare($update_stock_query);
-                $stmt->bind_param("ii", $quantity, $stock_row['ProductBranchID']);
-                $stmt->execute();
-                
-                // Log the activity
-                $activity = new ActivityTracker();
-                $activity->logActivity(
-                    $_SESSION['EmployeeID'],
-                    $order_id,
-                    'order',
-                    3,
-                    "Created new order for customer ID: $customer_id"
-                );
-                
-                $conn->commit();
-                $_SESSION['successMessage'] = "Order created successfully!";
-                header("Location: order.php?order_id=$order_id");
-                exit();
-            } catch (Exception $e) {
-                $conn->rollback();
-                $errorMessage = $e->getMessage();
-            }
-        }
+// Get branch name
+$branchName = '';
+if ($employeeBranch) {
+    $branchQuery = "SELECT BranchName FROM BranchMaster WHERE BranchCode = ?";
+    $stmt = $conn->prepare($branchQuery);
+    $stmt->bind_param('s', $employeeBranch);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($row = $result->fetch_assoc()) {
+        $branchName = $row['BranchName'];
     }
+    $stmt->close();
 }
 
-// Fetch branches
-$branches_query = "SELECT * FROM BranchMaster";
-$branches_result = $conn->query($branches_query);
-
-// Fetch available shapes for filter
-$shapes_query = "SELECT DISTINCT ShapeID FROM productMstr";
-$shapes_result = $conn->query($shapes_query);
-
-// Fetch products based on filters
-$products_query = "SELECT p.* FROM productMstr p 
-                  WHERE p.Avail_FL = 'Available'";
-                  
-if (isset($_SESSION['selected_branch'])) {
-    $products_query .= " AND EXISTS (
-        SELECT 1 FROM ProductBranchMaster pb 
-        WHERE pb.ProductID = p.ProductID 
-        AND pb.BranchCode = '".$_SESSION['selected_branch']."'
-        AND pb.Stocks > 0
-    )";
+// Get all shapes for filter
+$shapes = [];
+$shapeQuery = "SELECT * FROM shapeMaster";
+$result = $conn->query($shapeQuery);
+while ($row = $result->fetch_assoc()) {
+    $shapes[] = $row;
 }
 
-if (!empty($_SESSION['selected_shape'])) {
-    $products_query .= " AND p.ShapeID = '".$_SESSION['selected_shape']."'";
-}
-
-$products_result = $conn->query($products_query);
-
-function getBrandName($brand_id) {
-    global $conn;
-    $query = "SELECT BrandName FROM brandMaster WHERE BrandID = ?";
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param("i", $brand_id);
+// Get products based on branch
+$products = [];
+if ($employeeBranch) {
+    $productQuery = "SELECT p.*, pb.Stocks 
+                     FROM productMstr p
+                     JOIN ProductBranchMaster pb ON p.ProductID = pb.ProductID
+                     WHERE pb.BranchCode = ? AND p.Avail_FL = 'Available'";
+    $stmt = $conn->prepare($productQuery);
+    $stmt->bind_param('s', $employeeBranch);
     $stmt->execute();
     $result = $stmt->get_result();
-    $row = $result->fetch_assoc();
-    return $row['BrandName'];
-}
-
-function getShapeName($shape_id) {
-    global $conn;
-    $query = "SELECT Description FROM shapeMaster WHERE ShapeID = ?";
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param("i", $shape_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $row = $result->fetch_assoc();
-    return $row['Description'];
-}
-
-function getProductStock($product_id, $branch_code) {
-    global $conn;
-    $query = "SELECT Stocks FROM ProductBranchMaster 
-              WHERE ProductID = ? AND BranchCode = ?";
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param("ii", $product_id, $branch_code);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    if ($result->num_rows > 0) {
-        $row = $result->fetch_assoc();
-        return $row['Stocks'];
+    while ($row = $result->fetch_assoc()) {
+        $products[] = $row;
     }
-    return 0;
+    $stmt->close();
 }
+
+$conn->close();
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <title>New Order | Santos Optical</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="customCodes/custom.css">
+    <link rel="shortcut icon" type="image/x-icon" href="Images/logo.png"/>
+    <title>New Order | Santos Optical</title>
     <style>
         body {
             background-color: #f5f7fa;
+            padding-top: 60px;
         }
-        .form-container {
+        .sidebar {
+            background-color: white;
+            height: 100vh;
+            padding: 20px 0 70px;
+            color: #2c3e50;
+            position: fixed;
+            width: 250px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            width: calc(100% - 250px);
+            transition: margin 0.3s ease;
+        }
+        .order-container {
             background-color: white;
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            padding: 30px;
-            margin-bottom: 30px;
-        }
-        .customer-info-box {
-            background-color: #f8f9fa;
-            border-radius: 8px;
             padding: 20px;
             margin-bottom: 20px;
         }
         .product-card {
             border: 1px solid #dee2e6;
-            border-radius: 8px;
+            border-radius: 5px;
             padding: 15px;
             margin-bottom: 15px;
             transition: all 0.3s;
-            height: 100%;
+        }
+        .product-card:hover {
+            border-color: #0d6efd;
+            box-shadow: 0 0 10px rgba(13, 110, 253, 0.2);
         }
         .product-card.selected {
-            border: 2px solid #0d6efd;
+            border-color: #0d6efd;
+            background-color: #f0f7ff;
+        }
+        .customer-info {
             background-color: #f8f9fa;
-        }
-        .product-img {
-            height: 120px;
-            object-fit: contain;
-            display: block;
-            margin: 0 auto 15px;
-        }
-        .stock-info {
-            font-weight: bold;
-        }
-        .notes-box {
-            background-color: #e9ecef;
-            padding: 10px;
             border-radius: 5px;
-            margin-top: 10px;
-        }
-        .filter-container {
-            background-color: #f8f9fa;
-            border-radius: 8px;
             padding: 15px;
             margin-bottom: 20px;
         }
-        .back-btn-container {
-            margin-bottom: 20px;
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
         }
         @media (max-width: 768px) {
-            .filter-row {
-                flex-direction: column;
+            .filter-row .col-md-6, 
+            .filter-row .col-md-3 {
+                margin-bottom: 10px;
             }
+        }
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
         }
     </style>
 </head>
 <body>
     <?php include "sidebar.php"; ?>
 
-    <div class="container py-4">
-        <div class="back-btn-container">
-            <a href="customers.php" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left me-2"></i> Back to Customers
+    <div class="main-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-shopping-cart me-2"></i>New Order</h2>
+            <a href="customerDetails.php?id=<?= $customerDetails['CustomerID'] ?? '' ?>" class="btn btn-outline-secondary back-btn">
+                <i class="fas fa-arrow-left me-1"></i> Back to Customer
             </a>
         </div>
 
-        <div class="form-container">
-            <h1 class="mb-4"><i class="fas fa-cart-plus me-2"></i> New Order</h1>
-            
-            <?php if (!empty($errorMessage)): ?>
-                <div class="alert alert-danger alert-dismissible fade show mb-4">
-                    <?= $errorMessage ?>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <div class="order-container">
+            <?php if (!empty($customerDetails)): ?>
+                <div class="customer-info">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <p><strong>Name:</strong> <?= htmlspecialchars($customerDetails['CustomerName']) ?></p>
+                        </div>
+                        <div class="col-md-4">
+                            <p><strong>Contact:</strong> <?= htmlspecialchars($customerDetails['CustomerContact']) ?></p>
+                        </div>
+                        <div class="col-md-4">
+                            <p><strong>Address:</strong> <?= htmlspecialchars($customerDetails['CustomerAddress']) ?></p>
+                        </div>
+                    </div>
+                    <?php if (!empty($customerDetails['Notes'])): ?>
+                        <p><strong>Notes:</strong> <?= htmlspecialchars($customerDetails['Notes']) ?></p>
+                    <?php endif; ?>
+                </div>
+
+                <div class="row filter-row mb-3">
+                    <div class="col-md-6">
+                        <label for="branch" class="form-label">Branch</label>
+                        <input type="text" class="form-control" value="<?= htmlspecialchars($branchName) ?>" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="shapeFilter" class="form-label">Filter by Shape</label>
+                        <select class="form-select" id="shapeFilter">
+                            <option value="">All Shapes</option>
+                            <?php foreach ($shapes as $shape): ?>
+                                <option value="<?= $shape['ShapeID'] ?>"><?= $shape['Description'] ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+
+                <h4 class="mb-3">Please select a product</h4>
+
+                <div class="row" id="productsContainer">
+                    <?php foreach ($products as $product): ?>
+                        <div class="col-md-4 product-item" data-shape="<?= $product['ShapeID'] ?>">
+                            <div class="product-card" onclick="selectProduct(this, <?= $product['ProductID'] ?>)">
+                                <?php if (!empty($product['ProductImage'])): ?>
+                                    <img src="<?= $product['ProductImage'] ?>" class="img-fluid mb-2" alt="<?= htmlspecialchars($product['Model']) ?>" style="max-height: 150px;">
+                                <?php endif; ?>
+                                <h5><?= htmlspecialchars($product['Model']) ?></h5>
+                                <p><strong>Category:</strong> <?= htmlspecialchars($product['CategoryType']) ?></p>
+                                <p><strong>Brand:</strong> 
+                                    <?php 
+                                        $brandName = 'Unknown';
+                                        $conn = connect();
+                                        $brandQuery = "SELECT BrandName FROM brandMaster WHERE BrandID = ?";
+                                        $stmt = $conn->prepare($brandQuery);
+                                        $stmt->bind_param('i', $product['BrandID']);
+                                        $stmt->execute();
+                                        $result = $stmt->get_result();
+                                        if ($row = $result->fetch_assoc()) {
+                                            $brandName = $row['BrandName'];
+                                        }
+                                        $stmt->close();
+                                        $conn->close();
+                                        echo htmlspecialchars($brandName);
+                                    ?>
+                                </p>
+                                <p><strong>Shape:</strong> 
+                                    <?php 
+                                        $shapeName = 'Unknown';
+                                        $conn = connect();
+                                        $shapeQuery = "SELECT Description FROM shapeMaster WHERE ShapeID = ?";
+                                        $stmt = $conn->prepare($shapeQuery);
+                                        $stmt->bind_param('i', $product['ShapeID']);
+                                        $stmt->execute();
+                                        $result = $stmt->get_result();
+                                        if ($row = $result->fetch_assoc()) {
+                                            $shapeName = $row['Description'];
+                                        }
+                                        $stmt->close();
+                                        $conn->close();
+                                        echo htmlspecialchars($shapeName);
+                                    ?>
+                                </p>
+                                <p><strong>Price:</strong> <?= htmlspecialchars($product['Price']) ?></p>
+                                <p><strong>Stocks:</strong> <?= $product['Stocks'] ?></p>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+
+                <form id="orderForm" action="processOrder.php" method="post">
+                    <input type="hidden" name="customer_id" value="<?= $customerDetails['CustomerID'] ?>">
+                    <input type="hidden" name="branch_code" value="<?= $employeeBranch ?>">
+                    <input type="hidden" name="selected_product" id="selectedProduct">
+                    
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg" id="continueBtn" disabled>
+                            <i class="fas fa-arrow-right me-2"></i> Continue to Order Details
+                        </button>
+                    </div>
+                </form>
+            <?php else: ?>
+                <div class="alert alert-danger">
+                    No customer selected. Please go back and select a customer.
                 </div>
             <?php endif; ?>
-
-            <div class="customer-info-box">
-                <div class="row">
-                    <div class="col-md-4">
-                        <p><strong>Name:</strong> <?= htmlspecialchars($customer['CustomerName']) ?></p>
-                    </div>
-                    <div class="col-md-4">
-                        <p><strong>Contact:</strong> <?= htmlspecialchars($customer['CustomerContact']) ?></p>
-                    </div>
-                    <div class="col-md-4">
-                        <p><strong>Address:</strong> <?= htmlspecialchars($customer['CustomerAddress']) ?></p>
-                    </div>
-                </div>
-                <?php if (!empty($customer['Notes'])): ?>
-                    <div class="notes-box">
-                        <strong>Notes:</strong> <?= htmlspecialchars($customer['Notes']) ?>
-                    </div>
-                <?php endif; ?>
-            </div>
-
-            <form method="POST" id="orderForm">
-                <div class="filter-container">
-                    <div class="row filter-row g-3">
-                        <div class="col-md-4">
-                            <label class="form-label">Select Branch</label>
-                            <select class="form-select" name="branch_code" required>
-                                <option value="">-- Select Branch --</option>
-                                <?php while ($branch = $branches_result->fetch_assoc()): ?>
-                                    <option value="<?= $branch['BranchCode'] ?>" 
-                                        <?= (isset($_SESSION['selected_branch']) && $_SESSION['selected_branch'] == $branch['BranchCode']) ? 'selected' : '' ?>>
-                                        <?= htmlspecialchars($branch['BranchName']) ?>
-                                    </option>
-                                <?php endwhile; ?>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Filter by Shape</label>
-                            <select class="form-select" name="shape_filter">
-                                <option value="">All Shapes</option>
-                                <?php while ($shape = $shapes_result->fetch_assoc()): ?>
-                                    <option value="<?= $shape['ShapeID'] ?>" 
-                                        <?= (isset($_SESSION['selected_shape']) && $_SESSION['selected_shape'] == $shape['ShapeID']) ? 'selected' : '' ?>>
-                                        <?= htmlspecialchars(getShapeName($shape['ShapeID'])) ?>
-                                    </option>
-                                <?php endwhile; ?>
-                            </select>
-                        </div>
-                        <div class="col-md-4 d-flex align-items-end">
-                            <button type="submit" name="check_availability" class="btn btn-primary w-100">
-                                <i class="fas fa-filter me-2"></i> Apply Filters
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <h4 class="mt-4 mb-3">Available Products</h4>
-                
-                <?php if ($products_result->num_rows > 0): ?>
-                    <div class="row">
-                        <?php while ($product = $products_result->fetch_assoc()): ?>
-                            <div class="col-md-4 mb-4">
-                                <div class="product-card" onclick="selectProduct(this, <?= $product['ProductID'] ?>)">
-                                    <img src="<?= htmlspecialchars($product['ProductImage']) ?>" 
-                                         class="product-img" 
-                                         alt="<?= htmlspecialchars($product['Model']) ?>">
-                                    <h5><?= htmlspecialchars($product['Model']) ?></h5>
-                                    <p>
-                                        <strong>Category:</strong> <?= htmlspecialchars($product['CategoryType']) ?><br>
-                                        <strong>Brand:</strong> <?= htmlspecialchars(getBrandName($product['BrandID'])) ?><br>
-                                        <strong>Shape:</strong> <?= htmlspecialchars(getShapeName($product['ShapeID'])) ?><br>
-                                        <strong>Price:</strong> <?= htmlspecialchars($product['Price']) ?><br>
-                                        <?php if (isset($_SESSION['selected_branch'])): ?>
-                                            <span class="stock-info">
-                                                <strong>Stocks:</strong> <?= getProductStock($product['ProductID'], $_SESSION['selected_branch']) ?>
-                                            </span>
-                                        <?php endif; ?>
-                                    </p>
-                                    <div class="quantity-control mt-3" style="display: none;">
-                                        <label class="form-label">Quantity</label>
-                                        <input type="number" class="form-control" 
-                                               name="quantity" min="1" value="1"
-                                               max="<?= isset($_SESSION['selected_branch']) ? getProductStock($product['ProductID'], $_SESSION['selected_branch']) : '' ?>">
-                                    </div>
-                                    <input type="hidden" name="product_id" value="">
-                                </div>
-                            </div>
-                        <?php endwhile; ?>
-                    </div>
-                    
-                    <?php if (isset($_SESSION['selected_branch'])): ?>
-                        <div class="d-flex justify-content-end mt-4">
-                            <button type="submit" name="create_order" class="btn btn-primary btn-lg">
-                                <i class="fas fa-save me-2"></i> Create Order
-                            </button>
-                        </div>
-                    <?php endif; ?>
-                <?php else: ?>
-                    <div class="alert alert-info">
-                        <?php if (isset($_SESSION['selected_branch'])): ?>
-                            No products available matching your filters.
-                        <?php else: ?>
-                            Please select a branch and apply filters to see available products.
-                        <?php endif; ?>
-                    </div>
-                <?php endif; ?>
-            </form>
         </div>
     </div>
 
     <script>
-        function selectProduct(card, productId) {
-            // Remove selection from all cards
-            document.querySelectorAll('.product-card').forEach(c => {
-                c.classList.remove('selected');
-                c.querySelector('.quantity-control').style.display = 'none';
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const mobileToggle = document.getElementById('mobileMenuToggle');
+            const body = document.body;
+            
+            if (mobileToggle) {
+                mobileToggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    sidebar.classList.toggle('active');
+                    body.classList.toggle('sidebar-open');
+                });
+            }
+            
+            document.addEventListener('click', function(e) {
+                if (window.innerWidth <= 992 && 
+                    !sidebar.contains(e.target) && 
+                    (!mobileToggle || e.target !== mobileToggle)) {
+                    sidebar.classList.remove('active');
+                    body.classList.remove('sidebar-open');
+                }
             });
             
-            // Select clicked card
-            card.classList.add('selected');
-            card.querySelector('.quantity-control').style.display = 'block';
-            card.querySelector('input[name="product_id"]').value = productId;
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    if (window.innerWidth <= 992) {
+                        sidebar.classList.remove('active');
+                        body.classList.remove('sidebar-open');
+                    }
+                });
+            });
+            
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 992) {
+                    sidebar.classList.remove('active');
+                    body.classList.remove('sidebar-open');
+                }
+            });
+
+            // Shape filter functionality
+            const shapeFilter = document.getElementById('shapeFilter');
+            if (shapeFilter) {
+                shapeFilter.addEventListener('change', function() {
+                    const selectedShape = this.value;
+                    const productItems = document.querySelectorAll('.product-item');
+                    
+                    productItems.forEach(item => {
+                        if (selectedShape === '' || item.getAttribute('data-shape') === selectedShape) {
+                            item.style.display = 'block';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                });
+            }
+        });
+
+        function selectProduct(element, productId) {
+            // Remove selected class from all product cards
+            document.querySelectorAll('.product-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked card
+            element.classList.add('selected');
+            
+            // Set the selected product ID
+            document.getElementById('selectedProduct').value = productId;
+            
+            // Enable the continue button
+            document.getElementById('continueBtn').disabled = false;
         }
     </script>
 </body>
