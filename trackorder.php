@@ -60,7 +60,14 @@ include 'ActivityTracker.php';
                         }
                         echo "</div>";
                     } else {
-                        echo "<div class='alert alert-warning mt-4'>No orders found for Customer ID: " . htmlspecialchars($customer_id) . "</div>";
+                        echo "<div class='alert alert-warning mt-4 text-center'>";
+                        echo "<i class='fas fa-exclamation-triangle fa-2x mb-3'></i>";
+                        echo "<h5>No Orders Found</h5>";
+                        echo "<p class='mb-0'>If you believe this is an error or need assistance,<br>";
+                        echo "please contact our support team:<br>";
+                        echo "<strong>Phone:</strong> 027-508-4792<br>";
+                        echo "<strong>Email:</strong> Santosoptical@gmail.com</p>";
+                        echo "</div>";
                     }
                 
                     $stmt->close();
