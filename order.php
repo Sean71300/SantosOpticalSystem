@@ -16,24 +16,20 @@ function getOrderHeaders($conn, $search = '', $branch = '', $status = '', $limit
         $customerIds = [];
         $customerQuery = "SELECT CustomerID FROM customer WHERE CustomerName LIKE ?";
         $stmt = $conn->prepare($customerQuery);
-        if (!$stmt) {
-            throw new Exception("Prepare failed: " . $conn->error);
-        }
         $searchParam = '%' . $search . '%';
         $stmt->bind_param('s', $searchParam);
-        if (!$stmt->execute()) {
-            throw new Exception("Execute failed: " . $stmt->error);
-        }
+        $stmt->execute();
         $result = $stmt->get_result();
         while ($row = $result->fetch_assoc()) {
             $customerIds[] = $row['CustomerID'];
         }
         $stmt->close();
         
-        $where[] = "(Orderhdr_id LIKE ? OR CustomerID IN (" . implode(',', array_fill(0, count($customerIds), '?')) . "))";
+        $placeholders = implode(',', array_fill(0, count($customerIds), '?'));
+        $where[] = "(Orderhdr_id LIKE ? OR CustomerID IN ($placeholders))";
         $params[] = '%' . $search . '%';
         $params = array_merge($params, $customerIds);
-        $types .= str_repeat('s', count($customerIds) + 1);
+        $types .= str_repeat('i', count($customerIds)) . 's';
     }
     
     if (!empty($branch)) {
@@ -52,20 +48,10 @@ function getOrderHeaders($conn, $search = '', $branch = '', $status = '', $limit
     $types .= 'ii';
     
     $stmt = $conn->prepare($query);
-    if (!$stmt) {
-        throw new Exception("Prepare failed: " . $conn->error);
-    }
-    
     if (!empty($params)) {
-        if (!$stmt->bind_param($types, ...$params)) {
-            throw new Exception("Bind param failed: " . $stmt->error);
-        }
+        $stmt->bind_param($types, ...$params);
     }
-    
-    if (!$stmt->execute()) {
-        throw new Exception("Execute failed: " . $stmt->error);
-    }
-    
+    $stmt->execute();
     $result = $stmt->get_result();
     $orders = [];
     
@@ -94,13 +80,8 @@ function getOrderHeaders($conn, $search = '', $branch = '', $status = '', $limit
 function getOrderStatus($conn, $orderId) {
     $query = "SELECT Status FROM orderDetails WHERE OrderHdr_id = ?";
     $stmt = $conn->prepare($query);
-    if (!$stmt) {
-        throw new Exception("Prepare failed: " . $conn->error);
-    }
     $stmt->bind_param('i', $orderId);
-    if (!$stmt->execute()) {
-        throw new Exception("Execute failed: " . $stmt->error);
-    }
+    $stmt->execute();
     $result = $stmt->get_result();
     
     $completeCount = 0;
@@ -118,9 +99,9 @@ function getOrderStatus($conn, $orderId) {
     
     $stmt->close();
     
-    if ($completeCount === $totalItems) {
+    if ($completeCount === $totalItems && $totalItems > 0) {
         return 'Complete';
-    } elseif ($cancelledCount === $totalItems) {
+    } elseif ($cancelledCount === $totalItems && $totalItems > 0) {
         return 'Cancelled';
     }
     return 'Pending';
@@ -129,13 +110,8 @@ function getOrderStatus($conn, $orderId) {
 function getCustomerName($conn, $customerId) {
     $query = "SELECT CustomerName FROM customer WHERE CustomerID = ?";
     $stmt = $conn->prepare($query);
-    if (!$stmt) {
-        throw new Exception("Prepare failed: " . $conn->error);
-    }
     $stmt->bind_param('i', $customerId);
-    if (!$stmt->execute()) {
-        throw new Exception("Execute failed: " . $stmt->error);
-    }
+    $stmt->execute();
     $result = $stmt->get_result();
     $row = $result->fetch_assoc();
     $stmt->close();
@@ -145,13 +121,8 @@ function getCustomerName($conn, $customerId) {
 function getBranchName($conn, $branchCode) {
     $query = "SELECT BranchName FROM BranchMaster WHERE BranchCode = ?";
     $stmt = $conn->prepare($query);
-    if (!$stmt) {
-        throw new Exception("Prepare failed: " . $conn->error);
-    }
     $stmt->bind_param('s', $branchCode);
-    if (!$stmt->execute()) {
-        throw new Exception("Execute failed: " . $stmt->error);
-    }
+    $stmt->execute();
     $result = $stmt->get_result();
     $row = $result->fetch_assoc();
     $stmt->close();
@@ -161,13 +132,8 @@ function getBranchName($conn, $branchCode) {
 function getEmployeeName($conn, $loginName) {
     $query = "SELECT EmployeeName FROM employee WHERE LoginName = ?";
     $stmt = $conn->prepare($query);
-    if (!$stmt) {
-        throw new Exception("Prepare failed: " . $conn->error);
-    }
     $stmt->bind_param('s', $loginName);
-    if (!$stmt->execute()) {
-        throw new Exception("Execute failed: " . $stmt->error);
-    }
+    $stmt->execute();
     $result = $stmt->get_result();
     $row = $result->fetch_assoc();
     $stmt->close();
@@ -177,19 +143,15 @@ function getEmployeeName($conn, $loginName) {
 function getOrderDetails($conn, $orderId) {
     $query = "SELECT od.Quantity, od.Status, od.ProductBranchID FROM orderDetails od WHERE od.OrderHdr_id = ?";
     $stmt = $conn->prepare($query);
-    if (!$stmt) {
-        throw new Exception("Prepare failed: " . $conn->error);
-    }
     $stmt->bind_param('i', $orderId);
-    if (!$stmt->execute()) {
-        throw new Exception("Execute failed: " . $stmt->error);
-    }
+    $stmt->execute();
     $result = $stmt->get_result();
     $details = [];
     
     while ($row = $result->fetch_assoc()) {
         $price = getProductPrice($conn, $row['ProductBranchID']);
-        $row['Price'] = $price;
+        $row['Price'] = (float)$price;
+        $row['Quantity'] = (int)$row['Quantity'];
         $details[] = $row;
     }
     
@@ -200,13 +162,8 @@ function getOrderDetails($conn, $orderId) {
 function getProductPrice($conn, $productBranchId) {
     $query = "SELECT ProductID FROM ProductBranchMaster WHERE ProductBranchID = ?";
     $stmt = $conn->prepare($query);
-    if (!$stmt) {
-        throw new Exception("Prepare failed: " . $conn->error);
-    }
     $stmt->bind_param('i', $productBranchId);
-    if (!$stmt->execute()) {
-        throw new Exception("Execute failed: " . $stmt->error);
-    }
+    $stmt->execute();
     $result = $stmt->get_result();
     $row = $result->fetch_assoc();
     $stmt->close();
@@ -216,33 +173,21 @@ function getProductPrice($conn, $productBranchId) {
     $productId = $row['ProductID'];
     $priceQuery = "SELECT Price FROM productMstr WHERE ProductID = ?";
     $priceStmt = $conn->prepare($priceQuery);
-    if (!$priceStmt) {
-        throw new Exception("Prepare failed: " . $conn->error);
-    }
     $priceStmt->bind_param('i', $productId);
-    if (!$priceStmt->execute()) {
-        throw new Exception("Execute failed: " . $priceStmt->error);
-    }
+    $priceStmt->execute();
     $priceResult = $priceStmt->get_result();
     $priceRow = $priceResult->fetch_assoc();
     $priceStmt->close();
     
-    return $priceRow ? $priceRow['Price'] : 0;
+    return $priceRow ? (float)$priceRow['Price'] : 0;
 }
 
 function getOrderTotal($conn, $orderId) {
     $details = getOrderDetails($conn, $orderId);
     $total = 0;
     
-    // Ensure $details is a valid result set
-    if ($details) {
-        while ($detail = $details->fetch_assoc()) {
-            // Cast Price to float and Quantity to int
-            $price = (float)$detail['Price']; // Ensure Price is treated as a float
-            $quantity = (int)$detail['Quantity']; // Ensure Quantity is treated as an int
-            
-            $total += $price * $quantity; // Calculate total
-        }
+    foreach ($details as $detail) {
+        $total += $detail['Price'] * $detail['Quantity'];
     }
     
     return $total;
@@ -259,24 +204,20 @@ function countOrderHeaders($conn, $search = '', $branch = '', $status = '') {
         $customerIds = [];
         $customerQuery = "SELECT CustomerID FROM customer WHERE CustomerName LIKE ?";
         $stmt = $conn->prepare($customerQuery);
-        if (!$stmt) {
-            throw new Exception("Prepare failed: " . $conn->error);
-        }
         $searchParam = '%' . $search . '%';
         $stmt->bind_param('s', $searchParam);
-        if (!$stmt->execute()) {
-            throw new Exception("Execute failed: " . $stmt->error);
-        }
+        $stmt->execute();
         $result = $stmt->get_result();
         while ($row = $result->fetch_assoc()) {
             $customerIds[] = $row['CustomerID'];
         }
         $stmt->close();
         
-        $where[] = "(Orderhdr_id LIKE ? OR CustomerID IN (" . implode(',', array_fill(0, count($customerIds), '?')) . "))";
+        $placeholders = implode(',', array_fill(0, count($customerIds), '?'));
+        $where[] = "(Orderhdr_id LIKE ? OR CustomerID IN ($placeholders))";
         $params[] = '%' . $search . '%';
         $params = array_merge($params, $customerIds);
-        $types .= str_repeat('s', count($customerIds) + 1);
+        $types .= str_repeat('i', count($customerIds)) . 's';
     }
     
     if (!empty($branch)) {
@@ -290,20 +231,10 @@ function countOrderHeaders($conn, $search = '', $branch = '', $status = '') {
     }
     
     $stmt = $conn->prepare($query);
-    if (!$stmt) {
-        throw new Exception("Prepare failed: " . $conn->error);
-    }
-    
     if (!empty($params)) {
-        if (!$stmt->bind_param($types, ...$params)) {
-            throw new Exception("Bind param failed: " . $stmt->error);
-        }
+        $stmt->bind_param($types, ...$params);
     }
-    
-    if (!$stmt->execute()) {
-        throw new Exception("Execute failed: " . $stmt->error);
-    }
-    
+    $stmt->execute();
     $result = $stmt->get_result();
     $row = $result->fetch_assoc();
     $stmt->close();
@@ -339,56 +270,47 @@ function countOrderHeaders($conn, $search = '', $branch = '', $status = '') {
 function getAllBranches($conn) {
     $query = "SELECT BranchCode, BranchName FROM BranchMaster";
     $result = $conn->query($query);
-    if (!$result) {
-        throw new Exception("Query failed: " . $conn->error);
-    }
     return $result;
 }
 
-try {
-    $ordersPerPage = 10;
-    $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-    $offset = ($currentPage - 1) * $ordersPerPage;
+$ordersPerPage = 10;
+$currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$offset = ($currentPage - 1) * $ordersPerPage;
 
-    $search = $_GET['search'] ?? '';
-    $branch = $_GET['branch'] ?? '';
-    $status = $_GET['status'] ?? '';
+$search = $_GET['search'] ?? '';
+$branch = $_GET['branch'] ?? '';
+$status = $_GET['status'] ?? '';
 
-    $conn = connect();
+$conn = connect();
 
-    $orderHeaders = getOrderHeaders($conn, $search, $branch, $status, $ordersPerPage, $offset);
-    $totalOrders = countOrderHeaders($conn, $search, $branch, $status);
-    $totalPages = ceil($totalOrders / $ordersPerPage);
+$orderHeaders = getOrderHeaders($conn, $search, $branch, $status, $ordersPerPage, $offset);
+$totalOrders = countOrderHeaders($conn, $search, $branch, $status);
+$totalPages = ceil($totalOrders / $ordersPerPage);
 
-    $orders = [];
-    foreach ($orderHeaders as $header) {
-        $orderId = $header['Orderhdr_id'];
-        $details = getOrderDetails($conn, $orderId);
-        
-        $itemCount = count($details);
-        $totalAmount = getOrderTotal($conn, $orderId);
-        $orderStatus = getOrderStatus($conn, $orderId);
-        
-        $orders[] = [
-            'Orderhdr_id' => $orderId,
-            'Created_dt' => $header['Created_dt'],
-            'CustomerName' => $header['CustomerName'],
-            'CreatedBy' => getEmployeeName($conn, $header['Created_by']),
-            'BranchName' => getBranchName($conn, $header['BranchCode']),
-            'ItemCount' => $itemCount,
-            'TotalAmount' => $totalAmount,
-            'Status' => $orderStatus
-        ];
-    }
-
-    $branchesResult = getAllBranches($conn);
-    $conn->close();
-} catch (Exception $e) {
-    error_log("Error in order.php: " . $e->getMessage());
-    die("An error occurred while processing your request. Please try again later.");
+$orders = [];
+foreach ($orderHeaders as $header) {
+    $orderId = $header['Orderhdr_id'];
+    $details = getOrderDetails($conn, $orderId);
+    
+    $itemCount = count($details);
+    $totalAmount = getOrderTotal($conn, $orderId);
+    $orderStatus = getOrderStatus($conn, $orderId);
+    
+    $orders[] = [
+        'Orderhdr_id' => $orderId,
+        'Created_dt' => $header['Created_dt'],
+        'CustomerName' => $header['CustomerName'],
+        'CreatedBy' => getEmployeeName($conn, $header['Created_by']),
+        'BranchName' => getBranchName($conn, $header['BranchCode']),
+        'ItemCount' => $itemCount,
+        'TotalAmount' => $totalAmount,
+        'Status' => $orderStatus
+    ];
 }
-?>
 
+$branchesResult = getAllBranches($conn);
+$conn->close();
+?>
 <!DOCTYPE html>
 <html>
 <head>
