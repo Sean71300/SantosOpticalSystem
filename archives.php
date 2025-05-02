@@ -63,7 +63,7 @@ if (isset($_POST['action'])) {
             $stmt->execute();
             
             // Fixed: Changed ActivityTracker1 to ActivityTracker
-            ActivityTracker1::logActivity($_SESSION['employee_id'], $targetID, $targetType, 5, 
+            ActivityTracker1::logActivity($_SESSION['id'], $targetID, $targetType, 5, 
                                        "Permanently deleted $targetType from archives");
             
             $sql = "DELETE FROM archives WHERE ArchiveID = ?";
