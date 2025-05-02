@@ -73,4 +73,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     header("Location: customerRecords.php");
     exit();
 }
+
+function GenerateLogs($employee_id, $customerID, $action) {
+    $conn = connect();
+    $sql = "INSERT INTO Logs (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description, Upd_dt) VALUES (?, ?, ?, ?, ?, ?, ?)";
+    $stmt = $conn->prepare($sql);
+    if ($stmt) {
+        $logID = generate_LogsID();
+        $activityCode = 3; 
+        $logTargetType = 'Customer Medical Record';
+        $description = "$action for customer ID: $customerID";
+        $upd_dt = date("Y-m-d H:i:s");
+        $stmt->bind_param("iiisssss", $logID, $employee_id, $customerID, $logTargetType, $activityCode, $description, $upd_dt);
+        
+        if (!$stmt->execute()) {
+            // Handle error if log insertion fails
+            error_log("Failed to insert log: " . $stmt->error);
+        }
+    }
+    $stmt->close();
+    $conn->close();
+}
 ?>
