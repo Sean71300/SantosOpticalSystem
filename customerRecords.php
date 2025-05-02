@@ -352,10 +352,11 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                     }
                 });
 
-                // Save button handler
-                document.getElementById('saveMedicalRecord')?.addEventListener('click', function() {
-                    // Implement save functionality here
-                    console.log('Save medical record functionality');
+                    // Save button handler
+                    document.getElementById('saveMedicalRecord')?.addEventListener('click', function() {
+                        // Implement save functionality here
+                        console.log('Save medical record functionality');
+                    });
                 });
             });
         </script>
