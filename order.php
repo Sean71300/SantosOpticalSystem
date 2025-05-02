@@ -15,9 +15,10 @@ function getOrderHeaders($conn, $search = '', $branch = '', $limit = 10, $offset
     $types = '';
     
     if (!empty($search)) {
-        $where[] = "Orderhdr_id LIKE ?";
-        $params[] = '%' . $search . '%';
-        $types .= 's';
+        $where[] = "(Orderhdr_id LIKE ? OR CustomerID IN (SELECT CustomerID FROM customer WHERE CustomerName LIKE ?))";
+        $params[] = '%' . $search . '%'; // For Orderhdr_id
+        $params[] = '%' . $search . '%'; // For CustomerName
+        $types .= 'ss'; // Two string parameters
     }
     
     if (!empty($branch)) {
