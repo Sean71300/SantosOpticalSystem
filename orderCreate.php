@@ -209,7 +209,7 @@ function getBrandName($brand_id) {
         <div class="form-container">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1><i class="fas fa-cart-plus me-2"></i> New Order</h1>
-                <a href="customers.php" class="btn btn-outline-secondary">
+                <a href="order.php" class="btn btn-outline-secondary">
                     <i class="fas fa-arrow-left me-2"></i> Back
                 </a>
             </div>
