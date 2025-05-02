@@ -31,7 +31,7 @@ function getOrderHeaders($conn, $search = '', $branch = '', $status = '', $limit
     }
     
     if (!empty($status)) {
-        $where[] = "od.Status = ?";
+        $where[] = "FIND_IN_SET(?, GROUP_CONCAT(od.Status)) > 0"; // Check if the status is in the concatenated list
         $params[] = $status;
         $types .= 's';
     }
