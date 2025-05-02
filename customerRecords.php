@@ -340,27 +340,27 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
             });
             
             document.addEventListener('DOMContentLoaded', function() {
-                // When a button to add medical record is clicked
-                document.querySelectorAll('[data-bs-target="#addMedicalRecordModal"]').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const customerID = this.getAttribute('data-customer-id');
-                        document.getElementById('medicalRecordCustomerID').value = customerID;
-                        
-                        // Set today's date as default
-                        const today = new Date().toISOString().split('T')[0];
-                        document.getElementById('visit_date').value = today;
-                        
-                        // Clear other fields
-                        document.getElementById('medicalRecordForm').reset();
-                    });
-                });
-                
-                // Save button handler (you'll need to implement the actual save functionality)
-                document.getElementById('saveMedicalRecord').addEventListener('click', function() {
-                    // You'll need to implement the AJAX call to save the data
-                    alert('Save functionality will be implemented next');
+            // When a button to add medical record is clicked
+            document.querySelectorAll('[data-bs-target="#addMedicalRecordModal"]').forEach(button => {
+                button.addEventListener('click', function() {
+                    const customerID = this.getAttribute('data-customer-id');
+                    document.getElementById('medicalRecordCustomerID').value = customerID;
+                    
+                    // Set today's date as default
+                    const today = new Date().toISOString().split('T')[0];
+                    document.getElementById('visit_date').value = today;
+                    
+                    // Clear other fields
+                    document.getElementById('medicalRecordForm').reset();
                 });
             });
+            
+            // Save button handler (you'll need to implement the actual save functionality)
+            document.getElementById('saveMedicalRecord').addEventListener('click', function() {
+                // You'll need to implement the AJAX call to save the data
+                alert('Save functionality will be implemented next');
+            });
+        });
         </script>
 
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
