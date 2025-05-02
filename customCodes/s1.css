@@ -160,16 +160,16 @@ body {
     color: white;
 }
 .site-footer {
+    width: 100%;
+    text-align: center; /* For inline/inline-block content */
     padding: 20px 0;
-    text-align: center;
-    font-family: Arial, sans-serif;
-    font-size: 14px;
-    color: #333; /* Dark gray text */
-    border-top: 1px solid #e7e7e7; 
+    background: #f8f8f8;
 }
 
-.footer-content {
-    max-width: 1200px;
-    margin: 0 auto;
-    text-align: center;
+/* OR if using flexbox */
+.site-footer {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 20px 0;
 }
