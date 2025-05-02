@@ -95,7 +95,8 @@ include 'ActivityTracker.php';
                     </div>
                     <img src="Images/os5.png" alt="Services Image" class="services-img">
                 </div>
-                    <footer class="py-5 border-top mt-5 pt-4" style="background-color: #ffffff; margin-top: 50px; border-color: #ffffff;">
+            </div>
+    <footer class="py-5 border-top mt-5 pt-4" style="background-color: #ffffff; margin-top: 50px; border-color: #ffffff;">
         <div class="container">
             <div class="row text-center text-md-start">
                 <div class="col-md-3 mb-3 mb-md-0 text-center">
@@ -128,7 +129,6 @@ include 'ActivityTracker.php';
             </div>
         </div>
     </footer>
-            </div>
        
     </body>
 </html>
