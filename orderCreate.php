@@ -15,34 +15,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $branchCode = $_POST['branch_code'];
         $createdBy = $_SESSION['login_user'];
         
-        // Create order header
-        $orderQuery = "INSERT INTO Order_hdr (CustomerID, BranchCode, Created_by) VALUES (?, ?, ?)";
-        $stmt = $conn->prepare($orderQuery);
-        $stmt->bind_param('iss', $customerId, $branchCode, $createdBy);
-        $stmt->execute();
-        $orderId = $conn->insert_id;
-        $stmt->close();
-        
-        // Create order detail
-        $detailQuery = "INSERT INTO orderDetails (OrderHdr_id, ProductBranchID, Quantity, Status) 
-                        VALUES (?, (SELECT ProductBranchID FROM ProductBranchMaster WHERE ProductID = ? AND BranchCode = ? LIMIT 1), ?, 'Pending')";
-        $stmt = $conn->prepare($detailQuery);
-        $stmt->bind_param('iiii', $orderId, $productId, $branchCode, $quantity);
-        $stmt->execute();
-        $stmt->close();
-        
-        // Update stock
-        $updateQuery = "UPDATE ProductBranchMaster SET Stocks = Stocks - ? WHERE ProductID = ? AND BranchCode = ?";
-        $stmt = $conn->prepare($updateQuery);
-        $stmt->bind_param('iis', $quantity, $productId, $branchCode);
-        $stmt->execute();
-        $stmt->close();
-        
-        $conn->close();
-        
-        // Redirect to order details
-        header("Location: orderDetails.php?id=$orderId");
-        exit();
+        // Validate inputs
+        if (empty($customerId) || empty($productId) || empty($quantity) || empty($branchCode)) {
+            $errorMessage = "All fields are required!";
+        } else {
+            // Create order header
+            $orderQuery = "INSERT INTO Order_hdr (CustomerID, BranchCode, Created_by) VALUES (?, ?, ?)";
+            $stmt = $conn->prepare($orderQuery);
+            $stmt->bind_param('iss', $customerId, $branchCode, $createdBy);
+            $stmt->execute();
+            $orderId = $conn->insert_id;
+            $stmt->close();
+            
+            // Create order detail
+            $detailQuery = "INSERT INTO orderDetails (OrderHdr_id, ProductBranchID, Quantity, Status) 
+                            VALUES (?, (SELECT ProductBranchID FROM ProductBranchMaster WHERE ProductID = ? AND BranchCode = ? LIMIT 1), ?, 'Pending')";
+            $stmt = $conn->prepare($detailQuery);
+            $stmt->bind_param('iiii', $orderId, $productId, $branchCode, $quantity);
+            $stmt->execute();
+            $stmt->close();
+            
+            // Update stock
+            $updateQuery = "UPDATE ProductBranchMaster SET Stocks = Stocks - ? WHERE ProductID = ? AND BranchCode = ?";
+            $stmt = $conn->prepare($updateQuery);
+            $stmt->bind_param('iis', $quantity, $productId, $branchCode);
+            $stmt->execute();
+            $stmt->close();
+            
+            $conn->close();
+            
+            // Redirect to order details
+            header("Location: orderDetails.php?id=$orderId");
+            exit();
+        }
     }
 }
 
@@ -140,7 +145,7 @@ $conn->close();
             background-color: white;
             border-radius: 5px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            padding: 20px;
+            padding: 30px;
             margin-bottom: 20px;
         }
         .customer-info {
@@ -170,10 +175,8 @@ $conn->close();
             object-fit: contain;
             margin-bottom: 10px;
         }
-        .back-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
+        .btn-action {
+            min-width: 120px;
         }
     </style>
 </head>
@@ -181,14 +184,21 @@ $conn->close();
     <?php include "sidebar.php"; ?>
 
     <div class="main-content">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2><i class="fas fa-plus-circle me-2"></i>New Order</h2>
-            <a href="customerDetails.php?id=<?= $customerDetails['CustomerID'] ?? '' ?>" class="btn btn-outline-secondary back-btn">
-                <i class="fas fa-arrow-left me-1"></i> Back to Customer
-            </a>
-        </div>
-
         <div class="order-container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-shopping-cart me-2"></i> New Order</h2>
+                <a href="customerDetails.php?id=<?= $customerDetails['CustomerID'] ?? '' ?>" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#cancelModal">
+                    <i class="fas fa-arrow-left me-2"></i> Back to Customer
+                </a>
+            </div>
+
+            <?php if (!empty($errorMessage)): ?>
+                <div class='alert alert-warning alert-dismissible fade show' role='alert'>
+                    <strong><?php echo $errorMessage; ?></strong>
+                    <button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>
+                </div>
+            <?php endif; ?>
+
             <?php if (!empty($customerDetails)): ?>
                 <div class="customer-info">
                     <div class="row mb-3">
@@ -303,8 +313,8 @@ $conn->close();
                             </div>
                         </div>
                         
-                        <div class="d-grid gap-2 mt-4">
-                            <button type="submit" class="btn btn-primary btn-lg" id="continueBtn" name="create_order" disabled>
+                        <div class="d-flex justify-content-end gap-3 mt-5">
+                            <button type="submit" class="btn btn-primary btn-action" id="continueBtn" name="create_order" disabled>
                                 <i class="fas fa-check-circle me-2"></i> Create Order
                             </button>
                         </div>
@@ -319,6 +329,25 @@ $conn->close();
                     No customer selected. Please go back and select a customer.
                 </div>
             <?php endif; ?>
+        </div>
+    </div>
+
+    <!-- Cancel Confirmation Modal -->
+    <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="cancelModalLabel">Confirm Navigation</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to go back to customer details? Any unsaved changes will be lost.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <a href="customerDetails.php?id=<?= $customerDetails['CustomerID'] ?? '' ?>" class="btn btn-danger">Yes, Go Back</a>
+                </div>
+            </div>
         </div>
     </div>
 
