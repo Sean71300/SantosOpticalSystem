@@ -9,111 +9,125 @@ $orderSuccess = false;
 $orderDetails = [];
 $errorMessage = '';
 
+// Store POST data in session if this is the initial submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_order'])) {
-    $conn = connect();
-    $customerId = $_POST['customer_id'];
-    $productId = $_POST['product_id'];
-    $quantity = $_POST['quantity'];
-    $branchCode = $_POST['branch_code'];
-    $createdBy = $_SESSION['full_name'];
-    $employeeId = $_SESSION['id'] ?? null;
-    
-    if (empty($customerId) || empty($productId) || empty($quantity) || empty($branchCode)) {
-        $errorMessage = "All fields are required!";
-    } else {
-        $conn->begin_transaction();
-        
-        try {
-            $orderId = generate_Order_hdr_ID();
-            
-            $orderQuery = "INSERT INTO Order_hdr (Orderhdr_id, CustomerID, BranchCode, Created_by) VALUES (?, ?, ?, ?)";
-            $stmt = $conn->prepare($orderQuery);
-            $stmt->bind_param('iiss', $orderId, $customerId, $branchCode, $createdBy);
-            $stmt->execute();
-            $stmt->close();
-            
-            $orderDetailId = generate_OrderDtlID();
-            
-            $productBranchQuery = "SELECT pb.ProductBranchID, p.Model, p.Price, p.CategoryType 
-                                  FROM ProductBranchMaster pb
-                                  JOIN productMstr p ON pb.ProductID = p.ProductID
-                                  WHERE pb.ProductID = ? AND pb.BranchCode = ? LIMIT 1";
-            $stmt = $conn->prepare($productBranchQuery);
-            $stmt->bind_param('is', $productId, $branchCode);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            $productData = $result->fetch_assoc();
-            $stmt->close();
-            
-            if ($productData) {
-                $productBranchId = $productData['ProductBranchID'];
-                
-                $detailQuery = "INSERT INTO orderDetails (OrderDtlID, OrderHdr_id, ProductBranchID, Quantity, ActivityCode, Status) 
-                                VALUES (?, ?, ?, ?, 2, 'Pending')";
-                $stmt = $conn->prepare($detailQuery);
-                $stmt->bind_param('iiii', $orderDetailId, $orderId, $productBranchId, $quantity);
-                $stmt->execute();
-                $stmt->close();
-                
-                $updateQuery = "UPDATE ProductBranchMaster SET Stocks = Stocks - ? WHERE ProductID = ? AND BranchCode = ?";
-                $stmt = $conn->prepare($updateQuery);
-                $stmt->bind_param('iis', $quantity, $productId, $branchCode);
-                $stmt->execute();
-                $stmt->close();
-                
-                $customerQuery = "SELECT CustomerName FROM customer WHERE CustomerID = ?";
-                $stmt = $conn->prepare($customerQuery);
-                $stmt->bind_param('i', $customerId);
-                $stmt->execute();
-                $customerResult = $stmt->get_result();
-                $customerData = $customerResult->fetch_assoc();
-                $stmt->close();
-                
-                $branchQuery = "SELECT BranchName FROM BranchMaster WHERE BranchCode = ?";
-                $stmt = $conn->prepare($branchQuery);
-                $stmt->bind_param('s', $branchCode);
-                $stmt->execute();
-                $branchResult = $stmt->get_result();
-                $branchData = $branchResult->fetch_assoc();
-                $stmt->close();
+    $_SESSION['pending_order'] = $_POST;
+    $_SESSION['pending_order']['employee_id'] = $_SESSION['id'] ?? null;
+    $_SESSION['pending_order']['created_by'] = $_SESSION['full_name'];
+}
 
-                $price = (float)str_replace(['₱', ','], '', $productData['Price']);
-                $total = $price * $quantity;
+// Process the order if confirmed
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_order'])) {
+    if (isset($_SESSION['pending_order'])) {
+        $pendingOrder = $_SESSION['pending_order'];
+        
+        $conn = connect();
+        $customerId = $pendingOrder['customer_id'];
+        $productId = $pendingOrder['product_id'];
+        $quantity = $pendingOrder['quantity'];
+        $branchCode = $pendingOrder['branch_code'];
+        $createdBy = $pendingOrder['created_by'];
+        $employeeId = $pendingOrder['employee_id'];
+        
+        if (empty($customerId) || empty($productId) || empty($quantity) || empty($branchCode)) {
+            $errorMessage = "All fields are required!";
+        } else {
+            $conn->begin_transaction();
+            
+            try {
+                $orderId = generate_Order_hdr_ID();
                 
-                $orderDetails = [
-                    'order_id' => $orderId,
-                    'customer_name' => $customerData['CustomerName'] ?? '',
-                    'branch_name' => $branchData['BranchName'] ?? '',
-                    'product_model' => $productData['Model'] ?? '',
-                    'product_category' => $productData['CategoryType'] ?? '',
-                    'quantity' => $quantity,
-                    'price' => '₱' . number_format($price, 2),
-                    'total' => '₱' . number_format($total, 2),
-                    'status' => 'Pending',
-                    'date_created' => date('Y-m-d H:i:s')
-                ];
-                
-                $logId = generate_LogsID();
-                $logDescription = "#$orderId for customer " . $customerData['CustomerName'];
-                $logQuery = "INSERT INTO Logs (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description) 
-                            VALUES (?, ?, ?, 'order', 3, ?)";
-                $stmt = $conn->prepare($logQuery);
-                $stmt->bind_param('iiis', $logId, $employeeId, $orderId, $logDescription);
+                $orderQuery = "INSERT INTO Order_hdr (Orderhdr_id, CustomerID, BranchCode, Created_by) VALUES (?, ?, ?, ?)";
+                $stmt = $conn->prepare($orderQuery);
+                $stmt->bind_param('iiss', $orderId, $customerId, $branchCode, $createdBy);
                 $stmt->execute();
                 $stmt->close();
                 
-                $conn->commit();
-                $orderSuccess = true;
+                $orderDetailId = generate_OrderDtlID();
                 
-            } else {
-                throw new Exception("Product not found in selected branch inventory!");
+                $productBranchQuery = "SELECT pb.ProductBranchID, p.Model, p.Price, p.CategoryType 
+                                      FROM ProductBranchMaster pb
+                                      JOIN productMstr p ON pb.ProductID = p.ProductID
+                                      WHERE pb.ProductID = ? AND pb.BranchCode = ? LIMIT 1";
+                $stmt = $conn->prepare($productBranchQuery);
+                $stmt->bind_param('is', $productId, $branchCode);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                $productData = $result->fetch_assoc();
+                $stmt->close();
+                
+                if ($productData) {
+                    $productBranchId = $productData['ProductBranchID'];
+                    
+                    $detailQuery = "INSERT INTO orderDetails (OrderDtlID, OrderHdr_id, ProductBranchID, Quantity, ActivityCode, Status) 
+                                    VALUES (?, ?, ?, ?, 2, 'Pending')";
+                    $stmt = $conn->prepare($detailQuery);
+                    $stmt->bind_param('iiii', $orderDetailId, $orderId, $productBranchId, $quantity);
+                    $stmt->execute();
+                    $stmt->close();
+                    
+                    $updateQuery = "UPDATE ProductBranchMaster SET Stocks = Stocks - ? WHERE ProductID = ? AND BranchCode = ?";
+                    $stmt = $conn->prepare($updateQuery);
+                    $stmt->bind_param('iis', $quantity, $productId, $branchCode);
+                    $stmt->execute();
+                    $stmt->close();
+                    
+                    $customerQuery = "SELECT CustomerName FROM customer WHERE CustomerID = ?";
+                    $stmt = $conn->prepare($customerQuery);
+                    $stmt->bind_param('i', $customerId);
+                    $stmt->execute();
+                    $customerResult = $stmt->get_result();
+                    $customerData = $customerResult->fetch_assoc();
+                    $stmt->close();
+                    
+                    $branchQuery = "SELECT BranchName FROM BranchMaster WHERE BranchCode = ?";
+                    $stmt = $conn->prepare($branchQuery);
+                    $stmt->bind_param('s', $branchCode);
+                    $stmt->execute();
+                    $branchResult = $stmt->get_result();
+                    $branchData = $branchResult->fetch_assoc();
+                    $stmt->close();
+
+                    $price = (float)str_replace(['₱', ','], '', $productData['Price']);
+                    $total = $price * $quantity;
+                    
+                    $orderDetails = [
+                        'order_id' => $orderId,
+                        'customer_name' => $customerData['CustomerName'] ?? '',
+                        'branch_name' => $branchData['BranchName'] ?? '',
+                        'product_model' => $productData['Model'] ?? '',
+                        'product_category' => $productData['CategoryType'] ?? '',
+                        'quantity' => $quantity,
+                        'price' => '₱' . number_format($price, 2),
+                        'total' => '₱' . number_format($total, 2),
+                        'status' => 'Pending',
+                        'date_created' => date('Y-m-d H:i:s')
+                    ];
+                    
+                    $logId = generate_LogsID();
+                    $logDescription = "#$orderId for customer " . $customerData['CustomerName'];
+                    $logQuery = "INSERT INTO Logs (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description) 
+                                VALUES (?, ?, ?, 'order', 3, ?)";
+                    $stmt = $conn->prepare($logQuery);
+                    $stmt->bind_param('iiis', $logId, $employeeId, $orderId, $logDescription);
+                    $stmt->execute();
+                    $stmt->close();
+                    
+                    $conn->commit();
+                    $orderSuccess = true;
+                    
+                    // Clear the pending order from session
+                    unset($_SESSION['pending_order']);
+                } else {
+                    throw new Exception("Product not found in selected branch inventory!");
+                }
+            } catch (Exception $e) {
+                $conn->rollback();
+                $errorMessage = "Error creating order: " . $e->getMessage();
             }
-        } catch (Exception $e) {
-            $conn->rollback();
-            $errorMessage = "Error creating order: " . $e->getMessage();
+            
+            $conn->close();
         }
-        
-        $conn->close();
     }
 }
 
@@ -393,6 +407,76 @@ $conn->close();
         </div>
     </div>
 
+    <!-- Order Confirmation Modal -->
+    <div class="modal fade" id="confirmOrderModal" tabindex="-1" aria-labelledby="confirmOrderModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="confirmOrderModalLabel">Confirm Order</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to create this order?</p>
+                    <div id="orderSummary">
+                        <?php if (isset($_SESSION['pending_order'])): ?>
+                            <?php 
+                                $conn = connect();
+                                $productId = $_SESSION['pending_order']['product_id'];
+                                $quantity = $_SESSION['pending_order']['quantity'];
+                                
+                                $productQuery = "SELECT p.Model, p.Price, p.CategoryType FROM productMstr p WHERE p.ProductID = ?";
+                                $stmt = $conn->prepare($productQuery);
+                                $stmt->bind_param('i', $productId);
+                                $stmt->execute();
+                                $result = $stmt->get_result();
+                                $productData = $result->fetch_assoc();
+                                $stmt->close();
+                                
+                                $customerQuery = "SELECT CustomerName FROM customer WHERE CustomerID = ?";
+                                $stmt = $conn->prepare($customerQuery);
+                                $stmt->bind_param('i', $_SESSION['pending_order']['customer_id']);
+                                $stmt->execute();
+                                $result = $stmt->get_result();
+                                $customerData = $result->fetch_assoc();
+                                $stmt->close();
+                                
+                                $branchQuery = "SELECT BranchName FROM BranchMaster WHERE BranchCode = ?";
+                                $stmt = $conn->prepare($branchQuery);
+                                $stmt->bind_param('s', $_SESSION['pending_order']['branch_code']);
+                                $stmt->execute();
+                                $result = $stmt->get_result();
+                                $branchData = $result->fetch_assoc();
+                                $stmt->close();
+                                
+                                $conn->close();
+                                
+                                if ($productData && $customerData && $branchData):
+                                    $price = (float)str_replace(['₱', ','], '', $productData['Price']);
+                                    $total = $price * $quantity;
+                            ?>
+                                <div class="mb-3">
+                                    <p><strong>Customer:</strong> <?= htmlspecialchars($customerData['CustomerName']) ?></p>
+                                    <p><strong>Branch:</strong> <?= htmlspecialchars($branchData['BranchName']) ?></p>
+                                    <p><strong>Product:</strong> <?= htmlspecialchars($productData['Model']) ?></p>
+                                    <p><strong>Category:</strong> <?= htmlspecialchars($productData['CategoryType']) ?></p>
+                                    <p><strong>Quantity:</strong> <?= $quantity ?></p>
+                                    <p><strong>Unit Price:</strong> <?= htmlspecialchars($productData['Price']) ?></p>
+                                    <p><strong>Total:</strong> ₱<?= number_format($total, 2) ?></p>
+                                </div>
+                            <?php endif; ?>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form method="post" style="display: inline;">
+                        <button type="submit" name="confirm_order" class="btn btn-primary">Confirm Order</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -489,6 +573,27 @@ $conn->close();
                             item.style.display = 'none';
                         }
                     });
+                });
+            }
+
+            // Handle order form submission to show confirmation modal
+            const orderForm = document.getElementById('orderForm');
+            if (orderForm) {
+                orderForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    // Validate form
+                    const productId = document.getElementById('selectedProduct').value;
+                    const quantity = document.getElementById('quantity').value;
+                    
+                    if (!productId || !quantity) {
+                        alert('Please select a product and enter a quantity');
+                        return;
+                    }
+                    
+                    // Show confirmation modal
+                    const confirmModal = new bootstrap.Modal(document.getElementById('confirmOrderModal'));
+                    confirmModal.show();
                 });
             }
         });
