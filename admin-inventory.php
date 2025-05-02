@@ -303,6 +303,15 @@ $_SESSION['current_branch'] = $branchName;
                     <i class="fas fa-plus me-2"></i> Add Product
                 </a>            
             </div>
+            
+            <div class="table-instructions alert alert-info" style="margin-bottom: 20px; padding: 10px 15px; border-radius: 4px;">
+                <strong>Instructions:</strong>
+                <ul style="margin-bottom: 0; padding-left: 20px;">
+                    <li>To add a product, click the button at the top right.</li>
+                    <li>To edit or delete products, first select a branch from the dropdown.</li>
+					<li>Click any column header to sort the table in ascending/descending order.</li>
+                </ul>
+            </div>
         
             <div class="filter-container">
                 <form method="post" class="row g-3" id="branchForm">

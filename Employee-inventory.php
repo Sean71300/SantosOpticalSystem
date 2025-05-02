@@ -149,11 +149,19 @@ if ($link) {
             <div class="d-flex justify-content-between align-items-center">
                 <h1><i class="fas fa-boxes me-2"></i> Inventory Management</h1>            
             </div>
+            
         
             <div class="filter-container">
                 <div class="branch-info">
                     <h5><i class="fas fa-store me-2"></i> <?= htmlspecialchars($branchName) ?> Branch</h5>
                 </div>
+            </div>
+            
+            <div class="table-instructions alert alert-info" style="margin-bottom: 20px; padding: 10px 15px; border-radius: 4px;">
+                <strong>Instruction:</strong>
+                <ul style="margin-bottom: 0; padding-left: 20px;">
+					<li>Click any column header to sort the table in ascending/descending order.</li>
+                </ul>
             </div>
 
             <div class="table-container">
