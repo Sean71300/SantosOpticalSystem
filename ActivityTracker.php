@@ -26,7 +26,7 @@ class ActivityTracker1 {
     public static function logActivity($employeeID, $targetID, $targetType, $actionType, $description) {
         // Your existing implementation
         $conn = connect();
-        $sql = "INSERT INTO activity_logs (EmployeeID, TargetID, TargetType, ActionType, Description, Timestamp) 
+        $sql = "INSERT INTO Logs (EmployeeID, TargetID, TargetType, ActionType, Description, Timestamp) 
                 VALUES (?, ?, ?, ?, ?, NOW())";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param('iisis', $employeeID, $targetID, $targetType, $actionType, $description);
