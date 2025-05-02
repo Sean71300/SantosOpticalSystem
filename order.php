@@ -8,7 +8,7 @@ include 'loginChecker.php';
 // Database functions
 function getOrderHeaders($conn, $search = '', $branch = '', $status = '', $limit = 10, $offset = 0) {
     $query = "SELECT oh.Orderhdr_id, oh.CustomerID, oh.BranchCode, oh.Created_dt, oh.Created_by, 
-                     c.CustomerName, od.Status
+                     c.CustomerName, GROUP_CONCAT(od.Status) as Status
               FROM Order_hdr oh
               LEFT JOIN customer c ON oh.CustomerID = c.CustomerID
               LEFT JOIN orderDetails od ON oh.Orderhdr_id = od.OrderHdr_id"; // Join orderDetails table
