@@ -89,7 +89,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['cancel'])) {
                                         $_SESSION["id"] = $customer_id;
                                         $_SESSION["full_name"] = $customer_name;
                                         $_SESSION["contact"] = $customer_contact;
-                                        $_SESSION['last_activity'] = time();
+                                        $_SESSION['CustomerID'] = $customer_id;
 
                                         header("location: customer_dashboard.php");
                                         exit();
