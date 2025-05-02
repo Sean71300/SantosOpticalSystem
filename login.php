@@ -232,53 +232,54 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['cancel'])) {
 </head>
 <body>
 
-<div class="wrapper">
-    <div class="titles">
-        <img src="Images/logo.png" alt="Logo" class="logo">
-        <h2 class="title-login">Greetings!</h2>
+    <div class="container">
+        <div class="wrapper">
+            <div class="titles">
+                <img src="Images/logo.png" alt="Logo" class="logo">
+                <h2 class="title-login">Greetings!</h2>
+            </div>
+
+            <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post" class="login-form">
+                <div class="input-box">
+                    <i class='bx bx-user icon'></i>
+                    <input type="text" name="username" class="input-field <?php echo (!empty($username_err)) ? 'is-invalid' : ''; ?>" placeholder="Your username" value="<?php echo htmlspecialchars($username); ?>">
+                    <span class="invalid-feedback"><?php echo $username_err; ?></span>
+                </div>
+
+                <div class="input-box">
+                    <i class='bx bx-lock-alt icon'></i>
+                    <input type="password" name="password" class="input-field <?php echo (!empty($password_err)) ? 'is-invalid' : ''; ?>" placeholder="Your password">
+                    <span class="invalid-feedback"><?php echo $password_err; ?></span>
+                </div>
+
+                <?php 
+                if (!empty($login_err)) {
+                    echo '<div class="alert-danger">' . $login_err . '</div>';
+                }        
+                ?>
+
+                <div class="input-box">
+                    <button type="submit" class="btn-submit">Sign In</button>
+                </div>
+
+                <div class="input-box">
+                    <button type="submit" name="cancel" class="cancel-button">Cancel</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="alert alert-info alert-dismissible fade show mt-3" role="alert">
+            <div class="d-flex">
+                <div class="flex-shrink-0 me-3">
+                <i class="bi bi-info-circle-fill fs-4"></i> <!-- Bootstrap Icons (requires separate include) -->
+                </div>
+                <div>
+                <h5 class="alert-heading">For customers:</h5>
+                <p class="mb-0">Use your full name as username and your reference number as password.</p>
+                </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
     </div>
-
-    <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post" class="login-form">
-        <div class="input-box">
-            <i class='bx bx-user icon'></i>
-            <input type="text" name="username" class="input-field <?php echo (!empty($username_err)) ? 'is-invalid' : ''; ?>" placeholder="Your username" value="<?php echo htmlspecialchars($username); ?>">
-            <span class="invalid-feedback"><?php echo $username_err; ?></span>
-        </div>
-
-        <div class="input-box">
-            <i class='bx bx-lock-alt icon'></i>
-            <input type="password" name="password" class="input-field <?php echo (!empty($password_err)) ? 'is-invalid' : ''; ?>" placeholder="Your password">
-            <span class="invalid-feedback"><?php echo $password_err; ?></span>
-        </div>
-
-        <?php 
-        if (!empty($login_err)) {
-            echo '<div class="alert-danger">' . $login_err . '</div>';
-        }        
-        ?>
-
-        <div class="input-box">
-            <button type="submit" class="btn-submit">Sign In</button>
-        </div>
-
-        <div class="input-box">
-            <button type="submit" name="cancel" class="cancel-button">Cancel</button>
-        </div>
-    </form>
-</div>
-
-<div class="alert alert-info alert-dismissible fade show mt-3" role="alert">
-  <div class="d-flex">
-    <div class="flex-shrink-0 me-3">
-      <i class="bi bi-info-circle-fill fs-4"></i> <!-- Bootstrap Icons (requires separate include) -->
-    </div>
-    <div>
-      <h5 class="alert-heading">For customers:</h5>
-      <p class="mb-0">Use your full name as username and your reference number as password.</p>
-    </div>
-  </div>
-  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-</div>
-
 </body>
 </html>
