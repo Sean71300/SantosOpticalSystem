@@ -315,27 +315,7 @@
                 color: #721c24;
             }
 
-.modal-product-image-container {
-    height: 300px;
-    width: 100%;
-    min-width: 300px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #f8f9fa;
-    padding: 10px;
-    margin: 0 auto;
-    border-radius: 5px;
-    overflow: hidden;
-}
 
-.modal-product-image {
-    max-height: 100%;
-    max-width: 100%;
-    width: auto;
-    height: auto;
-    object-fit: contain;
-}
 
             .modal-product-image-container {
     display: flex;
