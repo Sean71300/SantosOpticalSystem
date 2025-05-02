@@ -9,7 +9,8 @@ function getOrders($conn, $search, $branch, $status, $limit, $offset) {
     $query = "SELECT o.Orderhdr_id, o.Created_dt, c.CustomerName, 
                      e.EmployeeName as CreatedBy, b.BranchName,
                      COUNT(od.OrderDtlID) as ItemCount,
-                     SUM(p.Price * od.Quantity) as TotalAmount
+                     SUM(p.Price * od.Quantity) as TotalAmount,
+                     MAX(od.Status) as Status
               FROM Order_hdr o
               JOIN customer c ON o.CustomerID = c.CustomerID
               JOIN employee e ON o.Created_by = e.LoginName
@@ -20,19 +21,24 @@ function getOrders($conn, $search, $branch, $status, $limit, $offset) {
     
     $where = "";
     $types = "";
+    $params = [];
     
     if (!empty($search)) {
         $where .= " AND (c.CustomerName LIKE ? OR o.Orderhdr_id LIKE ?)";
+        $params[] = "%$search%";
+        $params[] = "%$search%";
         $types .= "ss";
     }
     
     if (!empty($branch)) {
         $where .= " AND o.BranchCode = ?";
+        $params[] = $branch;
         $types .= "i";
     }
     
     if (!empty($status)) {
         $where .= " AND od.Status = ?";
+        $params[] = $status;
         $types .= "s";
     }
     
@@ -41,23 +47,58 @@ function getOrders($conn, $search, $branch, $status, $limit, $offset) {
     }
     
     $query .= " GROUP BY o.Orderhdr_id ORDER BY o.Created_dt DESC LIMIT ? OFFSET ?";
+    $params[] = $limit;
+    $params[] = $offset;
     $types .= "ii";
     
     $stmt = $conn->prepare($query);
-    
-    if (!empty($search)) {
-        $searchParam = "%$search%";
-        $stmt->bind_param($types, $searchParam, $searchParam, $branch, $status, $limit, $offset);
-    } elseif (!empty($branch)) {
-        $stmt->bind_param($types, $branch, $status, $limit, $offset);
-    } elseif (!empty($status)) {
-        $stmt->bind_param($types, $status, $limit, $offset);
-    } else {
-        $stmt->bind_param($types, $limit, $offset);
+    if (!empty($types)) {
+        $stmt->bind_param($types, ...$params);
     }
-    
     $stmt->execute();
     return $stmt->get_result();
+}
+
+function countTotalOrders($conn, $search, $branch, $status) {
+    $query = "SELECT COUNT(DISTINCT o.Orderhdr_id) as total 
+              FROM Order_hdr o
+              JOIN customer c ON o.CustomerID = c.CustomerID
+              LEFT JOIN orderDetails od ON o.Orderhdr_id = od.OrderHdr_id";
+    
+    $where = "";
+    $types = "";
+    $params = [];
+    
+    if (!empty($search)) {
+        $where .= " AND (c.CustomerName LIKE ? OR o.Orderhdr_id LIKE ?)";
+        $params[] = "%$search%";
+        $params[] = "%$search%";
+        $types .= "ss";
+    }
+    
+    if (!empty($branch)) {
+        $where .= " AND o.BranchCode = ?";
+        $params[] = $branch;
+        $types .= "i";
+    }
+    
+    if (!empty($status)) {
+        $where .= " AND od.Status = ?";
+        $params[] = $status;
+        $types .= "s";
+    }
+    
+    if (!empty($where)) {
+        $query .= " WHERE " . substr($where, 5);
+    }
+    
+    $stmt = $conn->prepare($query);
+    if (!empty($types)) {
+        $stmt->bind_param($types, ...$params);
+    }
+    $stmt->execute();
+    $result = $stmt->get_result();
+    return $result->fetch_assoc()['total'];
 }
 
 function countTotalOrders($conn, $search, $branch, $status) {
