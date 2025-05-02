@@ -889,4 +889,24 @@ function deleteProduct()
         }
         mysqli_close($link);
     }
+
+    function getLowInventoryProducts($threshold = 10) {
+        $link = connect();
+        $sql = "SELECT pbm.ProductID, pm.Model, bm.BranchName, pbm.Stocks 
+                FROM ProductBranchMaster pbm
+                JOIN productMstr pm ON pbm.ProductID = pm.ProductID
+                JOIN BranchMaster bm ON pbm.BranchCode = bm.BranchCode
+                WHERE pbm.Stocks <= ? AND pbm.Avail_FL = 'Available' AND pm.Avail_FL = 'Available'";
+        $stmt = mysqli_prepare($link, $sql);
+        mysqli_stmt_bind_param($stmt, "i", $threshold);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        $lowInventory = [];
+        while ($row = mysqli_fetch_assoc($result)) {
+            $lowInventory[] = $row;
+        }
+        mysqli_stmt_close($stmt);
+        mysqli_close($link);
+        return $lowInventory;
+    }
 ?>          
