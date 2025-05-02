@@ -13,7 +13,7 @@ if (!isset($_GET['customer_id'])) {
 
 $customer_id = $_GET['customer_id'];
 
-// Fetch customer details
+// Fetch customer details with notes
 $customer_query = "SELECT * FROM customer WHERE CustomerID = ?";
 $stmt = $conn->prepare($customer_query);
 $stmt->bind_param("i", $customer_id);
@@ -177,6 +177,8 @@ function getProductStock($product_id, $branch_code) {
         body {
             background-color: #f5f7fa;
             display: flex;
+            min-height: 100vh;
+            flex-direction: column;
         }
         .sidebar {
             background-color: white;
@@ -187,50 +189,30 @@ function getProductStock($product_id, $branch_code) {
             width: 250px;
             box-shadow: 2px 0 5px rgba(0,0,0,0.1);
         }
-        .sidebar-header {
-            padding: 0 20px 20px;
-            border-bottom: 1px solid rgba(0,0,0,0.1);
-        }
-        .sidebar-item {
-            padding: 12px 20px;
-            margin: 5px 0;
-            border-radius: 0;
-            display: flex;
-            align-items: center;
-            color: #2c3e50;
-            transition: all 0.3s;
-            text-decoration: none;
-        }
-        .sidebar-item:hover {
-            background-color: #f8f9fa;
-            color: #2c3e50;
-        }
-        .sidebar-item.active {
-            background-color: #e9ecef;
-            color: #2c3e50;
-            font-weight: 500;
-        }   
-        .sidebar-item i {
-            margin-right: 10px;
-            width: 20px;
-            text-align: center;
-        }
         .main-content {
             margin-left: 250px;
             padding: 20px;
-            width: calc(100% - 250px);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
         }
         .form-container {
             background-color: white;
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             padding: 30px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
         }
-        .form-label {
-            font-weight: 500;
+        .content-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
         }
-        .btn-action {
-            min-width: 120px;
+        .products-container {
+            flex: 1;
+            overflow-y: auto;
         }
         .product-card {
             transition: all 0.3s;
@@ -239,10 +221,7 @@ function getProductStock($product_id, $branch_code) {
             border-radius: 8px;
             overflow: hidden;
             height: 100%;
-        }
-        .product-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            position: relative;
         }
         .product-card.selected {
             border: 2px solid #0d6efd;
@@ -254,18 +233,31 @@ function getProductStock($product_id, $branch_code) {
             padding: 15px;
             background-color: #f8f9fa;
         }
-        .quantity-input {
+        .quantity-control {
             display: none;
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: white;
+            padding: 5px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .product-card.selected .quantity-control {
+            display: flex;
+            align-items: center;
+        }
+        .branch-select-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .customer-notes {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
             margin-top: 10px;
-        }
-        .product-card.selected .quantity-input {
-            display: block;
-        }
-        .customer-info-card {
-            margin-bottom: 20px;
-        }
-        .branch-select {
-            margin-bottom: 20px;
         }
         @media (max-width: 768px) {
             .sidebar {
@@ -277,8 +269,9 @@ function getProductStock($product_id, $branch_code) {
                 margin-left: 0;
                 width: 100%;
             }
-            .product-card {
-                margin-bottom: 15px;
+            .branch-select-container {
+                flex-direction: column;
+                align-items: flex-start;
             }
         }
     </style>
@@ -311,96 +304,113 @@ function getProductStock($product_id, $branch_code) {
                 </div>
             <?php endif; ?>
             
-            <div class="customer-info-card card">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Customer Information</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <p><strong>Name:</strong> <?= htmlspecialchars($customer['CustomerName']) ?></p>
-                        </div>
-                        <div class="col-md-4">
-                            <p><strong>Contact:</strong> <?= htmlspecialchars($customer['CustomerContact']) ?></p>
-                        </div>
-                        <div class="col-md-4">
-                            <p><strong>Address:</strong> <?= htmlspecialchars($customer['CustomerAddress']) ?></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <form method="POST" id="orderCreate">
-                <div class="branch-select">
-                    <label class="form-label">Select Branch</label>
-                    <select class="form-select form-control-lg" id="branch_code" name="branch_code" required>
-                        <option value="">-- Select Branch --</option>
-                        <?php while ($branch = $branches_result->fetch_assoc()): ?>
-                            <option value="<?= $branch['BranchCode'] ?>" 
-                                <?= isset($_POST['branch_code']) && $_POST['branch_code'] == $branch['BranchCode'] ? 'selected' : '' ?>>
-                                <?= htmlspecialchars($branch['BranchName']) ?>
-                            </option>
-                        <?php endwhile; ?>
-                    </select>
-                </div>
-
-                <div class="products-section">
+            <div class="content-wrapper">
+                <div class="customer-info-section mb-4">
                     <div class="card">
                         <div class="card-header bg-primary text-white">
-                            <h5 class="mb-0">Available Products</h5>
+                            <h5 class="mb-0">Customer Information</h5>
                         </div>
                         <div class="card-body">
-                            <?php if ($products_result->num_rows > 0): ?>
-                                <div class="row row-cols-1 row-cols-md-3 g-4" id="products-container">
-                                    <?php 
-                                    // Reset pointer for products result
-                                    $products_result->data_seek(0);
-                                    while ($product = $products_result->fetch_assoc()): 
-                                        $brand_name = getBrandName($product['BrandID']);
-                                    ?>
-                                        <div class="col">
-                                            <div class="card product-card h-100" onclick="toggleSelection(this, <?= $product['ProductID'] ?>)">
-                                                <img src="<?= htmlspecialchars($product['ProductImage']) ?>" 
-                                                     class="product-img" 
-                                                     alt="<?= htmlspecialchars($product['Model']) ?>">
-                                                <div class="card-body">
-                                                    <h5 class="card-title"><?= htmlspecialchars($product['Model']) ?></h5>
-                                                    <p class="card-text">
-                                                        <strong>Category:</strong> <?= htmlspecialchars($product['CategoryType']) ?><br>
-                                                        <strong>Brand:</strong> <?= htmlspecialchars($brand_name) ?><br>
-                                                        <strong>Price:</strong> <?= htmlspecialchars($product['Price']) ?><br>
-                                                        <span class="stock-info" id="stock-<?= $product['ProductID'] ?>">
-                                                            <strong>Stocks:</strong> Select branch to view availability
-                                                        </span>
-                                                    </p>
-                                                    <div class="quantity-input">
-                                                        <label class="form-label">Quantity</label>
-                                                        <input type="number" 
-                                                               class="form-control" 
-                                                               name="quantities[]" 
-                                                               min="1" 
-                                                               value="1"
-                                                               data-product-id="<?= $product['ProductID'] ?>">
-                                                        <input type="hidden" name="products[]" value="<?= $product['ProductID'] ?>">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    <?php endwhile; ?>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <p><strong>Name:</strong> <?= htmlspecialchars($customer['CustomerName']) ?></p>
                                 </div>
-                            <?php else: ?>
-                                <div class="alert alert-info">No available products found.</div>
+                                <div class="col-md-4">
+                                    <p><strong>Contact:</strong> <?= htmlspecialchars($customer['CustomerContact']) ?></p>
+                                </div>
+                                <div class="col-md-4">
+                                    <p><strong>Address:</strong> <?= htmlspecialchars($customer['CustomerAddress']) ?></p>
+                                </div>
+                            </div>
+                            <?php if (!empty($customer['Notes'])): ?>
+                                <div class="customer-notes mt-3">
+                                    <h6>Customer Notes:</h6>
+                                    <p><?= htmlspecialchars($customer['Notes']) ?></p>
+                                </div>
                             <?php endif; ?>
                         </div>
                     </div>
                 </div>
 
-                <div class="d-flex justify-content-end gap-3 mt-5">                    
-                    <button type="submit" class="btn btn-primary btn-action" name="create_order">
-                        <i class="fas fa-save me-2"></i> Create Order
-                    </button>
-                </div>
-            </form>
+                <form method="POST" id="orderCreate">
+                    <div class="branch-select-container">
+                        <div style="flex-grow: 1;">
+                            <label class="form-label">Select Branch</label>
+                            <select class="form-select" id="branch_code" name="branch_code" required>
+                                <option value="">-- Select Branch --</option>
+                                <?php while ($branch = $branches_result->fetch_assoc()): ?>
+                                    <option value="<?= $branch['BranchCode'] ?>" 
+                                        <?= isset($_POST['branch_code']) && $_POST['branch_code'] == $branch['BranchCode'] ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($branch['BranchName']) ?>
+                                    </option>
+                                <?php endwhile; ?>
+                            </select>
+                        </div>
+                        <button type="button" class="btn btn-primary mt-3" id="checkAvailabilityBtn">
+                            <i class="fas fa-search me-2"></i> Check Availability
+                        </button>
+                    </div>
+
+                    <div class="products-section flex-grow-1">
+                        <div class="card h-100">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">Available Products</h5>
+                            </div>
+                            <div class="card-body products-container">
+                                <?php if ($products_result->num_rows > 0): ?>
+                                    <div class="row row-cols-1 row-cols-md-3 g-4" id="products-container">
+                                        <?php 
+                                        // Reset pointer for products result
+                                        $products_result->data_seek(0);
+                                        while ($product = $products_result->fetch_assoc()): 
+                                            $brand_name = getBrandName($product['BrandID']);
+                                        ?>
+                                            <div class="col">
+                                                <div class="card product-card h-100" data-product-id="<?= $product['ProductID'] ?>">
+                                                    <img src="<?= htmlspecialchars($product['ProductImage']) ?>" 
+                                                         class="product-img" 
+                                                         alt="<?= htmlspecialchars($product['Model']) ?>">
+                                                    <div class="card-body">
+                                                        <h5 class="card-title"><?= htmlspecialchars($product['Model']) ?></h5>
+                                                        <p class="card-text">
+                                                            <strong>Category:</strong> <?= htmlspecialchars($product['CategoryType']) ?><br>
+                                                            <strong>Brand:</strong> <?= htmlspecialchars($brand_name) ?><br>
+                                                            <strong>Price:</strong> <?= htmlspecialchars($product['Price']) ?><br>
+                                                            <span class="stock-info" id="stock-<?= $product['ProductID'] ?>">
+                                                                <strong>Stocks:</strong> Select branch and click Check Availability
+                                                            </span>
+                                                        </p>
+                                                        <div class="quantity-control">
+                                                            <button type="button" class="btn btn-sm btn-outline-secondary quantity-decrease">-</button>
+                                                            <input type="number" 
+                                                                   class="form-control form-control-sm quantity-input" 
+                                                                   name="quantities[]" 
+                                                                   min="1" 
+                                                                   value="1"
+                                                                   data-product-id="<?= $product['ProductID'] ?>"
+                                                                   style="width: 50px; text-align: center; margin: 0 5px;">
+                                                            <button type="button" class="btn btn-sm btn-outline-secondary quantity-increase">+</button>
+                                                            <input type="hidden" name="products[]" value="<?= $product['ProductID'] ?>">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        <?php endwhile; ?>
+                                    </div>
+                                <?php else: ?>
+                                    <div class="alert alert-info">No available products found.</div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-3 mt-4">                    
+                        <button type="submit" class="btn btn-primary btn-action" name="create_order">
+                            <i class="fas fa-save me-2"></i> Create Order
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -424,70 +434,97 @@ function getProductStock($product_id, $branch_code) {
     </div>
 
     <script>
-        function toggleSelection(card, productId) {
-            card.classList.toggle('selected');
-            const quantityInput = card.querySelector('.quantity-input');
-            const productInput = card.querySelector('input[name="products[]"]');
-            
-            if (card.classList.contains('selected')) {
-                quantityInput.style.display = 'block';
-                productInput.disabled = false;
-                
-                // Update max quantity based on selected branch
-                const branchSelect = document.getElementById('branch_code');
-                if (branchSelect.value) {
-                    updateMaxQuantity(productId, branchSelect.value);
-                }
-            } else {
-                quantityInput.style.display = 'none';
-                productInput.disabled = true;
-            }
-        }
-
-        // Update stock info when branch is selected
-        document.getElementById('branch_code').addEventListener('change', function() {
-            const branchCode = this.value;
-            const productCards = document.querySelectorAll('.product-card');
-            
-            productCards.forEach(card => {
-                const productId = card.querySelector('input[name="products[]"]').value;
-                const stockElement = document.getElementById(`stock-${productId}`);
-                
-                if (branchCode) {
-                    // Fetch stock via AJAX
-                    fetch(`get_stock.php?product_id=${productId}&branch_code=${branchCode}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.stock !== undefined) {
-                                stockElement.innerHTML = `<strong>Stocks:</strong> ${data.stock}`;
-                                
-                                // Update max quantity for selected products
-                                if (card.classList.contains('selected')) {
-                                    const quantityInput = card.querySelector('input[name="quantities[]"]');
-                                    quantityInput.max = data.stock;
-                                    if (quantityInput.value > data.stock) {
-                                        quantityInput.value = data.stock;
-                                    }
-                                }
-                            } else {
-                                stockElement.innerHTML = '<strong>Stocks:</strong> Not available';
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error fetching stock:', error);
-                            stockElement.innerHTML = '<strong>Stocks:</strong> Error loading';
-                        });
-                } else {
-                    stockElement.innerHTML = '<strong>Stocks:</strong> Select branch to view availability';
+        // Product selection and quantity control
+        document.querySelectorAll('.product-card').forEach(card => {
+            card.addEventListener('click', function(e) {
+                // Don't toggle selection if clicking on quantity controls
+                if (!e.target.closest('.quantity-control')) {
+                    this.classList.toggle('selected');
+                    const quantityInput = this.querySelector('.quantity-input');
+                    const productInput = this.querySelector('input[name="products[]"]');
+                    
+                    if (this.classList.contains('selected')) {
+                        productInput.disabled = false;
+                        
+                        // Update max quantity if branch is selected
+                        const branchSelect = document.getElementById('branch_code');
+                        if (branchSelect.value) {
+                            const productId = this.dataset.productId;
+                            updateMaxQuantity(productId, branchSelect.value);
+                        }
+                    } else {
+                        productInput.disabled = true;
+                    }
                 }
             });
         });
+
+        // Quantity controls
+        document.querySelectorAll('.quantity-increase').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const input = this.previousElementSibling;
+                input.value = parseInt(input.value) + 1;
+            });
+        });
+
+        document.querySelectorAll('.quantity-decrease').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const input = this.nextElementSibling;
+                if (parseInt(input.value) > 1) {
+                    input.value = parseInt(input.value) - 1;
+                }
+            });
+        });
+
+        // Check availability button
+        document.getElementById('checkAvailabilityBtn').addEventListener('click', function() {
+            const branchCode = document.getElementById('branch_code').value;
+            if (!branchCode) {
+                alert('Please select a branch first');
+                return;
+            }
+            
+            updateAllStockInfo(branchCode);
+        });
+
+        function updateAllStockInfo(branchCode) {
+            const productCards = document.querySelectorAll('.product-card');
+            
+            productCards.forEach(card => {
+                const productId = card.dataset.productId;
+                const stockElement = document.getElementById(`stock-${productId}`);
+                
+                // Fetch stock via AJAX
+                fetch(`get_stock.php?product_id=${productId}&branch_code=${branchCode}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.stock !== undefined) {
+                            stockElement.innerHTML = `<strong>Stocks:</strong> ${data.stock}`;
+                            
+                            // Update max quantity for selected products
+                            if (card.classList.contains('selected')) {
+                                const quantityInput = card.querySelector('.quantity-input');
+                                quantityInput.max = data.stock;
+                                if (quantityInput.value > data.stock) {
+                                    quantityInput.value = data.stock;
+                                }
+                            }
+                        } else {
+                            stockElement.innerHTML = '<strong>Stocks:</strong> Not available';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching stock:', error);
+                        stockElement.innerHTML = '<strong>Stocks:</strong> Error loading';
+                    });
+            });
+        }
 
         function updateMaxQuantity(productId, branchCode) {
             fetch(`get_stock.php?product_id=${productId}&branch_code=${branchCode}`)
                 .then(response => response.json())
                 .then(data => {
-                    const quantityInput = document.querySelector(`input[name="quantities[]"][data-product-id="${productId}"]`);
+                    const quantityInput = document.querySelector(`.quantity-input[data-product-id="${productId}"]`);
                     if (quantityInput) {
                         quantityInput.max = data.stock;
                         if (quantityInput.value > data.stock) {
@@ -501,7 +538,7 @@ function getProductStock($product_id, $branch_code) {
         document.addEventListener('DOMContentLoaded', function() {
             const branchSelect = document.getElementById('branch_code');
             if (branchSelect.value) {
-                branchSelect.dispatchEvent(new Event('change'));
+                updateAllStockInfo(branchSelect.value);
             }
         });
     </script>
