@@ -159,7 +159,7 @@ body {
     background: black;
     color: white;
 }
-.site-footer {
+.site {
     width: 100%;
     text-align: center; /* For inline/inline-block content */
     padding: 20px 0;
@@ -167,7 +167,7 @@ body {
 }
 
 /* OR if using flexbox */
-.site-footer {
+.fcontent {
     width: 100%;
     display: flex;
     justify-content: center;
