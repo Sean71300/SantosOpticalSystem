@@ -63,7 +63,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $errorMessage = "Error updating stock: " . $conn->error;
                         } else {
                             // Log activity
-                            logActivity($_SESSION['employee_id'], $orderId, 'order', 4, "Created new order #$orderId");
+                            if (function_exists('logActivity')) {
+                                logActivity($_SESSION['employee_id'], $orderId, 'order', 4, "Created new order #$orderId");
+                            }
                             
                             // Redirect to order details
                             header("Location: orderDetails.php?id=$orderId");
