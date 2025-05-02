@@ -10,20 +10,30 @@
         $page = (isset($_GET['page'])) ? (int)$_GET['page'] : 1;
         $start = ($page - 1) * $perPage;
         
-      
+        // Get parameters from URL
         $sort = isset($_GET['sort']) ? $_GET['sort'] : 'name_asc';
         $search = isset($_GET['search']) ? mysqli_real_escape_string($conn, $_GET['search']) : '';
+        $availability = isset($_GET['availability']) ? $_GET['availability'] : '';
         
-   
+        // Build the base SQL query
         $sql = "SELECT * FROM `productMstr`";
         
-  
+        // Add conditions based on parameters
+        $whereConditions = [];
+        
         if (!empty($search)) {
-          
-            $sql .= " WHERE Model LIKE '$search%'";
+            $whereConditions[] = "Model LIKE '$search%'";
         }
         
-      
+        if (!empty($availability)) {
+            $whereConditions[] = "Avail_FL = '" . mysqli_real_escape_string($conn, $availability) . "'";
+        }
+        
+        if (!empty($whereConditions)) {
+            $sql .= " WHERE " . implode(' AND ', $whereConditions);
+        }
+        
+        // Add sorting
         switch($sort) {
             case 'price_asc':
                 $sql .= " ORDER BY CAST(REPLACE(REPLACE(Price, '₱', ''), ',', '') AS DECIMAL(10,2)) ASC";
@@ -46,23 +56,21 @@
         
         $result = mysqli_query($conn, $sql);
         
-    
+        // For total count
         $countSql = "SELECT COUNT(*) as total FROM `productMstr`";
-        if (!empty($search)) {
-        
-            $countSql .= " WHERE Model LIKE '$search%'";
+        if (!empty($whereConditions)) {
+            $countSql .= " WHERE " . implode(' AND ', $whereConditions);
         }
         $countResult = mysqli_query($conn, $countSql);
         $totalData = mysqli_fetch_assoc($countResult);
         $total = $totalData['total'];
         $totalPages = ceil($total / $perPage);
 
-      
+        // Display products
         echo "<div class='row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4' id='productGrid'>";
         
         if ($total > 0) {
             while($row = mysqli_fetch_assoc($result)) {
-              
                 $searchableText = strtolower($row['Model']);
                 echo "<div class='col d-flex product-card' data-search='".htmlspecialchars($searchableText, ENT_QUOTES)."'>";
                     echo "<div class='card w-100' style='max-width: 380px;'>";
@@ -72,7 +80,6 @@
                             echo "<hr>";
                             echo "<div class='card-text mb-2'>".$row['CategoryType']."</div>";
                             echo "<div class='card-text mb-2'>".$row['Material']."</div>";
-                      
                             $price = $row['Price'];
                             $numeric_price = preg_replace('/[^0-9.]/', '', $price);
                             $formatted_price = is_numeric($numeric_price) ? '₱' . number_format((float)$numeric_price, 2) : '₱0.00';
@@ -101,13 +108,13 @@
         
         echo "</div>"; // End of card grid
 
-        // Pagination with search and sort parameters
+        // Pagination
         if ($totalPages > 1) {
             echo "<div class='col-12 mt-5'>";
                 echo "<div class='d-flex justify-content-center'>";
                     echo "<ul class='pagination'>";
                     if ($page > 1) {
-                        echo "<li class='page-item'><a class='page-link' href='?page=" . ($page - 1) . "&sort=$sort" . (!empty($search) ? "&search=$search" : "") . "'>Previous</a></li>";
+                        echo "<li class='page-item'><a class='page-link' href='?page=" . ($page - 1) . "&sort=$sort" . (!empty($search) ? "&search=$search" : "") . (!empty($availability) ? "&availability=$availability" : "") . "'>Previous</a></li>";
                     } else {
                         echo "<li class='page-item disabled'><a class='page-link'>Previous</a></li>";
                     }
@@ -116,12 +123,12 @@
                         if ($i == $page) {
                             echo "<li class='page-item active' aria-current='page'><a class='page-link disabled'>$i</a></li>"; 
                         } else {
-                            echo "<li class='page-item'><a class='page-link' href='?page=$i&sort=$sort" . (!empty($search) ? "&search=$search" : "") . "'>$i</a></li>";
+                            echo "<li class='page-item'><a class='page-link' href='?page=$i&sort=$sort" . (!empty($search) ? "&search=$search" : "" . (!empty($availability) ? "&availability=$availability" : "") . "'>$i</a></li>";
                         }
                     }
 
                     if ($page < $totalPages) {
-                        echo "<li class='page-item'><a class='page-link' href='?page=" . ($page + 1) . "&sort=$sort" . (!empty($search) ? "&search=$search" : "") . "'>Next</a></li>";
+                        echo "<li class='page-item'><a class='page-link' href='?page=" . ($page + 1) . "&sort=$sort" . (!empty($search) ? "&search=$search" : "" . (!empty($availability) ? "&availability=$availability" : "") . "'>Next</a></li>";
                     } else {
                         echo "<li class='page-item disabled'><a class='page-link'>Next</a></li>";
                     }
@@ -146,7 +153,6 @@
         <link rel="shortcut icon" type="image/x-icon" href="Images/logo.png"/>
         <link rel="stylesheet" href="customCodes/s2.css">
         <style>
-         
             @media (min-width: 768px) {
                 .container {
                     max-width: 95%;
@@ -164,10 +170,14 @@
             .card:hover {
                 transform: translateY(-5px);
             }
-            .sort-dropdown {
+            .filter-container {
+                display: flex;
+                justify-content: flex-end;
+                gap: 20px;
                 margin-bottom: 20px;
+            }
+            .filter-dropdown {
                 max-width: 250px;
-                margin-left: auto;
             }
             .search-container {
                 margin-bottom: 30px;
@@ -176,11 +186,9 @@
                 max-width: 500px;
                 margin: 0 auto;
             }
-   
             .product-card.hidden {
                 display: none;
             }
-        
             #liveSearchResults {
                 position: absolute;
                 width: 100%;
@@ -221,7 +229,7 @@
             <div class="container mb-4">
                 <h1 style='text-align: center;'>Gallery</h1>
                 
-           
+                <!-- Search Box -->
                 <div class="search-container">
                     <form method="get" action="" class="search-box position-relative" id="searchForm">
                         <div class="input-group mb-3">
@@ -237,14 +245,39 @@
                             <?php if(isset($_GET['sort'])): ?>
                                 <input type="hidden" name="sort" value="<?php echo $_GET['sort']; ?>">
                             <?php endif; ?>
+                            <?php if(isset($_GET['availability'])): ?>
+                                <input type="hidden" name="availability" value="<?php echo $_GET['availability']; ?>">
+                            <?php endif; ?>
                         </div>
                         <div id="liveSearchResults"></div>
                     </form>
                 </div>
                 
-        
-                <div class="sort-dropdown">
-                    <form method="get" action="">
+                <!-- Filter and Sort Container -->
+                <div class="filter-container">
+                    <!-- Availability Filter -->
+                    <form method="get" action="" class="filter-dropdown">
+                        <div class="input-group">
+                            <label class="input-group-text" for="availabilitySelect">Filter:</label>
+                            <select class="form-select" id="availabilitySelect" name="availability" onchange="this.form.submit()">
+                                <option value="">All Products</option>
+                                <option value="Available" <?php echo (isset($_GET['availability']) && $_GET['availability'] == 'Available') ? 'selected' : ''; ?>>Available Only</option>
+                                <option value="Not Available" <?php echo (isset($_GET['availability']) && $_GET['availability'] == 'Not Available') ? 'selected' : ''; ?>>Not Available</option>
+                            </select>
+                            <?php if(isset($_GET['page'])): ?>
+                                <input type="hidden" name="page" value="<?php echo $_GET['page']; ?>">
+                            <?php endif; ?>
+                            <?php if(isset($_GET['search'])): ?>
+                                <input type="hidden" name="search" value="<?php echo $_GET['search']; ?>">
+                            <?php endif; ?>
+                            <?php if(isset($_GET['sort'])): ?>
+                                <input type="hidden" name="sort" value="<?php echo $_GET['sort']; ?>">
+                            <?php endif; ?>
+                        </div>
+                    </form>
+                    
+                    <!-- Sort Dropdown -->
+                    <form method="get" action="" class="filter-dropdown">
                         <div class="input-group">
                             <label class="input-group-text" for="sortSelect">Sort by:</label>
                             <select class="form-select" id="sortSelect" name="sort" onchange="this.form.submit()">
@@ -258,6 +291,9 @@
                             <?php endif; ?>
                             <?php if(isset($_GET['search'])): ?>
                                 <input type="hidden" name="search" value="<?php echo $_GET['search']; ?>">
+                            <?php endif; ?>
+                            <?php if(isset($_GET['availability'])): ?>
+                                <input type="hidden" name="availability" value="<?php echo $_GET['availability']; ?>">
                             <?php endif; ?>
                         </div>
                     </form>
@@ -279,7 +315,6 @@
             const productCards = document.querySelectorAll('.product-card');
             const searchForm = document.getElementById('searchForm');
             
-         
             function performLiveSearch() {
                 const searchTerm = searchInput.value.trim().toLowerCase();
                 
@@ -290,11 +325,9 @@
                 
                 const matches = [];
                 
-      
                 productCards.forEach(card => {
                     const cardTitle = card.querySelector('.card-title').textContent.toLowerCase();
                     
-             
                     if (cardTitle.startsWith(searchTerm)) {
                         matches.push({
                             element: card,
@@ -303,7 +336,6 @@
                     }
                 });
                 
-        
                 if (matches.length > 0) {
                     liveSearchResults.innerHTML = '';
                     matches.slice(0, 5).forEach(match => {
@@ -311,7 +343,6 @@
                         resultItem.className = 'live-search-item';
                         resultItem.textContent = match.title;
                         
-                       
                         resultItem.addEventListener('click', function() {
                             searchInput.value = match.title;
                             searchForm.submit();
@@ -334,12 +365,10 @@
                 }
             }
             
-     
             function filterProducts() {
                 const searchTerm = searchInput.value.trim().toLowerCase();
                 
                 if (searchTerm.length === 0) {
-            
                     productCards.forEach(card => {
                         card.classList.remove('hidden');
                     });
@@ -365,27 +394,22 @@
                 }
             }
             
-          
             searchInput.addEventListener('input', function() {
                 performLiveSearch();
-            
             });
             
-          
             searchInput.addEventListener('focus', function() {
                 if (searchInput.value.trim().length > 0) {
                     performLiveSearch();
                 }
             });
             
-    
             document.addEventListener('click', function(e) {
                 if (!searchInput.contains(e.target) && !liveSearchResults.contains(e.target)) {
                     liveSearchResults.style.display = 'none';
                 }
             });
             
-   
             searchInput.addEventListener('keydown', function(e) {
                 const items = liveSearchResults.querySelectorAll('.live-search-item');
                 let currentHighlight = liveSearchResults.querySelector('.live-search-item.highlight');
@@ -424,9 +448,7 @@
                 }
             });
             
-     
             searchForm.addEventListener('submit', function(e) {
-             
                 return true;
             });
             
