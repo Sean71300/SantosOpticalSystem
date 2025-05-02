@@ -9,7 +9,8 @@ $orderSuccess = false;
 $orderDetails = [];
 $errorMessage = '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_order'])) {
+// Process the order if confirmed
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_order'])) {
     $conn = connect();
     $customerId = $_POST['customer_id'];
     $productId = $_POST['product_id'];
@@ -362,7 +363,7 @@ $conn->close();
                         <?php endforeach; ?>
                     </div>
 
-                    <form id="orderForm" method="post">
+                    <form id="orderForm">
                         <input type="hidden" name="customer_id" value="<?= $customerDetails['CustomerID'] ?>">
                         <input type="hidden" name="branch_code" value="<?= $selectedBranch ?>">
                         <input type="hidden" name="product_id" id="selectedProduct">
@@ -375,11 +376,42 @@ $conn->close();
                         </div>
                         
                         <div class="d-flex justify-content-end gap-3 mt-5">
-                            <button type="submit" class="btn btn-primary btn-action" id="continueBtn" name="create_order" disabled>
+                            <button type="button" class="btn btn-primary btn-action" id="continueBtn" disabled onclick="prepareOrder()">
                                 <i class="fas fa-check-circle me-2"></i> Create Order
                             </button>
                         </div>
                     </form>
+
+                    <!-- Hidden form for actual order submission -->
+                    <form id="hiddenOrderForm" method="post" style="display: none;">
+                        <input type="hidden" name="confirm_order" value="1">
+                        <input type="hidden" name="customer_id" id="hiddenCustomerId">
+                        <input type="hidden" name="product_id" id="hiddenProductId">
+                        <input type="hidden" name="quantity" id="hiddenQuantity">
+                        <input type="hidden" name="branch_code" id="hiddenBranchCode">
+                    </form>
+
+                    <!-- Order Confirmation Modal -->
+                    <div class="modal fade" id="confirmOrderModal" tabindex="-1" aria-labelledby="confirmOrderModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header bg-primary text-white">
+                                    <h5 class="modal-title" id="confirmOrderModalLabel">Confirm Order</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>Are you sure you want to create this order?</p>
+                                    <div id="orderSummary">
+                                        <!-- Order summary will be inserted here by JavaScript -->
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="button" class="btn btn-primary" onclick="submitOrder()">Confirm Order</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 <?php else: ?>
                     <div class="alert alert-warning">
                         No products available in this branch. Please check inventory.
@@ -468,101 +500,106 @@ $conn->close();
     </div>
 
     <script>
-    <?php if ($orderSuccess): ?>
-        document.addEventListener('DOMContentLoaded', function() {
-            var successModal = new bootstrap.Modal(document.getElementById('successModal'));
-            successModal.show();
-        });
-    <?php endif; ?>
-
-    function prepareOrder() {
-        const productId = document.getElementById('selectedProduct').value;
-        const quantity = document.getElementById('quantity').value;
-        const customerId = document.querySelector('input[name="customer_id"]').value;
-        const branchCode = document.querySelector('input[name="branch_code"]').value;
-        
-        if (!productId || !quantity) {
-            alert('Please select a product and enter a quantity');
-            return;
-        }
-        
-        // Get the selected product card
-        const productCard = document.querySelector('.product-card.selected');
-        if (!productCard) {
-            alert('Please select a product first');
-            return;
-        }
-        
-        // Get product details safely
-        const productName = productCard.querySelector('h5')?.textContent || 'Unknown Product';
-        const priceElement = productCard.querySelector('p:nth-of-type(4)');
-        const productPrice = priceElement?.textContent.replace('Price: ', '') || '₱0.00';
-        const categoryElement = productCard.querySelector('p:nth-of-type(2) small');
-        const productCategory = categoryElement?.textContent || 'Unknown Category';
-        
-        // Get customer name safely
-        const customerNameElement = document.querySelector('.customer-info h4');
-        const customerName = customerNameElement?.textContent || 'Unknown Customer';
-        
-        // Calculate total
-        const priceValue = parseFloat(productPrice.replace('₱', '').replace(',', '')) || 0;
-        const total = (priceValue * quantity).toFixed(2);
-        
-        // Update confirmation modal content
-        const orderSummary = document.getElementById('orderSummary');
-        orderSummary.innerHTML = `
-            <div class="mb-3">
-                <p><strong>Customer:</strong> ${customerName}</p>
-                <p><strong>Product:</strong> ${productName}</p>
-                <p><strong>Category:</strong> ${productCategory}</p>
-                <p><strong>Quantity:</strong> ${quantity}</p>
-                <p><strong>Unit Price:</strong> ${productPrice}</p>
-                <p><strong>Total:</strong> ₱${total}</p>
-            </div>
-        `;
-        
-        // Set values for hidden form
-        document.getElementById('hiddenCustomerId').value = customerId;
-        document.getElementById('hiddenProductId').value = productId;
-        document.getElementById('hiddenQuantity').value = quantity;
-        document.getElementById('hiddenBranchCode').value = branchCode;
-        
-        // Show confirmation modal
-        const confirmModal = new bootstrap.Modal(document.getElementById('confirmOrderModal'));
-        confirmModal.show();
-    }
-    
-    function submitOrder() {
-        document.getElementById('hiddenOrderForm').submit();
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-        const shapeFilter = document.getElementById('shapeFilter');
-        if (shapeFilter) {
-            shapeFilter.addEventListener('change', function() {
-                const selectedShape = this.value;
-                const productItems = document.querySelectorAll('.product-item');
-                
-                productItems.forEach(item => {
-                    if (selectedShape === '' || item.getAttribute('data-shape') === selectedShape) {
-                        item.style.display = 'block';
-                    } else {
-                        item.style.display = 'none';
-                    }
-                });
+        <?php if ($orderSuccess): ?>
+            document.addEventListener('DOMContentLoaded', function() {
+                var successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                successModal.show();
             });
-        }
-    });
+        <?php endif; ?>
 
-    function selectProduct(element, productId) {
-        document.querySelectorAll('.product-card').forEach(card => {
-            card.classList.remove('selected');
-        });
+        function prepareOrder() {
+            const productId = document.getElementById('selectedProduct').value;
+            const quantity = document.getElementById('quantity').value;
+            const customerId = document.querySelector('input[name="customer_id"]').value;
+            const branchCode = document.querySelector('input[name="branch_code"]').value;
+            
+            if (!productId) {
+                alert('Please select a product first');
+                return;
+            }
+            
+            if (!quantity || quantity < 1) {
+                alert('Please enter a valid quantity');
+                return;
+            }
+            
+            // Get the selected product card
+            const productCard = document.querySelector('.product-card.selected');
+            if (!productCard) {
+                alert('Please select a product first');
+                return;
+            }
+            
+            // Get product details safely
+            const productName = productCard.querySelector('h5')?.textContent || 'Unknown Product';
+            const priceElement = productCard.querySelector('p:nth-of-type(4)');
+            const productPrice = priceElement?.textContent.replace('Price: ', '') || '₱0.00';
+            const categoryElement = productCard.querySelector('p:nth-of-type(2) small');
+            const productCategory = categoryElement?.textContent || 'Unknown Category';
+            
+            // Get customer name safely
+            const customerNameElement = document.querySelector('.customer-info h4');
+            const customerName = customerNameElement?.textContent || 'Unknown Customer';
+            
+            // Calculate total
+            const priceValue = parseFloat(productPrice.replace('₱', '').replace(',', '')) || 0;
+            const total = (priceValue * quantity).toFixed(2);
+            
+            // Update confirmation modal content
+            const orderSummary = document.getElementById('orderSummary');
+            orderSummary.innerHTML = `
+                <div class="mb-3">
+                    <p><strong>Customer:</strong> ${customerName}</p>
+                    <p><strong>Product:</strong> ${productName}</p>
+                    <p><strong>Category:</strong> ${productCategory}</p>
+                    <p><strong>Quantity:</strong> ${quantity}</p>
+                    <p><strong>Unit Price:</strong> ${productPrice}</p>
+                    <p><strong>Total:</strong> ₱${total}</p>
+                </div>
+            `;
+            
+            // Set values for hidden form
+            document.getElementById('hiddenCustomerId').value = customerId;
+            document.getElementById('hiddenProductId').value = productId;
+            document.getElementById('hiddenQuantity').value = quantity;
+            document.getElementById('hiddenBranchCode').value = branchCode;
+            
+            // Show confirmation modal
+            const confirmModal = new bootstrap.Modal(document.getElementById('confirmOrderModal'));
+            confirmModal.show();
+        }
         
-        element.classList.add('selected');
-        document.getElementById('selectedProduct').value = productId;
-        document.getElementById('continueBtn').disabled = false;
-    }
-</script>
+        function submitOrder() {
+            document.getElementById('hiddenOrderForm').submit();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const shapeFilter = document.getElementById('shapeFilter');
+            if (shapeFilter) {
+                shapeFilter.addEventListener('change', function() {
+                    const selectedShape = this.value;
+                    const productItems = document.querySelectorAll('.product-item');
+                    
+                    productItems.forEach(item => {
+                        if (selectedShape === '' || item.getAttribute('data-shape') === selectedShape) {
+                            item.style.display = 'block';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                });
+            }
+        });
+
+        function selectProduct(element, productId) {
+            document.querySelectorAll('.product-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            element.classList.add('selected');
+            document.getElementById('selectedProduct').value = productId;
+            document.getElementById('continueBtn').disabled = false;
+        }
+    </script>
 </body>
 </html>
