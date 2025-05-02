@@ -5,10 +5,9 @@ include_once 'setup.php';
 include 'ActivityTracker.php'; 
 include 'loginChecker.php';
 
-// Database functions
+// Database functions without any joins
 function getOrderHeaders($conn, $search = '', $branch = '', $limit = 10, $offset = 0) {
-    $query = "SELECT Orderhdr_id, CustomerID, BranchCode, Created_dt, Created_by 
-              FROM Order_hdr";
+    $query = "SELECT Orderhdr_id, CustomerID, BranchCode, Created_dt, Created_by FROM Order_hdr";
     
     $where = [];
     $params = [];
@@ -43,43 +42,59 @@ function getOrderHeaders($conn, $search = '', $branch = '', $limit = 10, $offset
     return $stmt->get_result();
 }
 
-function getCustomerName($conn, $customerId) {
+function getCustomerDetails($conn, $customerId) {
     $query = "SELECT CustomerName FROM customer WHERE CustomerID = ?";
     $stmt = $conn->prepare($query);
     $stmt->bind_param('i', $customerId);
     $stmt->execute();
     $result = $stmt->get_result();
-    return $result->fetch_assoc()['CustomerName'] ?? 'Unknown';
+    return $result->fetch_assoc();
 }
 
-function getBranchName($conn, $branchCode) {
+function getBranchDetails($conn, $branchCode) {
     $query = "SELECT BranchName FROM BranchMaster WHERE BranchCode = ?";
     $stmt = $conn->prepare($query);
     $stmt->bind_param('s', $branchCode);
     $stmt->execute();
     $result = $stmt->get_result();
-    return $result->fetch_assoc()['BranchName'] ?? 'Unknown';
+    return $result->fetch_assoc();
 }
 
-function getEmployeeName($conn, $loginName) {
+function getEmployeeDetails($conn, $loginName) {
     $query = "SELECT EmployeeName FROM employee WHERE LoginName = ?";
     $stmt = $conn->prepare($query);
     $stmt->bind_param('s', $loginName);
     $stmt->execute();
     $result = $stmt->get_result();
-    return $result->fetch_assoc()['EmployeeName'] ?? 'Unknown';
+    return $result->fetch_assoc();
 }
 
-function getOrderDetails($conn, $orderId) {
-    $query = "SELECT od.Quantity, p.Price, od.Status 
-              FROM orderDetails od
-              JOIN ProductBranchMaster pbm ON od.ProductBranchID = pbm.ProductBranchID
-              JOIN productMstr p ON pbm.ProductID = p.ProductID
-              WHERE od.OrderHdr_id = ?";
+function getOrderItems($conn, $orderId) {
+    $query = "SELECT ProductBranchID, Quantity, Status FROM orderDetails WHERE OrderHdr_id = ?";
     $stmt = $conn->prepare($query);
     $stmt->bind_param('i', $orderId);
     $stmt->execute();
     return $stmt->get_result();
+}
+
+function getProductPrice($conn, $productBranchId) {
+    $query = "SELECT ProductID FROM ProductBranchMaster WHERE ProductBranchID = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param('i', $productBranchId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $product = $result->fetch_assoc();
+    
+    if (!$product) return 0;
+    
+    $query = "SELECT Price FROM productMstr WHERE ProductID = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param('i', $product['ProductID']);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $price = $result->fetch_assoc();
+    
+    return $price['Price'] ?? 0;
 }
 
 function countOrderHeaders($conn, $search = '', $branch = '') {
@@ -139,20 +154,34 @@ $totalPages = ceil($totalOrders / $ordersPerPage);
 $orders = [];
 while ($header = $orderHeaders->fetch_assoc()) {
     $orderId = $header['Orderhdr_id'];
-    $details = getOrderDetails($conn, $orderId);
     
+    // Get customer details
+    $customer = getCustomerDetails($conn, $header['CustomerID']);
+    $customerName = $customer['CustomerName'] ?? 'Unknown';
+    
+    // Get branch details
+    $branchDetails = getBranchDetails($conn, $header['BranchCode']);
+    $branchName = $branchDetails['BranchName'] ?? 'Unknown';
+    
+    // Get employee details
+    $employee = getEmployeeDetails($conn, $header['Created_by']);
+    $createdBy = $employee['EmployeeName'] ?? 'Unknown';
+    
+    // Get order items and calculate totals
+    $items = getOrderItems($conn, $orderId);
     $itemCount = 0;
     $totalAmount = 0;
     $orderStatus = 'Pending';
     
-    while ($detail = $details->fetch_assoc()) {
+    while ($item = $items->fetch_assoc()) {
         $itemCount++;
-        $totalAmount += $detail['Price'] * $detail['Quantity'];
+        $price = getProductPrice($conn, $item['ProductBranchID']);
+        $totalAmount += $price * $item['Quantity'];
         
-        // Determine order status (if any detail has this status)
-        if ($detail['Status'] === 'Complete') {
+        // Determine order status
+        if ($item['Status'] === 'Complete') {
             $orderStatus = 'Complete';
-        } elseif ($detail['Status'] === 'Cancelled' && $orderStatus !== 'Complete') {
+        } elseif ($item['Status'] === 'Cancelled' && $orderStatus !== 'Complete') {
             $orderStatus = 'Cancelled';
         }
     }
@@ -165,9 +194,9 @@ while ($header = $orderHeaders->fetch_assoc()) {
     $orders[] = [
         'Orderhdr_id' => $orderId,
         'Created_dt' => $header['Created_dt'],
-        'CustomerName' => getCustomerName($conn, $header['CustomerID']),
-        'CreatedBy' => getEmployeeName($conn, $header['Created_by']),
-        'BranchName' => getBranchName($conn, $header['BranchCode']),
+        'CustomerName' => $customerName,
+        'CreatedBy' => $createdBy,
+        'BranchName' => $branchName,
         'ItemCount' => $itemCount,
         'TotalAmount' => $totalAmount,
         'Status' => $orderStatus
