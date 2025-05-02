@@ -501,8 +501,6 @@ $conn->close();
                                 <th>Customer</th>
                                 <th>Branch</th>
                                 <th>Date</th>
-                                <th>Items</th>
-                                <th>Total</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
@@ -513,10 +511,7 @@ $conn->close();
                                     <td><?= htmlspecialchars($order['Orderhdr_id']) ?></td>
                                     <td><?= htmlspecialchars($order['CustomerName']) ?></td>
                                     <td><?= htmlspecialchars($order['BranchName']) ?></td>
-                                    <td><?= date('M j, Y', strtotime($order['Created_dt'])) ?></td>
-                                    <td><?= $order['ItemCount'] ?></td>
-                                    <td>₱<?= number_format($order['TotalAmount'], 2) ?></td>
-                                    <td>
+                                    <td><?= date('M j, Y', strtotime($order['Created_dt'])) ?></td>                                    <td>
                                         <span class="badge 
                                             <?= match($order['Status']) {
                                                 'Complete' => 'badge-complete',
