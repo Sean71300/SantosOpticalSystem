@@ -184,16 +184,63 @@ while ($header = $orderHeaders->fetch_assoc()) {
     }
     
     // Apply status filter if set (now handled in SQL query)
-    $orders[] = [
-        'Orderhdr_id' => $orderId,
-        'Created_dt' => $header['Created_dt'],
-        'CustomerName' => $header['CustomerName'] ?? getCustomerName($conn, $header['CustomerID']),
-        'CreatedBy' => getEmployeeName($conn, $header['Created_by']),
-        'BranchName' => getBranchName($conn, $header['BranchCode']),
-        'ItemCount' => $itemCount,
-        'TotalAmount' => $totalAmount,
-        'Status' => $orderStatus
-    ];
+    $orders = [];
+while ($header = $orderHeaders->fetch_assoc()) {
+    $orderId = $header['Orderhdr_id'];
+    $details = getOrderDetails($conn, $orderId);
+    
+    $itemCount = 0;
+    $totalAmount = getOrderTotal($conn, $orderId); // Get total amount for the order
+    $orderStatus = 'Pending';
+    
+    if ($details->num_rows > 0) {
+        while ($detail = $details->fetch_assoc()) {
+            $itemCount += (int)$detail['Quantity'];
+            
+            // Determine order status
+            if ($detail['Status'] === 'Complete') {
+                $orderStatus = 'Complete';
+            } elseif ($detail['Status'] === 'Cancelled' && $orderStatus !== 'Complete') {
+                $orderStatus = 'Cancelled';
+            }
+        }
+    }
+    
+    // Add order details to the orders array
+    $orders = [];
+    while ($header = $orderHeaders->fetch_assoc()) {
+        $orderId = $header['Orderhdr_id'];
+        $details = getOrderDetails($conn, $orderId);
+        
+        $itemCount = 0;
+        $totalAmount = getOrderTotal($conn, $orderId); // Get total amount for the order
+        $orderStatus = 'Pending';
+        
+        if ($details->num_rows > 0) {
+            while ($detail = $details->fetch_assoc()) {
+                $itemCount += (int)$detail['Quantity'];
+                
+                // Determine order status
+                if ($detail['Status'] === 'Complete') {
+                    $orderStatus = 'Complete';
+                } elseif ($detail['Status'] === 'Cancelled' && $orderStatus !== 'Complete') {
+                    $orderStatus = 'Cancelled';
+                }
+            }
+        }
+        
+        // Add order details to the orders array
+        $orders[] = [
+            'Orderhdr_id' => $orderId,
+            'Created_dt' => $header['Created_dt'],
+            'CustomerName' => $header['CustomerName'],
+            'CreatedBy' => getEmployeeName($conn, $header['Created_by']),
+            'BranchName' => getBranchName($conn, $header['BranchCode']),
+            'ItemCount' => $itemCount,
+            'TotalAmount' => $totalAmount,
+            'Status' => $orderStatus
+        ];
+    }
 }
 
 // Get branches for filter dropdown
@@ -394,7 +441,7 @@ $conn->close();
                                     <td><?= htmlspecialchars($order['BranchName']) ?></td>
                                     <td><?= date('M j, Y', strtotime($order['Created_dt'])) ?></td>
                                     <td><?= $order['ItemCount'] ?></td>
-                                    <td>₱<?= number_format($order['TotalAmount'], 2) ?></td>
+                                    <td>₱<?= number_format($order['TotalAmount'], 2) ?></td> <!-- Display total amount -->
                                     <td>
                                         <span class="badge 
                                             <?= match($order['Status']) {
@@ -407,13 +454,13 @@ $conn->close();
                                     </td>
                                     <td>
                                         <a href="orderDetails.php?id=<?= $order['Orderhdr_id'] ?>" 
-                                           class="btn btn-sm btn-outline-primary">
+                                        class="btn btn-sm btn-outline-primary">
                                             <i class="fas fa-eye"></i> View
                                         </a>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
-                        </tbody>
+                    </tbody>
                     </table>
                 </div>
 
