@@ -184,12 +184,10 @@ while ($header = $orderHeaders->fetch_assoc()) {
             $itemCount += (int)$detail['Quantity'];
             
             if ($detail['Status'] === 'Complete') {
+                $orderStatus = 'Complete';
+            } elseif ($detail['Status'] === 'Cancelled' && $orderStatus !== 'Complete') {
                 $orderStatus = 'Cancelled';
-            } elseif ($detail['Status'] === 'Pending' && $orderStatus !== 'Complete') {
-                $orderStatus = 'Pending';
-            } elseif ($detail['Status'] === 'Cancelled' && $orderStatus !== 'Pending') {
-                $orderStatus = 'Cancelled';
-            }
+            } 
             
         }
     }
@@ -371,8 +369,7 @@ $conn->close();
                             <option value="">All Statuses</option>
                             <option value="Pending" <?php echo ($status == 'Pending' ? 'selected' : ''); ?>>Pending</option>
                             <option value="Complete" <?php echo ($status == 'Complete' ? 'selected' : ''); ?>>Complete</option>
-                            <option value="Cancelled" <?php echo ($status == 'Cancelled' ? 'selected' : ''); ?>>Cancelled</option>
-                        
+                            <option value="Cancelled" <?php echo ($status == 'Cancelled' ? 'selected' : ''); ?>>Cancelled</option>                       
                         </select>
                     </div>
                     <div class="col-md-2 d-flex align-items-end">
