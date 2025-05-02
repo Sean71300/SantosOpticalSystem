@@ -472,10 +472,8 @@ $conn->close();
                     <?php endif; ?>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <a href="order.php?id=<?= $orderDetails['order_id'] ?? '' ?>" class="btn btn-primary">
-                        <i class="fas fa-eye me-2"></i> View Order Details
-                    </a>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                    
                 </div>
             </div>
         </div>
