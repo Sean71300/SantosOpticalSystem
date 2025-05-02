@@ -30,9 +30,19 @@ function getOrderHeaders($conn, $search = '', $branch = '', $status = '', $limit
     }
     
     if (!empty($status)) {
-        // Join with orderDetails for status filtering
-        $query .= " INNER JOIN orderDetails od ON oh.Orderhdr_id = od.OrderHdr_id";
-        $where[] = "od.Status = ?";
+        // Subquery to determine the overall order status
+        $query .= " INNER JOIN (
+                      SELECT OrderHdr_id, 
+                             CASE 
+                                 WHEN SUM(Status = 'Complete') = COUNT(*) THEN 'Complete'
+                                 WHEN SUM(Status = 'Cancelled') = COUNT(*) THEN 'Cancelled'
+                                 ELSE 'Pending'
+                             END AS OverallStatus
+                      FROM orderDetails
+                      GROUP BY OrderHdr_id
+                  ) os ON oh.Orderhdr_id = os.OrderHdr_id";
+        
+        $where[] = "os.OverallStatus = ?";
         $params[] = $status;
         $types .= 's';
     }
@@ -41,7 +51,6 @@ function getOrderHeaders($conn, $search = '', $branch = '', $status = '', $limit
         $query .= " WHERE " . implode(' AND ', $where);
     }
     
-    $query .= " GROUP BY oh.Orderhdr_id, oh.CustomerID, oh.BranchCode, oh.Created_dt, oh.Created_by, c.CustomerName";
     $query .= " ORDER BY oh.Created_dt DESC LIMIT ? OFFSET ?";
     $params[] = $limit;
     $params[] = $offset;
@@ -130,8 +139,19 @@ function countOrderHeaders($conn, $search = '', $branch = '', $status = '') {
     }
     
     if (!empty($status)) {
-        $query .= " INNER JOIN orderDetails od ON oh.Orderhdr_id = od.OrderHdr_id";
-        $where[] = "od.Status = ?";
+        // Subquery to determine the overall order status
+        $query .= " INNER JOIN (
+                      SELECT OrderHdr_id, 
+                             CASE 
+                                 WHEN SUM(Status = 'Complete') = COUNT(*) THEN 'Complete'
+                                 WHEN SUM(Status = 'Cancelled') = COUNT(*) THEN 'Cancelled'
+                                 ELSE 'Pending'
+                             END AS OverallStatus
+                      FROM orderDetails
+                      GROUP BY OrderHdr_id
+                  ) os ON oh.Orderhdr_id = os.OrderHdr_id";
+        
+        $where[] = "os.OverallStatus = ?";
         $params[] = $status;
         $types .= 's';
     }
@@ -149,47 +169,57 @@ function countOrderHeaders($conn, $search = '', $branch = '', $status = '') {
     return $result->fetch_assoc()['total'] ?? 0;
 }
 
-function getAllBranches($conn) {
-    $query = "SELECT BranchCode, BranchName FROM BranchMaster";
-    return $conn->query($query);
-}
+        function getAllBranches($conn) {
+            $query = "SELECT BranchCode, BranchName FROM BranchMaster";
+            return $conn->query($query);
+        }
 
-// Main processing
-$ordersPerPage = 10;
-$currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-$offset = ($currentPage - 1) * $ordersPerPage;
+        // Main processing
+        $ordersPerPage = 10;
+        $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+        $offset = ($currentPage - 1) * $ordersPerPage;
 
-$search = $_GET['search'] ?? '';
-$branch = $_GET['branch'] ?? '';
-$status = $_GET['status'] ?? '';
+        $search = $_GET['search'] ?? '';
+        $branch = $_GET['branch'] ?? '';
+        $status = $_GET['status'] ?? '';
 
-$conn = connect();
+        $conn = connect();
 
-// Get order headers
-$orderHeaders = getOrderHeaders($conn, $search, $branch, $status, $ordersPerPage, $offset);
-$totalOrders = countOrderHeaders($conn, $search, $branch, $status);
-$totalPages = ceil($totalOrders / $ordersPerPage);
+        // Get order headers
+        $orderHeaders = getOrderHeaders($conn, $search, $branch, $status, $ordersPerPage, $offset);
+        $totalOrders = countOrderHeaders($conn, $search, $branch, $status);
+        $totalPages = ceil($totalOrders / $ordersPerPage);
 
-// Process orders to get additional details
-$orders = [];
-while ($header = $orderHeaders->fetch_assoc()) {
-    $orderId = $header['Orderhdr_id'];
-    $details = getOrderDetails($conn, $orderId);
-    
-    $itemCount = 0;
-    $totalAmount = getOrderTotal($conn, $orderId);
-    $orderStatus = 'Pending';
-    
-    if ($details->num_rows > 0) {
-        while ($detail = $details->fetch_assoc()) {
-            $itemCount += (int)$detail['Quantity'];
+        // Process orders to get additional details
+        $orders = [];
+        while ($header = $orderHeaders->fetch_assoc()) {
+            $orderId = $header['Orderhdr_id'];
+            $details = getOrderDetails($conn, $orderId);
             
-            if ($detail['Status'] === 'Complete') {
+            $itemCount = 0;
+            $totalAmount = getOrderTotal($conn, $orderId);
+            // In your main processing code where you build the $orders array:
+        // In your main processing code where you build the $orders array:
+        $orderStatus = 'Pending';
+        $completeCount = 0;
+        $cancelledCount = 0;
+        $totalItems = 0;
+
+        if ($details->num_rows > 0) {
+            while ($detail = $details->fetch_assoc()) {
+                $totalItems++;
+                if ($detail['Status'] === 'Complete') {
+                    $completeCount++;
+                } elseif ($detail['Status'] === 'Cancelled') {
+                    $cancelledCount++;
+                }
+            }
+            
+            if ($completeCount === $totalItems) {
                 $orderStatus = 'Complete';
-            } elseif ($detail['Status'] === 'Cancelled' && $orderStatus !== 'Complete') {
+            } elseif ($cancelledCount === $totalItems) {
                 $orderStatus = 'Cancelled';
-            } 
-            
+            }
         }
     }
     
