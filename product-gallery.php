@@ -3,6 +3,20 @@
     require_once 'connect.php';
     include 'ActivityTracker.php';
 
+    function buildQueryString($page = null, $currentParams = []) {
+        $params = [];
+        
+        if (isset($currentParams['sort'])) $params['sort'] = $currentParams['sort'];
+        if (isset($currentParams['search'])) $params['search'] = $currentParams['search'];
+        if (isset($currentParams['availability'])) $params['availability'] = $currentParams['availability'];
+        
+        if ($page !== null) {
+            $params['page'] = $page;
+        }
+        
+        return '?' . http_build_query($params);
+    }
+
     function pagination() {
         $conn = connect();
 
@@ -114,7 +128,7 @@
                 echo "<div class='d-flex justify-content-center'>";
                     echo "<ul class='pagination'>";
                     if ($page > 1) {
-                        echo "<li class='page-item'><a class='page-link' href='?page=" . ($page - 1) . "&sort=$sort" . (!empty($search) ? "&search=$search" : "") . (!empty($availability) ? "&availability=$availability" : "") . "'>Previous</a></li>";
+                        echo "<li class='page-item'><a class='page-link' href='" . buildQueryString($page - 1, $_GET) . "'>Previous</a></li>";
                     } else {
                         echo "<li class='page-item disabled'><a class='page-link'>Previous</a></li>";
                     }
@@ -123,12 +137,12 @@
                         if ($i == $page) {
                             echo "<li class='page-item active' aria-current='page'><a class='page-link disabled'>$i</a></li>"; 
                         } else {
-                            echo "<li class='page-item'><a class='page-link' href='?page=$i&sort=$sort" . (!empty($search) ? "&search=$search" : "" . (!empty($availability) ? "&availability=$availability" : "") . "'>$i</a></li>";
+                            echo "<li class='page-item'><a class='page-link' href='" . buildQueryString($i, $_GET) . "'>$i</a></li>";
                         }
                     }
 
                     if ($page < $totalPages) {
-                        echo "<li class='page-item'><a class='page-link' href='?page=" . ($page + 1) . "&sort=$sort" . (!empty($search) ? "&search=$search" : "" . (!empty($availability) ? "&availability=$availability" : "") . "'>Next</a></li>";
+                        echo "<li class='page-item'><a class='page-link' href='" . buildQueryString($page + 1, $_GET) . "'>Next</a></li>";
                     } else {
                         echo "<li class='page-item disabled'><a class='page-link'>Next</a></li>";
                     }
@@ -257,6 +271,15 @@
                 <div class="filter-container">
                     <!-- Availability Filter -->
                     <form method="get" action="" class="filter-dropdown">
+                        <?php if(isset($_GET['page'])): ?>
+                            <input type="hidden" name="page" value="<?php echo $_GET['page']; ?>">
+                        <?php endif; ?>
+                        <?php if(isset($_GET['search'])): ?>
+                            <input type="hidden" name="search" value="<?php echo $_GET['search']; ?>">
+                        <?php endif; ?>
+                        <?php if(isset($_GET['sort'])): ?>
+                            <input type="hidden" name="sort" value="<?php echo $_GET['sort']; ?>">
+                        <?php endif; ?>
                         <div class="input-group">
                             <label class="input-group-text" for="availabilitySelect">Filter:</label>
                             <select class="form-select" id="availabilitySelect" name="availability" onchange="this.form.submit()">
@@ -264,20 +287,20 @@
                                 <option value="Available" <?php echo (isset($_GET['availability']) && $_GET['availability'] == 'Available') ? 'selected' : ''; ?>>Available Only</option>
                                 <option value="Not Available" <?php echo (isset($_GET['availability']) && $_GET['availability'] == 'Not Available') ? 'selected' : ''; ?>>Not Available</option>
                             </select>
-                            <?php if(isset($_GET['page'])): ?>
-                                <input type="hidden" name="page" value="<?php echo $_GET['page']; ?>">
-                            <?php endif; ?>
-                            <?php if(isset($_GET['search'])): ?>
-                                <input type="hidden" name="search" value="<?php echo $_GET['search']; ?>">
-                            <?php endif; ?>
-                            <?php if(isset($_GET['sort'])): ?>
-                                <input type="hidden" name="sort" value="<?php echo $_GET['sort']; ?>">
-                            <?php endif; ?>
                         </div>
                     </form>
                     
                     <!-- Sort Dropdown -->
                     <form method="get" action="" class="filter-dropdown">
+                        <?php if(isset($_GET['page'])): ?>
+                            <input type="hidden" name="page" value="<?php echo $_GET['page']; ?>">
+                        <?php endif; ?>
+                        <?php if(isset($_GET['search'])): ?>
+                            <input type="hidden" name="search" value="<?php echo $_GET['search']; ?>">
+                        <?php endif; ?>
+                        <?php if(isset($_GET['availability'])): ?>
+                            <input type="hidden" name="availability" value="<?php echo $_GET['availability']; ?>">
+                        <?php endif; ?>
                         <div class="input-group">
                             <label class="input-group-text" for="sortSelect">Sort by:</label>
                             <select class="form-select" id="sortSelect" name="sort" onchange="this.form.submit()">
@@ -286,15 +309,6 @@
                                 <option value="price_asc" <?php echo (isset($_GET['sort']) && $_GET['sort'] == 'price_asc') ? 'selected' : ''; ?>>Price (Low to High)</option>
                                 <option value="price_desc" <?php echo (isset($_GET['sort']) && $_GET['sort'] == 'price_desc') ? 'selected' : ''; ?>>Price (High to Low)</option>
                             </select>
-                            <?php if(isset($_GET['page'])): ?>
-                                <input type="hidden" name="page" value="<?php echo $_GET['page']; ?>">
-                            <?php endif; ?>
-                            <?php if(isset($_GET['search'])): ?>
-                                <input type="hidden" name="search" value="<?php echo $_GET['search']; ?>">
-                            <?php endif; ?>
-                            <?php if(isset($_GET['availability'])): ?>
-                                <input type="hidden" name="availability" value="<?php echo $_GET['availability']; ?>">
-                            <?php endif; ?>
                         </div>
                     </form>
                 </div>
