@@ -40,7 +40,11 @@
         }
         
         if (!empty($availability)) {
-            $whereConditions[] = "Avail_FL = '" . mysqli_real_escape_string($conn, $availability) . "'";
+            if ($availability == 'Available') {
+                $whereConditions[] = "Avail_FL = 'Available'";
+            } elseif ($availability == 'Not Available') {
+                $whereConditions[] = "Avail_FL != 'Available'";
+            }
         }
         
         if (!empty($whereConditions)) {
@@ -116,7 +120,11 @@
             }
         } else {
             echo "<div class='col-12 py-5 no-results' style='display: flex; justify-content: center; align-items: center; min-height: 300px;'>";
-            echo "<h4 class='text-center'>No products found matching your search.</h4>";
+            if ($availability == 'Not Available') {
+                echo "<h4 class='text-center'>No unavailable products found matching your search.</h4>";
+            } else {
+                echo "<h4 class='text-center'>No products found matching your search.</h4>";
+            }
             echo "</div>";
         }
         
