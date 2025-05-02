@@ -83,14 +83,14 @@ body {
 .text-overlay {
     position: absolute;
     top: 70px; 
-    left: 40px; 
+    left: 70px; 
     color: black;
     font-size: 14px;
     font-weight: normal; 
     padding: 10px;
     padding: 30px;
     padding-top: 30px;
-    margin-right: 550px;
+    margin-right: 650px;
     text-align: justify;
     font-size: 19px;
     text-decoration: none;
