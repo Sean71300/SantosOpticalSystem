@@ -9,25 +9,16 @@ $orderSuccess = false;
 $orderDetails = [];
 $errorMessage = '';
 
-// Store POST data in session if this is the initial submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_order'])) {
-    $_SESSION['pending_order'] = $_POST;
-    $_SESSION['pending_order']['employee_id'] = $_SESSION['id'] ?? null;
-    $_SESSION['pending_order']['created_by'] = $_SESSION['full_name'];
-}
-
 // Process the order if confirmed
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_order'])) {
-    if (isset($_SESSION['pending_order'])) {
-        $pendingOrder = $_SESSION['pending_order'];
-        
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['confirm_order'])) {
         $conn = connect();
-        $customerId = $pendingOrder['customer_id'];
-        $productId = $pendingOrder['product_id'];
-        $quantity = $pendingOrder['quantity'];
-        $branchCode = $pendingOrder['branch_code'];
-        $createdBy = $pendingOrder['created_by'];
-        $employeeId = $pendingOrder['employee_id'];
+        $customerId = $_POST['customer_id'];
+        $productId = $_POST['product_id'];
+        $quantity = $_POST['quantity'];
+        $branchCode = $_POST['branch_code'];
+        $createdBy = $_SESSION['full_name'];
+        $employeeId = $_SESSION['id'] ?? null;
         
         if (empty($customerId) || empty($productId) || empty($quantity) || empty($branchCode)) {
             $errorMessage = "All fields are required!";
@@ -116,8 +107,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_order'])) {
                     $conn->commit();
                     $orderSuccess = true;
                     
-                    // Clear the pending order from session
-                    unset($_SESSION['pending_order']);
                 } else {
                     throw new Exception("Product not found in selected branch inventory!");
                 }
@@ -389,7 +378,7 @@ $conn->close();
                         </div>
                         
                         <div class="d-flex justify-content-end gap-3 mt-5">
-                            <button type="submit" class="btn btn-primary btn-action" id="continueBtn" name="create_order" disabled>
+                            <button type="button" class="btn btn-primary btn-action" id="continueBtn" name="create_order" disabled onclick="prepareOrder()">
                                 <i class="fas fa-check-circle me-2"></i> Create Order
                             </button>
                         </div>
@@ -418,64 +407,25 @@ $conn->close();
                 <div class="modal-body">
                     <p>Are you sure you want to create this order?</p>
                     <div id="orderSummary">
-                        <?php if (isset($_SESSION['pending_order'])): ?>
-                            <?php 
-                                $conn = connect();
-                                $productId = $_SESSION['pending_order']['product_id'];
-                                $quantity = $_SESSION['pending_order']['quantity'];
-                                
-                                $productQuery = "SELECT p.Model, p.Price, p.CategoryType FROM productMstr p WHERE p.ProductID = ?";
-                                $stmt = $conn->prepare($productQuery);
-                                $stmt->bind_param('i', $productId);
-                                $stmt->execute();
-                                $result = $stmt->get_result();
-                                $productData = $result->fetch_assoc();
-                                $stmt->close();
-                                
-                                $customerQuery = "SELECT CustomerName FROM customer WHERE CustomerID = ?";
-                                $stmt = $conn->prepare($customerQuery);
-                                $stmt->bind_param('i', $_SESSION['pending_order']['customer_id']);
-                                $stmt->execute();
-                                $result = $stmt->get_result();
-                                $customerData = $result->fetch_assoc();
-                                $stmt->close();
-                                
-                                $branchQuery = "SELECT BranchName FROM BranchMaster WHERE BranchCode = ?";
-                                $stmt = $conn->prepare($branchQuery);
-                                $stmt->bind_param('s', $_SESSION['pending_order']['branch_code']);
-                                $stmt->execute();
-                                $result = $stmt->get_result();
-                                $branchData = $result->fetch_assoc();
-                                $stmt->close();
-                                
-                                $conn->close();
-                                
-                                if ($productData && $customerData && $branchData):
-                                    $price = (float)str_replace(['₱', ','], '', $productData['Price']);
-                                    $total = $price * $quantity;
-                            ?>
-                                <div class="mb-3">
-                                    <p><strong>Customer:</strong> <?= htmlspecialchars($customerData['CustomerName']) ?></p>
-                                    <p><strong>Branch:</strong> <?= htmlspecialchars($branchData['BranchName']) ?></p>
-                                    <p><strong>Product:</strong> <?= htmlspecialchars($productData['Model']) ?></p>
-                                    <p><strong>Category:</strong> <?= htmlspecialchars($productData['CategoryType']) ?></p>
-                                    <p><strong>Quantity:</strong> <?= $quantity ?></p>
-                                    <p><strong>Unit Price:</strong> <?= htmlspecialchars($productData['Price']) ?></p>
-                                    <p><strong>Total:</strong> ₱<?= number_format($total, 2) ?></p>
-                                </div>
-                            <?php endif; ?>
-                        <?php endif; ?>
+                        <!-- Order summary will be inserted here by JavaScript -->
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <form method="post" style="display: inline;">
-                        <button type="submit" name="confirm_order" class="btn btn-primary">Confirm Order</button>
-                    </form>
+                    <button type="button" class="btn btn-primary" onclick="submitOrder()">Confirm Order</button>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Hidden form for actual order submission -->
+    <form id="hiddenOrderForm" method="post" style="display: none;">
+        <input type="hidden" name="confirm_order" value="1">
+        <input type="hidden" name="customer_id" id="hiddenCustomerId">
+        <input type="hidden" name="product_id" id="hiddenProductId">
+        <input type="hidden" name="quantity" id="hiddenQuantity">
+        <input type="hidden" name="branch_code" id="hiddenBranchCode">
+    </form>
 
     <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -559,6 +509,56 @@ $conn->close();
             });
         <?php endif; ?>
 
+        function prepareOrder() {
+            const productId = document.getElementById('selectedProduct').value;
+            const quantity = document.getElementById('quantity').value;
+            const customerId = document.querySelector('input[name="customer_id"]').value;
+            const branchCode = document.querySelector('input[name="branch_code"]').value;
+            
+            if (!productId || !quantity) {
+                alert('Please select a product and enter a quantity');
+                return;
+            }
+            
+            // Get product details for display
+            const productCard = document.querySelector(`.product-card[onclick*="${productId}"]`);
+            const productName = productCard.querySelector('h5').textContent;
+            const productPrice = productCard.querySelector('p:nth-of-type(4)').textContent.replace('Price: ', '');
+            const productCategory = productCard.querySelector('p:nth-of-type(2) small').textContent;
+            const customerName = document.querySelector('.customer-info h4').textContent;
+            
+            // Calculate total
+            const priceValue = parseFloat(productPrice.replace('₱', '').replace(',', ''));
+            const total = (priceValue * quantity).toFixed(2);
+            
+            // Update confirmation modal content
+            const orderSummary = document.getElementById('orderSummary');
+            orderSummary.innerHTML = `
+                <div class="mb-3">
+                    <p><strong>Customer:</strong> ${customerName}</p>
+                    <p><strong>Product:</strong> ${productName}</p>
+                    <p><strong>Category:</strong> ${productCategory}</p>
+                    <p><strong>Quantity:</strong> ${quantity}</p>
+                    <p><strong>Unit Price:</strong> ${productPrice}</p>
+                    <p><strong>Total:</strong> ₱${total}</p>
+                </div>
+            `;
+            
+            // Set values for hidden form
+            document.getElementById('hiddenCustomerId').value = customerId;
+            document.getElementById('hiddenProductId').value = productId;
+            document.getElementById('hiddenQuantity').value = quantity;
+            document.getElementById('hiddenBranchCode').value = branchCode;
+            
+            // Show confirmation modal
+            const confirmModal = new bootstrap.Modal(document.getElementById('confirmOrderModal'));
+            confirmModal.show();
+        }
+        
+        function submitOrder() {
+            document.getElementById('hiddenOrderForm').submit();
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             const shapeFilter = document.getElementById('shapeFilter');
             if (shapeFilter) {
@@ -573,27 +573,6 @@ $conn->close();
                             item.style.display = 'none';
                         }
                     });
-                });
-            }
-
-            // Handle order form submission to show confirmation modal
-            const orderForm = document.getElementById('orderForm');
-            if (orderForm) {
-                orderForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    
-                    // Validate form
-                    const productId = document.getElementById('selectedProduct').value;
-                    const quantity = document.getElementById('quantity').value;
-                    
-                    if (!productId || !quantity) {
-                        alert('Please select a product and enter a quantity');
-                        return;
-                    }
-                    
-                    // Show confirmation modal
-                    const confirmModal = new bootstrap.Modal(document.getElementById('confirmOrderModal'));
-                    confirmModal.show();
                 });
             }
         });
