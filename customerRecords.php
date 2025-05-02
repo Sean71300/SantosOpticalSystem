@@ -102,6 +102,18 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                     </a>            
                 </div>
                 
+                <div class="table-instructions alert alert-info" style="margin-bottom: 20px; padding: 10px 15px; border-radius: 4px;">
+                    <strong>Instructions:</strong>
+                    <ul style="margin-bottom: 0; padding-left: 20px;">
+                        <li>To add a customer, click the button at the top right.</li>
+                        <?php if ($isAdmin): ?>
+                            <li>To edit or delete customer, click the Profile or Delete button at the 'Actions' column.</li>
+                        <?php endif; ?>
+                        <li>To check their order, click the Order button at the 'Actions' column.</li>
+                        <li>Click any column header to sort the table in ascending/descending order.</li>
+                    </ul>
+                </div>
+                
                 <table class="table table-hover text-center">
                     <thead class="table-light">
                         <tr>

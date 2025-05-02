@@ -2,8 +2,8 @@
 require_once 'connect.php';
 include 'ActivityTracker.php';
 include 'loginChecker.php';
-
 include 'order-functions.php';
+
 ?>
 
 <!DOCTYPE html>
