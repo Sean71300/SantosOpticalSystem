@@ -22,7 +22,7 @@ if (isset($_SESSION['LAST_ACTIVITY'])) {
 // Update last activity time stamp
 $_SESSION['LAST_ACTIVITY'] = time();
 
-class ActivityTracker {
+class ActivityTracker1 {
     public static function logActivity($employeeID, $targetID, $targetType, $actionType, $description) {
         // Your existing implementation
         $conn = connect();

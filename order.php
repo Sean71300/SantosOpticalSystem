@@ -1,5 +1,5 @@
 <?php
-
+// Enable full error reporting at the top
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -8,65 +8,113 @@ include 'ActivityTracker.php';
 include 'loginChecker.php';
 include 'order-functions.php';
 
-
-$ordersPerPage = 10;
-$currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-$offset = ($currentPage - 1) * $ordersPerPage;
-
-$query = "SELECT o.Orderhdr_id, o.CustomerID, o.Created_dt, o.Status,
-                 c.CustomerName, e.EmployeeName as CreatedBy
-          FROM Order_hdr o
-          JOIN customer c ON o.CustomerID = c.CustomerID
-          JOIN employee e ON o.Created_by = e.EmployeeID";
-
-$where = [];
-$params = [];
-$types = '';
-
-if (isset($_GET['search']) && !empty($_GET['search'])) {
-    $where[] = "(c.CustomerName LIKE ? OR o.Orderhdr_id LIKE ?)";
-    $params[] = '%' . $_GET['search'] . '%';
-    $params[] = '%' . $_GET['search'] . '%';
-    $types .= 'ss';
+// Debug function
+function debug_log($message) {
+    file_put_contents('debug.log', date('Y-m-d H:i:s') . " - " . $message . "\n", FILE_APPEND);
 }
 
-if (isset($_GET['status']) && !empty($_GET['status'])) {
-    $where[] = "o.Status = ?";
-    $params[] = $_GET['status'];
-    $types .= 's';
+try {
+    $ordersPerPage = 10;
+    $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+    $offset = ($currentPage - 1) * $ordersPerPage;
+
+    // Base query
+    $query = "SELECT o.Orderhdr_id, o.CustomerID, o.Created_dt, o.Status,
+                     c.CustomerName, e.EmployeeName as CreatedBy
+              FROM Order_hdr o
+              JOIN customer c ON o.CustomerID = c.CustomerID
+              JOIN employee e ON o.Created_by = e.EmployeeID";
+
+    $where = [];
+    $params = [];
+    $types = '';
+
+    // Search filter
+    if (isset($_GET['search']) && !empty($_GET['search'])) {
+        $where[] = "(c.CustomerName LIKE ? OR o.Orderhdr_id LIKE ?)";
+        $params[] = '%' . $_GET['search'] . '%';
+        $params[] = '%' . $_GET['search'] . '%';
+        $types .= 'ss';
+    }
+
+    // Status filter
+    if (isset($_GET['status']) && !empty($_GET['status'])) {
+        $where[] = "o.Status = ?";
+        $params[] = $_GET['status'];
+        $types .= 's';
+    }
+
+    // Add WHERE clause if filters exist
+    if (!empty($where)) {
+        $query .= " WHERE " . implode(' AND ', $where);
+    }
+
+    // Get total count of orders
+    $conn = connect();
+    if (!$conn) {
+        throw new Exception("Database connection failed");
+    }
+
+    $totalQuery = "SELECT COUNT(*) as total FROM Order_hdr o";
+    if (!empty($where)) {
+        $totalQuery .= " WHERE " . implode(' AND ', $where);
+    }
+
+    debug_log("Total Query: " . $totalQuery);
+    debug_log("Params: " . print_r($params, true));
+
+    $stmt = $conn->prepare($totalQuery);
+    if (!$stmt) {
+        throw new Exception("Prepare failed: " . $conn->error);
+    }
+
+    if (!empty($params)) {
+        $stmt->bind_param($types, ...$params);
+    }
+
+    if (!$stmt->execute()) {
+        throw new Exception("Execute failed: " . $stmt->error);
+    }
+
+    $totalResult = $stmt->get_result();
+    $totalOrders = $totalResult->fetch_assoc()['total'];
+    $totalPages = ceil($totalOrders / $ordersPerPage);
+    $stmt->close();
+
+    // Add pagination to main query
+    $query .= " ORDER BY o.Created_dt DESC LIMIT ? OFFSET ?";
+    $types .= 'ii';
+    $params[] = $ordersPerPage;
+    $params[] = $offset;
+
+    debug_log("Main Query: " . $query);
+    debug_log("Final Params: " . print_r($params, true));
+
+    $stmt = $conn->prepare($query);
+    if (!$stmt) {
+        throw new Exception("Prepare failed: " . $conn->error);
+    }
+
+    if (!$stmt->bind_param($types, ...$params)) {
+        throw new Exception("Bind failed: " . $stmt->error);
+    }
+
+    if (!$stmt->execute()) {
+        throw new Exception("Execute failed: " . $stmt->error);
+    }
+
+    $ordersResult = $stmt->get_result();
+    $stmt->close();
+    $conn->close();
+
+    // Status options for filter
+    $statusOptions = ['Pending', 'Processing', 'Completed', 'Cancelled'];
+
+} catch (Exception $e) {
+    // Log the error and display a user-friendly message
+    debug_log("Error: " . $e->getMessage());
+    die("<div class='alert alert-danger'>An error occurred. Please try again later. Error details have been logged.</div>");
 }
-
-if (!empty($where)) {
-    $query .= " WHERE " . implode(' AND ', $where);
-}
-
-$conn = connect();
-$totalQuery = "SELECT COUNT(*) as total FROM Order_hdr o" . (!empty($where) ? " WHERE " . implode(' AND ', $where) : "");
-$stmt = $conn->prepare($totalQuery);
-
-if (!empty($params)) {
-    $stmt->bind_param($types, ...$params);
-}
-
-$stmt->execute();
-$totalResult = $stmt->get_result();
-$totalOrders = $totalResult->fetch_assoc()['total'];
-$totalPages = ceil($totalOrders / $ordersPerPage);
-$stmt->close();
-
-$query .= " ORDER BY o.Created_dt DESC LIMIT ? OFFSET ?";
-$types .= 'ii';
-$params[] = $ordersPerPage;
-$params[] = $offset;
-
-$stmt = $conn->prepare($query);
-$stmt->bind_param($types, ...$params);
-$stmt->execute();
-$ordersResult = $stmt->get_result();
-$conn->close();
-
-// Get status options for filter
-$statusOptions = ['Pending', 'Processing', 'Completed', 'Cancelled'];
 ?>
 
 <!DOCTYPE html>
