@@ -18,22 +18,7 @@ function getOrders($conn, $search, $branch, $status, $limit, $offset) {
               LEFT JOIN orderDetails od ON o.Orderhdr_id = od.OrderHdr_id
               LEFT JOIN ProductBranchMaster pbm ON od.ProductBranchID = pbm.ProductBranchID
               LEFT JOIN productMstr p ON pbm.ProductID = p.ProductID";
-    
-    $where = [];
-    $types = "";function getOrders($conn, $search, $branch, $status, $limit, $offset) {
-        $query = "SELECT o.Orderhdr_id, o.Created_dt, c.CustomerName, 
-                         e.EmployeeName as CreatedBy, b.BranchName,
-                         COUNT(od.OrderDtlID) as ItemCount,
-                         SUM(p.Price * od.Quantity) as TotalAmount,
-                         MAX(od.Status) as Status
-                  FROM Order_hdr o
-                  JOIN customer c ON o.CustomerID = c.CustomerID
-                  JOIN employee e ON o.Created_by = e.LoginName
-                  JOIN BranchMaster b ON o.BranchCode = b.BranchCode
-                  LEFT JOIN orderDetails od ON o.Orderhdr_id = od.OrderHdr_id
-                  LEFT JOIN ProductBranchMaster pbm ON od.ProductBranchID = pbm.ProductBranchID
-                  LEFT JOIN productMstr p ON pbm.ProductID = p.ProductID";
-        
+            
         $where = [];
         $types = "";
         $params = [];
