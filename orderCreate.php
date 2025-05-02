@@ -33,48 +33,35 @@ $products_result = $conn->query($products_query);
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_order'])) {
-    $selected_products = $_POST['products'] ?? [];
-    $quantities = $_POST['quantities'] ?? [];
+    $product_id = $_POST['product_id'] ?? null;
+    $quantity = $_POST['quantity'] ?? 1;
     $branch_code = $_POST['branch_code'];
     
-    if (empty($selected_products)) {
-        $errorMessage = "Please select at least one product.";
+    if (empty($product_id)) {
+        $errorMessage = "Please select a product.";
     } else {
         // Start transaction
         $conn->begin_transaction();
         
         try {
-            $unavailable_products = [];
+            // Check product availability at branch
+            $check_query = "SELECT Stocks, ProductBranchID FROM ProductBranchMaster 
+                           WHERE ProductID = ? AND BranchCode = ?";
+            $stmt = $conn->prepare($check_query);
+            $stmt->bind_param("ii", $product_id, $branch_code);
+            $stmt->execute();
+            $check_result = $stmt->get_result();
             
-            // First pass: Check all products for availability
-            foreach ($selected_products as $index => $product_id) {
-                $quantity = $quantities[$index];
-                
-                // Check product availability at branch
-                $check_query = "SELECT Stocks FROM ProductBranchMaster 
-                               WHERE ProductID = ? AND BranchCode = ?";
-                $stmt = $conn->prepare($check_query);
-                $stmt->bind_param("ii", $product_id, $branch_code);
-                $stmt->execute();
-                $check_result = $stmt->get_result();
-                
-                if ($check_result->num_rows === 0) {
-                    $unavailable_products[] = $product_id;
-                    continue;
-                }
-                
-                $stock_row = $check_result->fetch_assoc();
-                if ($quantity > $stock_row['Stocks']) {
-                    $unavailable_products[] = $product_id;
-                }
+            if ($check_result->num_rows === 0) {
+                throw new Exception("Selected product is not available at the chosen branch");
             }
             
-            if (!empty($unavailable_products)) {
-                $product_ids = implode(", ", $unavailable_products);
-                throw new Exception("The following products are not available at selected branch: $product_ids");
+            $stock_row = $check_result->fetch_assoc();
+            if ($quantity > $stock_row['Stocks']) {
+                throw new Exception("Not enough stock for selected product");
             }
             
-            // Second pass: Process the order if all products are available
+            // Create order header
             $order_hdr_query = "INSERT INTO Order_hdr (CustomerID, BranchCode, Created_by) 
                                 VALUES (?, ?, ?)";
             $stmt = $conn->prepare($order_hdr_query);
@@ -82,33 +69,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_order'])) {
             $stmt->execute();
             $order_id = $conn->insert_id;
             
-            foreach ($selected_products as $index => $product_id) {
-                $quantity = $quantities[$index];
-                
-                $product_branch_query = "SELECT ProductBranchID FROM ProductBranchMaster 
-                                       WHERE ProductID = ? AND BranchCode = ?";
-                $stmt = $conn->prepare($product_branch_query);
-                $stmt->bind_param("ii", $product_id, $branch_code);
-                $stmt->execute();
-                $pb_result = $stmt->get_result();
-                $pb_row = $pb_result->fetch_assoc();
-                $product_branch_id = $pb_row['ProductBranchID'];
-                
-                $order_detail_query = "INSERT INTO orderDetails 
-                                      (OrderHdr_id, ProductBranchID, Quantity, ActivityCode, Status) 
-                                      VALUES (?, ?, ?, 2, 'Pending')";
-                $stmt = $conn->prepare($order_detail_query);
-                $stmt->bind_param("iii", $order_id, $product_branch_id, $quantity);
-                $stmt->execute();
-                
-                $update_stock_query = "UPDATE ProductBranchMaster 
-                                      SET Stocks = Stocks - ? 
-                                      WHERE ProductBranchID = ?";
-                $stmt = $conn->prepare($update_stock_query);
-                $stmt->bind_param("ii", $quantity, $product_branch_id);
-                $stmt->execute();
-            }
+            // Add order detail
+            $order_detail_query = "INSERT INTO orderDetails 
+                                  (OrderHdr_id, ProductBranchID, Quantity, ActivityCode, Status) 
+                                  VALUES (?, ?, ?, 2, 'Pending')";
+            $stmt = $conn->prepare($order_detail_query);
+            $stmt->bind_param("iii", $order_id, $stock_row['ProductBranchID'], $quantity);
+            $stmt->execute();
             
+            // Update stock
+            $update_stock_query = "UPDATE ProductBranchMaster 
+                                  SET Stocks = Stocks - ? 
+                                  WHERE ProductBranchID = ?";
+            $stmt = $conn->prepare($update_stock_query);
+            $stmt->bind_param("ii", $quantity, $stock_row['ProductBranchID']);
+            $stmt->execute();
+            
+            // Log the activity
             $activity = new ActivityTracker();
             $activity->logActivity(
                 $_SESSION['EmployeeID'],
@@ -157,7 +134,6 @@ function getBrandName($brand_id) {
             background-color: #f5f7fa;
             display: flex;
             min-height: 100vh;
-            flex-direction: column;
         }
         .main-content {
             margin-left: 250px;
@@ -169,9 +145,8 @@ function getBrandName($brand_id) {
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             padding: 30px;
-            height: calc(100vh - 100px);
-            display: flex;
-            flex-direction: column;
+            max-height: calc(100vh - 100px);
+            overflow-y: auto;
         }
         .branch-select-row {
             display: flex;
@@ -182,14 +157,14 @@ function getBrandName($brand_id) {
         .branch-select-col {
             flex-grow: 1;
         }
-        .products-container {
-            flex: 1;
-            overflow-y: auto;
-            margin-top: 15px;
+        .product-container {
+            margin-top: 20px;
         }
         .product-card {
-            height: 100%;
-            position: relative;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
             cursor: pointer;
             transition: all 0.3s;
         }
@@ -200,18 +175,15 @@ function getBrandName($brand_id) {
         .product-img {
             height: 150px;
             object-fit: contain;
-            padding: 15px;
+            display: block;
+            margin: 0 auto 15px;
         }
         .quantity-control {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
+            margin-top: 15px;
             display: none;
         }
         .product-card.selected .quantity-control {
-            display: flex;
-            align-items: center;
-            gap: 5px;
+            display: block;
         }
         .customer-notes {
             background-color: #f8f9fa;
@@ -299,47 +271,39 @@ function getBrandName($brand_id) {
                     </button>
                 </div>
 
-                <div class="card">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0">Available Products</h5>
-                    </div>
-                    <div class="card-body products-container">
-                        <?php if ($products_result->num_rows > 0): ?>
-                            <div class="row row-cols-1 row-cols-md-3 g-4">
-                                <?php $products_result->data_seek(0); ?>
-                                <?php while ($product = $products_result->fetch_assoc()): ?>
-                                    <div class="col">
-                                        <div class="card product-card" data-product-id="<?= $product['ProductID'] ?>">
-                                            <img src="<?= htmlspecialchars($product['ProductImage']) ?>" 
-                                                 class="product-img card-img-top" 
-                                                 alt="<?= htmlspecialchars($product['Model']) ?>">
-                                            <div class="card-body">
-                                                <h5 class="card-title"><?= htmlspecialchars($product['Model']) ?></h5>
-                                                <p class="card-text">
-                                                    <strong>Category:</strong> <?= htmlspecialchars($product['CategoryType']) ?><br>
-                                                    <strong>Brand:</strong> <?= htmlspecialchars(getBrandName($product['BrandID'])) ?><br>
-                                                    <strong>Price:</strong> <?= htmlspecialchars($product['Price']) ?><br>
-                                                    <span class="stock-info" id="stock-<?= $product['ProductID'] ?>">
-                                                        <strong>Stocks:</strong> Select branch and check availability
-                                                    </span>
-                                                </p>
-                                                <div class="quantity-control">
-                                                    <button type="button" class="btn btn-sm btn-outline-secondary quantity-decrease">-</button>
-                                                    <input type="number" class="form-control form-control-sm quantity-input" 
-                                                           name="quantities[]" min="1" value="1" 
-                                                           data-product-id="<?= $product['ProductID'] ?>">
-                                                    <button type="button" class="btn btn-sm btn-outline-secondary quantity-increase">+</button>
-                                                    <input type="hidden" name="products[]" value="<?= $product['ProductID'] ?>">
-                                                </div>
-                                            </div>
+                <div class="product-container">
+                    <h5 class="mb-3">Available Products</h5>
+                    <?php if ($products_result->num_rows > 0): ?>
+                        <div class="row">
+                            <?php $products_result->data_seek(0); ?>
+                            <?php while ($product = $products_result->fetch_assoc()): ?>
+                                <div class="col-md-6 mb-3">
+                                    <div class="product-card" data-product-id="<?= $product['ProductID'] ?>">
+                                        <img src="<?= htmlspecialchars($product['ProductImage']) ?>" 
+                                             class="product-img" 
+                                             alt="<?= htmlspecialchars($product['Model']) ?>">
+                                        <h5><?= htmlspecialchars($product['Model']) ?></h5>
+                                        <p>
+                                            <strong>Category:</strong> <?= htmlspecialchars($product['CategoryType']) ?><br>
+                                            <strong>Brand:</strong> <?= htmlspecialchars(getBrandName($product['BrandID'])) ?><br>
+                                            <strong>Price:</strong> <?= htmlspecialchars($product['Price']) ?><br>
+                                            <span class="stock-info" id="stock-<?= $product['ProductID'] ?>">
+                                                <strong>Stocks:</strong> Select branch and check availability
+                                            </span>
+                                        </p>
+                                        <div class="quantity-control">
+                                            <label class="form-label">Quantity</label>
+                                            <input type="number" class="form-control" 
+                                                   name="quantity" min="1" value="1">
+                                            <input type="hidden" name="product_id" value="<?= $product['ProductID'] ?>">
                                         </div>
                                     </div>
-                                <?php endwhile; ?>
-                            </div>
-                        <?php else: ?>
-                            <div class="alert alert-info">No available products found.</div>
-                        <?php endif; ?>
-                    </div>
+                                </div>
+                            <?php endwhile; ?>
+                        </div>
+                    <?php else: ?>
+                        <div class="alert alert-info">No available products found.</div>
+                    <?php endif; ?>
                 </div>
 
                 <div class="d-flex justify-content-end mt-4">
@@ -352,31 +316,19 @@ function getBrandName($brand_id) {
     </div>
 
     <script>
-        // Product selection
+        // Single product selection
+        let selectedProduct = null;
+        
         document.querySelectorAll('.product-card').forEach(card => {
-            card.addEventListener('click', function(e) {
-                if (!e.target.closest('.quantity-control')) {
-                    this.classList.toggle('selected');
-                    const input = this.querySelector('input[name="products[]"]');
-                    input.disabled = !this.classList.contains('selected');
+            card.addEventListener('click', function() {
+                if (selectedProduct) {
+                    selectedProduct.classList.remove('selected');
+                    selectedProduct.querySelector('.quantity-control').style.display = 'none';
                 }
-            });
-        });
-
-        // Quantity controls
-        document.querySelectorAll('.quantity-increase').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const input = this.previousElementSibling;
-                input.value = parseInt(input.value) + 1;
-            });
-        });
-
-        document.querySelectorAll('.quantity-decrease').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const input = this.nextElementSibling;
-                if (parseInt(input.value) > 1) {
-                    input.value = parseInt(input.value) - 1;
-                }
+                
+                this.classList.add('selected');
+                this.querySelector('.quantity-control').style.display = 'block';
+                selectedProduct = this;
             });
         });
 
@@ -391,21 +343,22 @@ function getBrandName($brand_id) {
             document.querySelectorAll('.product-card').forEach(card => {
                 const productId = card.dataset.productId;
                 const stockElement = document.getElementById(`stock-${productId}`);
+                stockElement.innerHTML = `<strong>Stocks:</strong> Checking...`;
                 
                 fetch(`get_stock.php?product_id=${productId}&branch_code=${branchCode}`)
                     .then(response => {
-                        if (!response.ok) throw new Error('Network error');
+                        if (!response.ok) throw new Error('Network response was not ok');
                         return response.json();
                     })
                     .then(data => {
                         if (data.error) {
-                            stockElement.innerHTML = `<strong>Stocks:</strong> Error: ${data.error}`;
+                            stockElement.innerHTML = `<strong>Stocks:</strong> ${data.error}`;
                         } else if (data.stock !== undefined) {
                             stockElement.innerHTML = `<strong>Stocks:</strong> ${data.stock}`;
                             
                             // Update quantity input max if product is selected
                             if (card.classList.contains('selected')) {
-                                const quantityInput = card.querySelector('.quantity-input');
+                                const quantityInput = card.querySelector('input[name="quantity"]');
                                 quantityInput.max = data.stock;
                                 if (quantityInput.value > data.stock) {
                                     quantityInput.value = data.stock;
@@ -417,7 +370,7 @@ function getBrandName($brand_id) {
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        stockElement.innerHTML = `<strong>Stocks:</strong> Error loading`;
+                        stockElement.innerHTML = `<strong>Stocks:</strong> Error loading stock`;
                     });
             });
         });
