@@ -12,7 +12,6 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
     <title>Customer Records</title>
     <head>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
         <link rel="stylesheet" href="customCodes/custom.css">
         <link rel="shortcut icon" type="image/x-icon" href="Images/logo.png"/>
@@ -339,27 +338,34 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                     });
                 });
                 
-                // Medical record modal functionality
-                document.querySelectorAll('[data-bs-toggle="modal"][data-bs-target="#addMedicalRecordModal"]').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const customerID = this.getAttribute('data-customer-id');
+                document.addEventListener('DOMContentLoaded', function() {
+                // Medical record modal functionality - use event delegation
+                document.body.addEventListener('click', function(e) {
+                    if (e.target.closest('[data-bs-toggle="modal"][data-bs-target="#addMedicalRecordModal"]')) {
+                        const button = e.target.closest('[data-bs-toggle="modal"]');
+                        const customerID = button.getAttribute('data-customer-id');
                         document.getElementById('medicalRecordCustomerID').value = customerID;
                         
                         // Set today's date as default
                         const today = new Date().toISOString().split('T')[0];
                         document.getElementById('visit_date').value = today;
-                        
-                        // Clear other fields
-                        document.getElementById('medicalRecordForm').reset();
-                    });
+                    }
                 });
-                
+
                 // Save button handler
-                document.getElementById('saveMedicalRecord').addEventListener('click', function() {
+                document.getElementById('saveMedicalRecord')?.addEventListener('click', function() {
                     // Implement save functionality here
-                    alert('Save functionality will be implemented next');
+                    console.log('Save medical record functionality');
                 });
             });
         </script>
+
+        <!-- Load jQuery first -->
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <!-- Then load Bootstrap bundle (which includes Popper.js) -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+        <!-- Then load other scripts -->
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script src="customCodes/custom.js"></script>
     </body>
 </html>
