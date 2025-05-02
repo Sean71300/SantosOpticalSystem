@@ -44,6 +44,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_order'])) {
         $conn->begin_transaction();
         
         try {
+            // Verify all products are available at selected branch before proceeding
+            foreach ($selected_products as $index => $product_id) {
+                $quantity = $quantities[$index];
+                
+                // Check product availability at branch
+                $check_query = "SELECT Stocks FROM ProductBranchMaster 
+                               WHERE ProductID = ? AND BranchCode = ?";
+                $stmt = $conn->prepare($check_query);
+                $stmt->bind_param("ii", $product_id, $branch_code);
+                $stmt->execute();
+                $check_result = $stmt->get_result();
+                
+                if ($check_result->num_rows === 0) {
+                    throw new Exception("Product ID $product_id not available at selected branch");
+                }
+                
+                $stock_row = $check_result->fetch_assoc();
+                if ($quantity > $stock_row['Stocks']) {
+                    throw new Exception("Not enough stock for product ID: $product_id");
+                }
+            }
+            
             // Create order header
             $order_hdr_query = "INSERT INTO Order_hdr (CustomerID, BranchCode, Created_by) 
                                 VALUES (?, ?, ?)";
@@ -56,41 +78,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_order'])) {
             foreach ($selected_products as $index => $product_id) {
                 $quantity = $quantities[$index];
                 
-                // Get product branch info
-                $product_branch_query = "SELECT * FROM ProductBranchMaster 
+                // Get product branch ID (we already verified it exists)
+                $product_branch_query = "SELECT ProductBranchID FROM ProductBranchMaster 
                                        WHERE ProductID = ? AND BranchCode = ?";
                 $stmt = $conn->prepare($product_branch_query);
                 $stmt->bind_param("ii", $product_id, $branch_code);
                 $stmt->execute();
                 $pb_result = $stmt->get_result();
+                $pb_row = $pb_result->fetch_assoc();
+                $product_branch_id = $pb_row['ProductBranchID'];
                 
-                if ($pb_result->num_rows > 0) {
-                    $pb_row = $pb_result->fetch_assoc();
-                    $product_branch_id = $pb_row['ProductBranchID'];
-                    $current_stock = $pb_row['Stocks'];
-                    
-                    if ($quantity > $current_stock) {
-                        throw new Exception("Not enough stock for product ID: $product_id");
-                    }
-                    
-                    // Insert order detail
-                    $order_detail_query = "INSERT INTO orderDetails 
-                                          (OrderHdr_id, ProductBranchID, Quantity, ActivityCode, Status) 
-                                          VALUES (?, ?, ?, 2, 'Pending')";
-                    $stmt = $conn->prepare($order_detail_query);
-                    $stmt->bind_param("iii", $order_id, $product_branch_id, $quantity);
-                    $stmt->execute();
-                    
-                    // Update stock
-                    $update_stock_query = "UPDATE ProductBranchMaster 
-                                          SET Stocks = Stocks - ? 
-                                          WHERE ProductBranchID = ?";
-                    $stmt = $conn->prepare($update_stock_query);
-                    $stmt->bind_param("ii", $quantity, $product_branch_id);
-                    $stmt->execute();
-                } else {
-                    throw new Exception("Product not available at selected branch");
-                }
+                // Insert order detail
+                $order_detail_query = "INSERT INTO orderDetails 
+                                      (OrderHdr_id, ProductBranchID, Quantity, ActivityCode, Status) 
+                                      VALUES (?, ?, ?, 2, 'Pending')";
+                $stmt = $conn->prepare($order_detail_query);
+                $stmt->bind_param("iii", $order_id, $product_branch_id, $quantity);
+                $stmt->execute();
+                
+                // Update stock
+                $update_stock_query = "UPDATE ProductBranchMaster 
+                                      SET Stocks = Stocks - ? 
+                                      WHERE ProductBranchID = ?";
+                $stmt = $conn->prepare($update_stock_query);
+                $stmt->bind_param("ii", $quantity, $product_branch_id);
+                $stmt->execute();
             }
             
             // Log the activity
@@ -107,6 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_order'])) {
             $conn->commit();
             
             $successMessage = "Order created successfully!";
+            // Optionally redirect to order details page
             // header("Location: order.php?order_id=$order_id");
             // exit();
         } catch (Exception $e) {
@@ -225,6 +238,7 @@ function getProductStock($product_id, $branch_code) {
             border: 1px solid #dee2e6;
             border-radius: 8px;
             overflow: hidden;
+            height: 100%;
         }
         .product-card:hover {
             transform: translateY(-5px);
@@ -247,6 +261,12 @@ function getProductStock($product_id, $branch_code) {
         .product-card.selected .quantity-input {
             display: block;
         }
+        .customer-info-card {
+            margin-bottom: 20px;
+        }
+        .branch-select {
+            margin-bottom: 20px;
+        }
         @media (max-width: 768px) {
             .sidebar {
                 width: 100%;
@@ -256,6 +276,9 @@ function getProductStock($product_id, $branch_code) {
             .main-content {
                 margin-left: 0;
                 width: 100%;
+            }
+            .product-card {
+                margin-bottom: 15px;
             }
         }
     </style>
@@ -275,7 +298,7 @@ function getProductStock($product_id, $branch_code) {
             </div>
             
             <?php if (!empty($errorMessage)): ?>
-                <div class='alert alert-warning alert-dismissible fade show' role='alert'>
+                <div class='alert alert-danger alert-dismissible fade show' role='alert'>
                     <strong><?php echo $errorMessage; ?></strong>
                     <button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>
                 </div>
@@ -288,15 +311,19 @@ function getProductStock($product_id, $branch_code) {
                 </div>
             <?php endif; ?>
             
-            <div class="row mb-4">
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header bg-primary text-white">
-                            <h5 class="mb-0">Customer Information</h5>
-                        </div>
-                        <div class="card-body">
+            <div class="customer-info-card card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Customer Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
                             <p><strong>Name:</strong> <?= htmlspecialchars($customer['CustomerName']) ?></p>
+                        </div>
+                        <div class="col-md-4">
                             <p><strong>Contact:</strong> <?= htmlspecialchars($customer['CustomerContact']) ?></p>
+                        </div>
+                        <div class="col-md-4">
                             <p><strong>Address:</strong> <?= htmlspecialchars($customer['CustomerAddress']) ?></p>
                         </div>
                     </div>
@@ -304,67 +331,66 @@ function getProductStock($product_id, $branch_code) {
             </div>
 
             <form method="POST" id="orderCreate">
-                <div class="row mb-4">
-                    <div class="col-md-4">
-                        <label class="form-label">Select Branch</label>
-                        <select class="form-select form-control-lg" id="branch_code" name="branch_code" required>
-                            <option value="">-- Select Branch --</option>
-                            <?php while ($branch = $branches_result->fetch_assoc()): ?>
-                                <option value="<?= $branch['BranchCode'] ?>">
-                                    <?= htmlspecialchars($branch['BranchName']) ?>
-                                </option>
-                            <?php endwhile; ?>
-                        </select>
-                    </div>
+                <div class="branch-select">
+                    <label class="form-label">Select Branch</label>
+                    <select class="form-select form-control-lg" id="branch_code" name="branch_code" required>
+                        <option value="">-- Select Branch --</option>
+                        <?php while ($branch = $branches_result->fetch_assoc()): ?>
+                            <option value="<?= $branch['BranchCode'] ?>" 
+                                <?= isset($_POST['branch_code']) && $_POST['branch_code'] == $branch['BranchCode'] ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($branch['BranchName']) ?>
+                            </option>
+                        <?php endwhile; ?>
+                    </select>
                 </div>
 
-                <div class="row mb-4">
-                    <div class="col">
-                        <div class="card">
-                            <div class="card-header bg-primary text-white">
-                                <h5 class="mb-0">Available Products</h5>
-                            </div>
-                            <div class="card-body">
-                                <?php if ($products_result->num_rows > 0): ?>
-                                    <div class="row row-cols-1 row-cols-md-3 g-4" id="products-container">
-                                        <?php while ($product = $products_result->fetch_assoc()): ?>
-                                            <?php 
-                                            $brand_name = getBrandName($product['BrandID']);
-                                            ?>
-                                            <div class="col">
-                                                <div class="card product-card h-100" onclick="toggleSelection(this, <?= $product['ProductID'] ?>)">
-                                                    <img src="<?= htmlspecialchars($product['ProductImage']) ?>" 
-                                                         class="product-img" 
-                                                         alt="<?= htmlspecialchars($product['Model']) ?>">
-                                                    <div class="card-body">
-                                                        <h5 class="card-title"><?= htmlspecialchars($product['Model']) ?></h5>
-                                                        <p class="card-text">
-                                                            <strong>Category:</strong> <?= htmlspecialchars($product['CategoryType']) ?><br>
-                                                            <strong>Brand:</strong> <?= htmlspecialchars($brand_name) ?><br>
-                                                            <strong>Price:</strong> <?= htmlspecialchars($product['Price']) ?><br>
-                                                            <span class="stock-info" id="stock-<?= $product['ProductID'] ?>">
-                                                                <strong>Stocks:</strong> Select branch to view availability
-                                                            </span>
-                                                        </p>
-                                                        <div class="quantity-input">
-                                                            <label class="form-label">Quantity</label>
-                                                            <input type="number" 
-                                                                   class="form-control" 
-                                                                   name="quantities[]" 
-                                                                   min="1" 
-                                                                   value="1"
-                                                                   data-product-id="<?= $product['ProductID'] ?>">
-                                                            <input type="hidden" name="products[]" value="<?= $product['ProductID'] ?>">
-                                                        </div>
+                <div class="products-section">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Available Products</h5>
+                        </div>
+                        <div class="card-body">
+                            <?php if ($products_result->num_rows > 0): ?>
+                                <div class="row row-cols-1 row-cols-md-3 g-4" id="products-container">
+                                    <?php 
+                                    // Reset pointer for products result
+                                    $products_result->data_seek(0);
+                                    while ($product = $products_result->fetch_assoc()): 
+                                        $brand_name = getBrandName($product['BrandID']);
+                                    ?>
+                                        <div class="col">
+                                            <div class="card product-card h-100" onclick="toggleSelection(this, <?= $product['ProductID'] ?>)">
+                                                <img src="<?= htmlspecialchars($product['ProductImage']) ?>" 
+                                                     class="product-img" 
+                                                     alt="<?= htmlspecialchars($product['Model']) ?>">
+                                                <div class="card-body">
+                                                    <h5 class="card-title"><?= htmlspecialchars($product['Model']) ?></h5>
+                                                    <p class="card-text">
+                                                        <strong>Category:</strong> <?= htmlspecialchars($product['CategoryType']) ?><br>
+                                                        <strong>Brand:</strong> <?= htmlspecialchars($brand_name) ?><br>
+                                                        <strong>Price:</strong> <?= htmlspecialchars($product['Price']) ?><br>
+                                                        <span class="stock-info" id="stock-<?= $product['ProductID'] ?>">
+                                                            <strong>Stocks:</strong> Select branch to view availability
+                                                        </span>
+                                                    </p>
+                                                    <div class="quantity-input">
+                                                        <label class="form-label">Quantity</label>
+                                                        <input type="number" 
+                                                               class="form-control" 
+                                                               name="quantities[]" 
+                                                               min="1" 
+                                                               value="1"
+                                                               data-product-id="<?= $product['ProductID'] ?>">
+                                                        <input type="hidden" name="products[]" value="<?= $product['ProductID'] ?>">
                                                     </div>
                                                 </div>
                                             </div>
-                                        <?php endwhile; ?>
-                                    </div>
-                                <?php else: ?>
-                                    <div class="alert alert-info">No available products found.</div>
-                                <?php endif; ?>
-                            </div>
+                                        </div>
+                                    <?php endwhile; ?>
+                                </div>
+                            <?php else: ?>
+                                <div class="alert alert-info">No available products found.</div>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -432,16 +458,24 @@ function getProductStock($product_id, $branch_code) {
                     fetch(`get_stock.php?product_id=${productId}&branch_code=${branchCode}`)
                         .then(response => response.json())
                         .then(data => {
-                            stockElement.innerHTML = `<strong>Stocks:</strong> ${data.stock}`;
-                            
-                            // Update max quantity for selected products
-                            if (card.classList.contains('selected')) {
-                                const quantityInput = card.querySelector('input[name="quantities[]"]');
-                                quantityInput.max = data.stock;
-                                if (quantityInput.value > data.stock) {
-                                    quantityInput.value = data.stock;
+                            if (data.stock !== undefined) {
+                                stockElement.innerHTML = `<strong>Stocks:</strong> ${data.stock}`;
+                                
+                                // Update max quantity for selected products
+                                if (card.classList.contains('selected')) {
+                                    const quantityInput = card.querySelector('input[name="quantities[]"]');
+                                    quantityInput.max = data.stock;
+                                    if (quantityInput.value > data.stock) {
+                                        quantityInput.value = data.stock;
+                                    }
                                 }
+                            } else {
+                                stockElement.innerHTML = '<strong>Stocks:</strong> Not available';
                             }
+                        })
+                        .catch(error => {
+                            console.error('Error fetching stock:', error);
+                            stockElement.innerHTML = '<strong>Stocks:</strong> Error loading';
                         });
                 } else {
                     stockElement.innerHTML = '<strong>Stocks:</strong> Select branch to view availability';
@@ -462,6 +496,14 @@ function getProductStock($product_id, $branch_code) {
                     }
                 });
         }
+
+        // Preserve form selections on error
+        document.addEventListener('DOMContentLoaded', function() {
+            const branchSelect = document.getElementById('branch_code');
+            if (branchSelect.value) {
+                branchSelect.dispatchEvent(new Event('change'));
+            }
+        });
     </script>
 </body>
 </html>
