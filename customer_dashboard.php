@@ -33,8 +33,116 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
         <div class="container mt-5 mb-5">
             <div class="row justify-content-center">
                 <div class="col-md-8">
-                    <h1 class="text-center">Customer Dashboard</h1>
-                    <p class="text-center">Welcome to your dashboard! Here you can manage your orders and account settings.</p>
+                    <h1 class="text-center"> Hello there <?php echo htmlspecialchars($_SESSION['CustomerName']); ?>!</h1>
+                    <hr>
+                    <i class="fa-solid fa-file-medical me-2"></i><h2 class="text-center">Your Medical History</h2>
+                    <?php
+                        $conn = connect();
+                        $customerID = $_SESSION['CustomerID'];
+    
+                        // Fetch customer basic info
+                        $customerInfoQuery = "SELECT CustomerName, CustomerInfo, Upd_by, Upd_dt FROM customer WHERE CustomerID = ?";
+                        $stmt = $conn->prepare($customerInfoQuery);
+                        $stmt->bind_param("i", $customerID);
+                        $stmt->execute();
+                        $customerResult = $stmt->get_result();
+                        $customer = $customerResult->fetch_assoc();
+                        
+                        // Fetch medical history
+                        $medicalHistoryQuery = "SELECT visit_date, eye_condition, visual_acuity_right, visual_acuity_left, 
+                                                intraocular_pressure_right, intraocular_pressure_left, refraction_right, 
+                                                refraction_left, pupillary_distance, additional_notes 
+                                                FROM customerMedicalHistory 
+                                                WHERE CustomerID = ? 
+                                                ORDER BY visit_date DESC";
+                        $stmtHistory = $conn->prepare($medicalHistoryQuery);
+                        $stmtHistory->bind_param("i", $customerID);
+                        $stmtHistory->execute();
+                        $historyResult = $stmtHistory->get_result();
+                    ?>
+
+                    <div class="container mt-3">
+                        <!-- Basic Customer Info -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-primary text-white">
+                                <h4 class="mb-0">Customer Information</h4>
+                            </div>
+                            <div class="card-body">
+                                <dl class="row">
+                                    <dt class="col-sm-3">Name:</dt>
+                                    <dd class="col-sm-9"><?php echo htmlspecialchars($customer['CustomerName']); ?></dd>
+
+                                    <dt class="col-sm-3">Details:</dt>
+                                    <dd class="col-sm-9"><?php echo nl2br(htmlspecialchars($customer['CustomerInfo'])); ?></dd>
+
+                                    <dt class="col-sm-3">Last Updated By:</dt>
+                                    <dd class="col-sm-9"><?php echo htmlspecialchars($customer['Upd_by']); ?></dd>
+
+                                    <dt class="col-sm-3">Last Updated On:</dt>
+                                    <dd class="col-sm-9"><?php echo htmlspecialchars($customer['Upd_dt']); ?></dd>
+                                </dl>
+                            </div>
+                        </div>
+
+                        <!-- Medical History -->
+                        <div class="card">
+                            <div class="card-header bg-info text-white">
+                                <h4 class="mb-0">Medical Records</h4>
+                            </div>
+                            <div class="card-body">
+                                <?php if ($historyResult->num_rows > 0): ?>
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-hover">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Visit Date</th>
+                                                    <th>Condition</th>
+                                                    <th>Visual Acuity</th>
+                                                    <th>Eye Pressure</th>
+                                                    <th>Refraction</th>
+                                                    <th>PD (mm)</th>
+                                                    <th>Notes</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <?php while ($history = $historyResult->fetch_assoc()): ?>
+                                                    <tr>
+                                                        <td><?php echo htmlspecialchars($history['visit_date']); ?></td>
+                                                        <td><?php echo htmlspecialchars($history['eye_condition']); ?></td>
+                                                        <td>
+                                                            R: <?php echo htmlspecialchars($history['visual_acuity_right']); ?><br>
+                                                            L: <?php echo htmlspecialchars($history['visual_acuity_left']); ?>
+                                                        </td>
+                                                        <td>
+                                                            R: <?php echo htmlspecialchars($history['intraocular_pressure_right']); ?> mmHg<br>
+                                                            L: <?php echo htmlspecialchars($history['intraocular_pressure_left']); ?> mmHg
+                                                        </td>
+                                                        <td>
+                                                            R: <?php echo htmlspecialchars($history['refraction_right']); ?><br>
+                                                            L: <?php echo htmlspecialchars($history['refraction_left']); ?>
+                                                        </td>
+                                                        <td><?php echo htmlspecialchars($history['pupillary_distance']); ?></td>
+                                                        <td><?php echo htmlspecialchars($history['additional_notes']); ?></td>
+                                                    </tr>
+                                                <?php endwhile; ?>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                <?php else: ?>
+                                    <div class="alert alert-info" role="alert">
+                                        No medical history records found.
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+
+                    <?php
+                        // Close connections
+                        $stmt->close();
+                        $stmtHistory->close();
+                        $conn->close();
+                    ?>
                 </div>
             </div>
         </div>
