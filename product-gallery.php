@@ -359,7 +359,7 @@
                   <div class="col-md-6">
     <div class="modal-product-image-container ratio ratio-1x1"> 
         <img id="modalProductImage" src="" class="modal-product-image" alt="Product Image" 
-             style="width: 100%; height: 150%; object-fit: contain;">
+             style="width: 150%; height: 150%; object-fit: contain;">
     </div>
 </div>
                             <div class="col-md-6 product-details">
@@ -412,7 +412,7 @@
             <div class="container mb-4">
                 <h1 style='text-align: center;'>Gallery</h1>
                 
-                <!-- Search Box -->
+              
                 <div class="search-container">
                     <form method="get" action="" class="search-box position-relative" id="searchForm">
                         <div class="input-group mb-3">
@@ -439,9 +439,9 @@
                     </form>
                 </div>
                 
-                <!-- Filter and Sort Container -->
+              
                 <div class="filter-container">
-                    <!-- Category Filter -->
+                   
                     <form method="get" action="" class="filter-dropdown">
                         <?php if(isset($_GET['page'])): ?>
                             <input type="hidden" name="page" value="<?php echo $_GET['page']; ?>">
