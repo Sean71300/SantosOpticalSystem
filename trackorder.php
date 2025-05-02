@@ -1,6 +1,7 @@
 <?php
 include_once 'setup.php';
-
+include_once 'connect.php';
+include 'ActivityTracker.php';
 ?>
 
 <!DOCTYPE html>
