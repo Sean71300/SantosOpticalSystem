@@ -184,13 +184,169 @@ $conn->close();
 <!DOCTYPE html>
 <html>
 <head>
-    <!-- [Keep your existing head section exactly the same] -->
+<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="customCodes/custom.css">
+    <link rel="shortcut icon" type="image/x-icon" href="Images/logo.png"/>
+    <title>Orders Management | Santos Optical</title>
+    <style>
+        body {
+            background-color: #f5f7fa;
+            padding-top: 60px;
+        }
+        .sidebar {
+            background-color: white;
+            height: 100vh;
+            padding: 20px 0 70px;
+            color: #2c3e50;
+            position: fixed;
+            width: 250px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            width: calc(100% - 250px);
+            transition: margin 0.3s ease;
+        }
+        .orders-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        .order-card {
+            border-left: 4px solid #0d6efd;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+        .order-card:hover {
+            background-color: #f8f9fa;
+        }
+        .order-time {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+        .order-title {
+            font-weight: 500;
+        }
+        .badge-pending {
+            background-color: #ffc107;
+            color: #000;
+        }
+        .badge-complete {
+            background-color: #198754;
+        }
+        .badge-cancelled {
+            background-color: #dc3545;
+        }
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+        }
+        @media (max-width: 768px) {
+            .filter-form .col-md-4,
+            .filter-form .col-md-3,
+            .filter-form .col-md-2 {
+                flex: 0 0 100%;
+                max-width: 100%;
+                margin-bottom: 10px;
+            }
+            .order-card {
+                padding: 10px;
+            }
+            .order-title {
+                font-size: 0.9rem;
+            }
+            .order-time {
+                font-size: 0.75rem;
+            }
+        }
+        @media (max-width: 576px) {
+            .orders-container {
+                padding: 15px;
+            }
+            .d-flex.justify-content-between.align-items-center.mb-4 {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .d-flex.justify-content-between.align-items-center.mb-4 .btn {
+                margin-top: 10px;
+                width: 100%;
+            }
+            .order-card .d-flex {
+                flex-direction: column;
+            }
+            .order-card .badge {
+                margin-bottom: 5px;
+            }
+        }
+        .customer-select-table {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
 </head>
 <body>
     <?php include "sidebar.php"; ?>
 
     <div class="main-content">
-        <!-- [Keep your existing header and filter form exactly the same] -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-shopping-cart me-2"></i>Orders Management</h2>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addOrderModal">
+                <i class="fas fa-plus me-1"></i> Add New Order
+            </button>
+        </div>
+
+        <div class="orders-container">
+            <form method="get" action="order.php" class="mb-4 filter-form">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label for="search" class="form-label">Search</label>
+                        <input type="text" class="form-control" id="search" name="search" 
+                               placeholder="Search orders or customers..." value="<?php echo htmlspecialchars($search); ?>">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="branch" class="form-label">Filter by Branch</label>
+                        <select class="form-select" id="branch" name="branch">
+                            <option value="">All Branches</option>
+                            <?php while ($branchRow = $branchesResult->fetch_assoc()): ?>
+                                <option value="<?php echo $branchRow['BranchCode']; ?>" 
+                                    <?php echo ($branch == $branchRow['BranchCode'] ? 'selected' : ''); ?>>
+                                    <?php echo $branchRow['BranchName']; ?>
+                                </option>
+                            <?php endwhile; ?>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="status" class="form-label">Filter by Status</label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="">All Statuses</option>
+                            <option value="Pending" <?php echo ($status == 'Pending' ? 'selected' : ''); ?>>Pending</option>
+                            <option value="Complete" <?php echo ($status == 'Complete' ? 'selected' : ''); ?>>Complete</option>
+                            <option value="Cancelled" <?php echo ($status == 'Cancelled' ? 'selected' : ''); ?>>Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-filter me-1"></i> Filter
+                        </button>
+                    </div>
+                </div>
+            </form>
 
         <?php if (!empty($orders)): ?>
             <div class="table-responsive">
@@ -238,7 +394,43 @@ $conn->close();
                 </table>
             </div>
 
-            <!-- [Keep your existing pagination exactly the same] -->
+            <nav aria-label="Orders pagination" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <?php if ($currentPage > 1): ?>
+                            <li class="page-item">
+                                <a class="page-link" href="?<?php 
+                                    $newParams = $_GET;
+                                    $newParams['page'] = $currentPage - 1;
+                                    echo http_build_query($newParams); 
+                                ?>" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                        <?php endif; ?>
+
+                        <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                            <li class="page-item <?php echo ($i == $currentPage) ? 'active' : ''; ?>">
+                                <a class="page-link" href="?<?php 
+                                    $newParams = $_GET;
+                                    $newParams['page'] = $i;
+                                    echo http_build_query($newParams); 
+                                ?>"><?php echo $i; ?></a>
+                            </li>
+                        <?php endfor; ?>
+
+                        <?php if ($currentPage < $totalPages): ?>
+                            <li class="page-item">
+                                <a class="page-link" href="?<?php 
+                                    $newParams = $_GET;
+                                    $newParams['page'] = $currentPage + 1;
+                                    echo http_build_query($newParams); 
+                                ?>" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        <?php endif; ?>
+                    </ul>
+                </nav>
         <?php else: ?>
             <div class="alert alert-info text-center">
                 <i class="fas fa-info-circle me-2"></i> No orders found.
