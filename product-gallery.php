@@ -105,9 +105,7 @@
                 
                 echo "<div class='col d-flex product-card' data-search='".htmlspecialchars($searchableText, ENT_QUOTES)."'>";
                     echo "<div class='card w-100' style='max-width: 380px;'>";
-                        echo '<div class="card-img-container">';
-                        echo '<img src="' . $row['ProductImage']. '" class="card-img-top" alt="'. $row['Model'] .'">';
-                        echo '</div>';
+                        echo '<img src="' . $row['ProductImage']. '" class="card-img-top img-fluid" style="height: 280px;" alt="'. $row['Model'] .'">';
                         echo "<div class='card-body d-flex flex-column'>";
                             echo "<h5 class='card-title' style='min-height: 1.5rem;'>".$row['Model']."</h5>";
                             echo "<hr>";
@@ -218,6 +216,7 @@
         <link rel="shortcut icon" type="image/x-icon" href="Images/logo.png"/>
         <link rel="stylesheet" href="customCodes/s2.css">
         <style>
+           
             @media (min-width: 768px) {
                 .container {
                     max-width: 95%;
@@ -286,34 +285,8 @@
             .modal-lg-custom {
                 max-width: 800px;
             }
-            /* Card Image Container */
-            .card-img-container {
-                height: 280px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                padding: 15px;
-                background-color: #f8f9fa;
-            }
-            
-            .card-img-top {
-                max-height: 100%;
-                max-width: 100%;
-                object-fit: contain;
-            }
-            /* Modal Image Container */
-            .modal-product-image-container {
-                height: 400px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                background-color: #f8f9fa;
-                padding: 20px;
-            }
-            
-            .modal-product-image {
-                max-height: 100%;
-                max-width: 100%;
+            .product-image {
+                max-height: 400px;
                 object-fit: contain;
             }
             .product-details {
@@ -341,6 +314,29 @@
                 background-color: #f8d7da;
                 color: #721c24;
             }
+
+.modal-product-image-container {
+    height: 300px;
+    width: 100%;
+    min-width: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+    padding: 10px;
+    margin: 0 auto;
+    border-radius: 5px;
+    overflow: hidden; 
+}
+
+.modal-product-image {
+    height: 100%;
+    width: 100%;
+    object-fit: contain;
+    object-position: center;
+    max-height: 300px;
+    max-width: 300px;
+}
         </style>
     </head>
 
@@ -352,20 +348,21 @@
 
     <body>
         <!-- Product Modal -->
-        <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg modal-lg-custom">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="productModalLabel">Product Details</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
+      <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-lg-custom">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="productModalLabel">Product Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
                     <div class="modal-body">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="modal-product-image-container">
-                                    <img id="modalProductImage" src="" class="modal-product-image" alt="Product Image">
-                                </div>
-                            </div>
+                <div class="row">
+                  <div class="col-md-6">
+    <div class="modal-product-image-container ratio ratio-1x1"> <!-- Added ratio class -->
+        <img id="modalProductImage" src="" class="modal-product-image" alt="Product Image" 
+             style="width: 100%; height: 100%; object-fit: contain;">
+    </div>
+</div>
                             <div class="col-md-6 product-details">
                                 <div class="detail-row">
                                     <h3 id="modalProductName"></h3>
