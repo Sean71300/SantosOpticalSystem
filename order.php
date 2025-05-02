@@ -130,7 +130,7 @@ function countOrderHeaders($conn, $search = '', $branch = '', $status = '') {
     }
     
     if (!empty($status)) {
-        $where[] = "od.Status = ?";
+        $where[] = "FIND_IN_SET(?, od.Status) > 0"; // Check if the status is in the concatenated list
         $params[] = $status;
         $types .= 's';
     }
