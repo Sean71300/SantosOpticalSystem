@@ -97,7 +97,7 @@ if ($isAdmin === true) {
     .sidebar {
         background-color: white;
         height: 100vh;
-        padding: 20px 0 70px; /* Added padding at bottom for logout button */
+        padding: 20px 0;
         color: #2c3e50;
         position: fixed;
         width: 250px;
@@ -159,6 +159,7 @@ if ($isAdmin === true) {
         width: 100%;
         background: white;
         padding: 10px 0;
+        margin-top: auto;
         box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
         border-top: 1px solid rgba(0,0,0,0.1);
     }
@@ -182,7 +183,6 @@ if ($isAdmin === true) {
     @media (max-width: 992px) {
         .sidebar {
             transform: translateX(-100%);
-            padding-bottom: 70px; /* Ensure space for logout button */
         }
         
         .sidebar.active {
@@ -208,11 +208,6 @@ if ($isAdmin === true) {
             bottom: 0;
             background: rgba(0,0,0,0.5);
             z-index: 999;
-        }
-        
-        .sidebar-footer {
-            position: sticky;
-            bottom: 0;
         }
     }
     
@@ -220,50 +215,20 @@ if ($isAdmin === true) {
     .sidebar-item-text {
         transition: opacity 0.3s ease;
     }
-    .mobile-menu-toggle {
-        display: none;
-        position: fixed;
-        top: 15px;
-        left: 15px;
-        z-index: 1100;
-        background: #4e73df;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        padding: 8px 12px;
-        font-size: 1.2rem;
-    }
-    
-    /* Responsive Styles */
-    @media (max-width: 992px) {
-        .sidebar {
-            transform: translateX(-100%);
-            padding-bottom: 70px; /* Ensure space for logout button */
-        }
-        
-        .sidebar.active {
-            transform: translateX(0);
-            box-shadow: 5px 0 15px rgba(0,0,0,0.2);
-        }
-        
-        .mobile-menu-toggle {
-            display: block !important;
-        }
-        
-        /* Adjust main content when sidebar is open */
-        body.sidebar-open {
-            overflow: hidden;
-        }
-        
-        body.sidebar-open::after {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 999;
-        }
-    }
 </style>
+
+<script>
+// Mobile menu toggle functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    const sidebar = document.getElementById('sidebar');
+    const body = document.body;
+
+    if (mobileMenuToggle && sidebar) {
+        mobileMenuToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('active');
+            body.classList.toggle('sidebar-open');
+        });
+    }
+});
+</script>
