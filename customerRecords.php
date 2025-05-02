@@ -338,24 +338,14 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                     });
                 });
                 
-                document.addEventListener('DOMContentLoaded', function() {
-                // Medical record modal functionality - use event delegation
-                document.body.addEventListener('click', function(e) {
-                    if (e.target.closest('[data-bs-toggle="modal"][data-bs-target="#addMedicalRecordModal"]')) {
-                        const button = e.target.closest('[data-bs-toggle="modal"]');
-                        const customerID = button.getAttribute('data-customer-id');
+                // Add medical record functionality
+                document.querySelectorAll('.add-medical-record').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const customerID = this.getAttribute('data-customer-id');
                         document.getElementById('medicalRecordCustomerID').value = customerID;
                         
-                        // Set today's date as default
-                        const today = new Date().toISOString().split('T')[0];
-                        document.getElementById('visit_date').value = today;
-                    }
-                });
-
-                    // Save button handler
-                    document.getElementById('saveMedicalRecord')?.addEventListener('click', function() {
-                        // Implement save functionality here
-                        console.log('Save medical record functionality');
+                        const modal = new bootstrap.Modal(document.getElementById('addMedicalRecordModal'));
+                        modal.show();
                     });
                 });
             });
