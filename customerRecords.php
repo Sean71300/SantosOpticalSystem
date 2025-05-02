@@ -304,6 +304,7 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
 
             // View orders functionality
             document.addEventListener('DOMContentLoaded', function() {
+                // Orders modal functionality
                 document.querySelectorAll('.view-orders').forEach(button => {
                     button.addEventListener('click', function() {
                         const customerID = this.getAttribute('data-customer-id');
@@ -337,35 +338,28 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                             });
                     });
                 });
-            });
-            
-            document.addEventListener('DOMContentLoaded', function() {
-            // When a button to add medical record is clicked
-            document.querySelectorAll('[data-bs-target="#addMedicalRecordModal"]').forEach(button => {
-                button.addEventListener('click', function() {
-                    const customerID = this.getAttribute('data-customer-id');
-                    document.getElementById('medicalRecordCustomerID').value = customerID;
-                    
-                    // Set today's date as default
-                    const today = new Date().toISOString().split('T')[0];
-                    document.getElementById('visit_date').value = today;
-                    
-                    // Clear other fields
-                    document.getElementById('medicalRecordForm').reset();
+                
+                // Medical record modal functionality
+                document.querySelectorAll('[data-bs-toggle="modal"][data-bs-target="#addMedicalRecordModal"]').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const customerID = this.getAttribute('data-customer-id');
+                        document.getElementById('medicalRecordCustomerID').value = customerID;
+                        
+                        // Set today's date as default
+                        const today = new Date().toISOString().split('T')[0];
+                        document.getElementById('visit_date').value = today;
+                        
+                        // Clear other fields
+                        document.getElementById('medicalRecordForm').reset();
+                    });
+                });
+                
+                // Save button handler
+                document.getElementById('saveMedicalRecord').addEventListener('click', function() {
+                    // Implement save functionality here
+                    alert('Save functionality will be implemented next');
                 });
             });
-            
-            // Save button handler (you'll need to implement the actual save functionality)
-            document.getElementById('saveMedicalRecord').addEventListener('click', function() {
-                // You'll need to implement the AJAX call to save the data
-                alert('Save functionality will be implemented next');
-            });
-        });
         </script>
-
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        <script src="customCodes/custom.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous"></script>
     </body>
 </html>
