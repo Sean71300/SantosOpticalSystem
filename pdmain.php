@@ -183,10 +183,10 @@
                 </div>
 
                 <div class="col-md-3 mb-3 mb-md-0">
-                    <h6 class="fw-bold">POLICY</h6>
+                    <h6 class="fw-bold">About</h6>
                     <ul class="list-unstyled">
-                        <li><a href="#" class="text-dark text-decoration-none">FAQ</a></li>
-                        <li><a href="#" class="text-dark text-decoration-none">Store Policy</a></li>
+                        <li><a href="aboutus.php" class="text-dark text-decoration-none">About Us</a></li>
+                        <li><a href="ourservices.php" class="text-dark text-decoration-none">Services</a></li>
                     </ul>
                 </div>
 
