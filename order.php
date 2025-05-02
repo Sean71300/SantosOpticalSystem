@@ -18,9 +18,9 @@ function getOrderHeaders($conn, $search = '', $branch = '', $limit = 10, $offset
     
     if (!empty($search)) {
         $where[] = "(oh.Orderhdr_id LIKE ? OR c.CustomerName LIKE ?)";
-        $params[] = '%' . $search . '%'; // For Orderhdr_id
-        $params[] = '%' . $search . '%'; // For CustomerName
-        $types .= 'ss'; // Two string parameters
+        $params[] = '%' . $search . '%';
+        $params[] = '%' . $search . '%';
+        $types .= 'ss';
     }
     
     if (!empty($branch)) {
@@ -76,8 +76,8 @@ function getEmployeeName($conn, $loginName) {
 function getOrderDetails($conn, $orderId) {
     $query = "SELECT od.Quantity, p.Price, od.Status 
               FROM orderDetails od
-              JOIN ProductBranchMaster pbm ON od.ProductBranchID = pbm.ProductBranchID
-              JOIN productMstr p ON pbm.ProductID = p.ProductID
+              LEFT JOIN ProductBranchMaster pbm ON od.ProductBranchID = pbm.ProductBranchID
+              LEFT JOIN productMstr p ON pbm.ProductID = p.ProductID
               WHERE od.OrderHdr_id = ?";
     $stmt = $conn->prepare($query);
     $stmt->bind_param('i', $orderId);
@@ -151,17 +151,17 @@ while ($header = $orderHeaders->fetch_assoc()) {
     $totalAmount = 0;
     $orderStatus = 'Pending';
     
-    while ($detail = $details->fetch_assoc()) {
-        $itemCount++;
-        // Ensure Price is treated as a float
-        $price = (float)$detail['Price']; // Cast Price to float
-        $totalAmount += $price * (int)$detail['Quantity']; // Cast Quantity to int
-    
-        // Determine order status (if any detail has this status)
-        if ($detail['Status'] === 'Complete') {
-            $orderStatus = 'Complete';
-        } elseif ($detail['Status'] === 'Cancelled' && $orderStatus !== 'Complete') {
-            $orderStatus = 'Cancelled';
+    if ($details->num_rows > 0) {
+        while ($detail = $details->fetch_assoc()) {
+            $itemCount += (int)$detail['Quantity'];
+            $price = (float)$detail['Price'];
+            $totalAmount += $price * (int)$detail['Quantity'];
+        
+            if ($detail['Status'] === 'Complete') {
+                $orderStatus = 'Complete';
+            } elseif ($detail['Status'] === 'Cancelled' && $orderStatus !== 'Complete') {
+                $orderStatus = 'Cancelled';
+            }
         }
     }
     
@@ -173,7 +173,7 @@ while ($header = $orderHeaders->fetch_assoc()) {
     $orders[] = [
         'Orderhdr_id' => $orderId,
         'Created_dt' => $header['Created_dt'],
-        'CustomerName' => getCustomerName($conn, $header['CustomerID']),
+        'CustomerName' => $header['CustomerName'] ?? getCustomerName($conn, $header['CustomerID']),
         'CreatedBy' => getEmployeeName($conn, $header['Created_by']),
         'BranchName' => getBranchName($conn, $header['BranchCode']),
         'ItemCount' => $itemCount,
@@ -523,5 +523,3 @@ $conn->close();
     </script>
 </body>
 </html>
-
-    
