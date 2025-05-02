@@ -235,7 +235,7 @@ function getOrderTotal($conn, $orderId) {
     $total = 0;
     
     foreach ($details as $detail) {
-        $total += $detail['Price'] * $detail['Quantity'];
+        $total = $total + ($detail['Price'] * $detail['Quantity']);
     }
     
     return $total;
