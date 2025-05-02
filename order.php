@@ -489,12 +489,12 @@ $conn->close();
                             <tbody>
                                 <?php
                                 $conn = connect();
-                                $customers = $conn->query("SELECT CustomerID, CustomerName, ContactNo FROM customer ORDER BY CustomerName");
+                                $customers = $conn->query("SELECT CustomerID, CustomerName, CustomerContact FROM customer ORDER BY CustomerName");
                                 while ($customer = $customers->fetch_assoc()): ?>
                                     <tr>
                                         <td><?= $customer['CustomerID'] ?></td>
                                         <td><?= htmlspecialchars($customer['CustomerName']) ?></td>
-                                        <td><?= htmlspecialchars($customer['ContactNo']) ?></td>
+                                        <td><?= htmlspecialchars($customer['CustomerContact']) ?></td>
                                         <td>
                                             <button class="btn btn-sm btn-primary select-customer" 
                                                     data-customer-id="<?= $customer['CustomerID'] ?>"
