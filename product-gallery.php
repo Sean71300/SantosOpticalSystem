@@ -31,28 +31,30 @@
         $availability = isset($_GET['availability']) ? $_GET['availability'] : '';
         $category = isset($_GET['category']) ? $_GET['category'] : '';
         
-        // Build the base SQL query
-        $sql = "SELECT * FROM `productMstr`";
+        // Build the base SQL query with JOIN to ProductBranchMaster
+        $sql = "SELECT p.*, pb.Stocks, pb.Avail_FL as BranchAvailability 
+                FROM `productMstr` p
+                LEFT JOIN ProductBranchMaster pb ON p.ProductID = pb.ProductID";
         
         // Add conditions based on parameters
         $whereConditions = [];
         
         if (!empty($search)) {
-            $whereConditions[] = "Model LIKE '%$search%'";
+            $whereConditions[] = "p.Model LIKE '%$search%'";
         }
         
         if (!empty($availability)) {
             if ($availability == 'Available') {
-                $whereConditions[] = "Avail_FL = 'Available'";
+                $whereConditions[] = "pb.Avail_FL = 'Available'";
             } elseif ($availability == 'Not Available') {
-                $whereConditions[] = "Avail_FL != 'Available'";
+                $whereConditions[] = "pb.Avail_FL != 'Available'";
             }
         }
         
         // Add category filter condition
         if (!empty($category)) {
             $category = mysqli_real_escape_string($conn, $category);
-            $whereConditions[] = "CategoryType = '$category'";
+            $whereConditions[] = "p.CategoryType = '$category'";
         }
         
         if (!empty($whereConditions)) {
@@ -62,19 +64,19 @@
         // Add sorting
         switch($sort) {
             case 'price_asc':
-                $sql .= " ORDER BY CAST(REPLACE(REPLACE(Price, '₱', ''), ',', '') AS DECIMAL(10,2)) ASC";
+                $sql .= " ORDER BY CAST(REPLACE(REPLACE(p.Price, '₱', ''), ',', '') AS DECIMAL(10,2)) ASC";
                 break;
             case 'price_desc':
-                $sql .= " ORDER BY CAST(REPLACE(REPLACE(Price, '₱', ''), ',', '') AS DECIMAL(10,2)) DESC";
+                $sql .= " ORDER BY CAST(REPLACE(REPLACE(p.Price, '₱', ''), ',', '') AS DECIMAL(10,2)) DESC";
                 break;
             case 'name_asc':
-                $sql .= " ORDER BY Model ASC";
+                $sql .= " ORDER BY p.Model ASC";
                 break;
             case 'name_desc':
-                $sql .= " ORDER BY Model DESC";
+                $sql .= " ORDER BY p.Model DESC";
                 break;
             default:
-                $sql .= " ORDER BY Model ASC";
+                $sql .= " ORDER BY p.Model ASC";
         }
         
         // Add pagination
@@ -83,7 +85,7 @@
         $result = mysqli_query($conn, $sql);
         
         // For total count
-        $countSql = "SELECT COUNT(*) as total FROM `productMstr`";
+        $countSql = "SELECT COUNT(*) as total FROM `productMstr` p";
         if (!empty($whereConditions)) {
             $countSql .= " WHERE " . implode(' AND ', $whereConditions);
         }
@@ -98,9 +100,14 @@
         if ($total > 0) {
             while($row = mysqli_fetch_assoc($result)) {
                 $searchableText = strtolower($row['Model']);
+                $stock = isset($row['Stocks']) ? $row['Stocks'] : 0;
+                $faceShape = isset($row['ShapeID']) ? getFaceShapeName($row['ShapeID']) : 'Not specified';
+                
                 echo "<div class='col d-flex product-card' data-search='".htmlspecialchars($searchableText, ENT_QUOTES)."'>";
                     echo "<div class='card w-100' style='max-width: 380px;'>";
-                        echo '<img src="' . $row['ProductImage']. '" class="card-img-top img-fluid" style="height: 280px;" alt="'. $row['Model'] .'">';
+                        echo '<div class="card-img-container">';
+                        echo '<img src="' . $row['ProductImage']. '" class="card-img-top" alt="'. $row['Model'] .'">';
+                        echo '</div>';
                         echo "<div class='card-body d-flex flex-column'>";
                             echo "<h5 class='card-title' style='min-height: 1.5rem;'>".$row['Model']."</h5>";
                             echo "<hr>";
@@ -110,8 +117,9 @@
                             $numeric_price = preg_replace('/[^0-9.]/', '', $price);
                             $formatted_price = is_numeric($numeric_price) ? '₱' . number_format((float)$numeric_price, 2) : '₱0.00';
                             echo "<div class='card-text mb-2'>".$formatted_price."</div>";
-                            if ($row['Avail_FL'] == "Available") {
-                                echo "<div class='card-text mb-2 text-success'>".$row['Avail_FL']."</div>";
+                            $availability = isset($row['BranchAvailability']) ? $row['BranchAvailability'] : $row['Avail_FL'];
+                            if ($availability == "Available") {
+                                echo "<div class='card-text mb-2 text-success'>".$availability."</div>";
                             echo "</div>";
                                 echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
                                     echo "<button type='button' class='btn btn-primary w-100 py-2 view-details' data-bs-toggle='modal' data-bs-target='#productModal' 
@@ -121,14 +129,14 @@
                                           data-product-category='".htmlspecialchars($row['CategoryType'], ENT_QUOTES)."'
                                           data-product-material='".htmlspecialchars($row['Material'], ENT_QUOTES)."'
                                           data-product-price='".htmlspecialchars($formatted_price, ENT_QUOTES)."'
-                                          data-product-availability='".htmlspecialchars($row['Avail_FL'], ENT_QUOTES)."'
-                                          data-product-stock='".htmlspecialchars($row['Stock'], ENT_QUOTES)."'
-                                          data-product-faceshape='".htmlspecialchars($row['FaceShape'], ENT_QUOTES)."'>
+                                          data-product-availability='".htmlspecialchars($availability, ENT_QUOTES)."'
+                                          data-product-stock='".htmlspecialchars($stock, ENT_QUOTES)."'
+                                          data-product-faceshape='".htmlspecialchars($faceShape, ENT_QUOTES)."'>
                                           More details
                                       </button>";
                                 echo "</div>";
                             } else {
-                                echo "<div class='card-text mb-2 text-danger'>".$row['Avail_FL']."</div>";
+                                echo "<div class='card-text mb-2 text-danger'>".$availability."</div>";
                             echo "</div>";
                             echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
                                 echo "<a href='#' class='btn btn-secondary w-100 py-2 disabled'>Not Available</a>";
@@ -177,6 +185,22 @@
                 echo "</div>";
             echo "</div>"; 
         }
+    }
+
+    // Helper function to get face shape name from shapeID
+    function getFaceShapeName($shapeID) {
+        $conn = connect();
+        $sql = "SELECT Description FROM shapeMaster WHERE ShapeID = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $shapeID);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            return $row['Description'];
+        }
+        return 'Not specified';
     }
 ?>
 
@@ -262,8 +286,34 @@
             .modal-lg-custom {
                 max-width: 800px;
             }
-            .product-image {
-                max-height: 400px;
+            /* Card Image Container */
+            .card-img-container {
+                height: 280px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 15px;
+                background-color: #f8f9fa;
+            }
+            
+            .card-img-top {
+                max-height: 100%;
+                max-width: 100%;
+                object-fit: contain;
+            }
+            /* Modal Image Container */
+            .modal-product-image-container {
+                height: 400px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background-color: #f8f9fa;
+                padding: 20px;
+            }
+            
+            .modal-product-image {
+                max-height: 100%;
+                max-width: 100%;
                 object-fit: contain;
             }
             .product-details {
@@ -312,7 +362,9 @@
                     <div class="modal-body">
                         <div class="row">
                             <div class="col-md-6">
-                                <img id="modalProductImage" src="" class="img-fluid product-image rounded" alt="Product Image">
+                                <div class="modal-product-image-container">
+                                    <img id="modalProductImage" src="" class="modal-product-image" alt="Product Image">
+                                </div>
                             </div>
                             <div class="col-md-6 product-details">
                                 <div class="detail-row">
