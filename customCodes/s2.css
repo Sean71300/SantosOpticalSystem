@@ -67,19 +67,35 @@ body {
     background-color: #666;
 }
 .services-section {
-    padding: 2rem 0;
+    position: relative;
+    width: 100%;
+    max-height: 400px; 
+    overflow: hidden;
+    align-items: center;
 }
-
-.text-overlay {
-    padding: 1rem;
-}
-
 .services-img {
-    max-width: 100%;
-    height: auto;
+    width: 98%;
+    height:110%;
     display: block;
+    padding-top: 30px;
+    text-align: right;
+    padding-left: 40px;
 }
-.services2-section {
+.text-overlay {
+    position: absolute;
+    top: 70px; 
+    left: 70px; 
+    color: black;
+    font-size: 14px;
+    font-weight: normal; 
+    padding: 10px;
+    padding: 30px;
+    padding-top: 30px;
+    margin-right: 650px;
+    text-align: justify;
+    font-size: 19px;
+    text-decoration: none;
+}es2-section {
     position: relative;
     width: 80%;
     max-height: 400px; 
