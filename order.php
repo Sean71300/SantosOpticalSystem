@@ -1,4 +1,31 @@
 <?php
+
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Replace your current try-catch block with this:
+try {
+    // [Keep all your existing code here]
+} catch (Exception $e) {
+    // Enhanced error display for debugging
+    $errorDetails = [
+        'message' => $e->getMessage(),
+        'file' => $e->getFile(),
+        'line' => $e->getLine(),
+        'trace' => $e->getTraceAsString(),
+        'sql_error' => isset($conn) ? $conn->error : null,
+        'stmt_error' => isset($stmt) ? $stmt->error : null
+    ];
+    
+    debug_log("Full Error: " . print_r($errorDetails, true));
+    
+    // Show detailed error during development
+    echo '<div class="alert alert-danger">';
+    echo '<h4>Error Details</h4>';
+    echo '<pre>' . print_r($errorDetails, true) . '</pre>';
+    echo '</div>';
+    die();
+}
 include_once 'setup.php';
 include 'loginChecker.php';
 
