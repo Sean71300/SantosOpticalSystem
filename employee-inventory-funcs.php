@@ -89,4 +89,26 @@ function getInventory($sort = 'ProductID', $order = 'ASC') {
     mysqli_stmt_close($stmt);
     mysqli_close($link);
 }
+
+function getLowInventoryForEmployee($branchCode, $threshold = 10) {
+    $link = connect();
+    $sql = "SELECT pm.ProductID, pm.Model, pm.CategoryType, pbm.Stocks 
+            FROM ProductBranchMaster pbm
+            JOIN productMstr pm ON pbm.ProductID = pm.ProductID
+            WHERE pbm.BranchCode = ? AND pbm.Stocks <= ?";
+    
+    $stmt = mysqli_prepare($link, $sql);
+    mysqli_stmt_bind_param($stmt, "si", $branchCode, $threshold);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    
+    $lowInventory = [];
+    while ($row = mysqli_fetch_assoc($result)) {
+        $lowInventory[] = $row;
+    }
+    
+    mysqli_stmt_close($stmt);
+    mysqli_close($link);
+    return $lowInventory;
+}
 ?>
