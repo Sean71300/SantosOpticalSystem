@@ -38,7 +38,7 @@
         $whereConditions = [];
         
         if (!empty($search)) {
-            $whereConditions[] = "Model LIKE '%$search%'";  // Changed from LIKE '$search%' to LIKE '%$search%'
+            $whereConditions[] = "Model LIKE '%$search%'";
         }
         
         if (!empty($availability)) {
@@ -114,7 +114,18 @@
                                 echo "<div class='card-text mb-2 text-success'>".$row['Avail_FL']."</div>";
                             echo "</div>";
                                 echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
-                                    echo "<a href='#' class='btn btn-primary w-100 py-2'>More details</a>";
+                                    echo "<button type='button' class='btn btn-primary w-100 py-2 view-details' data-bs-toggle='modal' data-bs-target='#productModal' 
+                                          data-product-id='".$row['ProductID']."'
+                                          data-product-name='".htmlspecialchars($row['Model'], ENT_QUOTES)."'
+                                          data-product-image='".htmlspecialchars($row['ProductImage'], ENT_QUOTES)."'
+                                          data-product-category='".htmlspecialchars($row['CategoryType'], ENT_QUOTES)."'
+                                          data-product-material='".htmlspecialchars($row['Material'], ENT_QUOTES)."'
+                                          data-product-price='".htmlspecialchars($formatted_price, ENT_QUOTES)."'
+                                          data-product-availability='".htmlspecialchars($row['Avail_FL'], ENT_QUOTES)."'
+                                          data-product-stock='".htmlspecialchars($row['Stock'], ENT_QUOTES)."'
+                                          data-product-faceshape='".htmlspecialchars($row['FaceShape'], ENT_QUOTES)."'>
+                                          More details
+                                      </button>";
                                 echo "</div>";
                             } else {
                                 echo "<div class='card-text mb-2 text-danger'>".$row['Avail_FL']."</div>";
@@ -247,6 +258,39 @@
             .live-search-item.highlight {
                 background-color: #e9ecef;
             }
+            /* Modal Styles */
+            .modal-lg-custom {
+                max-width: 800px;
+            }
+            .product-image {
+                max-height: 400px;
+                object-fit: contain;
+            }
+            .product-details {
+                padding: 20px;
+            }
+            .detail-row {
+                margin-bottom: 15px;
+                padding-bottom: 15px;
+                border-bottom: 1px solid #eee;
+            }
+            .detail-label {
+                font-weight: bold;
+                color: #555;
+            }
+            .availability-badge {
+                font-size: 0.9rem;
+                padding: 5px 10px;
+                border-radius: 5px;
+            }
+            .available {
+                background-color: #d4edda;
+                color: #155724;
+            }
+            .not-available {
+                background-color: #f8d7da;
+                color: #721c24;
+            }
         </style>
     </head>
 
@@ -257,6 +301,65 @@
     </header>
 
     <body>
+        <!-- Product Modal -->
+        <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-lg-custom">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="productModalLabel">Product Details</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <img id="modalProductImage" src="" class="img-fluid product-image rounded" alt="Product Image">
+                            </div>
+                            <div class="col-md-6 product-details">
+                                <div class="detail-row">
+                                    <h3 id="modalProductName"></h3>
+                                    <span id="modalProductAvailability" class="availability-badge"></span>
+                                </div>
+                                <div class="detail-row">
+                                    <div class="row">
+                                        <div class="col-4 detail-label">Category:</div>
+                                        <div class="col-8" id="modalProductCategory"></div>
+                                    </div>
+                                </div>
+                                <div class="detail-row">
+                                    <div class="row">
+                                        <div class="col-4 detail-label">Material:</div>
+                                        <div class="col-8" id="modalProductMaterial"></div>
+                                    </div>
+                                </div>
+                                <div class="detail-row">
+                                    <div class="row">
+                                        <div class="col-4 detail-label">Price:</div>
+                                        <div class="col-8" id="modalProductPrice"></div>
+                                    </div>
+                                </div>
+                                <div class="detail-row">
+                                    <div class="row">
+                                        <div class="col-4 detail-label">Stock Left:</div>
+                                        <div class="col-8" id="modalProductStock"></div>
+                                    </div>
+                                </div>
+                                <div class="detail-row">
+                                    <div class="row">
+                                        <div class="col-4 detail-label">Good for Face Shape:</div>
+                                        <div class="col-8" id="modalProductFaceShape"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary">Add to Cart</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="container" style="margin-top: 2rem;">
             <div class="container mb-4">
                 <h1 style='text-align: center;'>Gallery</h1>
@@ -379,156 +482,187 @@
                 ?>
             </div>          
         </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-    
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const searchInput = document.getElementById('searchInput');
-            const liveSearchResults = document.getElementById('liveSearchResults');
-            const productCards = document.querySelectorAll('.product-card');
-            const searchForm = document.getElementById('searchForm');
-            
-            function performLiveSearch() {
-                const searchTerm = searchInput.value.trim().toLowerCase();
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const searchInput = document.getElementById('searchInput');
+                const liveSearchResults = document.getElementById('liveSearchResults');
+                const productCards = document.querySelectorAll('.product-card');
+                const searchForm = document.getElementById('searchForm');
                 
-                if (searchTerm.length === 0) {
-                    liveSearchResults.style.display = 'none';
-                    return;
-                }
-                
-                const matches = [];
-                
-                productCards.forEach(card => {
-                    const cardTitle = card.querySelector('.card-title').textContent.toLowerCase();
-                    
-                    if (cardTitle.startsWith(searchTerm)) {
-                        matches.push({
-                            element: card,
-                            title: card.querySelector('.card-title').textContent
-                        });
-                    }
-                });
-                
-                if (matches.length > 0) {
-                    liveSearchResults.innerHTML = '';
-                    matches.slice(0, 5).forEach(match => {
-                        const resultItem = document.createElement('div');
-                        resultItem.className = 'live-search-item';
-                        resultItem.textContent = match.title;
+                // Modal functionality
+                const productModal = document.getElementById('productModal');
+                if (productModal) {
+                    productModal.addEventListener('show.bs.modal', function(event) {
+                        const button = event.relatedTarget;
+                        const productName = button.getAttribute('data-product-name');
+                        const productImage = button.getAttribute('data-product-image');
+                        const productCategory = button.getAttribute('data-product-category');
+                        const productMaterial = button.getAttribute('data-product-material');
+                        const productPrice = button.getAttribute('data-product-price');
+                        const productAvailability = button.getAttribute('data-product-availability');
+                        const productStock = button.getAttribute('data-product-stock');
+                        const productFaceShape = button.getAttribute('data-product-faceshape');
                         
-                        resultItem.addEventListener('click', function() {
-                            searchInput.value = match.title;
-                            searchForm.submit();
-                        });
+                        document.getElementById('modalProductName').textContent = productName;
+                        document.getElementById('modalProductImage').src = productImage;
+                        document.getElementById('modalProductImage').alt = productName;
+                        document.getElementById('modalProductCategory').textContent = productCategory;
+                        document.getElementById('modalProductMaterial').textContent = productMaterial;
+                        document.getElementById('modalProductPrice').textContent = productPrice;
+                        document.getElementById('modalProductStock').textContent = productStock;
+                        document.getElementById('modalProductFaceShape').textContent = productFaceShape;
                         
-                        liveSearchResults.appendChild(resultItem);
+                        const availabilityBadge = document.getElementById('modalProductAvailability');
+                        availabilityBadge.textContent = productAvailability;
+                        availabilityBadge.className = 'availability-badge ' + 
+                            (productAvailability === 'Available' ? 'available' : 'not-available');
                     });
+                }
+                
+                function performLiveSearch() {
+                    const searchTerm = searchInput.value.trim().toLowerCase();
                     
-                    if (matches.length > 5) {
-                        const moreItem = document.createElement('div');
-                        moreItem.className = 'live-search-item text-center text-muted small';
-                        moreItem.textContent = `+${matches.length - 5} more items...`;
-                        liveSearchResults.appendChild(moreItem);
+                    if (searchTerm.length === 0) {
+                        liveSearchResults.style.display = 'none';
+                        return;
                     }
                     
-                    liveSearchResults.style.display = 'block';
-                } else {
-                    liveSearchResults.innerHTML = '<div class="live-search-item text-muted">No matches found</div>';
-                    liveSearchResults.style.display = 'block';
-                }
-            }
-            
-            function filterProducts() {
-                const searchTerm = searchInput.value.trim().toLowerCase();
-                
-                if (searchTerm.length === 0) {
+                    const matches = [];
+                    
                     productCards.forEach(card => {
-                        card.classList.remove('hidden');
+                        const cardTitle = card.querySelector('.card-title').textContent.toLowerCase();
+                        
+                        if (cardTitle.startsWith(searchTerm)) {
+                            matches.push({
+                                element: card,
+                                title: card.querySelector('.card-title').textContent
+                            });
+                        }
                     });
-                    return;
+                    
+                    if (matches.length > 0) {
+                        liveSearchResults.innerHTML = '';
+                        matches.slice(0, 5).forEach(match => {
+                            const resultItem = document.createElement('div');
+                            resultItem.className = 'live-search-item';
+                            resultItem.textContent = match.title;
+                            
+                            resultItem.addEventListener('click', function() {
+                                searchInput.value = match.title;
+                                searchForm.submit();
+                            });
+                            
+                            liveSearchResults.appendChild(resultItem);
+                        });
+                        
+                        if (matches.length > 5) {
+                            const moreItem = document.createElement('div');
+                            moreItem.className = 'live-search-item text-center text-muted small';
+                            moreItem.textContent = `+${matches.length - 5} more items...`;
+                            liveSearchResults.appendChild(moreItem);
+                        }
+                        
+                        liveSearchResults.style.display = 'block';
+                    } else {
+                        liveSearchResults.innerHTML = '<div class="live-search-item text-muted">No matches found</div>';
+                        liveSearchResults.style.display = 'block';
+                    }
                 }
                 
-                let visibleCount = 0;
-                
-                productCards.forEach(card => {
-                    const cardTitle = card.querySelector('.card-title').textContent.toLowerCase();
+                function filterProducts() {
+                    const searchTerm = searchInput.value.trim().toLowerCase();
                     
-                    if (cardTitle.startsWith(searchTerm)) {
-                        card.classList.remove('hidden');
-                        visibleCount++;
-                    } else {
-                        card.classList.add('hidden');
+                    if (searchTerm.length === 0) {
+                        productCards.forEach(card => {
+                            card.classList.remove('hidden');
+                        });
+                        return;
+                    }
+                    
+                    let visibleCount = 0;
+                    
+                    productCards.forEach(card => {
+                        const cardTitle = card.querySelector('.card-title').textContent.toLowerCase();
+                        
+                        if (cardTitle.startsWith(searchTerm)) {
+                            card.classList.remove('hidden');
+                            visibleCount++;
+                        } else {
+                            card.classList.add('hidden');
+                        }
+                    });
+                    
+                    const noResultsElement = document.querySelector('.no-results');
+                    if (noResultsElement) {
+                        noResultsElement.style.display = visibleCount > 0 ? 'none' : 'block';
+                    }
+                }
+                
+                searchInput.addEventListener('input', function() {
+                    performLiveSearch();
+                });
+                
+                searchInput.addEventListener('focus', function() {
+                    if (searchInput.value.trim().length > 0) {
+                        performLiveSearch();
                     }
                 });
                 
-                const noResultsElement = document.querySelector('.no-results');
-                if (noResultsElement) {
-                    noResultsElement.style.display = visibleCount > 0 ? 'none' : 'block';
-                }
-            }
-            
-            searchInput.addEventListener('input', function() {
-                performLiveSearch();
-            });
-            
-            searchInput.addEventListener('focus', function() {
-                if (searchInput.value.trim().length > 0) {
-                    performLiveSearch();
-                }
-            });
-            
-            document.addEventListener('click', function(e) {
-                if (!searchInput.contains(e.target) && !liveSearchResults.contains(e.target)) {
-                    liveSearchResults.style.display = 'none';
-                }
-            });
-            
-            searchInput.addEventListener('keydown', function(e) {
-                const items = liveSearchResults.querySelectorAll('.live-search-item');
-                let currentHighlight = liveSearchResults.querySelector('.live-search-item.highlight');
-                
-                if (e.key === 'Escape') {
-                    liveSearchResults.style.display = 'none';
-                    return;
-                }
-                
-                if (items.length === 0) return;
-                
-                if (e.key === 'ArrowDown') {
-                    e.preventDefault();
-                    if (!currentHighlight) {
-                        items[0].classList.add('highlight');
-                    } else {
-                        currentHighlight.classList.remove('highlight');
-                        const next = currentHighlight.nextElementSibling || items[0];
-                        next.classList.add('highlight');
-                        next.scrollIntoView({ block: 'nearest' });
+                document.addEventListener('click', function(e) {
+                    if (!searchInput.contains(e.target) && !liveSearchResults.contains(e.target)) {
+                        liveSearchResults.style.display = 'none';
                     }
-                } else if (e.key === 'ArrowUp') {
-                    e.preventDefault();
-                    if (!currentHighlight) {
-                        items[items.length - 1].classList.add('highlight');
-                    } else {
-                        currentHighlight.classList.remove('highlight');
-                        const prev = currentHighlight.previousElementSibling || items[items.length - 1];
-                        prev.classList.add('highlight');
-                        prev.scrollIntoView({ block: 'nearest' });
+                });
+                
+                searchInput.addEventListener('keydown', function(e) {
+                    const items = liveSearchResults.querySelectorAll('.live-search-item');
+                    let currentHighlight = liveSearchResults.querySelector('.live-search-item.highlight');
+                    
+                    if (e.key === 'Escape') {
+                        liveSearchResults.style.display = 'none';
+                        return;
                     }
-                } else if (e.key === 'Enter' && currentHighlight) {
-                    e.preventDefault();
-                    searchInput.value = currentHighlight.textContent;
-                    searchForm.submit();
+                    
+                    if (items.length === 0) return;
+                    
+                    if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        if (!currentHighlight) {
+                            items[0].classList.add('highlight');
+                        } else {
+                            currentHighlight.classList.remove('highlight');
+                            const next = currentHighlight.nextElementSibling || items[0];
+                            next.classList.add('highlight');
+                            next.scrollIntoView({ block: 'nearest' });
+                        }
+                    } else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        if (!currentHighlight) {
+                            items[items.length - 1].classList.add('highlight');
+                        } else {
+                            currentHighlight.classList.remove('highlight');
+                            const prev = currentHighlight.previousElementSibling || items[items.length - 1];
+                            prev.classList.add('highlight');
+                            prev.scrollIntoView({ block: 'nearest' });
+                        }
+                    } else if (e.key === 'Enter' && currentHighlight) {
+                        e.preventDefault();
+                        searchInput.value = currentHighlight.textContent;
+                        searchForm.submit();
+                    }
+                });
+                
+                searchForm.addEventListener('submit', function(e) {
+                    return true;
+                });
+                
+                if (searchInput.value) {
+                    filterProducts();
                 }
             });
-            
-            searchForm.addEventListener('submit', function(e) {
-                return true;
-            });
-            
-            if (searchInput.value) {
-                filterProducts();
-            }
-        });
-    </script>
+        </script>
     </body>
 </html>
