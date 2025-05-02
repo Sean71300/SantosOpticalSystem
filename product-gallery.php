@@ -317,21 +317,25 @@
 
 .modal-product-image-container {
     height: 300px;
-    width: 100%; 
+    width: 100%;
+    min-width: 300px;
     display: flex;
     align-items: center;
     justify-content: center;
     background-color: #f8f9fa;
-    padding: 20px;
-    margin-bottom: 15px;
+    padding: 10px;
+    margin: 0 auto;
+    border-radius: 5px;
+    overflow: hidden; 
 }
 
 .modal-product-image {
-    max-height: 100%;
-    max-width: 100%;
+    height: 100%;
+    width: 100%;
     object-fit: contain;
-    border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    object-position: center;
+    max-height: 300px;
+    max-width: 300px;
 }
         </style>
     </head>
@@ -353,9 +357,10 @@
             </div>
                     <div class="modal-body">
                 <div class="row">
-                   <div class="col-md-6">
-    <div class="modal-product-image-container">
-        <img id="modalProductImage" src="" class="modal-product-image img-fluid" alt="Product Image">
+                  <div class="col-md-6">
+    <div class="modal-product-image-container ratio ratio-1x1"> <!-- Added ratio class -->
+        <img id="modalProductImage" src="" class="modal-product-image" alt="Product Image" 
+             style="width: 100%; height: 100%; object-fit: contain;">
     </div>
 </div>
                             <div class="col-md-6 product-details">
