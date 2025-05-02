@@ -96,6 +96,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['cancel'])) {
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="shortcut icon" type="image/x-icon" href="Images/logo.png"/>
     <style>
     :root {
@@ -264,12 +265,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['cancel'])) {
             <button type="submit" name="cancel" class="cancel-button">Cancel</button>
         </div>
     </form>
+</div>
 
-    <div class="container border border-black opacity-25 mt-3">
-        <i>For customers:</i>
-        <i>Use your full name as username and your reference number as password.</i>
+<div class="alert alert-info alert-dismissible fade show mt-3" role="alert">
+  <div class="d-flex">
+    <div class="flex-shrink-0 me-3">
+      <i class="bi bi-info-circle-fill fs-4"></i> <!-- Bootstrap Icons (requires separate include) -->
     </div>
-
+    <div>
+      <h5 class="alert-heading">For customers:</h5>
+      <p class="mb-0">Use your full name as username and your reference number as password.</p>
+    </div>
+  </div>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 </div>
 
 </body>
