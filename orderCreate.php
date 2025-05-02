@@ -72,18 +72,12 @@ if (isset($_GET['customer_id'])) {
     $stmt->close();
 }
 
-// Get branch name
-$branchName = '';
-if ($employeeBranch) {
-    $branchQuery = "SELECT BranchName FROM BranchMaster WHERE BranchCode = ?";
-    $stmt = $conn->prepare($branchQuery);
-    $stmt->bind_param('s', $employeeBranch);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    if ($row = $result->fetch_assoc()) {
-        $branchName = $row['BranchName'];
-    }
-    $stmt->close();
+// Get all branches
+$branches = [];
+$branchQuery = "SELECT BranchCode, BranchName FROM BranchMaster";
+$result = $conn->query($branchQuery);
+while ($row = $result->fetch_assoc()) {
+    $branches[] = $row;
 }
 
 // Get all shapes for filter
@@ -94,15 +88,20 @@ while ($row = $result->fetch_assoc()) {
     $shapes[] = $row;
 }
 
-// Get products based on branch
+// Get products based on selected branch (default to employee's branch)
+$selectedBranch = $employeeBranch;
+if (isset($_POST['branch_code'])) {
+    $selectedBranch = $_POST['branch_code'];
+}
+
 $products = [];
-if ($employeeBranch) {
+if ($selectedBranch) {
     $productQuery = "SELECT p.*, pb.Stocks 
                      FROM productMstr p
                      JOIN ProductBranchMaster pb ON p.ProductID = pb.ProductID
                      WHERE pb.BranchCode = ? AND p.Avail_FL = 'Available'";
     $stmt = $conn->prepare($productQuery);
-    $stmt->bind_param('s', $employeeBranch);
+    $stmt->bind_param('s', $selectedBranch);
     $stmt->execute();
     $result = $stmt->get_result();
     while ($row = $result->fetch_assoc()) {
@@ -206,25 +205,34 @@ $conn->close();
                     </div>
                 </div>
 
-                <div class="row mb-4">
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label class="form-label"><strong>Branch:</strong></label>
-                            <input type="text" class="form-control" value="<?= htmlspecialchars($branchName) ?>" readonly>
+                <form id="branchForm" method="post">
+                    <input type="hidden" name="customer_id" value="<?= $customerDetails['CustomerID'] ?>">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="branch_code" class="form-label"><strong>Branch:</strong></label>
+                                <select class="form-select" id="branch_code" name="branch_code" onchange="this.form.submit()">
+                                    <?php foreach ($branches as $branch): ?>
+                                        <option value="<?= $branch['BranchCode'] ?>" <?= ($branch['BranchCode'] == $selectedBranch) ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars($branch['BranchName']) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="shapeFilter" class="form-label"><strong>Filter by Shape:</strong></label>
+                                <select class="form-select" id="shapeFilter">
+                                    <option value="">All Shapes</option>
+                                    <?php foreach ($shapes as $shape): ?>
+                                        <option value="<?= $shape['ShapeID'] ?>"><?= $shape['Description'] ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="shapeFilter" class="form-label"><strong>Filter by Shape:</strong></label>
-                            <select class="form-select" id="shapeFilter">
-                                <option value="">All Shapes</option>
-                                <?php foreach ($shapes as $shape): ?>
-                                    <option value="<?= $shape['ShapeID'] ?>"><?= $shape['Description'] ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                    </div>
-                </div>
+                </form>
 
                 <h4 class="mb-3">Please select a product</h4>
 
@@ -285,7 +293,7 @@ $conn->close();
 
                     <form id="orderForm" method="post">
                         <input type="hidden" name="customer_id" value="<?= $customerDetails['CustomerID'] ?>">
-                        <input type="hidden" name="branch_code" value="<?= $employeeBranch ?>">
+                        <input type="hidden" name="branch_code" value="<?= $selectedBranch ?>">
                         <input type="hidden" name="product_id" id="selectedProduct">
                         
                         <div class="row mt-4">
