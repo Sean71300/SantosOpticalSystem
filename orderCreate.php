@@ -138,7 +138,7 @@ $branches_result = $conn->query($branches_query);
     </style>
 </head>
 <body>
-    <?php include 'navbar.php'; ?>
+    <?php include 'sidebar.php'; ?>
 
     <div class="container mt-4">
         <div class="row mb-4">
