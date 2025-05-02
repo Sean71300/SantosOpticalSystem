@@ -386,6 +386,42 @@ handleCancellation();
         </div>
     </div>
 
+    <!-- Medical Record Success Modal -->
+    <div class="modal fade" id="medicalSuccessModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">Success</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <?= htmlspecialchars($medicalSuccess) ?>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Medical Record Error Modal -->
+    <div class="modal fade" id="medicalErrorModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Error</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <?= htmlspecialchars($medicalError) ?>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- JavaScript -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -406,6 +442,19 @@ handleCancellation();
                     addMedicalRecordModal.querySelector('#visit_date').value = today;
                 });
             }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Existing medical record modal initialization
+            
+            // Show medical status modals
+            <?php if ($medicalSuccess): ?>
+                new bootstrap.Modal(document.getElementById('medicalSuccessModal')).show();
+            <?php endif; ?>
+            
+            <?php if ($medicalError): ?>
+                new bootstrap.Modal(document.getElementById('medicalErrorModal')).show();
+            <?php endif; ?>
         });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>

@@ -9,6 +9,10 @@ if (!isset($_SESSION["username"])) {
     exit();
 }
 
+$medicalSuccess = $_SESSION['medical_success'] ?? null;
+$medicalError = $_SESSION['medical_error'] ?? null;
+unset($_SESSION['medical_success'], $_SESSION['medical_error']);
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $customerID = $_POST['customerID'];
     $visit_date = $_POST['visit_date'];
@@ -56,11 +60,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             GenerateLogs($employee_id, $customerID, "Added medical record");
             
             // Redirect back to the customer profile with success message
-            header("Location: customerEdit.php?CustomerID=$customerID&success=Medical record added successfully");
+            $_SESSION['medical_success'] = 'Medical record added successfully';
+            header("Location: customerEdit.php?CustomerID=$customerID");
             exit();
         } else {
             // Redirect back with error message
-            header("Location: customerEdit.php?CustomerID=$customerID&error=Error adding medical record");
+            $_SESSION['medical_error'] = 'Error adding medical record'; // Customize message as needed
+            header("Location: customerEdit.php?CustomerID=$customerID");
             exit();
         }
     } else {
