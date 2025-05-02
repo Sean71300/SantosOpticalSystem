@@ -100,7 +100,7 @@
                 BranchCode INT(10),
                 Created_by VARCHAR(50),
                 Created_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (CustomerID) REFERENCES customer(CustomerID)
+                FOREIGN KEY (CustomerID) REFERENCES customer(CustomerID) ON DELETE CASCADE
                 )";
 
         if (mysqli_query($conn, $sql))

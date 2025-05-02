@@ -42,9 +42,9 @@ if (isset($_POST['action'])) {
             $sql = "DELETE FROM archives WHERE ArchiveID = ?";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param('i', $archiveID);
-            $stmt->execute();
-            
+            $stmt->execute();            
             $_SESSION['message'] = "Item restored successfully!";
+            
         }
     } 
     elseif ($_POST['action'] == 'delete') {
