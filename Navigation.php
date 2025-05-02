@@ -53,17 +53,30 @@ $current_page = basename($_SERVER['PHP_SELF']);
                     }
                     else{     
                         $image = $_SESSION["img"];
-                        echo  '<div class="dropdown">';
-                        echo  '<button class="btn dropdown-toggle fs-5 fw-bold" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">';
-                        echo  '|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'. htmlspecialchars($_SESSION["full_name"]) . '  ';   
-                        echo  '<img src="' . $image . '" class="logo">';
-                        echo  '</button>';
-                        echo  '<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">';
+                        echo  '<div class="dropdown">';                  
                         if ($_SESSION["roleid"] == 1) {
+                            echo  '<button class="btn dropdown-toggle fs-5 fw-bold" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">';
+                            echo  '|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'. htmlspecialchars($_SESSION["full_name"]) . '  ';   
+                            echo  '<img src="' . $image . '" class="logo">';
+                            echo  '</button>';
+                            echo  '<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">';
                             echo '<li><a class="dropdown-item" href="Dashboard.php">Admin page</a></li>';
                         }
                         else if ($_SESSION["roleid"] == 2) {
+                            echo  '<button class="btn dropdown-toggle fs-5 fw-bold" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">';
+                            echo  '|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'. htmlspecialchars($_SESSION["full_name"]) . '  ';   
+                            echo  '<img src="' . $image . '" class="logo">';
+                            echo  '</button>';
+                            echo  '<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">';
                             echo '<li><a class="dropdown-item" href="Dashboard.php">Employee page</a></li>';
+                        }
+                        else if ($_SESSION["user_type"] == 'customer') {      
+                            echo  '<button class="btn dropdown-toggle fs-5 fw-bold" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">';
+                            echo  '|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'. htmlspecialchars($_SESSION["full_name"]) . '  ';   
+                            echo  '</button>';
+                            echo  '<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">';                    
+                            echo '<li><a class="dropdown-item" href="customer_dashboard.php">Medical History</a></li>';
+                            echo '<li><a class="dropdown-item" href="#">Track Order</a></li>';
                         }
                         echo  '<li><a class="dropdown-item" href="logout.php">Log Out</a></li>';
                         echo  '</ul>';
