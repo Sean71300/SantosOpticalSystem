@@ -162,127 +162,6 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                 </div>
             </div>
         </div>
-
-        <!-- Add Medical Record Modal -->
-        <div class="modal fade" id="addMedicalRecordModal" tabindex="-1" aria-labelledby="addMedicalRecordModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-xl">
-                <div class="modal-content">
-                    <div class="modal-header bg-primary text-white">
-                        <h5 class="modal-title" id="addMedicalRecordModalLabel">Add Medical Record</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="medicalRecordForm">
-                            <input type="hidden" name="customerID" id="medicalRecordCustomerID">
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="visit_date" class="form-label">Visit Date</label>
-                                    <input type="date" class="form-control" id="visit_date" name="visit_date" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="eye_condition" class="form-label">Eye Condition</label>
-                                    <input type="text" class="form-control" id="eye_condition" name="eye_condition">
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="current_medications" class="form-label">Current Medications</label>
-                                    <textarea class="form-control" id="current_medications" name="current_medications" rows="2"></textarea>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="allergies" class="form-label">Allergies</label>
-                                    <textarea class="form-control" id="allergies" name="allergies" rows="2"></textarea>
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="family_eye_history" class="form-label">Family Eye History</label>
-                                    <textarea class="form-control" id="family_eye_history" name="family_eye_history" rows="2"></textarea>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="previous_eye_surgeries" class="form-label">Previous Eye Surgeries</label>
-                                    <textarea class="form-control" id="previous_eye_surgeries" name="previous_eye_surgeries" rows="2"></textarea>
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="systemic_diseases" class="form-label">Systemic Diseases (e.g., diabetes, hypertension)</label>
-                                    <input type="text" class="form-control" id="systemic_diseases" name="systemic_diseases">
-                                </div>
-                            </div>
-                            
-                            <h5 class="mt-4 mb-3 border-bottom pb-2">Visual Acuity</h5>
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="visual_acuity_right" class="form-label">Right Eye</label>
-                                    <input type="text" class="form-control" id="visual_acuity_right" name="visual_acuity_right" placeholder="e.g., 20/20">
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="visual_acuity_left" class="form-label">Left Eye</label>
-                                    <input type="text" class="form-control" id="visual_acuity_left" name="visual_acuity_left" placeholder="e.g., 20/20">
-                                </div>
-                            </div>
-                            
-                            <h5 class="mt-4 mb-3 border-bottom pb-2">Intraocular Pressure (mmHg)</h5>
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="intraocular_pressure_right" class="form-label">Right Eye</label>
-                                    <input type="number" step="0.1" class="form-control" id="intraocular_pressure_right" name="intraocular_pressure_right">
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="intraocular_pressure_left" class="form-label">Left Eye</label>
-                                    <input type="number" step="0.1" class="form-control" id="intraocular_pressure_left" name="intraocular_pressure_left">
-                                </div>
-                            </div>
-                            
-                            <h5 class="mt-4 mb-3 border-bottom pb-2">Refraction</h5>
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="refraction_right" class="form-label">Right Eye</label>
-                                    <input type="text" class="form-control" id="refraction_right" name="refraction_right" placeholder="e.g., -1.50 DS">
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="refraction_left" class="form-label">Left Eye</label>
-                                    <input type="text" class="form-control" id="refraction_left" name="refraction_left" placeholder="e.g., -1.25 DS">
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="pupillary_distance" class="form-label">Pupillary Distance (mm)</label>
-                                    <input type="number" class="form-control" id="pupillary_distance" name="pupillary_distance">
-                                </div>
-                            </div>
-                            
-                            <h5 class="mt-4 mb-3 border-bottom pb-2">Examinations</h5>
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="corneal_topography" class="form-label">Corneal Topography</label>
-                                    <textarea class="form-control" id="corneal_topography" name="corneal_topography" rows="3"></textarea>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="fundus_examination" class="form-label">Fundus Examination</label>
-                                    <textarea class="form-control" id="fundus_examination" name="fundus_examination" rows="3"></textarea>
-                                </div>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="additional_notes" class="form-label">Additional Notes</label>
-                                <textarea class="form-control" id="additional_notes" name="additional_notes" rows="3"></textarea>
-                            </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-primary" id="saveMedicalRecord">Save Record</button>
-                    </div>
-                </div>
-            </div>
-        </div>
                     
         <script>
             // Sorting function
@@ -338,6 +217,9 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                     });
                 });
             });
+        
+
+
         </script>
 
         <!-- Load jQuery first -->
