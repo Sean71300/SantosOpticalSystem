@@ -1,6 +1,5 @@
 <?php
 include_once 'setup.php';
-include 'customerEdit.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $customerID = $_POST['customerID'];
