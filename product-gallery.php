@@ -315,20 +315,24 @@
                 color: #721c24;
             }
 
-            .modal-product-image-container {
-        height: 400px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background-color: #f8f9fa;
-        padding: 20px;
-    }
-    
-    .modal-product-image {
-        max-height: 100%;
-        max-width: 100%;
-        object-fit: contain;
-    }
+.modal-product-image-container {
+    height: 300px;
+    width: 100%; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+    padding: 20px;
+    margin-bottom: 15px;
+}
+
+.modal-product-image {
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
         </style>
     </head>
 
@@ -349,11 +353,11 @@
             </div>
                     <div class="modal-body">
                 <div class="row">
-                    <div class="col-md-6">
-                        <div class="modal-product-image-container">
-                            <img id="modalProductImage" src="" class="modal-product-image" alt="Product Image">
-                        </div>
-                    </div>
+                   <div class="col-md-6">
+    <div class="modal-product-image-container">
+        <img id="modalProductImage" src="" class="modal-product-image img-fluid" alt="Product Image">
+    </div>
+</div>
                             <div class="col-md-6 product-details">
                                 <div class="detail-row">
                                     <h3 id="modalProductName"></h3>
