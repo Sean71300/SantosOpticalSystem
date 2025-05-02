@@ -9,7 +9,8 @@ $orderSuccess = false;
 $orderDetails = [];
 $errorMessage = '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_order'])) {
+// Handle order confirmation
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirmed_order'])) {
     $conn = connect();
     $customerId = $_POST['customer_id'];
     $productId = $_POST['product_id'];
@@ -94,7 +95,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_order'])) {
                 ];
                 
                 $logId = generate_LogsID();
-                $logDescription = "" . $customerData['CustomerName'];
+                $logDescription = "Created new order #$orderId for customer " . $customerData['CustomerName'];
                 $logQuery = "INSERT INTO Logs (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description) 
                             VALUES (?, ?, ?, 'order', 3, ?)";
                 $stmt = $conn->prepare($logQuery);
@@ -117,6 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_order'])) {
     }
 }
 
+// Get employee branch
 $employeeBranch = '';
 $conn = connect();
 $employeeQuery = "SELECT BranchCode FROM employee WHERE LoginName = ?";
@@ -129,6 +131,7 @@ if ($row = $result->fetch_assoc()) {
 }
 $stmt->close();
 
+// Get customer details
 $customerDetails = [];
 if (isset($_GET['customer_id'])) {
     $customerId = $_GET['customer_id'];
@@ -141,6 +144,7 @@ if (isset($_GET['customer_id'])) {
     $stmt->close();
 }
 
+// Get branches
 $branches = [];
 $branchQuery = "SELECT BranchCode, BranchName FROM BranchMaster";
 $result = $conn->query($branchQuery);
@@ -148,6 +152,7 @@ while ($row = $result->fetch_assoc()) {
     $branches[] = $row;
 }
 
+// Get shapes
 $shapes = [];
 $shapeQuery = "SELECT * FROM shapeMaster";
 $result = $conn->query($shapeQuery);
@@ -155,11 +160,13 @@ while ($row = $result->fetch_assoc()) {
     $shapes[] = $row;
 }
 
+// Set selected branch
 $selectedBranch = $employeeBranch;
 if (isset($_POST['branch_code'])) {
     $selectedBranch = $_POST['branch_code'];
 }
 
+// Get products
 $products = [];
 if ($selectedBranch) {
     $productQuery = "SELECT p.*, pb.Stocks 
@@ -239,6 +246,13 @@ $conn->close();
         .btn-action {
             min-width: 120px;
         }
+        .no-products {
+            padding: 20px;
+            text-align: center;
+            background-color: #fff3cd;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
     </style>
 </head>
 <body>
@@ -297,7 +311,9 @@ $conn->close();
                                 <select class="form-select" id="shapeFilter">
                                     <option value="">All Shapes</option>
                                     <?php foreach ($shapes as $shape): ?>
-                                        <option value="<?= $shape['ShapeID'] ?>"><?= $shape['Description'] ?></option>
+                                        <option value="<?= $shape['ShapeID'] ?>" <?= (isset($customerDetails['ShapeID']) && $customerDetails['ShapeID'] == $shape['ShapeID'] ? 'selected' : '' ?>>
+                                            <?= $shape['Description'] ?>
+                                        </option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
@@ -309,63 +325,79 @@ $conn->close();
 
                 <?php if (!empty($products)): ?>
                     <div class="row" id="productsContainer">
-                        <?php foreach ($products as $product): ?>
-                            <div class="col-md-4 product-item" data-shape="<?= $product['ShapeID'] ?>">
-                                <div class="product-card" onclick="selectProduct(this, <?= $product['ProductID'] ?>)">
-                                    <?php if (!empty($product['ProductImage'])): ?>
-                                        <img src="<?= $product['ProductImage'] ?>" class="img-fluid product-img" alt="<?= htmlspecialchars($product['Model']) ?>">
-                                    <?php else: ?>
-                                        <div class="text-center py-3 bg-light">
-                                            <i class="fas fa-image fa-3x text-muted"></i>
-                                        </div>
-                                    <?php endif; ?>
-                                    <h5><?= htmlspecialchars($product['Model']) ?></h5>
-                                    <p class="mb-1"><small class="text-muted"><?= htmlspecialchars($product['CategoryType']) ?></small></p>
-                                    <p class="mb-1"><strong>Brand:</strong> 
-                                        <?php 
-                                            $brandName = 'Unknown';
-                                            $conn = connect();
-                                            $brandQuery = "SELECT BrandName FROM brandMaster WHERE BrandID = ?";
-                                            $stmt = $conn->prepare($brandQuery);
-                                            $stmt->bind_param('i', $product['BrandID']);
-                                            $stmt->execute();
-                                            $result = $stmt->get_result();
-                                            if ($row = $result->fetch_assoc()) {
-                                                $brandName = $row['BrandName'];
-                                            }
-                                            $stmt->close();
-                                            $conn->close();
-                                            echo htmlspecialchars($brandName);
-                                        ?>
-                                    </p>
-                                    <p class="mb-1"><strong>Shape:</strong> 
-                                        <?php 
-                                            $shapeName = 'Unknown';
-                                            $conn = connect();
-                                            $shapeQuery = "SELECT Description FROM shapeMaster WHERE ShapeID = ?";
-                                            $stmt = $conn->prepare($shapeQuery);
-                                            $stmt->bind_param('i', $product['ShapeID']);
-                                            $stmt->execute();
-                                            $result = $stmt->get_result();
-                                            if ($row = $result->fetch_assoc()) {
-                                                $shapeName = $row['Description'];
-                                            }
-                                            $stmt->close();
-                                            $conn->close();
-                                            echo htmlspecialchars($shapeName);
-                                        ?>
-                                    </p>
-                                    <p class="mb-1"><strong>Price:</strong> <?= htmlspecialchars($product['Price']) ?></p>
-                                    <p class="mb-0"><strong>Stocks:</strong> <?= $product['Stocks'] ?></p>
-                                </div>
+                        <?php 
+                        $filteredProducts = array_filter($products, function($product) use ($customerDetails) {
+                            if (isset($customerDetails['ShapeID']) && $customerDetails['ShapeID'] != '') {
+                                return $product['ShapeID'] == $customerDetails['ShapeID'];
+                            }
+                            return true;
+                        });
+                        
+                        if (empty($filteredProducts)): ?>
+                            <div class="col-12 no-products">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                No products available for the selected face shape.
                             </div>
-                        <?php endforeach; ?>
+                        <?php else: ?>
+                            <?php foreach ($filteredProducts as $product): ?>
+                                <div class="col-md-4 product-item" data-shape="<?= $product['ShapeID'] ?>">
+                                    <div class="product-card" onclick="selectProduct(this, <?= $product['ProductID'] ?>, '<?= htmlspecialchars($product['Model']) ?>')">
+                                        <?php if (!empty($product['ProductImage'])): ?>
+                                            <img src="<?= $product['ProductImage'] ?>" class="img-fluid product-img" alt="<?= htmlspecialchars($product['Model']) ?>">
+                                        <?php else: ?>
+                                            <div class="text-center py-3 bg-light">
+                                                <i class="fas fa-image fa-3x text-muted"></i>
+                                            </div>
+                                        <?php endif; ?>
+                                        <h5><?= htmlspecialchars($product['Model']) ?></h5>
+                                        <p class="mb-1"><small class="text-muted"><?= htmlspecialchars($product['CategoryType']) ?></small></p>
+                                        <p class="mb-1"><strong>Brand:</strong> 
+                                            <?php 
+                                                $brandName = 'Unknown';
+                                                $conn = connect();
+                                                $brandQuery = "SELECT BrandName FROM brandMaster WHERE BrandID = ?";
+                                                $stmt = $conn->prepare($brandQuery);
+                                                $stmt->bind_param('i', $product['BrandID']);
+                                                $stmt->execute();
+                                                $result = $stmt->get_result();
+                                                if ($row = $result->fetch_assoc()) {
+                                                    $brandName = $row['BrandName'];
+                                                }
+                                                $stmt->close();
+                                                $conn->close();
+                                                echo htmlspecialchars($brandName);
+                                            ?>
+                                        </p>
+                                        <p class="mb-1"><strong>Shape:</strong> 
+                                            <?php 
+                                                $shapeName = 'Unknown';
+                                                $conn = connect();
+                                                $shapeQuery = "SELECT Description FROM shapeMaster WHERE ShapeID = ?";
+                                                $stmt = $conn->prepare($shapeQuery);
+                                                $stmt->bind_param('i', $product['ShapeID']);
+                                                $stmt->execute();
+                                                $result = $stmt->get_result();
+                                                if ($row = $result->fetch_assoc()) {
+                                                    $shapeName = $row['Description'];
+                                                }
+                                                $stmt->close();
+                                                $conn->close();
+                                                echo htmlspecialchars($shapeName);
+                                            ?>
+                                        </p>
+                                        <p class="mb-1"><strong>Price:</strong> <?= htmlspecialchars($product['Price']) ?></p>
+                                        <p class="mb-0"><strong>Stocks:</strong> <?= $product['Stocks'] ?></p>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </div>
 
                     <form id="orderForm" method="post">
                         <input type="hidden" name="customer_id" value="<?= $customerDetails['CustomerID'] ?>">
                         <input type="hidden" name="branch_code" value="<?= $selectedBranch ?>">
                         <input type="hidden" name="product_id" id="selectedProduct">
+                        <input type="hidden" name="confirmed_order" id="confirmedOrder" value="0">
                         
                         <div class="row mt-4">
                             <div class="col-md-3">
@@ -375,7 +407,7 @@ $conn->close();
                         </div>
                         
                         <div class="d-flex justify-content-end gap-3 mt-5">
-                            <button type="submit" class="btn btn-primary btn-action" id="continueBtn" name="create_order" disabled>
+                            <button type="button" class="btn btn-primary btn-action" id="continueBtn" name="create_order" disabled data-bs-toggle="modal" data-bs-target="#confirmationModal">
                                 <i class="fas fa-check-circle me-2"></i> Create Order
                             </button>
                         </div>
@@ -393,6 +425,32 @@ $conn->close();
         </div>
     </div>
 
+    <!-- Confirmation Modal -->
+    <div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmationModalLabel">Confirm Order</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to create this order?</p>
+                    <div class="order-summary">
+                        <p><strong>Customer:</strong> <?= htmlspecialchars($customerDetails['CustomerName'] ?? '') ?></p>
+                        <p><strong>Branch:</strong> <?= htmlspecialchars($selectedBranch) ?></p>
+                        <p><strong>Product:</strong> <span id="confirmProductName"></span></p>
+                        <p><strong>Quantity:</strong> <span id="confirmQuantity">1</span></p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="finalConfirmBtn">Confirm Order</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
     <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -449,6 +507,7 @@ $conn->close();
         </div>
     </div>
 
+    <!-- Cancel Modal -->
     <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -457,11 +516,11 @@ $conn->close();
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    Are you sure you want cancel this order ?
+                    Are you sure you want to cancel this order? All unsaved changes will be lost.
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <a href="order.php?id=<?= $customerDetails['CustomerID'] ?? '' ?>" class="btn btn-danger">Yes, Go Back</a>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No, Keep Editing</button>
+                    <a href="order.php?id=<?= $customerDetails['CustomerID'] ?? '' ?>" class="btn btn-danger">Yes, Cancel Order</a>
                 </div>
             </div>
         </div>
@@ -475,6 +534,7 @@ $conn->close();
             });
         <?php endif; ?>
 
+        // Filter products by shape
         document.addEventListener('DOMContentLoaded', function() {
             const shapeFilter = document.getElementById('shapeFilter');
             if (shapeFilter) {
@@ -491,9 +551,18 @@ $conn->close();
                     });
                 });
             }
+
+            // Update quantity display in confirmation modal
+            const quantityInput = document.getElementById('quantity');
+            if (quantityInput) {
+                quantityInput.addEventListener('change', function() {
+                    document.getElementById('confirmQuantity').textContent = this.value;
+                });
+            }
         });
 
-        function selectProduct(element, productId) {
+        // Select product and update confirmation modal
+        function selectProduct(element, productId, productName) {
             document.querySelectorAll('.product-card').forEach(card => {
                 card.classList.remove('selected');
             });
@@ -501,7 +570,14 @@ $conn->close();
             element.classList.add('selected');
             document.getElementById('selectedProduct').value = productId;
             document.getElementById('continueBtn').disabled = false;
+            document.getElementById('confirmProductName').textContent = productName;
         }
+
+        // Handle final confirmation
+        document.getElementById('finalConfirmBtn').addEventListener('click', function() {
+            document.getElementById('confirmedOrder').value = '1';
+            document.getElementById('orderForm').submit();
+        });
     </script>
 </body>
 </html>
