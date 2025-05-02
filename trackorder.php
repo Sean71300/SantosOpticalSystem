@@ -1,4 +1,5 @@
 <?php
+include_once 'setup.php';
 
 ?>
 
@@ -24,8 +25,7 @@
 </header>
 
 <body>
-
-    <div class="container h-75">
+    <div class="container" style="height: 20rem;">
         <div class="row justify-content-center mt-5 mb-5">
             <div class="col-md-8">
                 <i class="fa-solid fa-file-invoice-dollar me-2"></i><h1 class="text-center">Track Your Order</h1>
