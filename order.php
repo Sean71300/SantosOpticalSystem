@@ -215,7 +215,7 @@ $conn->close();
         </div>
 
         <div class="orders-container">
-            <form method="get" action="orders.php" class="mb-4 filter-form">
+            <form method="get" action="order.php" class="mb-4 filter-form">
                 <div class="row g-3">
                     <div class="col-md-4">
                         <label for="search" class="form-label">Search</label>
