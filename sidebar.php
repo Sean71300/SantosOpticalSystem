@@ -77,7 +77,7 @@ if ($isAdmin === true) {
                 <span class="sidebar-item-text">System Logs</span>
             </a>
             <a href="archives.php" class="sidebar-item <?php echo ($current_page == 'archives.php') ? 'active' : ''; ?>">
-                <i class="fas fa-clipboard-list"></i> 
+                <i class="fas fa-box-archive"></i> 
                 <span class="sidebar-item-text">Archives</span>
             </a>
         <?php endif; ?>
