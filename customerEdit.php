@@ -386,37 +386,25 @@ handleCancellation();
         </div>
     </div>
 
-    <!-- Medical Record Success Modal -->
-    <div class="modal fade" id="medicalSuccessModal" tabindex="-1">
+    <!-- Status Modal -->
+    <div class="modal fade" id="statusModal" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title">Success</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="statusModalLabel">Medical Record Status</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <?= htmlspecialchars($medicalSuccess) ?>
+                    <?php
+                    if (isset($_GET['success'])) {
+                        echo '<div class="alert alert-success mb-0">' . htmlspecialchars($_GET['success']) . '</div>';
+                    } elseif (isset($_GET['error'])) {
+                        echo '<div class="alert alert-danger mb-0">' . htmlspecialchars($_GET['error']) . '</div>';
+                    }
+                    ?>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-success" data-bs-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Medical Record Error Modal -->
-    <div class="modal fade" id="medicalErrorModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title">Error</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <?= htmlspecialchars($medicalError) ?>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -443,18 +431,13 @@ handleCancellation();
                 });
             }
         });
-
+        
         document.addEventListener('DOMContentLoaded', function() {
-            // Existing medical record modal initialization
-            
-            // Show medical status modals
-            <?php if ($medicalSuccess): ?>
-                new bootstrap.Modal(document.getElementById('medicalSuccessModal')).show();
-            <?php endif; ?>
-            
-            <?php if ($medicalError): ?>
-                new bootstrap.Modal(document.getElementById('medicalErrorModal')).show();
-            <?php endif; ?>
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('success') || urlParams.has('error')) {
+                const statusModal = new bootstrap.Modal(document.getElementById('statusModal'));
+                statusModal.show();
+            }
         });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>

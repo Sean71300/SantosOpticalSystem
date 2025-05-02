@@ -60,13 +60,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             GenerateLogs($employee_id, $customerID, "Added medical record");
             
             // Redirect back to the customer profile with success message
-            $_SESSION['medical_success'] = 'Medical record added successfully';
-            header("Location: customerEdit.php?CustomerID=$customerID");
+            header("Location: customerEdit.php?CustomerID=$customerID&success=Medical+record+added+successfully");
             exit();
         } else {
             // Redirect back with error message
-            $_SESSION['medical_error'] = 'Error adding medical record'; // Customize message as needed
-            header("Location: customerEdit.php?CustomerID=$customerID");
+            header("Location: customerEdit.php?CustomerID=$customerID&error=" . urlencode($errorMessage));
             exit();
         }
     } else {
