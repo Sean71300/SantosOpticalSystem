@@ -115,8 +115,8 @@
                 echo "</div>";
             }
         } else {
-            echo "<div class='col-12 text-center py-5 no-results'>";
-            echo "<h4>No products found matching your search.</h4>";
+            echo "<div class='col-12 py-5 no-results' style='display: flex; justify-content: center; align-items: center; min-height: 300px;'>";
+            echo "<h4 class='text-center'>No products found matching your search.</h4>";
             echo "</div>";
         }
         
