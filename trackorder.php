@@ -26,7 +26,32 @@
 <body>
 
     <div class="container">
-        
+        <div class="row justify-content-center mt-5 mb-5">
+            <div class="col-md-8">
+                <i class="fa-solid fa-file-invoice-dollar me-2"></i><h1 class="text-center">Track Your Order</h1>
+                <form action="trackorder.php" method="POST" class="mt-4">
+                    <div class="mb-3">
+                        <label for="order_id" class="form-label">Order ID</label>
+                        <input type="text" class="form-control" id="order_id" name="order_id" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Track Order</button>
+                </form>
+
+                <?php
+                if ($_SERVER["REQUEST_METHOD"] == "POST") {
+                    $order_id = $_POST['order_id'];
+                    // Here you would typically query your database to get the order status
+                    // For demonstration, we'll just simulate an order status
+                    $order_status = "Your order is being processed.";
+
+                    echo "<div class='alert alert-info mt-4'>";
+                    echo "<strong>Order ID:</strong> " . htmlspecialchars($order_id) . "<br>";
+                    echo "<strong>Status:</strong> " . htmlspecialchars($order_status);
+                    echo "</div>";
+                }
+                ?>
+            </div>
+        </div>
     </div>
 
 
