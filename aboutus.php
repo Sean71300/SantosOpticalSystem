@@ -22,43 +22,6 @@
             body {
                 overflow-x: hidden;
             }
-
-          .button-container {
-        display: flex;
-        justify-content: center;
-        gap: 20px;
-        padding: 20px 0;
-        flex-wrap: wrap;
-        background-color: #f8f9fa; /* Light gray background like in the image */
-        margin: 0 -15px; /* Full width */
-    }
-
-    .nav-button {
-        padding: 10px 25px;
-        border-radius: 0; /* Square corners instead of rounded */
-        text-decoration: none;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        text-align: center;
-        min-width: 150px;
-        text-transform: uppercase; /* Uppercase text like in the image */
-        color: #000; /* Black text */
-        background-color: transparent; /* Transparent background */
-        border: 2px solid #000; /* Black border */
-        letter-spacing: 1px; /* Slightly spaced letters */
-        font-size: 14px;
-    }
-
-    .nav-button:hover {
-        background-color: #000; /* Black background on hover */
-        color: #fff; /* White text on hover */
-    }
-
-    /* Active button style */
-    .nav-button.active {
-        background-color: #000;
-        color: #fff;
-    }
             
             .aboutus2-section {
                 animation: fadeIn 2s ease-in-out;
