@@ -234,8 +234,15 @@ function getOrderTotal($conn, $orderId) {
     $details = getOrderDetails($conn, $orderId);
     $total = 0;
     
-    foreach ($details as $detail) {
-        $total = $total + ($detail['Price'] * $detail['Quantity']);
+    // Ensure $details is a valid result set
+    if ($details) {
+        while ($detail = $details->fetch_assoc()) {
+            // Cast Price to float and Quantity to int
+            $price = (float)$detail['Price']; // Ensure Price is treated as a float
+            $quantity = (int)$detail['Quantity']; // Ensure Quantity is treated as an int
+            
+            $total += $price * $quantity; // Calculate total
+        }
     }
     
     return $total;
