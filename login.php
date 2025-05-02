@@ -366,7 +366,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['cancel'])) {
                         </div>
                         <div>
                             <h5 class="alert-heading">Login Instructions</h5>
-                            <p class="mb-0"><strong>Employees:</strong> Use your username and password.</p>
                             <p class="mb-0"><strong>Customers:</strong> Use your full name as username and your customer ID as password.</p>
                         </div>
                     </div>
