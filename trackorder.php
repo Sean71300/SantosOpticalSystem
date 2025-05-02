@@ -30,26 +30,41 @@ include 'ActivityTracker.php';
         <div class="row justify-content-center mt-5 mb-5">
             <div class="col-md-8">
                 <i class="fa-solid fa-file-invoice-dollar me-2"></i><h1 class="text-center">Track Your Order</h1>
-                <form action="trackorder.php" method="POST" class="mt-4">
-                    <div class="mb-3">
-                        <label for="order_id" class="form-label">Order ID</label>
-                        <input type="text" class="form-control" id="order_id" name="order_id" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Track Order</button>
-                </form>
 
                 <?php
-                if ($_SERVER["REQUEST_METHOD"] == "POST") {
-                    $order_id = $_POST['order_id'];
-                    // Here you would typically query your database to get the order status
-                    // For demonstration, we'll just simulate an order status
-                    $order_status = "Your order is being processed.";
+                    $conn = connect();
+                    $customer_id = $_SESSION['CustomerID'];
 
-                    echo "<div class='alert alert-info mt-4'>";
-                    echo "<strong>Order ID:</strong> " . htmlspecialchars($order_id) . "<br>";
-                    echo "<strong>Status:</strong> " . htmlspecialchars($order_status);
-                    echo "</div>";
-                }
+                    $sql = "SELECT 
+                        oH.Orderhdr_id AS OrderID,
+                        oH.Created_dt AS OrderDate,
+                        oH.Created_by AS EmployeeName,
+                        oD.Status
+                    FROM Order_hdr oH
+                    INNER JOIN orderDetails oD ON oH.Orderhdr_id = oD.OrderHdr_id
+                    WHERE oH.CustomerID = ?";
+                    
+                    $stmt = $conn->prepare($sql);
+                    $stmt->bind_param("i", $customer_id);
+                    $stmt->execute();
+                    $result = $stmt->get_result();
+
+                    if ($result->num_rows > 0) {
+                        echo "<div class='alert alert-info mt-4'>";
+                        echo "<h5>Orders for Customer ID: " . htmlspecialchars($customer_id) . "</h5>";
+                        while ($row = $result->fetch_assoc()) {
+                            echo "<hr><strong>Order ID:</strong> " . $row['OrderID'] . "<br>";
+                            echo "<strong>Date:</strong> " . $row['OrderDate'] . "<br>";
+                            echo "<strong>Handled by:</strong> " . $row['EmployeeName'] . "<br>";
+                            echo "<strong>Status:</strong> " . $row['Status'];
+                        }
+                        echo "</div>";
+                    } else {
+                        echo "<div class='alert alert-warning mt-4'>No orders found for Customer ID: " . htmlspecialchars($customer_id) . "</div>";
+                    }
+                
+                    $stmt->close();
+                    $conn->close();               
                 ?>
             </div>
         </div>
