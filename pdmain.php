@@ -200,7 +200,7 @@
             </div>
             <div class="site-footer">
                 <div class="footer-content">
-                    <p>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbspCOPYRIGHT &copy; SANTOS OPTICAL co., ltd. ALL RIGHTS RESERVED.</p>
+                    <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COPYRIGHT &copy; SANTOS OPTICAL co., ltd. ALL RIGHTS RESERVED.</p>
                 </div>
             </div>
         </div>
