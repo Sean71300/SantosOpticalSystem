@@ -1,86 +1,133 @@
 <?php
- error_reporting(E_ALL);
- ini_set('display_errors', 1);
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 include_once 'setup.php';
 include 'ActivityTracker.php'; 
 include 'loginChecker.php';
+
+function getOrders($conn, $search, $branch, $status, $limit, $offset) {
+    $query = "SELECT o.Orderhdr_id, o.Created_dt, c.CustomerName, 
+                     e.EmployeeName as CreatedBy, b.BranchName,
+                     COUNT(od.OrderDtlID) as ItemCount,
+                     SUM(p.Price * od.Quantity) as TotalAmount
+              FROM Order_hdr o
+              JOIN customer c ON o.CustomerID = c.CustomerID
+              JOIN employee e ON o.Created_by = e.LoginName
+              JOIN BranchMaster b ON o.BranchCode = b.BranchCode
+              LEFT JOIN orderDetails od ON o.Orderhdr_id = od.OrderHdr_id
+              LEFT JOIN ProductBranchMaster pbm ON od.ProductBranchID = pbm.ProductBranchID
+              LEFT JOIN productMstr p ON pbm.ProductID = p.ProductID";
+    
+    $where = "";
+    $types = "";
+    
+    if (!empty($search)) {
+        $where .= " AND (c.CustomerName LIKE ? OR o.Orderhdr_id LIKE ?)";
+        $types .= "ss";
+    }
+    
+    if (!empty($branch)) {
+        $where .= " AND o.BranchCode = ?";
+        $types .= "i";
+    }
+    
+    if (!empty($status)) {
+        $where .= " AND od.Status = ?";
+        $types .= "s";
+    }
+    
+    if (!empty($where)) {
+        $query .= " WHERE " . substr($where, 5);
+    }
+    
+    $query .= " GROUP BY o.Orderhdr_id ORDER BY o.Created_dt DESC LIMIT ? OFFSET ?";
+    $types .= "ii";
+    
+    $stmt = $conn->prepare($query);
+    
+    if (!empty($search)) {
+        $searchParam = "%$search%";
+        $stmt->bind_param($types, $searchParam, $searchParam, $branch, $status, $limit, $offset);
+    } elseif (!empty($branch)) {
+        $stmt->bind_param($types, $branch, $status, $limit, $offset);
+    } elseif (!empty($status)) {
+        $stmt->bind_param($types, $status, $limit, $offset);
+    } else {
+        $stmt->bind_param($types, $limit, $offset);
+    }
+    
+    $stmt->execute();
+    return $stmt->get_result();
+}
+
+function countTotalOrders($conn, $search, $branch, $status) {
+    $query = "SELECT COUNT(DISTINCT o.Orderhdr_id) as total 
+              FROM Order_hdr o
+              JOIN customer c ON o.CustomerID = c.CustomerID";
+    
+    $where = "";
+    $types = "";
+    
+    if (!empty($search)) {
+        $where .= " AND (c.CustomerName LIKE ? OR o.Orderhdr_id LIKE ?)";
+        $types .= "ss";
+    }
+    
+    if (!empty($branch)) {
+        $where .= " AND o.BranchCode = ?";
+        $types .= "i";
+    }
+    
+    if (!empty($status)) {
+        $where .= " AND od.Status = ?";
+        $types .= "s";
+    }
+    
+    if (!empty($where)) {
+        $query .= " WHERE " . substr($where, 5);
+    }
+    
+    $stmt = $conn->prepare($query);
+    
+    if (!empty($search)) {
+        $searchParam = "%$search%";
+        $stmt->bind_param($types, $searchParam, $searchParam, $branch, $status);
+    } elseif (!empty($branch)) {
+        $stmt->bind_param($types, $branch, $status);
+    } elseif (!empty($status)) {
+        $stmt->bind_param($types, $status);
+    }
+    
+    $stmt->execute();
+    $result = $stmt->get_result();
+    return $result->fetch_assoc()['total'];
+}
+
+function getAllBranches($conn) {
+    $query = "SELECT BranchCode, BranchName FROM BranchMaster";
+    $result = $conn->query($query);
+    return $result;
+}
+
+function getActiveCustomers($conn) {
+    $query = "SELECT CustomerID, CustomerName, CustomerContact FROM customer WHERE Status = 'Active' ORDER BY CustomerName";
+    $result = $conn->query($query);
+    return $result;
+}
 
 $ordersPerPage = 10;
 $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($currentPage - 1) * $ordersPerPage;
 
-$query = "SELECT o.Orderhdr_id, o.Created_dt, c.CustomerName, 
-                 e.EmployeeName as CreatedBy, b.BranchName,
-                 COUNT(od.OrderDtlID) as ItemCount,
-                 SUM(p.Price * od.Quantity) as TotalAmount
-          FROM Order_hdr o
-          JOIN customer c ON o.CustomerID = c.CustomerID
-          JOIN employee e ON o.Created_by = e.LoginName
-          JOIN BranchMaster b ON o.BranchCode = b.BranchCode
-          LEFT JOIN orderDetails od ON o.Orderhdr_id = od.OrderHdr_id
-          LEFT JOIN ProductBranchMaster pbm ON od.ProductBranchID = pbm.ProductBranchID
-          LEFT JOIN productMstr p ON pbm.ProductID = p.ProductID";
-
-$where = [];
-$params = [];
-$types = '';
-
-if (isset($_GET['search']) && !empty($_GET['search'])) {
-    $where[] = "(c.CustomerName LIKE ? OR o.Orderhdr_id LIKE ?)";
-    $params[] = '%' . $_GET['search'] . '%';
-    $params[] = '%' . $_GET['search'] . '%';
-    $types .= 'ss';
-}
-
-if (isset($_GET['branch']) && !empty($_GET['branch'])) {
-    $where[] = "o.BranchCode = ?";
-    $params[] = $_GET['branch'];
-    $types .= 'i';
-}
-
-if (isset($_GET['status']) && !empty($_GET['status'])) {
-    $where[] = "od.Status = ?";
-    $params[] = $_GET['status'];
-    $types .= 's';
-}
-
-if (!empty($where)) {
-    $query .= " WHERE " . implode(' AND ', $where);
-}
-
-$query .= " GROUP BY o.Orderhdr_id";
+$search = isset($_GET['search']) ? $_GET['search'] : '';
+$branch = isset($_GET['branch']) ? $_GET['branch'] : '';
+$status = isset($_GET['status']) ? $_GET['status'] : '';
 
 $conn = connect();
-$totalQuery = "SELECT COUNT(DISTINCT o.Orderhdr_id) as total 
-               FROM Order_hdr o
-               JOIN customer c ON o.CustomerID = c.CustomerID" . 
-               (!empty($where) ? " WHERE " . implode(' AND ', $where) : "");
-$stmt = $conn->prepare($totalQuery);
-
-if (!empty($params)) {
-    $stmt->bind_param($types, ...$params);
-}
-
-$stmt->execute();
-$totalResult = $stmt->get_result();
-$totalOrders = $totalResult->fetch_assoc()['total'];
+$ordersResult = getOrders($conn, $search, $branch, $status, $ordersPerPage, $offset);
+$totalOrders = countTotalOrders($conn, $search, $branch, $status);
 $totalPages = ceil($totalOrders / $ordersPerPage);
-$stmt->close();
-
-$query .= " ORDER BY o.Created_dt DESC LIMIT ? OFFSET ?";
-$types .= 'ii';
-$params[] = $ordersPerPage;
-$params[] = $offset;
-
-$stmt = $conn->prepare($query);
-$stmt->bind_param($types, ...$params);
-$stmt->execute();
-$ordersResult = $stmt->get_result();
-
-// Get branches for filter dropdown
-$branchesQuery = "SELECT BranchCode, BranchName FROM BranchMaster";
-$branchesResult = $conn->query($branchesQuery);
-
+$branchesResult = getAllBranches($conn);
 $conn->close();
 ?>
 
@@ -220,16 +267,16 @@ $conn->close();
                     <div class="col-md-4">
                         <label for="search" class="form-label">Search</label>
                         <input type="text" class="form-control" id="search" name="search" 
-                               placeholder="Search orders or customers..." value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '' ?>">
+                               placeholder="Search orders or customers..." value="<?php echo htmlspecialchars($search); ?>">
                     </div>
                     <div class="col-md-3">
                         <label for="branch" class="form-label">Filter by Branch</label>
                         <select class="form-select" id="branch" name="branch">
                             <option value="">All Branches</option>
-                            <?php while ($branch = $branchesResult->fetch_assoc()): ?>
-                                <option value="<?php echo $branch['BranchCode']; ?>" 
-                                    <?php echo (isset($_GET['branch']) && $_GET['branch'] == $branch['BranchCode'] ? 'selected' : '') ?>>
-                                    <?php echo $branch['BranchName']; ?>
+                            <?php while ($branchRow = $branchesResult->fetch_assoc()): ?>
+                                <option value="<?php echo $branchRow['BranchCode']; ?>" 
+                                    <?php echo ($branch == $branchRow['BranchCode'] ? 'selected' : ''); ?>>
+                                    <?php echo $branchRow['BranchName']; ?>
                                 </option>
                             <?php endwhile; ?>
                         </select>
@@ -238,9 +285,9 @@ $conn->close();
                         <label for="status" class="form-label">Filter by Status</label>
                         <select class="form-select" id="status" name="status">
                             <option value="">All Statuses</option>
-                            <option value="Pending" <?php echo (isset($_GET['status']) && $_GET['status'] == 'Pending') ? 'selected' : '' ?>>Pending</option>
-                            <option value="Complete" <?php echo (isset($_GET['status']) && $_GET['status'] == 'Complete') ? 'selected' : '' ?>>Complete</option>
-                            <option value="Cancelled" <?php echo (isset($_GET['status']) && $_GET['status'] == 'Cancelled') ? 'selected' : '' ?>>Cancelled</option>
+                            <option value="Pending" <?php echo ($status == 'Pending' ? 'selected' : ''); ?>>Pending</option>
+                            <option value="Complete" <?php echo ($status == 'Complete' ? 'selected' : ''); ?>>Complete</option>
+                            <option value="Cancelled" <?php echo ($status == 'Cancelled' ? 'selected' : ''); ?>>Cancelled</option>
                         </select>
                     </div>
                     <div class="col-md-2 d-flex align-items-end">
@@ -303,10 +350,9 @@ $conn->close();
                         <?php if ($currentPage > 1): ?>
                             <li class="page-item">
                                 <a class="page-link" href="?<?php 
-                                    echo http_build_query(array_merge(
-                                        $_GET,
-                                        ['page' => $currentPage - 1]
-                                    )); 
+                                    $newParams = $_GET;
+                                    $newParams['page'] = $currentPage - 1;
+                                    echo http_build_query($newParams); 
                                 ?>" aria-label="Previous">
                                     <span aria-hidden="true">&laquo;</span>
                                 </a>
@@ -316,10 +362,9 @@ $conn->close();
                         <?php for ($i = 1; $i <= $totalPages; $i++): ?>
                             <li class="page-item <?php echo ($i == $currentPage) ? 'active' : ''; ?>">
                                 <a class="page-link" href="?<?php 
-                                    echo http_build_query(array_merge(
-                                        $_GET,
-                                        ['page' => $i]
-                                    )); 
+                                    $newParams = $_GET;
+                                    $newParams['page'] = $i;
+                                    echo http_build_query($newParams); 
                                 ?>"><?php echo $i; ?></a>
                             </li>
                         <?php endfor; ?>
@@ -327,10 +372,9 @@ $conn->close();
                         <?php if ($currentPage < $totalPages): ?>
                             <li class="page-item">
                                 <a class="page-link" href="?<?php 
-                                    echo http_build_query(array_merge(
-                                        $_GET,
-                                        ['page' => $currentPage + 1]
-                                    )); 
+                                    $newParams = $_GET;
+                                    $newParams['page'] = $currentPage + 1;
+                                    echo http_build_query($newParams); 
                                 ?>" aria-label="Next">
                                     <span aria-hidden="true">&raquo;</span>
                                 </a>
@@ -346,7 +390,6 @@ $conn->close();
         </div>
     </div>
 
-    <!-- Add Order Modal -->
     <div class="modal fade" id="addOrderModal" tabindex="-1" aria-labelledby="addOrderModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -409,8 +452,7 @@ $conn->close();
                                         <tbody>
                                             <?php
                                             $conn = connect();
-                                            $customersQuery = "SELECT CustomerID, CustomerName, CustomerContact FROM customer WHERE Status = 'Active' ORDER BY CustomerName";
-                                            $customersResult = $conn->query($customersQuery);
+                                            $customersResult = getActiveCustomers($conn);
                                             
                                             while ($customer = $customersResult->fetch_assoc()): ?>
                                                 <tr>
@@ -481,7 +523,6 @@ $conn->close();
                 }
             });
 
-            // Customer search functionality
             const customerSearch = document.getElementById('customerSearch');
             if (customerSearch) {
                 customerSearch.addEventListener('input', function() {
@@ -502,17 +543,11 @@ $conn->close();
                 });
             }
 
-            // Customer selection
             document.querySelectorAll('.select-customer').forEach(button => {
                 button.addEventListener('click', function() {
                     const customerId = this.getAttribute('data-customer-id');
-                    const customerName = this.getAttribute('data-customer-name');
-                    
-                    // Close the modal
                     const modal = bootstrap.Modal.getInstance(document.getElementById('addOrderModal'));
                     modal.hide();
-                    
-                    // Redirect to order creation page with customer ID
                     window.location.href = `orderCreate.php?customer_id=${customerId}`;
                 });
             });
