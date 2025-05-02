@@ -76,6 +76,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_order'])) {
                 $branchResult = $stmt->get_result();
                 $branchData = $branchResult->fetch_assoc();
                 $stmt->close();
+
+                $price = (float)str_replace(['₱', ','], '', $productData['Price']);
+                $total = $price * $quantity;
                 
                 $orderDetails = [
                     'order_id' => $orderId,
@@ -84,8 +87,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_order'])) {
                     'product_model' => $productData['Model'] ?? '',
                     'product_category' => $productData['CategoryType'] ?? '',
                     'quantity' => $quantity,
-                    'price' => $productData['Price'] ?? '',
-                    'total' => ($productData['Price'] * $quantity) ?? '',
+                    'price' => '₱' . number_format($price, 2),
+                    'total' => '₱' . number_format($total, 2),
                     'status' => 'Pending',
                     'date_created' => date('Y-m-d H:i:s')
                 ];
