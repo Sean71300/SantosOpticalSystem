@@ -412,7 +412,7 @@ $conn->close();
                                             <input type="hidden" name="target_type" value="<?php echo $archive['TargetType']; ?>">
                                             <input type="hidden" name="action" value="delete">
                                             <button type="submit" class="btn btn-sm btn-danger" 
-                                                    onclick="return confirm('Are you sure you want to permanently delete this archived item? This cannot be undone.')">
+                                                    onclick="return confirm('Are you sure you want to permanently delete this archived item? All related data to it will also be lost.')">
                                                 <i class="fas fa-trash me-1"></i> Delete
                                             </button>
                                         </form>
@@ -478,7 +478,7 @@ $conn->close();
                 <input type="hidden" name="target_type" value="<?php echo $_GET['type']; ?>">
                 <input type="hidden" name="action" value="delete_all">
                 <button type="submit" class="btn btn-danger" 
-                        onclick="return confirm('WARNING: This will permanently delete ALL archived <?php echo $_GET['type']; ?> records and their original data. This cannot be undone. Are you sure?')">
+                        onclick="return confirm('WARNING: This will permanently delete ALL archived <?php echo $_GET['type']; ?> records and their original data. All related data to the archives will also be lost.')">
                     <i class="fas fa-trash-alt me-1"></i> Delete All <?php echo ucfirst($_GET['type']); ?> Archives
                 </button>
             </form>
