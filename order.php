@@ -184,12 +184,10 @@ while ($header = $orderHeaders->fetch_assoc()) {
             $itemCount += (int)$detail['Quantity'];
             
             if ($detail['Status'] === 'Complete') {
+                $orderStatus = 'Complete';
+            } elseif ($detail['Status'] === 'Cancelled' && $orderStatus !== 'Complete') {
                 $orderStatus = 'Cancelled';
-            } elseif ($detail['Status'] === 'Pending' && $orderStatus !== 'Complete') {
-                $orderStatus = 'Pending';
-            } elseif ($detail['Status'] === 'Cancelled' && $orderStatus !== 'Pending') {
-                $orderStatus = 'Cancelled';
-            }
+            } 
             
         }
     }
