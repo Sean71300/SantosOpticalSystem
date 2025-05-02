@@ -124,6 +124,15 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
                     </a>            
                 </div>
                 
+                <div class="table-instructions alert alert-info" style="margin-bottom: 20px; padding: 10px 15px; border-radius: 4px;">
+                <strong>Instructions:</strong>
+                <ul style="margin-bottom: 0; padding-left: 20px;">
+                    <li>To add an Employee, click the button at the top right.</li>
+                    <li>To edit or delete Employee, click the button at the 'Actions' column.</li>
+					<li>Click any column header to sort the table in ascending/descending order.</li>
+                </ul>
+            </div>
+                
                 <div class="table-responsive">
                     <table class="table table-hover text-center">
                         <thead class="table-light">
