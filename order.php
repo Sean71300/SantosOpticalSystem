@@ -29,6 +29,12 @@ function getOrderHeaders($conn, $search = '', $branch = '', $status = '', $limit
         $types .= 's';
     }
     
+    if (!empty($status)) {
+        $where[] = "od.Status = ?";
+        $params[] = $status;
+        $types .= 's';
+    }
+    
     if (!empty($where)) {
         $query .= " WHERE " . implode(' AND ', $where);
     }
