@@ -185,7 +185,7 @@
         }
     }
 
-
+    // Helper function to get face shape name from shapeID
     function getFaceShapeName($shapeID) {
         $conn = connect();
         $sql = "SELECT Description FROM shapeMaster WHERE ShapeID = ?";
@@ -281,7 +281,7 @@
             .live-search-item.highlight {
                 background-color: #e9ecef;
             }
-         
+            /* Modal Styles */
             .modal-lg-custom {
                 max-width: 800px;
             }
@@ -315,43 +315,27 @@
                 color: #721c24;
             }
 
-
-
-            .modal-product-image-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+.modal-product-image-container {
     height: 300px;
-    margin-bottom: 20px;
+    width: 100%;
+    min-width: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+    padding: 10px;
+    margin: 0 auto;
+    border-radius: 5px;
+    overflow: hidden; 
 }
 
-.detail-label {
-    font-weight: bold;
-    color: #555;
-}
-
-.detail-row {
-    margin-bottom: 15px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid #eee;
-}
-
-.available {
-    background-color: #d4edda;
-    color: #155724;
-    padding: 5px 10px;
-    border-radius: 4px;
-}
-
-.not-available {
-    background-color: #f8d7da;
-    color: #721c24;
-    padding: 5px 10px;
-    border-radius: 4px;
-}
-
-.modal-lg-custom {
-    max-width: 800px;
+.modal-product-image {
+    height: 100%;
+    width: 100%;
+    object-fit: contain;
+    object-position: center;
+    max-height: 300px;
+    max-width: 300px;
 }
         </style>
     </head>
@@ -363,71 +347,73 @@
     </header>
 
     <body>
-   <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
+        <!-- Product Modal -->
+      <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-lg-custom">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="productModalLabel">Product Details</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
+                    <div class="modal-body">
                 <div class="row">
-                    <div class="col-md-6 text-center">
-                        <div class="modal-product-image-container mb-3">
-                            <img id="modalProductImage" src="" class="img-fluid" alt="Product Image" style="max-height: 300px;">
+                  <div class="col-md-6">
+    <div class="modal-product-image-container ratio ratio-1x1"> <!-- Added ratio class -->
+        <img id="modalProductImage" src="" class="modal-product-image" alt="Product Image" 
+             style="width: 100%; height: 100%; object-fit: contain;">
+    </div>
+</div>
+                            <div class="col-md-6 product-details">
+                                <div class="detail-row">
+                                    <h3 id="modalProductName"></h3>
+                                    <span id="modalProductAvailability" class="availability-badge"></span>
+                                </div>
+                                <div class="detail-row">
+                                    <div class="row">
+                                        <div class="col-4 detail-label">Category:</div>
+                                        <div class="col-8" id="modalProductCategory"></div>
+                                    </div>
+                                </div>
+                                <div class="detail-row">
+                                    <div class="row">
+                                        <div class="col-4 detail-label">Material:</div>
+                                        <div class="col-8" id="modalProductMaterial"></div>
+                                    </div>
+                                </div>
+                                <div class="detail-row">
+                                    <div class="row">
+                                        <div class="col-4 detail-label">Price:</div>
+                                        <div class="col-8" id="modalProductPrice"></div>
+                                    </div>
+                                </div>
+                                <div class="detail-row">
+                                    <div class="row">
+                                        <div class="col-4 detail-label">Stock Left:</div>
+                                        <div class="col-8" id="modalProductStock"></div>
+                                    </div>
+                                </div>
+                                <div class="detail-row">
+                                    <div class="row">
+                                        <div class="col-4 detail-label">Good for Face Shape:</div>
+                                        <div class="col-8" id="modalProductFaceShape"></div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-6 product-details">
-                        <div class="detail-row mb-3">
-                            <h3 id="modalProductName" class="mb-2"></h3>
-                            <span id="modalProductAvailability" class="badge"></span>
-                        </div>
-                        <div class="detail-row mb-3">
-                            <div class="row">
-                                <div class="col-5 detail-label">Category:</div>
-                                <div class="col-7" id="modalProductCategory"></div>
-                            </div>
-                        </div>
-                        <div class="detail-row mb-3">
-                            <div class="row">
-                                <div class="col-5 detail-label">Material:</div>
-                                <div class="col-7" id="modalProductMaterial"></div>
-                            </div>
-                        </div>
-                        <div class="detail-row mb-3">
-                            <div class="row">
-                                <div class="col-5 detail-label">Price:</div>
-                                <div class="col-7" id="modalProductPrice"></div>
-                            </div>
-                        </div>
-                        <div class="detail-row mb-3">
-                            <div class="row">
-                                <div class="col-5 detail-label">Stock Left:</div>
-                                <div class="col-7" id="modalProductStock"></div>
-                            </div>
-                        </div>
-                        <div class="detail-row mb-3">
-                            <div class="row">
-                                <div class="col-5 detail-label">Good for Face Shape:</div>
-                                <div class="col-7" id="modalProductFaceShape"></div>
-                            </div>
-                        </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary">Add to Cart</button>
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary">Add to Cart</button>
-            </div>
         </div>
-    </div>
-</div>
 
         <div class="container" style="margin-top: 2rem;">
             <div class="container mb-4">
                 <h1 style='text-align: center;'>Gallery</h1>
                 
-              
+                <!-- Search Box -->
                 <div class="search-container">
                     <form method="get" action="" class="search-box position-relative" id="searchForm">
                         <div class="input-group mb-3">
@@ -454,9 +440,9 @@
                     </form>
                 </div>
                 
-              
+                <!-- Filter and Sort Container -->
                 <div class="filter-container">
-                   
+                    <!-- Category Filter -->
                     <form method="get" action="" class="filter-dropdown">
                         <?php if(isset($_GET['page'])): ?>
                             <input type="hidden" name="page" value="<?php echo $_GET['page']; ?>">
