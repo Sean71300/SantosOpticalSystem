@@ -173,6 +173,8 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
             </div>
         </div>
 
+        
+
         <script>
             // Add confirmation for delete actions
             document.querySelectorAll('.delete-btn').forEach(btn => {
