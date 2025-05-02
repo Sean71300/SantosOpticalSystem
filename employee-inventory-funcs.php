@@ -92,9 +92,10 @@ function getInventory($sort = 'ProductID', $order = 'ASC') {
 
 function getLowInventoryForEmployee($branchCode, $threshold = 10) {
     $link = connect();
-    $sql = "SELECT pm.ProductID, pm.Model, pm.CategoryType, pbm.Stocks 
+    $sql = "SELECT pm.ProductID, pm.Model, pm.CategoryType, pbm.Stocks, bm.BranchName
             FROM ProductBranchMaster pbm
             JOIN productMstr pm ON pbm.ProductID = pm.ProductID
+            JOIN BranchMaster bm ON pbm.BranchCode = bm.BranchCode
             WHERE pbm.BranchCode = ? AND pbm.Stocks <= ?";
     
     $stmt = mysqli_prepare($link, $sql);

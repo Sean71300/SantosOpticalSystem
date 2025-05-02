@@ -3,19 +3,10 @@ include 'ActivityTracker.php';
 include 'loginChecker.php';
 include 'employee-inventory-funcs.php'; // Use the employee-specific functions
 
-// Get sort parameters from URL
-$sort = $_GET['sort'] ?? 'ProductID';
-$order = $_GET['order'] ?? 'ASC';
-
 // Get employee's branch information
 $employeeID = $_SESSION['id'] ?? '';
 $branchName = '';
 $branchCode = '';
-
-$lowInventory = [];
-if (!empty($branchCode)) {
-    $lowInventory = getLowInventoryForEmployee($branchCode);
-}
 
 // Get the employee's branch details
 $link = connect();
@@ -36,6 +27,15 @@ if ($link) {
     mysqli_stmt_close($stmt);
     mysqli_close($link);
 }
+
+$lowInventory = [];
+if (!empty($branchCode)) {
+    $lowInventory = getLowInventoryForEmployee($branchCode);
+}
+
+// Get sort parameters from URL
+$sort = $_GET['sort'] ?? 'ProductID';
+$order = $_GET['order'] ?? 'ASC';
 ?>
 
 <!DOCTYPE html>
