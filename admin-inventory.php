@@ -17,6 +17,8 @@ if (isset($_POST['searchProduct'])) {
 
 // Store current branch in session
 $_SESSION['current_branch'] = $branchName;
+
+$lowInventory = getLowInventoryProducts();
 ?>
 
 <!DOCTYPE html>
@@ -295,6 +297,47 @@ $_SESSION['current_branch'] = $branchName;
         
         <?php include "sidebar.php"; ?>
 
+        <?php if (!empty($lowInventory)) : ?>
+            <div class="modal fade" id="lowInventoryModal" tabindex="-1" aria-labelledby="lowInventoryModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header bg-warning">
+                            <h5 class="modal-title" id="lowInventoryModalLabel"><i class="fas fa-exclamation-triangle me-2"></i>Low Inventory Alert</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>The following products have low stock levels (≤ 10 units):</p>
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Product ID</th>
+                                            <th>Model</th>
+                                            <th>Branch</th>
+                                            <th>Current Stock</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($lowInventory as $item) : ?>
+                                        <tr>
+                                            <td><?= htmlspecialchars($item['ProductID']) ?></td>
+                                            <td><?= htmlspecialchars($item['Model']) ?></td>
+                                            <td><?= htmlspecialchars($item['BranchName']) ?></td>
+                                            <td><?= $item['Stocks'] ?></td>
+                                        </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?>
+
         <!-- Main Content -->
         <div class="main-content">
             <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
@@ -570,6 +613,13 @@ $_SESSION['current_branch'] = $branchName;
             document.addEventListener("DOMContentLoaded", function() {
                 var myModal = new bootstrap.Modal(document.getElementById("deleteErrorModal"));
                 myModal.show();
+            });
+
+            document.addEventListener('DOMContentLoaded', function() {
+                <?php if (!empty($lowInventory)) : ?>
+                var lowInventoryModal = new bootstrap.Modal(document.getElementById('lowInventoryModal'));
+                lowInventoryModal.show();
+                <?php endif; ?>
             });
         </script>
     </body>
