@@ -19,31 +19,31 @@ function getOrders($conn, $search, $branch, $status, $limit, $offset) {
               LEFT JOIN ProductBranchMaster pbm ON od.ProductBranchID = pbm.ProductBranchID
               LEFT JOIN productMstr p ON pbm.ProductID = p.ProductID";
     
-    $where = "";
+    $where = [];
     $types = "";
     $params = [];
     
     if (!empty($search)) {
-        $where .= " AND (c.CustomerName LIKE ? OR o.Orderhdr_id LIKE ?)";
+        $where[] = "(c.CustomerName LIKE ? OR o.Orderhdr_id LIKE ?)";
         $params[] = "%$search%";
         $params[] = "%$search%";
         $types .= "ss";
     }
     
     if (!empty($branch)) {
-        $where .= " AND o.BranchCode = ?";
+        $where[] = "o.BranchCode = ?";
         $params[] = $branch;
-        $types .= "i";
+        $types .= "s";
     }
     
     if (!empty($status)) {
-        $where .= " AND od.Status = ?";
+        $where[] = "od.Status = ?";
         $params[] = $status;
         $types .= "s";
     }
     
     if (!empty($where)) {
-        $query .= " WHERE " . substr($where, 5);
+        $query .= " WHERE " . implode(' AND ', $where);
     }
     
     $query .= " GROUP BY o.Orderhdr_id ORDER BY o.Created_dt DESC LIMIT ? OFFSET ?";
@@ -52,7 +52,7 @@ function getOrders($conn, $search, $branch, $status, $limit, $offset) {
     $types .= "ii";
     
     $stmt = $conn->prepare($query);
-    if (!empty($types)) {
+    if (!empty($params)) {
         $stmt->bind_param($types, ...$params);
     }
     $stmt->execute();
