@@ -394,7 +394,7 @@ $conn->close();
                                     <td><?= htmlspecialchars($order['BranchName']) ?></td>
                                     <td><?= date('M j, Y', strtotime($order['Created_dt'])) ?></td>
                                     <td><?= $order['ItemCount'] ?></td>
-                                    <td>₱<?= number_format($order['TotalAmount'], 2) ?></td> <!-- Display total amount -->
+                                    <td>₱<?= number_format($order['TotalAmount'], 2) ?></td>
                                     <td>
                                         <span class="badge 
                                             <?= match($order['Status']) {
@@ -407,13 +407,13 @@ $conn->close();
                                     </td>
                                     <td>
                                         <a href="orderDetails.php?id=<?= $order['Orderhdr_id'] ?>" 
-                                        class="btn btn-sm btn-outline-primary">
+                                           class="btn btn-sm btn-outline-primary">
                                             <i class="fas fa-eye"></i> View
                                         </a>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
-                    </tbody>
+                        </tbody>
                     </table>
                 </div>
 
@@ -489,12 +489,12 @@ $conn->close();
                             <tbody>
                                 <?php
                                 $conn = connect();
-                                $customers = $conn->query("SELECT CustomerID, CustomerName, CustomerContact FROM customer ORDER BY CustomerName");
+                                $customers = $conn->query("SELECT CustomerID, CustomerName, ContactNo FROM customer ORDER BY CustomerName");
                                 while ($customer = $customers->fetch_assoc()): ?>
                                     <tr>
                                         <td><?= $customer['CustomerID'] ?></td>
                                         <td><?= htmlspecialchars($customer['CustomerName']) ?></td>
-                                        <td><?= htmlspecialchars($customer['CustomerContact']) ?></td>
+                                        <td><?= htmlspecialchars($customer['ContactNo']) ?></td>
                                         <td>
                                             <button class="btn btn-sm btn-primary select-customer" 
                                                     data-customer-id="<?= $customer['CustomerID'] ?>"
