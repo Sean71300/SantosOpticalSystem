@@ -112,7 +112,7 @@
                 </div>
             </div>
             <div class="text-center my-4" data-aos="fade-up">
-                <a href="product-gallery.php" button class="see-more-btn">SEE MORE</button>
+              <a href="product-gallery.php" button class="see-more-btn">SEE MORE</button>
             </div>
         </div>
     </div>
