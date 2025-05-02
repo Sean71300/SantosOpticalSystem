@@ -184,12 +184,6 @@
     
         if ($result->num_rows > 0) {
             echo '<div class="form-container">';
-            if (!empty($success)) {
-                echo '<div class="alert alert-success">' . htmlspecialchars($success) . '</div>';
-            }
-            if (!empty($error)) {
-                echo '<div class="alert alert-danger">' . htmlspecialchars($error) . '</div>';
-            }
             echo '<div class="d-flex justify-content-between align-items-center mb-4">';
             echo '<h3><i class="fas fa-calendar-check me-2"></i> Medical History Records</h3>';
             echo '<button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#addMedicalRecordModal" data-customer-id="'.$customerID.'">';
