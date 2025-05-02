@@ -5,86 +5,115 @@ include_once 'setup.php';
 include 'ActivityTracker.php'; 
 include 'loginChecker.php';
 
-// Process form submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['create_order'])) {
-        $conn = connect();
-        $customerId = $_POST['customer_id'];
-        $productId = $_POST['product_id'];
-        $quantity = $_POST['quantity'];
-        $branchCode = $_POST['branch_code'];
-        $createdBy = $_SESSION['login_user'];
+$orderSuccess = false;
+$orderDetails = [];
+$errorMessage = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_order'])) {
+    $conn = connect();
+    $customerId = $_POST['customer_id'];
+    $productId = $_POST['product_id'];
+    $quantity = $_POST['quantity'];
+    $branchCode = $_POST['branch_code'];
+    $createdBy = $_SESSION['full_name'];
+    $employeeId = $_SESSION['employee_id'] ?? null;
+    
+    if (empty($customerId) || empty($productId) || empty($quantity) || empty($branchCode)) {
+        $errorMessage = "All fields are required!";
+    } else {
+        $conn->begin_transaction();
         
-        // Validate inputs
-        if (empty($customerId) || empty($productId) || empty($quantity) || empty($branchCode)) {
-            $errorMessage = "All fields are required!";
-        } else {
-            // Generate a new Order_hdr ID
+        try {
             $orderId = generate_Order_hdr_ID();
             
-            // Create order header
             $orderQuery = "INSERT INTO Order_hdr (Orderhdr_id, CustomerID, BranchCode, Created_by) VALUES (?, ?, ?, ?)";
             $stmt = $conn->prepare($orderQuery);
             $stmt->bind_param('iiss', $orderId, $customerId, $branchCode, $createdBy);
-            
-            if (!$stmt->execute()) {
-                $errorMessage = "Error creating order: " . $conn->error;
-            } else {
-                // Generate order detail ID
-                $orderDetailId = generate_OrderDtlID();
-                
-                // Get ProductBranchID
-                $productBranchQuery = "SELECT ProductBranchID FROM ProductBranchMaster WHERE ProductID = ? AND BranchCode = ? LIMIT 1";
-                $stmt2 = $conn->prepare($productBranchQuery);
-                $stmt2->bind_param('is', $productId, $branchCode);
-                $stmt2->execute();
-                $result = $stmt2->get_result();
-                $productBranch = $result->fetch_assoc();
-                $stmt2->close();
-                
-                if ($productBranch) {
-                    $productBranchId = $productBranch['ProductBranchID'];
-                    
-                    // Create order detail
-                    $detailQuery = "INSERT INTO orderDetails (OrderDtlID, OrderHdr_id, ProductBranchID, Quantity, ActivityCode, Status) 
-                                    VALUES (?, ?, ?, ?, 2, 'Pending')";
-                    $stmt3 = $conn->prepare($detailQuery);
-                    $stmt3->bind_param('iiii', $orderDetailId, $orderId, $productBranchId, $quantity);
-                    
-                    if (!$stmt3->execute()) {
-                        $errorMessage = "Error creating order details: " . $conn->error;
-                    } else {
-                        // Update stock
-                        $updateQuery = "UPDATE ProductBranchMaster SET Stocks = Stocks - ? WHERE ProductID = ? AND BranchCode = ?";
-                        $stmt4 = $conn->prepare($updateQuery);
-                        $stmt4->bind_param('iis', $quantity, $productId, $branchCode);
-                        
-                        if (!$stmt4->execute()) {
-                            $errorMessage = "Error updating stock: " . $conn->error;
-                        } else {
-                            // Log activity
-                            if (function_exists('logActivity')) {
-                                logActivity($_SESSION['employee_id'], $orderId, 'order', 4, "Created new order #$orderId");
-                            }
-                            
-                            // Redirect to order details
-                            header("Location: orderDetails.php?id=$orderId");
-                            exit();
-                        }
-                        $stmt4->close();
-                    }
-                    $stmt3->close();
-                } else {
-                    $errorMessage = "Product not found in selected branch inventory!";
-                }
-            }
+            $stmt->execute();
             $stmt->close();
-            $conn->close();
+            
+            $orderDetailId = generate_OrderDtlID();
+            
+            $productBranchQuery = "SELECT pb.ProductBranchID, p.Model, p.Price, p.CategoryType 
+                                  FROM ProductBranchMaster pb
+                                  JOIN productMstr p ON pb.ProductID = p.ProductID
+                                  WHERE pb.ProductID = ? AND pb.BranchCode = ? LIMIT 1";
+            $stmt = $conn->prepare($productBranchQuery);
+            $stmt->bind_param('is', $productId, $branchCode);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $productData = $result->fetch_assoc();
+            $stmt->close();
+            
+            if ($productData) {
+                $productBranchId = $productData['ProductBranchID'];
+                
+                $detailQuery = "INSERT INTO orderDetails (OrderDtlID, OrderHdr_id, ProductBranchID, Quantity, ActivityCode, Status) 
+                                VALUES (?, ?, ?, ?, 2, 'Pending')";
+                $stmt = $conn->prepare($detailQuery);
+                $stmt->bind_param('iiii', $orderDetailId, $orderId, $productBranchId, $quantity);
+                $stmt->execute();
+                $stmt->close();
+                
+                $updateQuery = "UPDATE ProductBranchMaster SET Stocks = Stocks - ? WHERE ProductID = ? AND BranchCode = ?";
+                $stmt = $conn->prepare($updateQuery);
+                $stmt->bind_param('iis', $quantity, $productId, $branchCode);
+                $stmt->execute();
+                $stmt->close();
+                
+                $customerQuery = "SELECT CustomerName FROM customer WHERE CustomerID = ?";
+                $stmt = $conn->prepare($customerQuery);
+                $stmt->bind_param('i', $customerId);
+                $stmt->execute();
+                $customerResult = $stmt->get_result();
+                $customerData = $customerResult->fetch_assoc();
+                $stmt->close();
+                
+                $branchQuery = "SELECT BranchName FROM BranchMaster WHERE BranchCode = ?";
+                $stmt = $conn->prepare($branchQuery);
+                $stmt->bind_param('s', $branchCode);
+                $stmt->execute();
+                $branchResult = $stmt->get_result();
+                $branchData = $branchResult->fetch_assoc();
+                $stmt->close();
+                
+                $orderDetails = [
+                    'order_id' => $orderId,
+                    'customer_name' => $customerData['CustomerName'] ?? '',
+                    'branch_name' => $branchData['BranchName'] ?? '',
+                    'product_model' => $productData['Model'] ?? '',
+                    'product_category' => $productData['CategoryType'] ?? '',
+                    'quantity' => $quantity,
+                    'price' => $productData['Price'] ?? '',
+                    'total' => ($productData['Price'] * $quantity) ?? '',
+                    'status' => 'Pending',
+                    'date_created' => date('Y-m-d H:i:s')
+                ];
+                
+                $logId = generate_LogsID();
+                $logDescription = "Created new order #$orderId for customer " . $customerData['CustomerName'];
+                $logQuery = "INSERT INTO Logs (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description) 
+                            VALUES (?, ?, ?, 'order', 3, ?)";
+                $stmt = $conn->prepare($logQuery);
+                $stmt->bind_param('iiis', $logId, $employeeId, $orderId, $logDescription);
+                $stmt->execute();
+                $stmt->close();
+                
+                $conn->commit();
+                $orderSuccess = true;
+                
+            } else {
+                throw new Exception("Product not found in selected branch inventory!");
+            }
+        } catch (Exception $e) {
+            $conn->rollback();
+            $errorMessage = "Error creating order: " . $e->getMessage();
         }
+        
+        $conn->close();
     }
 }
 
-// Get the logged-in employee's branch
 $employeeBranch = '';
 $conn = connect();
 $employeeQuery = "SELECT BranchCode FROM employee WHERE LoginName = ?";
@@ -97,7 +126,6 @@ if ($row = $result->fetch_assoc()) {
 }
 $stmt->close();
 
-// Get customer details if customer_id is provided
 $customerDetails = [];
 if (isset($_GET['customer_id'])) {
     $customerId = $_GET['customer_id'];
@@ -110,7 +138,6 @@ if (isset($_GET['customer_id'])) {
     $stmt->close();
 }
 
-// Get all branches
 $branches = [];
 $branchQuery = "SELECT BranchCode, BranchName FROM BranchMaster";
 $result = $conn->query($branchQuery);
@@ -118,7 +145,6 @@ while ($row = $result->fetch_assoc()) {
     $branches[] = $row;
 }
 
-// Get all shapes for filter
 $shapes = [];
 $shapeQuery = "SELECT * FROM shapeMaster";
 $result = $conn->query($shapeQuery);
@@ -126,7 +152,6 @@ while ($row = $result->fetch_assoc()) {
     $shapes[] = $row;
 }
 
-// Get products based on selected branch (default to employee's branch)
 $selectedBranch = $employeeBranch;
 if (isset($_POST['branch_code'])) {
     $selectedBranch = $_POST['branch_code'];
@@ -220,7 +245,7 @@ $conn->close();
         <div class="order-container">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2><i class="fas fa-shopping-cart me-2"></i> New Order</h2>
-                <a href="customerDetails.php?id=<?= $customerDetails['CustomerID'] ?? '' ?>" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#cancelModal">
+                <a href="order.php?id=<?= $customerDetails['CustomerID'] ?? '' ?>" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#cancelModal">
                     <i class="fas fa-arrow-left me-2"></i> Back to Customer
                 </a>
             </div>
@@ -365,7 +390,62 @@ $conn->close();
         </div>
     </div>
 
-    <!-- Cancel Confirmation Modal -->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="successModalLabel">Order Created Successfully</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <?php if ($orderSuccess && !empty($orderDetails)): ?>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <h5>Order Summary</h5>
+                                <p><strong>Order ID:</strong> <?= $orderDetails['order_id'] ?></p>
+                                <p><strong>Customer:</strong> <?= $orderDetails['customer_name'] ?></p>
+                                <p><strong>Branch:</strong> <?= $orderDetails['branch_name'] ?></p>
+                                <p><strong>Status:</strong> <span class="badge bg-warning"><?= $orderDetails['status'] ?></span></p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Date Created:</strong> <?= $orderDetails['date_created'] ?></p>
+                            </div>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Category</th>
+                                        <th>Quantity</th>
+                                        <th>Unit Price</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><?= $orderDetails['product_model'] ?></td>
+                                        <td><?= $orderDetails['product_category'] ?></td>
+                                        <td><?= $orderDetails['quantity'] ?></td>
+                                        <td><?= $orderDetails['price'] ?></td>
+                                        <td><?= $orderDetails['total'] ?></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php endif; ?>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <a href="order.php?id=<?= $orderDetails['order_id'] ?? '' ?>" class="btn btn-primary">
+                        <i class="fas fa-eye me-2"></i> View Order Details
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -374,7 +454,7 @@ $conn->close();
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    Are you sure you want to cancel in making an order ?.
+                    Are you sure you want cancel this order ?
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -385,8 +465,14 @@ $conn->close();
     </div>
 
     <script>
+        <?php if ($orderSuccess): ?>
+            document.addEventListener('DOMContentLoaded', function() {
+                var successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                successModal.show();
+            });
+        <?php endif; ?>
+
         document.addEventListener('DOMContentLoaded', function() {
-            // Shape filter functionality
             const shapeFilter = document.getElementById('shapeFilter');
             if (shapeFilter) {
                 shapeFilter.addEventListener('change', function() {
@@ -405,18 +491,12 @@ $conn->close();
         });
 
         function selectProduct(element, productId) {
-            // Remove selected class from all product cards
             document.querySelectorAll('.product-card').forEach(card => {
                 card.classList.remove('selected');
             });
             
-            // Add selected class to clicked card
             element.classList.add('selected');
-            
-            // Set the selected product ID
             document.getElementById('selectedProduct').value = productId;
-            
-            // Enable the continue button
             document.getElementById('continueBtn').disabled = false;
         }
     </script>
