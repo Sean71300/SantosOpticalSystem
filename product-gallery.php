@@ -285,48 +285,22 @@
             .modal-lg-custom {
                 max-width: 800px;
             }
-            
-            .modal-product-image-container {
-                height: 300px;
-                width: 300px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                background-color: #f8f9fa;
-                border-radius: 5px;
-                overflow: hidden;
-                margin: 0 auto;
-            }
-            
-            .modal-product-image {
-                max-height: 100%;
-                max-width: 100%;
+            .product-image {
+                max-height: 400px;
                 object-fit: contain;
-                object-position: center;
             }
-            
             .product-details {
-                padding: 0 0 0 2rem;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                height: 100%;
+                padding: 20px;
             }
-            
             .detail-row {
-                margin-bottom: 1.25rem;
-                padding-bottom: 1.25rem;
+                margin-bottom: 15px;
+                padding-bottom: 15px;
                 border-bottom: 1px solid #eee;
             }
-            
-            .modal-body {
-                padding: 1.5rem;
+            .detail-label {
+                font-weight: bold;
+                color: #555;
             }
-            
-            .modal-body .row {
-                min-height: 350px;
-            }
-            
             .availability-badge {
                 font-size: 0.9rem;
                 padding: 5px 10px;
@@ -340,6 +314,29 @@
                 background-color: #f8d7da;
                 color: #721c24;
             }
+
+.modal-product-image-container {
+    height: 300px;
+    width: 100%;
+    min-width: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+    padding: 10px;
+    margin: 0 auto;
+    border-radius: 5px;
+    overflow: hidden; 
+}
+
+.modal-product-image {
+    height: 100%;
+    width: 100%;
+    object-fit: contain;
+    object-position: center;
+    max-height: 300px;
+    max-width: 300px;
+}
         </style>
     </head>
 
@@ -351,23 +348,24 @@
 
     <body>
         <!-- Product Modal -->
-        <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg modal-lg-custom">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="productModalLabel">Product Details</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
+      <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-lg-custom">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="productModalLabel">Product Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
                     <div class="modal-body">
-                        <div class="row">
-                            <div class="col-md-6 d-flex align-items-center">
-                                <div class="modal-product-image-container w-100">
-                                    <img id="modalProductImage" src="" class="modal-product-image" alt="Product Image">
-                                </div>
-                            </div>
+                <div class="row">
+                  <div class="col-md-6">
+    <div class="modal-product-image-container ratio ratio-1x1"> <!-- Added ratio class -->
+        <img id="modalProductImage" src="" class="modal-product-image" alt="Product Image" 
+             style="width: 100%; height: 100%; object-fit: contain;">
+    </div>
+</div>
                             <div class="col-md-6 product-details">
                                 <div class="detail-row">
-                                    <h3 id="modalProductName" class="mb-2"></h3>
+                                    <h3 id="modalProductName"></h3>
                                     <span id="modalProductAvailability" class="availability-badge"></span>
                                 </div>
                                 <div class="detail-row">
