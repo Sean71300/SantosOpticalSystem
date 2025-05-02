@@ -25,11 +25,19 @@ function getOrderHeaders($conn, $search = '', $branch = '', $status = '', $limit
         }
         $stmt->close();
         
-        $placeholders = implode(',', array_fill(0, count($customerIds), '?'));
-        $where[] = "(Orderhdr_id LIKE ? OR CustomerID IN ($placeholders))";
-        $params[] = '%' . $search . '%';
-        $params = array_merge($params, $customerIds);
-        $types .= str_repeat('i', count($customerIds)) . 's';
+        // Check if customerIds is not empty
+        if (!empty($customerIds)) {
+            $placeholders = implode(',', array_fill(0, count($customerIds), '?'));
+            $where[] = "(Orderhdr_id LIKE ? OR CustomerID IN ($placeholders))";
+            $params[] = '%' . $search . '%';
+            $params = array_merge($params, $customerIds);
+            $types .= str_repeat('i', count($customerIds)) . 's';
+        } else {
+            // If no customer IDs found, just filter by Orderhdr_id
+            $where[] = "Orderhdr_id LIKE ?";
+            $params[] = '%' . $search . '%';
+            $types .= 's';
+        }
     }
     
     if (!empty($branch)) {
