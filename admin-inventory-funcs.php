@@ -75,7 +75,8 @@ function getEmployeeName() { // Function to get employee names from the database
     mysqli_stmt_close($stmt);
 }
 
-function getInventory($sort = 'ProductID', $order = 'ASC') {
+function getInventory($sort = 'ProductID', $order = 'ASC') 
+{
     $link = connect();      
     if (!$link) {
         die("Database connection failed: " . mysqli_connect_error());
@@ -106,6 +107,7 @@ function getInventory($sort = 'ProductID', $order = 'ASC') {
                 JOIN brandMaster bm ON pm.BrandID = bm.BrandID
                 JOIN ProductBranchMaster pbm ON pm.ProductID = pbm.ProductID
                 JOIN BranchMaster b ON pbm.BranchCode = b.BranchCode
+                WHERE pbm.Avail_FL = 'Available' AND pm.Avail_FL = 'Available'
                 GROUP BY pm.ProductID, pm.CategoryType, sm.Description, bm.BrandName, 
                             pm.Model, pm.Material, pm.Price, pm.ProductImage, pm.Upd_by";
         
@@ -150,7 +152,7 @@ function getInventory($sort = 'ProductID', $order = 'ASC') {
                 JOIN productMstr pm ON pbm.ProductID = pm.ProductID
                 JOIN shapeMaster sm ON pm.ShapeID = sm.ShapeID
                 JOIN brandMaster bm ON pm.BrandID = bm.BrandID
-                WHERE b.BranchName = ?";
+                WHERE b.BranchName = ? AND pm.Avail_FL = 'Available' AND pbm.Avail_FL = 'Available'";
         
         switch($sort) {
             case 'ProductID': $sql .= " ORDER BY pm.ProductID"; break;
@@ -759,67 +761,132 @@ function GenerateLogs($productID,$model,$code)
         $stmt->execute();
         $stmt->close();
     }
-
-function deleteProduct() { //Delete function to delete a product from the database
-    $link = connect();
-    $productID = $_POST['productID'] ?? '';
-    $code = '5';
-    $sql = "SELECT * FROM productMstr WHERE ProductID = $productID"  ;
-    $result = mysqli_query($link, $sql);
-
-    while ($row = mysqli_fetch_array($result)) {
-        $model= $row['Model'];
+    
+    function setStatus($productID){
+        $conn = connect(); 
+        $sql = "UPDATE productMstr 
+            SET Avail_FL = 'Unavailable' WHERE ProductID = $productID";
+        $result = $conn->query($sql);
     }
-    
-    GenerateLogs($productID,$model,$code);
-    
-        $sql = "DELETE FROM ProductBranchMaster WHERE ProductID = ?";
-        $stmt = mysqli_prepare($link, $sql);
-        mysqli_stmt_bind_param($stmt, "s", $productID);
-        mysqli_stmt_execute($stmt);
-        mysqli_stmt_close($stmt);
 
-        $sql = "DELETE FROM productMstr WHERE ProductID = ?";
-        $stmt = mysqli_prepare($link, $sql);
-        mysqli_stmt_bind_param($stmt, "s", $productID);
-        mysqli_stmt_execute($stmt);
+    function Archive($productID){
+        $conn = connect(); 
+        $Aid = generate_ArchiveID();
+        $Eid = $_SESSION["id"];
+        
+        // Archive the employee
+        $sqlProduct = "INSERT INTO archives (ArchiveID, TargetID, EmployeeID, TargetType) VALUES (?, ?, ?, 'product')";
+        $stmt = $conn->prepare($sqlProduct);
+        $stmt->bind_param("iii", $Aid, $productID, $Eid);
+        $stmt->execute();
+        $stmt->close();        
+    }
+function deleteProduct() 
+    { //Delete function to delete a product from the database
+        $productID = $_POST['productID'] ?? '';
 
-    if (mysqli_stmt_close($stmt))
-        {
-        echo '<div class="modal fade" id="deleteProductModal" tabindex="-1" aria-labelledby="deleteProductModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
+        $conn = connect();
+        $stmt = $conn->prepare("SELECT ProductBranchID FROM ProductBranchMaster WHERE productID = ? ");
+        $stmt->bind_param("s", $productID );
+        $stmt->execute();
+        $PBID = $stmt->get_result()->fetch_assoc()['ProductBranchID'];
+
+        $stmt = $conn->prepare("SELECT OrderDtlID FROM orderDetails WHERE ProductBranchID = ? ");
+        $stmt->bind_param("s", $PBID);
+        $stmt->execute();
+        $exists = (bool)$stmt->get_result()->fetch_assoc();
+
+        if ($exists) {
+            echo 
+            '<div class="modal fade" id="deleteErrorModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
                     <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="deleteProductModalLabel">Success</h5>
+                        <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title">Delete Product Error</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            The product has been deleted from the database successfully!
+                            <p><i class="fas fa-exclamation-triangle me-2"></i> Product could not be deleted because it has an active order related to it.</p>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         </div>
                     </div>
                 </div>
-            </div>';
-    } else {
-        echo '<div class="modal fade" id="deleteProductModal" tabindex="-1" aria-labelledby="deleteProductModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="deleteProductModalLabel">Error</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            An error occurred while logging the deletion. Please try again.
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    var myModal = new bootstrap.Modal(document.getElementById("deleteErrorModal"));
+                    myModal.show();
+                });
+            </script>';
+        exit();         
+            }
+        
+        Archive($productID);
+        setStatus($productID);
+        $link = connect();
+        
+        $code = '5';
+        $sql = "SELECT * FROM productMstr WHERE ProductID = $productID"  ;
+        $result = mysqli_query($link, $sql);
+
+        while ($row = mysqli_fetch_array($result)) {
+            $model= $row['Model'];
+        }
+        
+        GenerateLogs($productID,$model,$code);
+        /*
+
+            Old Delete
+
+            $sql = "DELETE FROM ProductBranchMaster WHERE ProductID = ?";
+            $stmt = mysqli_prepare($link, $sql);
+            mysqli_stmt_bind_param($stmt, "s", $productID);
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_close($stmt);
+
+            $sql = "DELETE FROM productMstr WHERE ProductID = ?";
+            $stmt = mysqli_prepare($link, $sql);
+            mysqli_stmt_bind_param($stmt, "s", $productID);
+            mysqli_stmt_execute($stmt);
+        */
+        if (mysqli_stmt_close($stmt))
+            {
+            echo '<div class="modal fade" id="deleteProductModal" tabindex="-1" aria-labelledby="deleteProductModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="deleteProductModalLabel">Success</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                The product has been deleted from the database successfully!
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>';
+                </div>';
+        } else {
+            echo '<div class="modal fade" id="deleteProductModal" tabindex="-1" aria-labelledby="deleteProductModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="deleteProductModalLabel">Error</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                An error occurred while logging the deletion. Please try again.
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>';
+        }
+        mysqli_close($link);
     }
-    mysqli_close($link);
-}
 ?>          

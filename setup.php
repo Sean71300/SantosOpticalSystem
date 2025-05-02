@@ -202,7 +202,7 @@
         if (mysqli_query($conn, $sql))
         {
             $Code = 0;
-            $Actions = ['Complete','Pending','Added','Edited','Deleted','Archived',''];
+            $Actions = ['Complete','Pending','Added','Edited','Deleted','Archived'];
             foreach ($Actions as $actName) {
                 ++$Code;
                 $sql = "INSERT INTO activityMaster
@@ -1004,6 +1004,7 @@
                 CustomerContact VARCHAR(11),
                 CustomerInfo VARCHAR(500),
                 Notes VARCHAR(500),
+                Status VARCHAR(500),
                 Upd_by VARCHAR(50),
                 Upd_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )";
@@ -1088,11 +1089,11 @@
                 
                 $sql = "INSERT INTO customer 
                         (CustomerID, CustomerName, CustomerAddress, CustomerContact,
-                        CustomerInfo, Notes, Upd_by) 
+                        CustomerInfo, Notes, Upd_by,Status) 
                         VALUES
                         ('$id', '{$cust['name']}', '{$cust['address']}', 
                         '{$cust['contact']}', '{$cust['info']}', 
-                        '{$cust['notes']}', 'Bien Ven P. Santos')";     
+                        '{$cust['notes']}', 'Bien Ven P. Santos','Active')";     
                         
                 mysqli_query($conn, $sql);
             }

@@ -558,6 +558,10 @@ $_SESSION['current_branch'] = $branchName;
                     sidebar.classList.remove('active');
                 }
             });
+            document.addEventListener("DOMContentLoaded", function() {
+                var myModal = new bootstrap.Modal(document.getElementById("deleteErrorModal"));
+                myModal.show();
+            });
         </script>
     </body>
 </html>
