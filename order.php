@@ -147,8 +147,10 @@ while ($header = $orderHeaders->fetch_assoc()) {
     
     while ($detail = $details->fetch_assoc()) {
         $itemCount++;
-        $totalAmount += $detail['Price'] * $detail['Quantity'];
-        
+        // Ensure Price is treated as a float
+        $price = (float)$detail['Price']; // Cast Price to float
+        $totalAmount += $price * (int)$detail['Quantity']; // Cast Quantity to int
+    
         // Determine order status (if any detail has this status)
         if ($detail['Status'] === 'Complete') {
             $orderStatus = 'Complete';
