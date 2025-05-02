@@ -94,7 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_order'])) {
                 ];
                 
                 $logId = generate_LogsID();
-                $logDescription = "Created new order #$orderId for customer " . $customerData['CustomerName'];
+                $logDescription = "" . $customerData['CustomerName'];
                 $logQuery = "INSERT INTO Logs (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description) 
                             VALUES (?, ?, ?, 'order', 3, ?)";
                 $stmt = $conn->prepare($logQuery);
