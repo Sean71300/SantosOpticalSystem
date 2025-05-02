@@ -347,7 +347,6 @@
     </header>
 
     <body>
-        <!-- Product Modal -->
       <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-lg-custom">
         <div class="modal-content">
@@ -358,9 +357,9 @@
                     <div class="modal-body">
                 <div class="row">
                   <div class="col-md-6">
-    <div class="modal-product-image-container ratio ratio-1x1"> <!-- Added ratio class -->
+    <div class="modal-product-image-container ratio ratio-1x1"> 
         <img id="modalProductImage" src="" class="modal-product-image" alt="Product Image" 
-             style="width: 100%; height: 100%; object-fit: contain;">
+             style="width: 100%; height: 80%; object-fit: contain;">
     </div>
 </div>
                             <div class="col-md-6 product-details">
