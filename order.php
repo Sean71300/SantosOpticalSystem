@@ -20,7 +20,59 @@ function getOrders($conn, $search, $branch, $status, $limit, $offset) {
               LEFT JOIN productMstr p ON pbm.ProductID = p.ProductID";
     
     $where = [];
-    $types = "";
+    $types = "";function getOrders($conn, $search, $branch, $status, $limit, $offset) {
+        $query = "SELECT o.Orderhdr_id, o.Created_dt, c.CustomerName, 
+                         e.EmployeeName as CreatedBy, b.BranchName,
+                         COUNT(od.OrderDtlID) as ItemCount,
+                         SUM(p.Price * od.Quantity) as TotalAmount,
+                         MAX(od.Status) as Status
+                  FROM Order_hdr o
+                  JOIN customer c ON o.CustomerID = c.CustomerID
+                  JOIN employee e ON o.Created_by = e.LoginName
+                  JOIN BranchMaster b ON o.BranchCode = b.BranchCode
+                  LEFT JOIN orderDetails od ON o.Orderhdr_id = od.OrderHdr_id
+                  LEFT JOIN ProductBranchMaster pbm ON od.ProductBranchID = pbm.ProductBranchID
+                  LEFT JOIN productMstr p ON pbm.ProductID = p.ProductID";
+        
+        $where = [];
+        $types = "";
+        $params = [];
+        
+        if (!empty($search)) {
+            $where[] = "(c.CustomerName LIKE ? OR o.Orderhdr_id LIKE ?)";
+            $params[] = "%$search%";
+            $params[] = "%$search%";
+            $types .= "ss";
+        }
+        
+        if (!empty($branch)) {
+            $where[] = "o.BranchCode = ?";
+            $params[] = $branch;
+            $types .= "s";
+        }
+        
+        if (!empty($status)) {
+            $where[] = "od.Status = ?";
+            $params[] = $status;
+            $types .= "s";
+        }
+        
+        if (!empty($where)) {
+            $query .= " WHERE " . implode(' AND ', $where);
+        }
+        
+        $query .= " GROUP BY o.Orderhdr_id ORDER BY o.Created_dt DESC LIMIT ? OFFSET ?";
+        $params[] = $limit;
+        $params[] = $offset;
+        $types .= "ii";
+        
+        $stmt = $conn->prepare($query);
+        if (!empty($params)) {
+            $stmt->bind_param($types, ...$params);
+        }
+        $stmt->execute();
+        return $stmt->get_result();
+    }
     $params = [];
     
     if (!empty($search)) {
@@ -250,7 +302,103 @@ $conn->close();
 </head>
 <body>
     <?php include "sidebar.php"; ?>
-
+    <?php if (isset($_GET['debug'])): ?>
+    <div class="container mt-4">
+        <div class="card bg-light">
+            <div class="card-header bg-warning text-dark">
+                <h5>Debug Information</h5>
+            </div>
+            <div class="card-body">
+                <h6>getOrders Function Parameters:</h6>
+                <pre><?php 
+                    echo "Search: " . htmlspecialchars($search) . "\n";
+                    echo "Branch: " . htmlspecialchars($branch) . "\n";
+                    echo "Status: " . htmlspecialchars($status) . "\n";
+                    echo "Limit: " . $ordersPerPage . "\n";
+                    echo "Offset: " . $offset . "\n";
+                    
+                    // Reconstruct the query for display
+                    $debugQuery = "SELECT o.Orderhdr_id, o.Created_dt, c.CustomerName, 
+                         e.EmployeeName as CreatedBy, b.BranchName,
+                         COUNT(od.OrderDtlID) as ItemCount,
+                         SUM(p.Price * od.Quantity) as TotalAmount,
+                         MAX(od.Status) as Status
+                  FROM Order_hdr o
+                  JOIN customer c ON o.CustomerID = c.CustomerID
+                  JOIN employee e ON o.Created_by = e.LoginName
+                  JOIN BranchMaster b ON o.BranchCode = b.BranchCode
+                  LEFT JOIN orderDetails od ON o.Orderhdr_id = od.OrderHdr_id
+                  LEFT JOIN ProductBranchMaster pbm ON od.ProductBranchID = pbm.ProductBranchID
+                  LEFT JOIN productMstr p ON pbm.ProductID = p.ProductID";
+                    
+                    $debugWhere = [];
+                    $debugParams = [];
+                    
+                    if (!empty($search)) {
+                        $debugWhere[] = "(c.CustomerName LIKE ? OR o.Orderhdr_id LIKE ?)";
+                        $debugParams[] = "%$search%";
+                        $debugParams[] = "%$search%";
+                    }
+                    
+                    if (!empty($branch)) {
+                        $debugWhere[] = "o.BranchCode = ?";
+                        $debugParams[] = $branch;
+                    }
+                    
+                    if (!empty($status)) {
+                        $debugWhere[] = "od.Status = ?";
+                        $debugParams[] = $status;
+                    }
+                    
+                    if (!empty($debugWhere)) {
+                        $debugQuery .= " WHERE " . implode(' AND ', $debugWhere);
+                    }
+                    
+                    $debugQuery .= " GROUP BY o.Orderhdr_id ORDER BY o.Created_dt DESC LIMIT ? OFFSET ?";
+                    $debugParams[] = $ordersPerPage;
+                    $debugParams[] = $offset;
+                    
+                    echo "\nGenerated SQL Query:\n" . htmlspecialchars($debugQuery);
+                    echo "\n\nParameters:\n";
+                    print_r($debugParams);
+                ?></pre>
+                
+                <h6 class="mt-3">First 5 Orders:</h6>
+                <table class="table table-bordered table-sm">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Branch</th>
+                            <th>Date</th>
+                            <th>Items</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php 
+                        $conn = connect();
+                        $debugResult = getOrders($conn, $search, $branch, $status, 5, 0);
+                        $conn->close();
+                        
+                        while ($order = $debugResult->fetch_assoc()): ?>
+                            <tr>
+                                <td><?php echo $order['Orderhdr_id']; ?></td>
+                                <td><?php echo $order['CustomerName']; ?></td>
+                                <td><?php echo $order['BranchName']; ?></td>
+                                <td><?php echo date('M j, Y', strtotime($order['Created_dt'])); ?></td>
+                                <td><?php echo $order['ItemCount']; ?></td>
+                                <td>₱<?php echo number_format($order['TotalAmount'], 2); ?></td>
+                                <td><?php echo $order['Status'] ?? 'Pending'; ?></td>
+                            </tr>
+                        <?php endwhile; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+<?php endif; ?>
     <div class="main-content">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2><i class="fas fa-shopping-cart me-2"></i>Orders Management</h2>
