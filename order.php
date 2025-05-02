@@ -3,11 +3,14 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-include 'setup.php';
+require_once 'connect.php';
 require_once 'ActivityTracker.php';
-require_once 'loginChecker.php'; 
+require_once 'loginChecker.php';
 require_once 'order-functions.php';
-
+echo '<pre>';
+print_r(get_included_files());
+echo '</pre>';
+exit;
 // Debug function
 function debug_log($message) {
     file_put_contents('debug.log', date('Y-m-d H:i:s') . " - " . $message . "\n", FILE_APPEND);
