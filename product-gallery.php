@@ -359,7 +359,7 @@
                   <div class="col-md-6">
     <div class="modal-product-image-container ratio ratio-1x1"> 
         <img id="modalProductImage" src="" class="modal-product-image" alt="Product Image" 
-             style="width: 100%; height: 80%; object-fit: contain;">
+             style="width: 100%; height: 150%; object-fit: contain;">
     </div>
 </div>
                             <div class="col-md-6 product-details">
