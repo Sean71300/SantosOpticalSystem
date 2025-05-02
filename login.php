@@ -131,18 +131,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['cancel'])) {
         padding: 3rem;
         border-radius: 16px;
         box-shadow: var(--shadow);
-        max-width: 400px;
         width: 100%;
+        max-width: 400px;
         text-align: center;
-        border: 2px solid var(--cancel-color); /* keep the nice outline */
-        margin: 0 auto;
+        border: 2px solid var(--cancel-color);
+        margin-bottom: 20px; /* Space between wrapper and alert */
     }
 
-    .container {
+    .login-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 20px;
+    }
+
+    .alert-container {
         width: 100%;
-        margin: 0;
-        padding: 0;
-        max-width: none;
+        max-width: 400px;
     }
 
     .logo {
@@ -239,7 +246,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['cancel'])) {
 
 </head>
 <body>
-    <div class="container d-flex justify-content-center align-items-center vh-100">
+    <div class="login-container">
         <div class="wrapper">
             <div class="titles">
                 <img src="Images/logo.png" alt="Logo" class="logo">
@@ -275,17 +282,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['cancel'])) {
             </form>
         </div>
 
-        <div class="alert alert-info alert-dismissible fade show mt-3" role="alert">
-            <div class="d-flex">
-                <div class="flex-shrink-0 me-3">
-                <i class="bi bi-info-circle-fill fs-4"></i> <!-- Bootstrap Icons (requires separate include) -->
+        <div class="alert-container">
+            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                <div class="d-flex">
+                    <div class="flex-shrink-0 me-3">
+                        <i class="bi bi-info-circle-fill fs-4"></i>
+                    </div>
+                    <div>
+                        <h5 class="alert-heading">For customers:</h5>
+                        <p class="mb-0">Use your full name as username and your reference number as password.</p>
+                    </div>
                 </div>
-                <div>
-                <h5 class="alert-heading">For customers:</h5>
-                <p class="mb-0">Use your full name as username and your reference number as password.</p>
-                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     </div>
 
