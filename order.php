@@ -462,60 +462,60 @@ $conn->close();
         </div>
     </div>
 
-    <!-- Add Order Modal -->
-<div class="modal fade" id="addOrderModal" tabindex="-1" aria-labelledby="addOrderModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="addOrderModalLabel">Create New Order</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label for="customerSearch" class="form-label">Search Customer</label>
-                    <input type="text" class="form-control" id="customerSearch" placeholder="Search by name or contact number...">
+        <!-- Add Order Modal -->
+    <div class="modal fade" id="addOrderModal" tabindex="-1" aria-labelledby="addOrderModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addOrderModalLabel">Create New Order</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                
-                <div class="customer-select-table">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Name</th>
-                                <th>Contact</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php
-                            $conn = connect();
-                            $customers = $conn->query("SELECT CustomerID, CustomerName, ContactNo FROM customer ORDER BY CustomerName");
-                            while ($customer = $customers->fetch_assoc()): ?>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="customerSearch" class="form-label">Search Customer</label>
+                        <input type="text" class="form-control" id="customerSearch" placeholder="Search by name or contact number...">
+                    </div>
+                    
+                    <div class="customer-select-table">
+                        <table class="table table-hover">
+                            <thead>
                                 <tr>
-                                    <td><?= $customer['CustomerID'] ?></td>
-                                    <td><?= htmlspecialchars($customer['CustomerName']) ?></td>
-                                    <td><?= htmlspecialchars($customer['ContactNo']) ?></td>
-                                    <td>
-                                        <button class="btn btn-sm btn-primary select-customer" 
-                                                data-customer-id="<?= $customer['CustomerID'] ?>"
-                                                data-customer-name="<?= htmlspecialchars($customer['CustomerName']) ?>">
-                                            Select
-                                        </button>
-                                    </td>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Contact</th>
+                                    <th>Action</th>
                                 </tr>
-                            <?php endwhile; 
-                            $conn->close();
-                            ?>
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                <?php
+                                $conn = connect();
+                                $customers = $conn->query("SELECT CustomerID, CustomerName, ContactNo FROM customer ORDER BY CustomerName");
+                                while ($customer = $customers->fetch_assoc()): ?>
+                                    <tr>
+                                        <td><?= $customer['CustomerID'] ?></td>
+                                        <td><?= htmlspecialchars($customer['CustomerName']) ?></td>
+                                        <td><?= htmlspecialchars($customer['ContactNo']) ?></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-primary select-customer" 
+                                                    data-customer-id="<?= $customer['CustomerID'] ?>"
+                                                    data-customer-name="<?= htmlspecialchars($customer['CustomerName']) ?>">
+                                                Select
+                                            </button>
+                                        </td>
+                                    </tr>
+                                <?php endwhile; 
+                                $conn->close();
+                                ?>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
