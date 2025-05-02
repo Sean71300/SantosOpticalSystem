@@ -3,7 +3,7 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-require_once 'connect.php';
+require_once 'setup.php';
 include 'ActivityTracker.php';
 include 'loginChecker.php';
 include 'order-functions.php';
