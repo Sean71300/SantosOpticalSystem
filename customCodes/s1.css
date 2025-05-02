@@ -159,17 +159,3 @@ body {
     background: black;
     color: white;
 }
-.site {
-    width: 100%;
-    text-align: center; /* For inline/inline-block content */
-    padding: 20px 0;
-    background: #f8f8f8;
-}
-
-/* OR if using flexbox */
-.fcontent {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    padding: 20px 0;
-}
