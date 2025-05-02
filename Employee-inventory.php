@@ -164,7 +164,7 @@ if ($link) {
                                         <tr>
                                             <th>Product ID</th>
                                             <th>Model</th>
-                                            <th>Category</th>
+                                            <th>Branch</th>
                                             <th>Current Stock</th>
                                         </tr>
                                     </thead>
@@ -173,7 +173,7 @@ if ($link) {
                                         <tr>
                                             <td><?= htmlspecialchars($item['ProductID']) ?></td>
                                             <td><?= htmlspecialchars($item['Model']) ?></td>
-                                            <td><?= htmlspecialchars($item['CategoryType']) ?></td>
+                                            <td><?= htmlspecialchars($item['BranchName']) ?></td>
                                             <td><?= $item['Stocks'] ?></td>
                                         </tr>
                                         <?php endforeach; ?>
@@ -187,7 +187,7 @@ if ($link) {
                     </div>
                 </div>
             </div>
-        <?php endif; ?>
+            <?php endif; ?>
 
         <!-- Main Content -->
         <div class="main-content">
