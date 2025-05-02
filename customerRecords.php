@@ -337,17 +337,6 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                             });
                     });
                 });
-                
-                // Add medical record functionality
-                document.querySelectorAll('.add-medical-record').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const customerID = this.getAttribute('data-customer-id');
-                        document.getElementById('medicalRecordCustomerID').value = customerID;
-                        
-                        const modal = new bootstrap.Modal(document.getElementById('addMedicalRecordModal'));
-                        modal.show();
-                    });
-                });
             });
         </script>
 
