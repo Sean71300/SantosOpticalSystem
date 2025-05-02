@@ -1,11 +1,13 @@
 <?php
+
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 require_once 'connect.php';
 include 'ActivityTracker.php';
 include 'loginChecker.php';
 include 'order-functions.php';
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
 
 $ordersPerPage = 10;
 $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
