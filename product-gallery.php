@@ -281,72 +281,61 @@
             .live-search-item.highlight {
                 background-color: #e9ecef;
             }
-       
-.modal-content {
-    border-radius: 10px;
-    border: none;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-}
+            /* Modal Styles */
+            .modal-lg-custom {
+                max-width: 800px;
+            }
+            .product-image {
+                max-height: 400px;
+                object-fit: contain;
+            }
+            .product-details {
+                padding: 20px;
+            }
+            .detail-row {
+                margin-bottom: 15px;
+                padding-bottom: 15px;
+                border-bottom: 1px solid #eee;
+            }
+            .detail-label {
+                font-weight: bold;
+                color: #555;
+            }
+            .availability-badge {
+                font-size: 0.9rem;
+                padding: 5px 10px;
+                border-radius: 5px;
+            }
+            .available {
+                background-color: #d4edda;
+                color: #155724;
+            }
+            .not-available {
+                background-color: #f8d7da;
+                color: #721c24;
+            }
 
 .modal-product-image-container {
+    height: 300px;
+    width: 100%;
+    min-width: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background-color: #f8f9fa;
-    border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 15px;
+    padding: 10px;
+    margin: 0 auto;
+    border-radius: 5px;
+    overflow: hidden; 
 }
 
 .modal-product-image {
-    max-height: 100%;
-    max-width: 100%;
+    height: 100%;
+    width: 100%;
     object-fit: contain;
-}
-
-.detail-label {
-    color: #6c757d;
-    font-weight: 500;
-}
-
-.detail-row {
-    margin-bottom: 12px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid #f1f1f1;
-}
-
-#modalProductAvailability.available {
-    background-color: #28a745;
-    color: white;
-}
-
-#modalProductAvailability.not-available {
-    background-color: #dc3545;
-    color: white;
-}
-
-#discountBadge {
-    font-size: 0.8em;
-    padding: 3px 6px;
-}
-
-#originalPrice {
-    font-size: 0.9em;
-}
-
-#discountedPrice {
-    font-size: 1.2em;
-}
-
-.modal-footer {
-    justify-content: flex-start;
-    padding-top: 0;
-}
-
-.btn-outline-secondary {
-    border-color: #dee2e6;
-}
-
-.btn-primary {
-    background-color: #0d6efd;
-    border-color: #0d6efd;
+    object-position: center;
+    max-height: 300px;
+    max-width: 300px;
 }
         </style>
     </head>
@@ -362,77 +351,56 @@
       <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-lg-custom">
         <div class="modal-content">
-            <div class="modal-header border-0 pb-0">
+            <div class="modal-header">
+                <h5 class="modal-title" id="productModalLabel">Product Details</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body pt-0">
+                    <div class="modal-body">
                 <div class="row">
-                    <div class="col-md-6">
-                        <div class="modal-product-image-container ratio ratio-1x1 mb-3">
-                            <img id="modalProductImage" src="" class="modal-product-image" alt="Product Image">
-                        </div>
-                    </div>
-                    <div class="col-md-6 product-details">
-                        <div class="mb-3">
-                            <h3 id="modalProductName" class="mb-1"></h3>
-                            <div class="d-flex align-items-center mb-2">
-                                <span id="modalProductAvailability" class="badge"></span>
-                                <span class="ms-2 text-muted">1 review</span>
-                                <a href="#" class="ms-2 small">View all reviews</a>
-                            </div>
-                            <div class="d-flex align-items-center">
-                                <span class="text-decoration-line-through text-muted me-2" id="originalPrice"></span>
-                                <span class="text-danger fw-bold" id="discountedPrice"></span>
-                                <span class="badge bg-danger ms-2" id="discountBadge"></span>
-                            </div>
-                            <div class="text-muted small" id="shippingInfo">Rs. 99 Shipping</div>
-                        </div>
-                        
-                        <div class="detail-row">
-                            <div class="row">
-                                <div class="col-4 detail-label">Category:</div>
-                                <div class="col-8" id="modalProductCategory"></div>
-                            </div>
-                        </div>
-                        <div class="detail-row">
-                            <div class="row">
-                                <div class="col-4 detail-label">Material:</div>
-                                <div class="col-8" id="modalProductMaterial"></div>
-                            </div>
-                        </div>
-                        <div class="detail-row">
-                            <div class="row">
-                                <div class="col-4 detail-label">Stock Left:</div>
-                                <div class="col-8" id="modalProductStock"></div>
-                            </div>
-                        </div>
-                        <div class="detail-row">
-                            <div class="row">
-                                <div class="col-4 detail-label">Face Shape:</div>
-                                <div class="col-8" id="modalProductFaceShape"></div>
-                            </div>
-                        </div>
-                        
-                        <div class="mt-4 pt-2">
-                            <div class="mb-3">
-                                <h6 class="mb-2">Warranty</h6>
-                                <p class="small text-muted mb-0">1 day seller replacement warranty against manufacturing defects.</p>
-                            </div>
-                            <div class="mb-3">
-                                <h6 class="mb-2">Shipping</h6>
-                                <p class="small text-muted mb-0">Dispatched within 2-3 working days.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer border-0">
-                <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary px-4">Add to Cart</button>
-            </div>
-        </div>
+                  <div class="col-md-6">
+    <div class="modal-product-image-container ratio ratio-1x1"> <!-- Added ratio class -->
+        <img id="modalProductImage" src="" class="modal-product-image" alt="Product Image" 
+             style="width: 100%; height: 100%; object-fit: contain;">
     </div>
 </div>
+                            <div class="col-md-6 product-details">
+                                <div class="detail-row">
+                                    <h3 id="modalProductName"></h3>
+                                    <span id="modalProductAvailability" class="availability-badge"></span>
+                                </div>
+                                <div class="detail-row">
+                                    <div class="row">
+                                        <div class="col-4 detail-label">Category:</div>
+                                        <div class="col-8" id="modalProductCategory"></div>
+                                    </div>
+                                </div>
+                                <div class="detail-row">
+                                    <div class="row">
+                                        <div class="col-4 detail-label">Material:</div>
+                                        <div class="col-8" id="modalProductMaterial"></div>
+                                    </div>
+                                </div>
+                                <div class="detail-row">
+                                    <div class="row">
+                                        <div class="col-4 detail-label">Price:</div>
+                                        <div class="col-8" id="modalProductPrice"></div>
+                                    </div>
+                                </div>
+                                <div class="detail-row">
+                                    <div class="row">
+                                        <div class="col-4 detail-label">Stock Left:</div>
+                                        <div class="col-8" id="modalProductStock"></div>
+                                    </div>
+                                </div>
+                                <div class="detail-row">
+                                    <div class="row">
+                                        <div class="col-4 detail-label">Good for Face Shape:</div>
+                                        <div class="col-8" id="modalProductFaceShape"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         <button type="button" class="btn btn-primary">Add to Cart</button>
@@ -610,42 +578,33 @@
                 const searchForm = document.getElementById('searchForm');
                 
                 // Modal functionality
-              productModal.addEventListener('show.bs.modal', function(event) {
-    const button = event.relatedTarget;
-    const productName = button.getAttribute('data-product-name');
-    const productImage = button.getAttribute('data-product-image');
-    const productCategory = button.getAttribute('data-product-category');
-    const productMaterial = button.getAttribute('data-product-material');
-    const productPrice = button.getAttribute('data-product-price');
-    const productAvailability = button.getAttribute('data-product-availability');
-    const productStock = button.getAttribute('data-product-stock');
-    const productFaceShape = button.getAttribute('data-product-faceshape');
-    
-    // Extract numeric price value
-    const numericPrice = parseFloat(productPrice.replace(/[^\d.]/g, ''));
-    
-    // Calculate discount (25% for this example)
-    const discount = 0.25;
-    const discountedPrice = numericPrice * (1 - discount);
-    
-    document.getElementById('modalProductName').textContent = productName;
-    document.getElementById('modalProductImage').src = productImage;
-    document.getElementById('modalProductImage').alt = productName;
-    document.getElementById('modalProductCategory').textContent = productCategory;
-    document.getElementById('modalProductMaterial').textContent = productMaterial;
-    document.getElementById('modalProductStock').textContent = productStock;
-    document.getElementById('modalProductFaceShape').textContent = productFaceShape;
-    
-    // Price display
-    document.getElementById('originalPrice').textContent = productPrice;
-    document.getElementById('discountedPrice').textContent = '₱' + discountedPrice.toFixed(2);
-    document.getElementById('discountBadge').textContent = (discount * 100) + '% OFF';
-    
-    const availabilityBadge = document.getElementById('modalProductAvailability');
-    availabilityBadge.textContent = productAvailability;
-    availabilityBadge.className = 'badge ' + 
-        (productAvailability === 'Available' ? 'available' : 'not-available');
-});
+                const productModal = document.getElementById('productModal');
+                if (productModal) {
+                    productModal.addEventListener('show.bs.modal', function(event) {
+                        const button = event.relatedTarget;
+                        const productName = button.getAttribute('data-product-name');
+                        const productImage = button.getAttribute('data-product-image');
+                        const productCategory = button.getAttribute('data-product-category');
+                        const productMaterial = button.getAttribute('data-product-material');
+                        const productPrice = button.getAttribute('data-product-price');
+                        const productAvailability = button.getAttribute('data-product-availability');
+                        const productStock = button.getAttribute('data-product-stock');
+                        const productFaceShape = button.getAttribute('data-product-faceshape');
+                        
+                        document.getElementById('modalProductName').textContent = productName;
+                        document.getElementById('modalProductImage').src = productImage;
+                        document.getElementById('modalProductImage').alt = productName;
+                        document.getElementById('modalProductCategory').textContent = productCategory;
+                        document.getElementById('modalProductMaterial').textContent = productMaterial;
+                        document.getElementById('modalProductPrice').textContent = productPrice;
+                        document.getElementById('modalProductStock').textContent = productStock;
+                        document.getElementById('modalProductFaceShape').textContent = productFaceShape;
+                        
+                        const availabilityBadge = document.getElementById('modalProductAvailability');
+                        availabilityBadge.textContent = productAvailability;
+                        availabilityBadge.className = 'availability-badge ' + 
+                            (productAvailability === 'Available' ? 'available' : 'not-available');
+                    });
                 }
                 
                 function performLiveSearch() {
