@@ -36,7 +36,7 @@
                 FROM `productMstr` p
                 LEFT JOIN ProductBranchMaster pb ON p.ProductID = pb.ProductID";
         
-        // Add conditions based on parameters
+     
         $whereConditions = [];
         
         if (!empty($search)) {
@@ -51,7 +51,7 @@
             }
         }
         
-        // Add category filter condition
+     
         if (!empty($category)) {
             $category = mysqli_real_escape_string($conn, $category);
             $whereConditions[] = "p.CategoryType = '$category'";
@@ -61,7 +61,7 @@
             $sql .= " WHERE " . implode(' AND ', $whereConditions);
         }
         
-        // Add sorting
+      
         switch($sort) {
             case 'price_asc':
                 $sql .= " ORDER BY CAST(REPLACE(REPLACE(p.Price, '₱', ''), ',', '') AS DECIMAL(10,2)) ASC";
@@ -79,12 +79,12 @@
                 $sql .= " ORDER BY p.Model ASC";
         }
         
-        // Add pagination
+    
         $sql .= " LIMIT $start, $perPage";
         
         $result = mysqli_query($conn, $sql);
         
-        // For total count
+        
         $countSql = "SELECT COUNT(*) as total FROM `productMstr` p";
         if (!empty($whereConditions)) {
             $countSql .= " WHERE " . implode(' AND ', $whereConditions);
@@ -94,7 +94,7 @@
         $total = $totalData['total'];
         $totalPages = ceil($total / $perPage);
 
-        // Display products
+       
         echo "<div class='row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4' id='productGrid'>";
         
         if ($total > 0) {
@@ -153,9 +153,9 @@
             echo "</div>";
         }
         
-        echo "</div>"; // End of card grid
+        echo "</div>"; 
 
-        // Pagination
+      
         if ($totalPages > 1) {
             echo "<div class='col-12 mt-5'>";
                 echo "<div class='d-flex justify-content-center'>";
@@ -185,7 +185,7 @@
         }
     }
 
-    // Helper function to get face shape name from shapeID
+    
     function getFaceShapeName($shapeID) {
         $conn = connect();
         $sql = "SELECT Description FROM shapeMaster WHERE ShapeID = ?";
@@ -281,7 +281,7 @@
                 background-color: #e9ecef;
             }
             
-            /* Enhanced Modal Styles */
+         
             .product-image-container {
                 height: 350px;
                 border: 1px solid #eee;
@@ -331,7 +331,7 @@
     </header>
 
     <body>
-        <!-- Enhanced Product Modal -->
+  
         <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
@@ -341,17 +341,16 @@
                     </div>
                     <div class="modal-body p-4">
                         <div class="row g-4">
-                            <!-- Image Column -->
+                         
                             <div class="col-md-6">
                                 <div class="product-image-container">
                                     <img id="modalProductImage" src="" class="img-fluid mh-100" alt="Product Image" style="max-height: 300px; width: auto; object-fit: contain;">
                                 </div>
                             </div>
                             
-                            <!-- Details Column -->
+              
                             <div class="col-md-6">
                                 <div class="d-flex flex-column h-100">
-                                    <!-- Title and Availability -->
                                     <div class="mb-3 border-bottom pb-3">
                                         <h3 id="modalProductName" class="fw-bold mb-2"></h3>
                                         <div>
@@ -360,7 +359,6 @@
                                         </div>
                                     </div>
                                     
-                                    <!-- Details List -->
                                     <div class="flex-grow-1">
                                         <ul class="list-group list-group-flush">
                                             <li class="list-group-item px-0 py-2 d-flex justify-content-between">
@@ -382,7 +380,7 @@
                                         </ul>
                                     </div>
                                     
-                                    <!-- Action Buttons -->
+                         
                                     <div class="mt-auto pt-3 border-top">
                                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                                             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
@@ -404,8 +402,6 @@
         <div class="container" style="margin-top: 2rem;">
             <div class="container mb-4">
                 <h1 style='text-align: center;'>Gallery</h1>
-                
-                <!-- Search Box -->
                 <div class="search-container">
                     <form method="get" action="" class="search-box position-relative" id="searchForm">
                         <div class="input-group mb-3">
@@ -432,9 +428,8 @@
                     </form>
                 </div>
                 
-                <!-- Filter and Sort Container -->
                 <div class="filter-container">
-                    <!-- Category Filter -->
+                  
                     <form method="get" action="" class="filter-dropdown">
                         <?php if(isset($_GET['page'])): ?>
                             <input type="hidden" name="page" value="<?php echo $_GET['page']; ?>">
@@ -465,8 +460,7 @@
                             </select>
                         </div>
                     </form>
-                    
-                    <!-- Availability Filter -->
+            
                     <form method="get" action="" class="filter-dropdown">
                         <?php if(isset($_GET['page'])): ?>
                             <input type="hidden" name="page" value="<?php echo $_GET['page']; ?>">
@@ -490,7 +484,7 @@
                         </div>
                     </form>
                     
-                    <!-- Sort Dropdown -->
+                
                     <form method="get" action="" class="filter-dropdown">
                         <?php if(isset($_GET['page'])): ?>
                             <input type="hidden" name="page" value="<?php echo $_GET['page']; ?>">
@@ -569,7 +563,7 @@
                 const productCards = document.querySelectorAll('.product-card');
                 const searchForm = document.getElementById('searchForm');
                 
-                // Enhanced Modal functionality
+       
                 const productModal = document.getElementById('productModal');
                 if (productModal) {
                     productModal.addEventListener('show.bs.modal', function(event) {
@@ -584,7 +578,7 @@
                         const productStock = parseInt(button.getAttribute('data-product-stock'));
                         const productFaceShape = button.getAttribute('data-product-faceshape');
                         
-                        // Set modal content
+                      
                         document.getElementById('modalProductName').textContent = productName;
                         document.getElementById('modalProductImage').src = productImage;
                         document.getElementById('modalProductImage').alt = productName;
@@ -593,13 +587,13 @@
                         document.getElementById('modalProductPrice').textContent = productPrice;
                         document.getElementById('modalProductFaceShape').textContent = productFaceShape;
                         
-                        // Set availability badge
+                   
                         const availabilityBadge = document.getElementById('modalProductAvailability');
                         availabilityBadge.textContent = productAvailability;
                         availabilityBadge.className = 'badge rounded-pill fs-6 ' + 
                             (productAvailability === 'Available' ? 'available' : 'not-available');
                         
-                        // Set stock badge
+          
                         const stockBadge = document.getElementById('modalProductStock');
                         if (productStock > 0) {
                             stockBadge.textContent = productStock + ' in stock';
@@ -610,7 +604,7 @@
                             stockBadge.style.display = 'none';
                         }
                         
-                        // Disable add to cart button if not available
+                      
                         const addToCartBtn = document.getElementById('addToCartBtn');
                         if (productAvailability !== 'Available' || productStock <= 0) {
                             addToCartBtn.disabled = true;
