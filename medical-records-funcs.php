@@ -1,7 +1,7 @@
 <?php
-include 'setup.php';
+include_once 'setup.php';
 include 'customerFunctions.php';
-include 'loginChecker.php';
+include 'customerEdit.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $customerID = $_POST['customerID'];
