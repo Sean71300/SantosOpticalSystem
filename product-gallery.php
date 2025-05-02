@@ -216,7 +216,6 @@
         <link rel="shortcut icon" type="image/x-icon" href="Images/logo.png"/>
         <link rel="stylesheet" href="customCodes/s2.css">
         <style>
-           
             @media (min-width: 768px) {
                 .container {
                     max-width: 95%;
@@ -281,62 +280,47 @@
             .live-search-item.highlight {
                 background-color: #e9ecef;
             }
-            /* Modal Styles */
-            .modal-lg-custom {
-                max-width: 800px;
+            
+            /* Enhanced Modal Styles */
+            .product-image-container {
+                height: 350px;
+                border: 1px solid #eee;
+                border-radius: 0.5rem;
+                background-color: #f8f9fa;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 1rem;
             }
-            .product-image {
-                max-height: 400px;
-                object-fit: contain;
+            
+            .modal-lg {
+                max-width: 900px;
             }
-            .product-details {
-                padding: 20px;
-            }
-            .detail-row {
-                margin-bottom: 15px;
-                padding-bottom: 15px;
-                border-bottom: 1px solid #eee;
-            }
+            
             .detail-label {
-                font-weight: bold;
-                color: #555;
+                font-weight: 600;
+                color: #6c757d;
             }
-            .availability-badge {
-                font-size: 0.9rem;
-                padding: 5px 10px;
-                border-radius: 5px;
+            
+            .badge.available {
+                background-color: #d1e7dd;
+                color: #0f5132;
             }
-            .available {
-                background-color: #d4edda;
-                color: #155724;
-            }
-            .not-available {
+            
+            .badge.not-available {
                 background-color: #f8d7da;
-                color: #721c24;
+                color: #842029;
             }
-
-.modal-product-image-container {
-    height: 300px;
-    width: 100%;
-    min-width: 300px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #f8f9fa;
-    padding: 10px;
-    margin: 0 auto;
-    border-radius: 5px;
-    overflow: hidden; 
-}
-
-.modal-product-image {
-    height: 100%;
-    width: 100%;
-    object-fit: contain;
-    object-position: center;
-    max-height: 300px;
-    max-width: 300px;
-}
+            
+            .badge.low-stock {
+                background-color: #fff3cd;
+                color: #664d03;
+            }
+            
+            .list-group-item {
+                background-color: transparent;
+                border-color: rgba(0,0,0,0.05);
+            }
         </style>
     </head>
 
@@ -347,63 +331,71 @@
     </header>
 
     <body>
-        <!-- Product Modal -->
-      <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-lg-custom">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="productModalLabel">Product Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-                    <div class="modal-body">
-                <div class="row">
-                  <div class="col-md-6">
-    <div class="modal-product-image-container ratio ratio-1x1"> <!-- Added ratio class -->
-        <img id="modalProductImage" src="" class="modal-product-image" alt="Product Image" 
-             style="width: 100%; height: 100%; object-fit: contain;">
-    </div>
-</div>
-                            <div class="col-md-6 product-details">
-                                <div class="detail-row">
-                                    <h3 id="modalProductName"></h3>
-                                    <span id="modalProductAvailability" class="availability-badge"></span>
+        <!-- Enhanced Product Modal -->
+        <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-light">
+                        <h5 class="modal-title fw-bold" id="productModalLabel">Product Details</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <div class="row g-4">
+                            <!-- Image Column -->
+                            <div class="col-md-6">
+                                <div class="product-image-container">
+                                    <img id="modalProductImage" src="" class="img-fluid mh-100" alt="Product Image" style="max-height: 300px; width: auto; object-fit: contain;">
                                 </div>
-                                <div class="detail-row">
-                                    <div class="row">
-                                        <div class="col-4 detail-label">Category:</div>
-                                        <div class="col-8" id="modalProductCategory"></div>
+                            </div>
+                            
+                            <!-- Details Column -->
+                            <div class="col-md-6">
+                                <div class="d-flex flex-column h-100">
+                                    <!-- Title and Availability -->
+                                    <div class="mb-3 border-bottom pb-3">
+                                        <h3 id="modalProductName" class="fw-bold mb-2"></h3>
+                                        <div>
+                                            <span id="modalProductAvailability" class="badge rounded-pill fs-6"></span>
+                                            <span id="modalProductStock" class="badge rounded-pill ms-2 fs-6"></span>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="detail-row">
-                                    <div class="row">
-                                        <div class="col-4 detail-label">Material:</div>
-                                        <div class="col-8" id="modalProductMaterial"></div>
+                                    
+                                    <!-- Details List -->
+                                    <div class="flex-grow-1">
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item px-0 py-2 d-flex justify-content-between">
+                                                <span class="fw-semibold text-muted">Category:</span>
+                                                <span id="modalProductCategory" class="text-end"></span>
+                                            </li>
+                                            <li class="list-group-item px-0 py-2 d-flex justify-content-between">
+                                                <span class="fw-semibold text-muted">Material:</span>
+                                                <span id="modalProductMaterial" class="text-end"></span>
+                                            </li>
+                                            <li class="list-group-item px-0 py-2 d-flex justify-content-between">
+                                                <span class="fw-semibold text-muted">Price:</span>
+                                                <span id="modalProductPrice" class="text-end fw-bold text-primary"></span>
+                                            </li>
+                                            <li class="list-group-item px-0 py-2 d-flex justify-content-between">
+                                                <span class="fw-semibold text-muted">Face Shape:</span>
+                                                <span id="modalProductFaceShape" class="text-end"></span>
+                                            </li>
+                                        </ul>
                                     </div>
-                                </div>
-                                <div class="detail-row">
-                                    <div class="row">
-                                        <div class="col-4 detail-label">Price:</div>
-                                        <div class="col-8" id="modalProductPrice"></div>
-                                    </div>
-                                </div>
-                                <div class="detail-row">
-                                    <div class="row">
-                                        <div class="col-4 detail-label">Stock Left:</div>
-                                        <div class="col-8" id="modalProductStock"></div>
-                                    </div>
-                                </div>
-                                <div class="detail-row">
-                                    <div class="row">
-                                        <div class="col-4 detail-label">Good for Face Shape:</div>
-                                        <div class="col-8" id="modalProductFaceShape"></div>
+                                    
+                                    <!-- Action Buttons -->
+                                    <div class="mt-auto pt-3 border-top">
+                                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                                                <i class="fas fa-times me-2"></i>Close
+                                            </button>
+                                            <button type="button" class="btn btn-primary" id="addToCartBtn">
+                                                <i class="fas fa-shopping-cart me-2"></i>Add to Cart
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary">Add to Cart</button>
                     </div>
                 </div>
             </div>
@@ -577,33 +569,56 @@
                 const productCards = document.querySelectorAll('.product-card');
                 const searchForm = document.getElementById('searchForm');
                 
-                // Modal functionality
+                // Enhanced Modal functionality
                 const productModal = document.getElementById('productModal');
                 if (productModal) {
                     productModal.addEventListener('show.bs.modal', function(event) {
                         const button = event.relatedTarget;
+                        const productId = button.getAttribute('data-product-id');
                         const productName = button.getAttribute('data-product-name');
                         const productImage = button.getAttribute('data-product-image');
                         const productCategory = button.getAttribute('data-product-category');
                         const productMaterial = button.getAttribute('data-product-material');
                         const productPrice = button.getAttribute('data-product-price');
                         const productAvailability = button.getAttribute('data-product-availability');
-                        const productStock = button.getAttribute('data-product-stock');
+                        const productStock = parseInt(button.getAttribute('data-product-stock'));
                         const productFaceShape = button.getAttribute('data-product-faceshape');
                         
+                        // Set modal content
                         document.getElementById('modalProductName').textContent = productName;
                         document.getElementById('modalProductImage').src = productImage;
                         document.getElementById('modalProductImage').alt = productName;
                         document.getElementById('modalProductCategory').textContent = productCategory;
                         document.getElementById('modalProductMaterial').textContent = productMaterial;
                         document.getElementById('modalProductPrice').textContent = productPrice;
-                        document.getElementById('modalProductStock').textContent = productStock;
                         document.getElementById('modalProductFaceShape').textContent = productFaceShape;
                         
+                        // Set availability badge
                         const availabilityBadge = document.getElementById('modalProductAvailability');
                         availabilityBadge.textContent = productAvailability;
-                        availabilityBadge.className = 'availability-badge ' + 
+                        availabilityBadge.className = 'badge rounded-pill fs-6 ' + 
                             (productAvailability === 'Available' ? 'available' : 'not-available');
+                        
+                        // Set stock badge
+                        const stockBadge = document.getElementById('modalProductStock');
+                        if (productStock > 0) {
+                            stockBadge.textContent = productStock + ' in stock';
+                            stockBadge.className = 'badge rounded-pill fs-6 ' + 
+                                (productStock < 5 ? 'low-stock' : 'bg-secondary');
+                            stockBadge.style.display = 'inline-block';
+                        } else {
+                            stockBadge.style.display = 'none';
+                        }
+                        
+                        // Disable add to cart button if not available
+                        const addToCartBtn = document.getElementById('addToCartBtn');
+                        if (productAvailability !== 'Available' || productStock <= 0) {
+                            addToCartBtn.disabled = true;
+                            addToCartBtn.classList.add('disabled');
+                        } else {
+                            addToCartBtn.disabled = false;
+                            addToCartBtn.classList.remove('disabled');
+                        }
                     });
                 }
                 
