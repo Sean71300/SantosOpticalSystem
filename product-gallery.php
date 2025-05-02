@@ -185,7 +185,7 @@
         }
     }
 
-    // Helper function to get face shape name from shapeID
+
     function getFaceShapeName($shapeID) {
         $conn = connect();
         $sql = "SELECT Description FROM shapeMaster WHERE ShapeID = ?";
@@ -281,7 +281,7 @@
             .live-search-item.highlight {
                 background-color: #e9ecef;
             }
-            /* Modal Styles */
+         
             .modal-lg-custom {
                 max-width: 800px;
             }
@@ -326,16 +326,15 @@
     padding: 10px;
     margin: 0 auto;
     border-radius: 5px;
-    overflow: hidden; 
+    overflow: hidden;
 }
 
 .modal-product-image {
-    height: 100%;
-    width: 100%;
+    max-height: 100%;
+    max-width: 100%;
+    width: auto;
+    height: auto;
     object-fit: contain;
-    object-position: center;
-    max-height: 300px;
-    max-width: 300px;
 }
         </style>
     </head>
