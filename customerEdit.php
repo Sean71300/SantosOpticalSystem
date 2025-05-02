@@ -285,7 +285,7 @@ handleCancellation();
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="visit_date" class="form-label">Visit Date <span class="text-danger">*</span></label>
-                                <input type="date" class="form-control" id="visit_date" name="visit_date" required>
+                                <input type="date" class="form-control" id="visit_date" name="visit_date" value="<?php echo date('Y-m-d');?>" required>
                             </div>
                         </div>
                         
