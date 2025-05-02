@@ -4,9 +4,9 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 require_once 'setup.php';
-include 'ActivityTracker.php';
-include 'loginChecker.php';
-include 'order-functions.php';
+require_once 'ActivityTracker.php';
+require_once 'loginChecker.php'; 
+require_once 'order-functions.php';
 
 // Debug function
 function debug_log($message) {
@@ -59,21 +59,19 @@ try {
     if (!empty($where)) {
         $totalQuery .= " WHERE " . implode(' AND ', $where);
     }
-
+    
     debug_log("Total Query: " . $totalQuery);
-    debug_log("Params: " . print_r($params, true));
-
+    
     $stmt = $conn->prepare($totalQuery);
     if (!$stmt) {
-        throw new Exception("Prepare failed: " . $conn->error);
+        throw new Exception("Prepare failed: " . $conn->error . " | Query: " . $totalQuery);
     }
-
+    
+    // Only bind parameters if they exist
     if (!empty($params)) {
-        $stmt->bind_param($types, ...$params);
-    }
-
-    if (!$stmt->execute()) {
-        throw new Exception("Execute failed: " . $stmt->error);
+        if (!$stmt->bind_param($types, ...$params)) {
+            throw new Exception("Bind failed: " . $stmt->error);
+        }
     }
 
     $totalResult = $stmt->get_result();
