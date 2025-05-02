@@ -616,10 +616,19 @@ $lowInventory = getLowInventoryProducts();
             });
 
             document.addEventListener('DOMContentLoaded', function() {
-                <?php if (!empty($lowInventory)) : ?>
-                var lowInventoryModal = new bootstrap.Modal(document.getElementById('lowInventoryModal'));
-                lowInventoryModal.show();
-                <?php endif; ?>
+                // Show low inventory modal only once per page visit
+                const lowInventoryModalEl = document.getElementById('lowInventoryModal');
+                
+                if (lowInventoryModalEl && !sessionStorage.getItem('lowInventoryShown')) {
+                    const lowInventoryModal = new bootstrap.Modal(lowInventoryModalEl);
+                    lowInventoryModal.show();
+                    sessionStorage.setItem('lowInventoryShown', 'true');
+                }
+
+                // Clear flag when user leaves the page
+                window.addEventListener('beforeunload', function() {
+                    sessionStorage.removeItem('lowInventoryShown');
+                });
             });
         </script>
     </body>
