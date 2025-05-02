@@ -198,7 +198,7 @@
                     <p>Email: <a href="mailto:Santosoptical@gmail.com" class="text-dark">Santosoptical@gmail.com</a></p>
                 </div>
             </div>
-            <div class="container-fluid text-center py-3" style="background-color: #f8f8f8;">
+            <div class="container-fluid text-center py-3" style="background-color: white">
                 <p class="m-0">COPYRIGHT &copy; SANTOS OPTICAL co., ltd. ALL RIGHTS RESERVED.</p>
             </div>
         </div>
