@@ -107,8 +107,7 @@
                 </div>
               </div>
           </div>
-        </div>
-<footer class="py-5 border-top mt-5 pt-4" style="background-color: #ffffff; margin-top: 50px; border-color: #ffffff;">
+        </div>  <footer class="py-5 border-top mt-5 pt-4" style="background-color: #ffffff; margin-top: 50px; border-color: #ffffff;">
         <div class="container">
             <div class="row text-center text-md-start">
                 <div class="col-md-3 mb-3 mb-md-0 text-center">
@@ -124,10 +123,10 @@
                 </div>
 
                 <div class="col-md-3 mb-3 mb-md-0">
-                    <h6 class="fw-bold">POLICY</h6>
+                    <h6 class="fw-bold">About</h6>
                     <ul class="list-unstyled">
-                        <li><a href="#" class="text-dark text-decoration-none">FAQ</a></li>
-                        <li><a href="#" class="text-dark text-decoration-none">Store Policy</a></li>
+                        <li><a href="aboutus.php" class="text-dark text-decoration-none">About Us</a></li>
+                        <li><a href="ourservices.php" class="text-dark text-decoration-none">Services</a></li>
                     </ul>
                 </div>
 
@@ -139,8 +138,9 @@
                     <p>Email: <a href="mailto:Santosoptical@gmail.com" class="text-dark">Santosoptical@gmail.com</a></p>
                 </div>
             </div>
-        </div>
-    </footer>
+            <div class="container-fluid text-center py-3" style="background-color: white">
+                <p class="m-0">COPYRIGHT &copy; SANTOS OPTICAL co., ltd. ALL RIGHTS RESERVED.</p>
+            </div>
 
         <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
         <script>
