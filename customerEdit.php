@@ -278,7 +278,7 @@ handleCancellation();
                     <h5 class="modal-title" id="addMedicalRecordModalLabel">Add New Medical Record</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form id="medicalRecordForm" method="post" action="addMedicalRecord.php">
+                <form id="medicalRecordForm" method="post" action="medical-records-funcs.php">
                     <div class="modal-body">
                         <input type="hidden" name="customerID" id="modalCustomerID">
                         
