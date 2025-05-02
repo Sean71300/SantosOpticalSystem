@@ -5,45 +5,40 @@ include_once 'setup.php';
 include 'ActivityTracker.php'; 
 include 'loginChecker.php';
 
-// Database functions
 function getOrderHeaders($conn, $search = '', $branch = '', $status = '', $limit = 10, $offset = 0) {
-    $query = "SELECT oh.Orderhdr_id, oh.CustomerID, oh.BranchCode, oh.Created_dt, oh.Created_by, 
-                     c.CustomerName
-              FROM Order_hdr oh
-              LEFT JOIN customer c ON oh.CustomerID = c.CustomerID";
+    $query = "SELECT Orderhdr_id, CustomerID, BranchCode, Created_dt, Created_by FROM Order_hdr";
     
     $where = [];
     $params = [];
     $types = '';
     
     if (!empty($search)) {
-        $where[] = "(oh.Orderhdr_id LIKE ? OR c.CustomerName LIKE ?)";
+        $customerIds = [];
+        $customerQuery = "SELECT CustomerID FROM customer WHERE CustomerName LIKE ?";
+        $stmt = $conn->prepare($customerQuery);
+        if (!$stmt) {
+            throw new Exception("Prepare failed: " . $conn->error);
+        }
+        $searchParam = '%' . $search . '%';
+        $stmt->bind_param('s', $searchParam);
+        if (!$stmt->execute()) {
+            throw new Exception("Execute failed: " . $stmt->error);
+        }
+        $result = $stmt->get_result();
+        while ($row = $result->fetch_assoc()) {
+            $customerIds[] = $row['CustomerID'];
+        }
+        $stmt->close();
+        
+        $where[] = "(Orderhdr_id LIKE ? OR CustomerID IN (" . implode(',', array_fill(0, count($customerIds), '?')) . "))";
         $params[] = '%' . $search . '%';
-        $params[] = '%' . $search . '%';
-        $types .= 'ss';
+        $params = array_merge($params, $customerIds);
+        $types .= str_repeat('s', count($customerIds) + 1);
     }
     
     if (!empty($branch)) {
-        $where[] = "oh.BranchCode = ?";
+        $where[] = "BranchCode = ?";
         $params[] = $branch;
-        $types .= 's';
-    }
-    
-    if (!empty($status)) {
-        // Subquery to determine the overall order status
-        $query .= " INNER JOIN (
-                      SELECT OrderHdr_id, 
-                             CASE 
-                                 WHEN SUM(Status = 'Complete') = COUNT(*) THEN 'Complete'
-                                 WHEN SUM(Status = 'Cancelled') = COUNT(*) THEN 'Cancelled'
-                                 ELSE 'Pending'
-                             END AS OverallStatus
-                      FROM orderDetails
-                      GROUP BY OrderHdr_id
-                  ) os ON oh.Orderhdr_id = os.OrderHdr_id";
-        
-        $where[] = "os.OverallStatus = ?";
-        $params[] = $status;
         $types .= 's';
     }
     
@@ -51,108 +46,235 @@ function getOrderHeaders($conn, $search = '', $branch = '', $status = '', $limit
         $query .= " WHERE " . implode(' AND ', $where);
     }
     
-    $query .= " ORDER BY oh.Created_dt DESC LIMIT ? OFFSET ?";
+    $query .= " ORDER BY Created_dt DESC LIMIT ? OFFSET ?";
     $params[] = $limit;
     $params[] = $offset;
     $types .= 'ii';
     
     $stmt = $conn->prepare($query);
-    if (!empty($params)) {
-        $stmt->bind_param($types, ...$params);
+    if (!$stmt) {
+        throw new Exception("Prepare failed: " . $conn->error);
     }
-    $stmt->execute();
-    return $stmt->get_result();
+    
+    if (!empty($params)) {
+        if (!$stmt->bind_param($types, ...$params)) {
+            throw new Exception("Bind param failed: " . $stmt->error);
+        }
+    }
+    
+    if (!$stmt->execute()) {
+        throw new Exception("Execute failed: " . $stmt->error);
+    }
+    
+    $result = $stmt->get_result();
+    $orders = [];
+    
+    while ($header = $result->fetch_assoc()) {
+        $customerName = getCustomerName($conn, $header['CustomerID']);
+        $header['CustomerName'] = $customerName;
+        $orders[] = $header;
+    }
+    
+    $stmt->close();
+    
+    if (!empty($status)) {
+        $filteredOrders = [];
+        foreach ($orders as $order) {
+            $orderStatus = getOrderStatus($conn, $order['Orderhdr_id']);
+            if ($orderStatus === $status) {
+                $filteredOrders[] = $order;
+            }
+        }
+        return $filteredOrders;
+    }
+    
+    return $orders;
+}
+
+function getOrderStatus($conn, $orderId) {
+    $query = "SELECT Status FROM orderDetails WHERE OrderHdr_id = ?";
+    $stmt = $conn->prepare($query);
+    if (!$stmt) {
+        throw new Exception("Prepare failed: " . $conn->error);
+    }
+    $stmt->bind_param('i', $orderId);
+    if (!$stmt->execute()) {
+        throw new Exception("Execute failed: " . $stmt->error);
+    }
+    $result = $stmt->get_result();
+    
+    $completeCount = 0;
+    $cancelledCount = 0;
+    $totalItems = 0;
+    
+    while ($row = $result->fetch_assoc()) {
+        $totalItems++;
+        if ($row['Status'] === 'Complete') {
+            $completeCount++;
+        } elseif ($row['Status'] === 'Cancelled') {
+            $cancelledCount++;
+        }
+    }
+    
+    $stmt->close();
+    
+    if ($completeCount === $totalItems) {
+        return 'Complete';
+    } elseif ($cancelledCount === $totalItems) {
+        return 'Cancelled';
+    }
+    return 'Pending';
 }
 
 function getCustomerName($conn, $customerId) {
     $query = "SELECT CustomerName FROM customer WHERE CustomerID = ?";
     $stmt = $conn->prepare($query);
+    if (!$stmt) {
+        throw new Exception("Prepare failed: " . $conn->error);
+    }
     $stmt->bind_param('i', $customerId);
-    $stmt->execute();
+    if (!$stmt->execute()) {
+        throw new Exception("Execute failed: " . $stmt->error);
+    }
     $result = $stmt->get_result();
-    return $result->fetch_assoc()['CustomerName'] ?? 'Unknown';
+    $row = $result->fetch_assoc();
+    $stmt->close();
+    return $row ? $row['CustomerName'] : 'Unknown';
 }
 
 function getBranchName($conn, $branchCode) {
     $query = "SELECT BranchName FROM BranchMaster WHERE BranchCode = ?";
     $stmt = $conn->prepare($query);
+    if (!$stmt) {
+        throw new Exception("Prepare failed: " . $conn->error);
+    }
     $stmt->bind_param('s', $branchCode);
-    $stmt->execute();
+    if (!$stmt->execute()) {
+        throw new Exception("Execute failed: " . $stmt->error);
+    }
     $result = $stmt->get_result();
-    return $result->fetch_assoc()['BranchName'] ?? 'Unknown';
+    $row = $result->fetch_assoc();
+    $stmt->close();
+    return $row ? $row['BranchName'] : 'Unknown';
 }
 
 function getEmployeeName($conn, $loginName) {
     $query = "SELECT EmployeeName FROM employee WHERE LoginName = ?";
     $stmt = $conn->prepare($query);
+    if (!$stmt) {
+        throw new Exception("Prepare failed: " . $conn->error);
+    }
     $stmt->bind_param('s', $loginName);
-    $stmt->execute();
+    if (!$stmt->execute()) {
+        throw new Exception("Execute failed: " . $stmt->error);
+    }
     $result = $stmt->get_result();
-    return $result->fetch_assoc()['EmployeeName'] ?? 'Unknown';
+    $row = $result->fetch_assoc();
+    $stmt->close();
+    return $row ? $row['EmployeeName'] : 'Unknown';
 }
 
 function getOrderDetails($conn, $orderId) {
-    $query = "SELECT od.Quantity, p.Price, od.Status 
-              FROM orderDetails od
-              LEFT JOIN ProductBranchMaster pbm ON od.ProductBranchID = pbm.ProductBranchID
-              LEFT JOIN productMstr p ON pbm.ProductID = p.ProductID
-              WHERE od.OrderHdr_id = ?";
+    $query = "SELECT od.Quantity, od.Status, od.ProductBranchID FROM orderDetails od WHERE od.OrderHdr_id = ?";
     $stmt = $conn->prepare($query);
+    if (!$stmt) {
+        throw new Exception("Prepare failed: " . $conn->error);
+    }
     $stmt->bind_param('i', $orderId);
-    $stmt->execute();
-    return $stmt->get_result();
+    if (!$stmt->execute()) {
+        throw new Exception("Execute failed: " . $stmt->error);
+    }
+    $result = $stmt->get_result();
+    $details = [];
+    
+    while ($row = $result->fetch_assoc()) {
+        $price = getProductPrice($conn, $row['ProductBranchID']);
+        $row['Price'] = $price;
+        $details[] = $row;
+    }
+    
+    $stmt->close();
+    return $details;
+}
+
+function getProductPrice($conn, $productBranchId) {
+    $query = "SELECT ProductID FROM ProductBranchMaster WHERE ProductBranchID = ?";
+    $stmt = $conn->prepare($query);
+    if (!$stmt) {
+        throw new Exception("Prepare failed: " . $conn->error);
+    }
+    $stmt->bind_param('i', $productBranchId);
+    if (!$stmt->execute()) {
+        throw new Exception("Execute failed: " . $stmt->error);
+    }
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    $stmt->close();
+    
+    if (!$row) return 0;
+    
+    $productId = $row['ProductID'];
+    $priceQuery = "SELECT Price FROM productMstr WHERE ProductID = ?";
+    $priceStmt = $conn->prepare($priceQuery);
+    if (!$priceStmt) {
+        throw new Exception("Prepare failed: " . $conn->error);
+    }
+    $priceStmt->bind_param('i', $productId);
+    if (!$priceStmt->execute()) {
+        throw new Exception("Execute failed: " . $priceStmt->error);
+    }
+    $priceResult = $priceStmt->get_result();
+    $priceRow = $priceResult->fetch_assoc();
+    $priceStmt->close();
+    
+    return $priceRow ? $priceRow['Price'] : 0;
 }
 
 function getOrderTotal($conn, $orderId) {
-    $query = "SELECT SUM(p.Price * od.Quantity) as total
-              FROM orderDetails od
-              LEFT JOIN ProductBranchMaster pbm ON od.ProductBranchID = pbm.ProductBranchID
-              LEFT JOIN productMstr p ON pbm.ProductID = p.ProductID
-              WHERE od.OrderHdr_id = ?";
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param('i', $orderId);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    return $result->fetch_assoc()['total'] ?? 0;
+    $details = getOrderDetails($conn, $orderId);
+    $total = 0;
+    
+    foreach ($details as $detail) {
+        $total += $detail['Price'] * $detail['Quantity'];
+    }
+    
+    return $total;
 }
 
 function countOrderHeaders($conn, $search = '', $branch = '', $status = '') {
-    $query = "SELECT COUNT(DISTINCT oh.Orderhdr_id) as total 
-              FROM Order_hdr oh
-              LEFT JOIN customer c ON oh.CustomerID = c.CustomerID";
+    $query = "SELECT COUNT(Orderhdr_id) as total FROM Order_hdr";
     
     $where = [];
     $params = [];
     $types = '';
     
     if (!empty($search)) {
-        $where[] = "(oh.Orderhdr_id LIKE ? OR c.CustomerName LIKE ?)";
+        $customerIds = [];
+        $customerQuery = "SELECT CustomerID FROM customer WHERE CustomerName LIKE ?";
+        $stmt = $conn->prepare($customerQuery);
+        if (!$stmt) {
+            throw new Exception("Prepare failed: " . $conn->error);
+        }
+        $searchParam = '%' . $search . '%';
+        $stmt->bind_param('s', $searchParam);
+        if (!$stmt->execute()) {
+            throw new Exception("Execute failed: " . $stmt->error);
+        }
+        $result = $stmt->get_result();
+        while ($row = $result->fetch_assoc()) {
+            $customerIds[] = $row['CustomerID'];
+        }
+        $stmt->close();
+        
+        $where[] = "(Orderhdr_id LIKE ? OR CustomerID IN (" . implode(',', array_fill(0, count($customerIds), '?')) . "))";
         $params[] = '%' . $search . '%';
-        $params[] = '%' . $search . '%';
-        $types .= 'ss';
+        $params = array_merge($params, $customerIds);
+        $types .= str_repeat('s', count($customerIds) + 1);
     }
     
     if (!empty($branch)) {
-        $where[] = "oh.BranchCode = ?";
+        $where[] = "BranchCode = ?";
         $params[] = $branch;
-        $types .= 's';
-    }
-    
-    if (!empty($status)) {
-        // Subquery to determine the overall order status
-        $query .= " INNER JOIN (
-                      SELECT OrderHdr_id, 
-                             CASE 
-                                 WHEN SUM(Status = 'Complete') = COUNT(*) THEN 'Complete'
-                                 WHEN SUM(Status = 'Cancelled') = COUNT(*) THEN 'Cancelled'
-                                 ELSE 'Pending'
-                             END AS OverallStatus
-                      FROM orderDetails
-                      GROUP BY OrderHdr_id
-                  ) os ON oh.Orderhdr_id = os.OrderHdr_id";
-        
-        $where[] = "os.OverallStatus = ?";
-        $params[] = $status;
         $types .= 's';
     }
     
@@ -161,84 +283,103 @@ function countOrderHeaders($conn, $search = '', $branch = '', $status = '') {
     }
     
     $stmt = $conn->prepare($query);
-    if (!empty($params)) {
-        $stmt->bind_param($types, ...$params);
+    if (!$stmt) {
+        throw new Exception("Prepare failed: " . $conn->error);
     }
-    $stmt->execute();
-    $result = $stmt->get_result();
-    return $result->fetch_assoc()['total'] ?? 0;
-}
-
-        function getAllBranches($conn) {
-            $query = "SELECT BranchCode, BranchName FROM BranchMaster";
-            return $conn->query($query);
-        }
-
-        // Main processing
-        $ordersPerPage = 10;
-        $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-        $offset = ($currentPage - 1) * $ordersPerPage;
-
-        $search = $_GET['search'] ?? '';
-        $branch = $_GET['branch'] ?? '';
-        $status = $_GET['status'] ?? '';
-
-        $conn = connect();
-
-        // Get order headers
-        $orderHeaders = getOrderHeaders($conn, $search, $branch, $status, $ordersPerPage, $offset);
-        $totalOrders = countOrderHeaders($conn, $search, $branch, $status);
-        $totalPages = ceil($totalOrders / $ordersPerPage);
-
-        // Process orders to get additional details
-        $orders = [];
-        while ($header = $orderHeaders->fetch_assoc()) {
-            $orderId = $header['Orderhdr_id'];
-            $details = getOrderDetails($conn, $orderId);
-            
-            $itemCount = 0;
-            $totalAmount = getOrderTotal($conn, $orderId);
-            // In your main processing code where you build the $orders array:
-        // In your main processing code where you build the $orders array:
-        $orderStatus = 'Pending';
-        $completeCount = 0;
-        $cancelledCount = 0;
-        $totalItems = 0;
-
-        if ($details->num_rows > 0) {
-            while ($detail = $details->fetch_assoc()) {
-                $totalItems++;
-                if ($detail['Status'] === 'Complete') {
-                    $completeCount++;
-                } elseif ($detail['Status'] === 'Cancelled') {
-                    $cancelledCount++;
-                }
-            }
-            
-            if ($completeCount === $totalItems) {
-                $orderStatus = 'Complete';
-            } elseif ($cancelledCount === $totalItems) {
-                $orderStatus = 'Cancelled';
-            }
+    
+    if (!empty($params)) {
+        if (!$stmt->bind_param($types, ...$params)) {
+            throw new Exception("Bind param failed: " . $stmt->error);
         }
     }
     
-    // Apply status filter if set (now handled in SQL query)
-    $orders[] = [
-        'Orderhdr_id' => $orderId,
-        'Created_dt' => $header['Created_dt'],
-        'CustomerName' => $header['CustomerName'] ?? getCustomerName($conn, $header['CustomerID']),
-        'CreatedBy' => getEmployeeName($conn, $header['Created_by']),
-        'BranchName' => getBranchName($conn, $header['BranchCode']),
-        'ItemCount' => $itemCount,
-        'TotalAmount' => $totalAmount,
-        'Status' => $orderStatus
-    ];
+    if (!$stmt->execute()) {
+        throw new Exception("Execute failed: " . $stmt->error);
+    }
+    
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    $stmt->close();
+    
+    $total = $row ? $row['total'] : 0;
+    
+    if (!empty($status)) {
+        $filteredCount = 0;
+        $allOrdersQuery = "SELECT Orderhdr_id FROM Order_hdr" . (!empty($where) ? " WHERE " . implode(' AND ', $where) : "");
+        $allStmt = $conn->prepare($allOrdersQuery);
+        
+        if (!empty($params)) {
+            $allStmt->bind_param($types, ...$params);
+        }
+        
+        $allStmt->execute();
+        $allResult = $allStmt->get_result();
+        
+        while ($order = $allResult->fetch_assoc()) {
+            $orderStatus = getOrderStatus($conn, $order['Orderhdr_id']);
+            if ($orderStatus === $status) {
+                $filteredCount++;
+            }
+        }
+        
+        $allStmt->close();
+        return $filteredCount;
+    }
+    
+    return $total;
 }
 
-// Get branches for filter dropdown
-$branchesResult = getAllBranches($conn);
-$conn->close();
+function getAllBranches($conn) {
+    $query = "SELECT BranchCode, BranchName FROM BranchMaster";
+    $result = $conn->query($query);
+    if (!$result) {
+        throw new Exception("Query failed: " . $conn->error);
+    }
+    return $result;
+}
+
+try {
+    $ordersPerPage = 10;
+    $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+    $offset = ($currentPage - 1) * $ordersPerPage;
+
+    $search = $_GET['search'] ?? '';
+    $branch = $_GET['branch'] ?? '';
+    $status = $_GET['status'] ?? '';
+
+    $conn = connect();
+
+    $orderHeaders = getOrderHeaders($conn, $search, $branch, $status, $ordersPerPage, $offset);
+    $totalOrders = countOrderHeaders($conn, $search, $branch, $status);
+    $totalPages = ceil($totalOrders / $ordersPerPage);
+
+    $orders = [];
+    foreach ($orderHeaders as $header) {
+        $orderId = $header['Orderhdr_id'];
+        $details = getOrderDetails($conn, $orderId);
+        
+        $itemCount = count($details);
+        $totalAmount = getOrderTotal($conn, $orderId);
+        $orderStatus = getOrderStatus($conn, $orderId);
+        
+        $orders[] = [
+            'Orderhdr_id' => $orderId,
+            'Created_dt' => $header['Created_dt'],
+            'CustomerName' => $header['CustomerName'],
+            'CreatedBy' => getEmployeeName($conn, $header['Created_by']),
+            'BranchName' => getBranchName($conn, $header['BranchCode']),
+            'ItemCount' => $itemCount,
+            'TotalAmount' => $totalAmount,
+            'Status' => $orderStatus
+        ];
+    }
+
+    $branchesResult = getAllBranches($conn);
+    $conn->close();
+} catch (Exception $e) {
+    error_log("Error in order.php: " . $e->getMessage());
+    die("An error occurred while processing your request. Please try again later.");
+}
 ?>
 
 <!DOCTYPE html>
@@ -384,7 +525,6 @@ $conn->close();
                         <select class="form-select" id="branch" name="branch">
                             <option value="">All Branches</option>
                             <?php 
-                            // Reset pointer and re-fetch branches
                             $branchesResult->data_seek(0); 
                             while ($branchRow = $branchesResult->fetch_assoc()): ?>
                                 <option value="<?php echo $branchRow['BranchCode']; ?>" 
@@ -502,7 +642,6 @@ $conn->close();
         </div>
     </div>
 
-        <!-- Add Order Modal -->
     <div class="modal fade" id="addOrderModal" tabindex="-1" aria-labelledby="addOrderModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -596,7 +735,6 @@ $conn->close();
                 }
             });
 
-            // Customer search functionality
             const customerSearch = document.getElementById('customerSearch');
             if (customerSearch) {
                 customerSearch.addEventListener('input', function() {
@@ -617,17 +755,14 @@ $conn->close();
                 });
             }
 
-            // Customer selection
             document.querySelectorAll('.select-customer').forEach(button => {
                 button.addEventListener('click', function() {
                     const customerId = this.getAttribute('data-customer-id');
                     const customerName = this.getAttribute('data-customer-name');
                     
-                    // Close the modal
                     const modal = bootstrap.Modal.getInstance(document.getElementById('addOrderModal'));
                     modal.hide();
                     
-                    // Redirect to order creation page with customer ID
                     window.location.href = `orderCreate.php?customer_id=${customerId}`;
                 });
             });
