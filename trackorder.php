@@ -2,6 +2,11 @@
 include_once 'setup.php';
 include_once 'connect.php';
 include 'ActivityTracker.php';
+
+if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
+    header("Refresh: 0; url=login.php");
+    exit;
+}
 ?>
 
 <!DOCTYPE html>
@@ -26,7 +31,7 @@ include 'ActivityTracker.php';
 </header>
 
 <body>
-    <div class="container" style="height: 20rem;">
+    <div class="container" style="height: 100rem;">
         <div class="row justify-content-center mt-5 mb-5">
             <div class="col-md-8">
                 <i class="fa-solid fa-file-invoice-dollar me-2"></i><h1 class="text-center">Track Your Order</h1>
@@ -60,7 +65,14 @@ include 'ActivityTracker.php';
                         }
                         echo "</div>";
                     } else {
-                        echo "<div class='alert alert-warning mt-4'>No orders found for Customer ID: " . htmlspecialchars($customer_id) . "</div>";
+                        echo "<div class='alert alert-warning mt-4 text-center'>";
+                        echo "<i class='fas fa-exclamation-triangle fa-2x mb-3'></i>";
+                        echo "<h5>No Orders Found</h5>";
+                        echo "<p class='mb-0'>If you believe this is an error or need assistance,<br>";
+                        echo "please contact our support team:<br>";
+                        echo "<strong>Phone:</strong> 027-508-4792<br>";
+                        echo "<strong>Email:</strong> Santosoptical@gmail.com</p>";
+                        echo "</div>";
                     }
                 
                     $stmt->close();
