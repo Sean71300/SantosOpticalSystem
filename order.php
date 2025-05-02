@@ -6,7 +6,7 @@ include 'ActivityTracker.php';
 include 'loginChecker.php';
 
 // Database functions
-function getOrderHeaders($conn, $search = '', $branch = '', $limit = 10, $offset = 0) {
+function getOrderHeaders($conn, $search = '', $branch = '', $status = '', $limit = 10, $offset = 0) {
     $query = "SELECT oh.Orderhdr_id, oh.CustomerID, oh.BranchCode, oh.Created_dt, oh.Created_by, 
                      c.CustomerName
               FROM Order_hdr oh
@@ -85,10 +85,24 @@ function getOrderDetails($conn, $orderId) {
     return $stmt->get_result();
 }
 
-function countOrderHeaders($conn, $search = '', $branch = '') {
-    $query = "SELECT COUNT(oh.Orderhdr_id) as total 
+function getOrderTotal($conn, $orderId) {
+    $query = "SELECT SUM(p.Price * od.Quantity) as total
+              FROM orderDetails od
+              LEFT JOIN ProductBranchMaster pbm ON od.ProductBranchID = pbm.ProductBranchID
+              LEFT JOIN productMstr p ON pbm.ProductID = p.ProductID
+              WHERE od.OrderHdr_id = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param('i', $orderId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    return $result->fetch_assoc()['total'] ?? 0;
+}
+
+function countOrderHeaders($conn, $search = '', $branch = '', $status = '') {
+    $query = "SELECT COUNT(DISTINCT oh.Orderhdr_id) as total 
               FROM Order_hdr oh
-              LEFT JOIN customer c ON oh.CustomerID = c.CustomerID";
+              LEFT JOIN customer c ON oh.CustomerID = c.CustomerID
+              LEFT JOIN orderDetails od ON oh.Orderhdr_id = od.OrderHdr_id";
     
     $where = [];
     $params = [];
@@ -104,6 +118,12 @@ function countOrderHeaders($conn, $search = '', $branch = '') {
     if (!empty($branch)) {
         $where[] = "oh.BranchCode = ?";
         $params[] = $branch;
+        $types .= 's';
+    }
+    
+    if (!empty($status)) {
+        $where[] = "od.Status = ?";
+        $params[] = $status;
         $types .= 's';
     }
     
@@ -137,8 +157,8 @@ $status = $_GET['status'] ?? '';
 $conn = connect();
 
 // Get order headers
-$orderHeaders = getOrderHeaders($conn, $search, $branch, $ordersPerPage, $offset);
-$totalOrders = countOrderHeaders($conn, $search, $branch);
+$orderHeaders = getOrderHeaders($conn, $search, $branch, $status, $ordersPerPage, $offset);
+$totalOrders = countOrderHeaders($conn, $search, $branch, $status);
 $totalPages = ceil($totalOrders / $ordersPerPage);
 
 // Process orders to get additional details
@@ -148,15 +168,13 @@ while ($header = $orderHeaders->fetch_assoc()) {
     $details = getOrderDetails($conn, $orderId);
     
     $itemCount = 0;
-    $totalAmount = 0;
+    $totalAmount = getOrderTotal($conn, $orderId);
     $orderStatus = 'Pending';
     
     if ($details->num_rows > 0) {
         while ($detail = $details->fetch_assoc()) {
             $itemCount += (int)$detail['Quantity'];
-            $price = (float)$detail['Price'];
-            $totalAmount += $price * (int)$detail['Quantity'];
-        
+            
             if ($detail['Status'] === 'Complete') {
                 $orderStatus = 'Complete';
             } elseif ($detail['Status'] === 'Cancelled' && $orderStatus !== 'Complete') {
@@ -165,11 +183,7 @@ while ($header = $orderHeaders->fetch_assoc()) {
         }
     }
     
-    // Apply status filter if set
-    if (!empty($status) && $orderStatus !== $status) {
-        continue;
-    }
-    
+    // Apply status filter if set (now handled in SQL query)
     $orders[] = [
         'Orderhdr_id' => $orderId,
         'Created_dt' => $header['Created_dt'],
@@ -310,7 +324,7 @@ $conn->close();
     <?php include "sidebar.php"; ?>
 
     <div class="main-content">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
             <h2><i class="fas fa-shopping-cart me-2"></i>Orders Management</h2>
             <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addOrderModal">
                 <i class="fas fa-plus me-1"></i> Add New Order
@@ -329,7 +343,10 @@ $conn->close();
                         <label for="branch" class="form-label">Filter by Branch</label>
                         <select class="form-select" id="branch" name="branch">
                             <option value="">All Branches</option>
-                            <?php while ($branchRow = $branchesResult->fetch_assoc()): ?>
+                            <?php 
+                            // Reset pointer and re-fetch branches
+                            $branchesResult->data_seek(0); 
+                            while ($branchRow = $branchesResult->fetch_assoc()): ?>
                                 <option value="<?php echo $branchRow['BranchCode']; ?>" 
                                     <?php echo ($branch == $branchRow['BranchCode'] ? 'selected' : ''); ?>>
                                     <?php echo $branchRow['BranchName']; ?>
@@ -354,53 +371,53 @@ $conn->close();
                 </div>
             </form>
 
-        <?php if (!empty($orders)): ?>
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Order ID</th>
-                            <th>Customer</th>
-                            <th>Branch</th>
-                            <th>Date</th>
-                            <th>Items</th>
-                            <th>Total</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($orders as $order): ?>
+            <?php if (!empty($orders)): ?>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
                             <tr>
-                                <td><?= htmlspecialchars($order['Orderhdr_id']) ?></td>
-                                <td><?= htmlspecialchars($order['CustomerName']) ?></td>
-                                <td><?= htmlspecialchars($order['BranchName']) ?></td>
-                                <td><?= date('M j, Y', strtotime($order['Created_dt'])) ?></td>
-                                <td><?= $order['ItemCount'] ?></td>
-                                <td>₱<?= number_format($order['TotalAmount'], 2) ?></td>
-                                <td>
-                                    <span class="badge 
-                                        <?= match($order['Status']) {
-                                            'Complete' => 'badge-complete',
-                                            'Cancelled' => 'badge-cancelled',
-                                            default => 'badge-pending'
-                                        } ?>">
-                                        <?= $order['Status'] ?>
-                                    </span>
-                                </td>
-                                <td>
-                                    <a href="orderDetails.php?id=<?= $order['Orderhdr_id'] ?>" 
-                                       class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-eye"></i> View
-                                    </a>
-                                </td>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Branch</th>
+                                <th>Date</th>
+                                <th>Items</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Actions</th>
                             </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($orders as $order): ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($order['Orderhdr_id']) ?></td>
+                                    <td><?= htmlspecialchars($order['CustomerName']) ?></td>
+                                    <td><?= htmlspecialchars($order['BranchName']) ?></td>
+                                    <td><?= date('M j, Y', strtotime($order['Created_dt'])) ?></td>
+                                    <td><?= $order['ItemCount'] ?></td>
+                                    <td>₱<?= number_format($order['TotalAmount'], 2) ?></td>
+                                    <td>
+                                        <span class="badge 
+                                            <?= match($order['Status']) {
+                                                'Complete' => 'badge-complete',
+                                                'Cancelled' => 'badge-cancelled',
+                                                default => 'badge-pending'
+                                            } ?>">
+                                            <?= $order['Status'] ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="orderDetails.php?id=<?= $order['Orderhdr_id'] ?>" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
 
-            <nav aria-label="Orders pagination" class="mt-4">
+                <nav aria-label="Orders pagination" class="mt-4">
                     <ul class="pagination justify-content-center">
                         <?php if ($currentPage > 1): ?>
                             <li class="page-item">
@@ -437,11 +454,11 @@ $conn->close();
                         <?php endif; ?>
                     </ul>
                 </nav>
-        <?php else: ?>
-            <div class="alert alert-info text-center">
-                <i class="fas fa-info-circle me-2"></i> No orders found.
-            </div>
-        <?php endif; ?>
+            <?php else: ?>
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle me-2"></i> No orders found.
+                </div>
+            <?php endif; ?>
         </div>
     </div>
 
