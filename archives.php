@@ -1,23 +1,20 @@
 <?php
 include_once 'setup.php';
-include 'ActivityTracker.php';
+include 'ActivityTracker.php';  // Make sure this contains class ActivityTracker
 include 'loginChecker.php';
 
 $logsPerPage = 10;
 $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($currentPage - 1) * $logsPerPage;
 
-// Handle restore or delete actions
 if (isset($_POST['action'])) {
     $conn = connect();
     
     if ($_POST['action'] == 'restore') {
-        // Restore archived item
         $archiveID = (int)$_POST['archive_id'];
         $targetType = $_POST['target_type'];
         $targetID = (int)$_POST['target_id'];
         
-        // Get the original table name based on target type
         $tableName = '';
         switch($targetType) {
             case 'product': $tableName = 'productMstr'; break;
@@ -27,18 +24,16 @@ if (isset($_POST['action'])) {
         }
         
         if ($tableName) {
-            // Update status to 'Active' in the original table
             $sql = "UPDATE $tableName SET Status = 'Active' WHERE " . 
                    ($tableName == 'Order_hdr' ? 'Orderhdr_id' : ucfirst($targetType) . 'ID') . " = ?";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param('i', $targetID);
             $stmt->execute();
             
-            // Log the restoration
-            ActivityTracker1::logActivity($_SESSION['employee_id'], $targetID, $targetType, 3, 
+            // Fixed: Changed ActivityTracker1 to ActivityTracker
+            ActivityTracker::logActivity($_SESSION['employee_id'], $targetID, $targetType, 3, 
                                        "Restored $targetType from archives");
             
-            // Delete from archives
             $sql = "DELETE FROM archives WHERE ArchiveID = ?";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param('i', $archiveID);
@@ -48,12 +43,10 @@ if (isset($_POST['action'])) {
         }
     } 
     elseif ($_POST['action'] == 'delete') {
-        // Delete single archived item
         $archiveID = (int)$_POST['archive_id'];
         $targetType = $_POST['target_type'];
         $targetID = (int)$_POST['target_id'];
         
-        // First delete from original table (cascade should handle this, but we'll do it explicitly)
         $tableName = '';
         switch($targetType) {
             case 'product': $tableName = 'productMstr'; break;
@@ -69,11 +62,10 @@ if (isset($_POST['action'])) {
             $stmt->bind_param('i', $targetID);
             $stmt->execute();
             
-            // Log the deletion
-            ActivityTracker1::logActivity($_SESSION['employee_id'], $targetID, $targetType, 5, 
+            // Fixed: Changed ActivityTracker1 to ActivityTracker
+            ActivityTracker::logActivity($_SESSION['employee_id'], $targetID, $targetType, 5, 
                                        "Permanently deleted $targetType from archives");
             
-            // Then delete from archives
             $sql = "DELETE FROM archives WHERE ArchiveID = ?";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param('i', $archiveID);
@@ -83,10 +75,8 @@ if (isset($_POST['action'])) {
         }
     } 
     elseif ($_POST['action'] == 'delete_all') {
-        // Delete all archived items
         $targetType = $_POST['target_type'];
         
-        // Get all archives of this type
         $sql = "SELECT TargetID FROM archives WHERE TargetType = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param('s', $targetType);
@@ -102,16 +92,13 @@ if (isset($_POST['action'])) {
         }
         
         if ($tableName) {
-            // Delete all records from original table
             $columnName = ($tableName == 'Order_hdr' ? 'Orderhdr_id' : ucfirst($targetType) . 'ID');
             
-            // First get all target IDs to log the deletion
             $targetIDs = [];
             while ($row = $result->fetch_assoc()) {
                 $targetIDs[] = $row['TargetID'];
             }
             
-            // Delete from original table
             if (!empty($targetIDs)) {
                 $placeholders = implode(',', array_fill(0, count($targetIDs), '?'));
                 $sql = "DELETE FROM $tableName WHERE $columnName IN ($placeholders)";
@@ -120,14 +107,13 @@ if (isset($_POST['action'])) {
                 $stmt->bind_param($types, ...$targetIDs);
                 $stmt->execute();
                 
-                // Log the mass deletion
                 foreach ($targetIDs as $id) {
-                    ActivityTracker1::logActivity($_SESSION['employee_id'], $id, $targetType, 5, 
+                    // Fixed: Changed ActivityTracker1 to ActivityTracker
+                    ActivityTracker::logActivity($_SESSION['employee_id'], $id, $targetType, 5, 
                                                "Permanently deleted $targetType from archives (mass deletion)");
                 }
             }
             
-            // Delete from archives
             $sql = "DELETE FROM archives WHERE TargetType = ?";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param('s', $targetType);
