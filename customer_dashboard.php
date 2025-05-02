@@ -4,7 +4,7 @@ include_once 'setup.php';
 include 'ActivityTracker.php';
 
 if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
-    header("Refresh: 2; url=login.php");
+    header("Refresh: 0; url=login.php");
     exit;
 }
 ?>
