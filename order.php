@@ -111,9 +111,24 @@ try {
     $statusOptions = ['Pending', 'Processing', 'Completed', 'Cancelled'];
 
 } catch (Exception $e) {
-    // Log the error and display a user-friendly message
-    debug_log("Error: " . $e->getMessage());
-    die("<div class='alert alert-danger'>An error occurred. Please try again later. Error details have been logged.</div>");
+    // Enhanced error display for debugging
+    $errorDetails = [
+        'message' => $e->getMessage(),
+        'file' => $e->getFile(),
+        'line' => $e->getLine(),
+        'trace' => $e->getTraceAsString(),
+        'sql_error' => isset($conn) ? $conn->error : null,
+        'stmt_error' => isset($stmt) ? $stmt->error : null
+    ];
+    
+    debug_log("Full Error: " . print_r($errorDetails, true));
+    
+    // Show detailed error during development
+    echo '<div class="alert alert-danger">';
+    echo '<h4>Error Details</h4>';
+    echo '<pre>' . print_r($errorDetails, true) . '</pre>';
+    echo '</div>';
+    die();
 }
 ?>
 
