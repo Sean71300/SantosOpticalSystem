@@ -386,6 +386,30 @@ handleCancellation();
         </div>
     </div>
 
+    <!-- Status Modal -->
+    <div class="modal fade" id="statusModal" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="statusModalLabel">Medical Record Status</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <?php
+                    if (isset($_GET['success'])) {
+                        echo '<div class="alert alert-success mb-0">' . htmlspecialchars($_GET['success']) . '</div>';
+                    } elseif (isset($_GET['error'])) {
+                        echo '<div class="alert alert-danger mb-0">' . htmlspecialchars($_GET['error']) . '</div>';
+                    }
+                    ?>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- JavaScript -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -405,6 +429,14 @@ handleCancellation();
                     const today = new Date().toISOString().split('T')[0];
                     addMedicalRecordModal.querySelector('#visit_date').value = today;
                 });
+            }
+        });
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('success') || urlParams.has('error')) {
+                const statusModal = new bootstrap.Modal(document.getElementById('statusModal'));
+                statusModal.show();
             }
         });
     </script>
