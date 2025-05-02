@@ -246,7 +246,7 @@ function getProductStock($product_id, $branch_code) {
     </style>
 </head>
 <body>
-    <?php include "navbar.php"; ?>
+    <?php include "sidebar.php"; ?>
 
     <div class="container py-4">
         <div class="back-btn-container">
