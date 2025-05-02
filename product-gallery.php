@@ -38,7 +38,7 @@
         $whereConditions = [];
         
         if (!empty($search)) {
-            $whereConditions[] = "Model LIKE '$search%'";
+            $whereConditions[] = "Model LIKE '%$search%'";  // Changed from LIKE '$search%' to LIKE '%$search%'
         }
         
         if (!empty($availability)) {
