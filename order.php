@@ -208,39 +208,39 @@ while ($header = $orderHeaders->fetch_assoc()) {
     
     // Add order details to the orders array
     $orders = [];
-    while ($header = $orderHeaders->fetch_assoc()) {
-        $orderId = $header['Orderhdr_id'];
-        $details = getOrderDetails($conn, $orderId);
-        
-        $itemCount = 0;
-        $totalAmount = getOrderTotal($conn, $orderId); // Get total amount for the order
-        $orderStatus = 'Pending';
-        
-        if ($details->num_rows > 0) {
-            while ($detail = $details->fetch_assoc()) {
-                $itemCount += (int)$detail['Quantity'];
-                
-                // Determine order status
-                if ($detail['Status'] === 'Complete') {
-                    $orderStatus = 'Complete';
-                } elseif ($detail['Status'] === 'Cancelled' && $orderStatus !== 'Complete') {
-                    $orderStatus = 'Cancelled';
-                }
+while ($header = $orderHeaders->fetch_assoc()) {
+    $orderId = $header['Orderhdr_id'];
+    $details = getOrderDetails($conn, $orderId);
+    
+    $itemCount = 0;
+    $totalAmount = getOrderTotal($conn, $orderId); // Get total amount for the order
+    $orderStatus = 'Pending';
+    
+    if ($details->num_rows > 0) {
+        while ($detail = $details->fetch_assoc()) {
+            $itemCount += (int)$detail['Quantity'];
+            
+            // Determine order status
+            if ($detail['Status'] === 'Complete') {
+                $orderStatus = 'Complete';
+            } elseif ($detail['Status'] === 'Cancelled' && $orderStatus !== 'Complete') {
+                $orderStatus = 'Cancelled';
             }
         }
-        
-        // Add order details to the orders array
-        $orders[] = [
-            'Orderhdr_id' => $orderId,
-            'Created_dt' => $header['Created_dt'],
-            'CustomerName' => $header['CustomerName'],
-            'CreatedBy' => getEmployeeName($conn, $header['Created_by']),
-            'BranchName' => getBranchName($conn, $header['BranchCode']),
-            'ItemCount' => $itemCount,
-            'TotalAmount' => $totalAmount,
-            'Status' => $orderStatus
-        ];
     }
+    
+    // Add order details to the orders array
+    $orders[] = [
+        'Orderhdr_id' => $orderId,
+        'Created_dt' => $header['Created_dt'],
+        'CustomerName' => $header['CustomerName'],
+        'CreatedBy' => getEmployeeName($conn, $header['Created_by']),
+        'BranchName' => getBranchName($conn, $header['BranchCode']),
+        'ItemCount' => $itemCount,
+        'TotalAmount' => $totalAmount,
+        'Status' => $orderStatus
+    ];
+}
 }
 
 // Get branches for filter dropdown
