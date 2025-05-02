@@ -8,9 +8,10 @@ include 'loginChecker.php';
 // Database functions
 function getOrderHeaders($conn, $search = '', $branch = '', $status = '', $limit = 10, $offset = 0) {
     $query = "SELECT oh.Orderhdr_id, oh.CustomerID, oh.BranchCode, oh.Created_dt, oh.Created_by, 
-                     c.CustomerName
+                     c.CustomerName, od.Status
               FROM Order_hdr oh
-              LEFT JOIN customer c ON oh.CustomerID = c.CustomerID";
+              LEFT JOIN customer c ON oh.CustomerID = c.CustomerID
+              LEFT JOIN orderDetails od ON oh.Orderhdr_id = od.OrderHdr_id"; // Join orderDetails table
     
     $where = [];
     $params = [];
@@ -39,6 +40,7 @@ function getOrderHeaders($conn, $search = '', $branch = '', $status = '', $limit
         $query .= " WHERE " . implode(' AND ', $where);
     }
     
+    $query .= " GROUP BY oh.Orderhdr_id"; // Group by Order ID to avoid duplicates
     $query .= " ORDER BY oh.Created_dt DESC LIMIT ? OFFSET ?";
     $params[] = $limit;
     $params[] = $offset;
