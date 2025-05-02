@@ -8,10 +8,9 @@ include 'loginChecker.php';
 // Database functions
 function getOrderHeaders($conn, $search = '', $branch = '', $status = '', $limit = 10, $offset = 0) {
     $query = "SELECT oh.Orderhdr_id, oh.CustomerID, oh.BranchCode, oh.Created_dt, oh.Created_by, 
-                     c.CustomerName, GROUP_CONCAT(od.Status) as Status
+                     c.CustomerName
               FROM Order_hdr oh
-              LEFT JOIN customer c ON oh.CustomerID = c.CustomerID
-              LEFT JOIN orderDetails od ON oh.Orderhdr_id = od.OrderHdr_id"; // Join orderDetails table
+              LEFT JOIN customer c ON oh.CustomerID = c.CustomerID";
     
     $where = [];
     $params = [];
@@ -31,7 +30,9 @@ function getOrderHeaders($conn, $search = '', $branch = '', $status = '', $limit
     }
     
     if (!empty($status)) {
-        $where[] = "FIND_IN_SET(?, GROUP_CONCAT(od.Status)) > 0"; // Check if the status is in the concatenated list
+        // Join with orderDetails for status filtering
+        $query .= " INNER JOIN orderDetails od ON oh.Orderhdr_id = od.OrderHdr_id";
+        $where[] = "od.Status = ?";
         $params[] = $status;
         $types .= 's';
     }
@@ -40,7 +41,7 @@ function getOrderHeaders($conn, $search = '', $branch = '', $status = '', $limit
         $query .= " WHERE " . implode(' AND ', $where);
     }
     
-    $query .= " GROUP BY oh.Orderhdr_id"; // Group by Order ID to avoid duplicates
+    $query .= " GROUP BY oh.Orderhdr_id, oh.CustomerID, oh.BranchCode, oh.Created_dt, oh.Created_by, c.CustomerName";
     $query .= " ORDER BY oh.Created_dt DESC LIMIT ? OFFSET ?";
     $params[] = $limit;
     $params[] = $offset;
@@ -109,8 +110,7 @@ function getOrderTotal($conn, $orderId) {
 function countOrderHeaders($conn, $search = '', $branch = '', $status = '') {
     $query = "SELECT COUNT(DISTINCT oh.Orderhdr_id) as total 
               FROM Order_hdr oh
-              LEFT JOIN customer c ON oh.CustomerID = c.CustomerID
-              LEFT JOIN orderDetails od ON oh.Orderhdr_id = od.OrderHdr_id";
+              LEFT JOIN customer c ON oh.CustomerID = c.CustomerID";
     
     $where = [];
     $params = [];
@@ -130,7 +130,8 @@ function countOrderHeaders($conn, $search = '', $branch = '', $status = '') {
     }
     
     if (!empty($status)) {
-        $where[] = "FIND_IN_SET(?, od.Status) > 0"; // Check if the status is in the concatenated list
+        $query .= " INNER JOIN orderDetails od ON oh.Orderhdr_id = od.OrderHdr_id";
+        $where[] = "od.Status = ?";
         $params[] = $status;
         $types .= 's';
     }
