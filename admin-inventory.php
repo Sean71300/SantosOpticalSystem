@@ -614,20 +614,29 @@ $lowInventory = getLowInventoryProducts();
                 var myModal = new bootstrap.Modal(document.getElementById("deleteErrorModal"));
                 myModal.show();
             });
+        </script>
 
+        <script>
             document.addEventListener('DOMContentLoaded', function() {
-                // Show low inventory modal only once per page visit
+                // Track form submissions to preserve sessionStorage flag
+                document.getElementById('branchForm')?.addEventListener('submit', () => {
+                    sessionStorage.setItem('isFormSubmit', 'true');
+                });
+
+                // Show low inventory modal only once per visit
                 const lowInventoryModalEl = document.getElementById('lowInventoryModal');
-                
                 if (lowInventoryModalEl && !sessionStorage.getItem('lowInventoryShown')) {
-                    const lowInventoryModal = new bootstrap.Modal(lowInventoryModalEl);
-                    lowInventoryModal.show();
+                    new bootstrap.Modal(lowInventoryModalEl).show();
                     sessionStorage.setItem('lowInventoryShown', 'true');
                 }
 
-                // Clear flag when user leaves the page
+                // Clear flag only when leaving the page (not during form submissions)
                 window.addEventListener('beforeunload', function() {
-                    sessionStorage.removeItem('lowInventoryShown');
+                    if (sessionStorage.getItem('isFormSubmit')) {
+                        sessionStorage.removeItem('isFormSubmit');
+                    } else {
+                        sessionStorage.removeItem('lowInventoryShown');
+                    }
                 });
             });
         </script>
