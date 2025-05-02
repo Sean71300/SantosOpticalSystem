@@ -185,9 +185,12 @@ while ($header = $orderHeaders->fetch_assoc()) {
             
             if ($detail['Status'] === 'Complete') {
                 $orderStatus = 'Complete';
-            } elseif ($detail['Status'] === 'Cancelled' && $orderStatus !== 'Complete') {
+            } elseif ($detail['Status'] === 'Pending' && $orderStatus !== 'Complete') {
+                $orderStatus = 'Pending';
+            } elseif ($detail['Status'] === 'Cancelled' && $orderStatus !== 'Pending') {
                 $orderStatus = 'Cancelled';
             }
+            
         }
     }
     
