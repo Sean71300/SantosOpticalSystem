@@ -7,6 +7,11 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
     header("Refresh: 0; url=login.php");
     exit;
 }
+
+// Pagination variables
+$ordersPerPage = 4;
+$currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+if ($currentPage < 1) $currentPage = 1;
 ?>
 
 <!DOCTYPE html>
@@ -16,14 +21,13 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Track Order</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha384-k6RqeWeci5ZR/Lv4MR0sA0FfDOM8b+z4+2e5c7e5a5e5c7e5a5e5c7e5a5e5c7e" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha384-k6RqeWeci5ZR/Lv4MR0sA0FfDOM8b+z4+2e5c7e5a5e5c7e5a5e5c7e5a5e5c7e5" crossorigin="anonymous">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
     <link rel="stylesheet" href="customCodes/custom.css">
     <link rel="stylesheet" href="customCodes/s1.css">
     <link rel="stylesheet" href="customCodes/custom.css">
     <link rel="shortcut icon" type="image/x-icon" href="Images/logo.png"/>
-
 </head>
 
 <header>
@@ -31,7 +35,7 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
 </header>
 
 <body>
-    <div class="container" style="height: 30rem;">
+    <div class="container" style="min-height: 30rem;">
         <div class="row justify-content-center mt-5 mb-5">
             <div class="col-md-8">
                 <i class="fa-solid fa-file-invoice-dollar me-2"></i><h1 class="text-center">Track Your Order</h1>
@@ -40,6 +44,26 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
                     $conn = connect();
                     $customer_id = $_SESSION['CustomerID'];
 
+                    // Get total number of orders
+                    $countSql = "SELECT COUNT(DISTINCT oH.Orderhdr_id) AS total 
+                                 FROM Order_hdr oH
+                                 INNER JOIN orderDetails oD ON oH.Orderhdr_id = oD.OrderHdr_id
+                                 WHERE oH.CustomerID = ?";
+                    $countStmt = $conn->prepare($countSql);
+                    $countStmt->bind_param("i", $customer_id);
+                    $countStmt->execute();
+                    $countResult = $countStmt->get_result();
+                    $totalOrders = $countResult->fetch_assoc()['total'];
+                    $countStmt->close();
+
+                    // Calculate total pages
+                    $totalPages = ceil($totalOrders / $ordersPerPage);
+                    if ($currentPage > $totalPages && $totalPages > 0) {
+                        $currentPage = $totalPages;
+                    }
+
+                    $offset = ($currentPage - 1) * $ordersPerPage;
+
                     $sql = "SELECT 
                         oH.Orderhdr_id AS OrderID,
                         oH.Created_dt AS OrderDate,
@@ -47,10 +71,13 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
                         oD.Status
                     FROM Order_hdr oH
                     INNER JOIN orderDetails oD ON oH.Orderhdr_id = oD.OrderHdr_id
-                    WHERE oH.CustomerID = ?";
+                    WHERE oH.CustomerID = ?
+                    GROUP BY oH.Orderhdr_id
+                    ORDER BY oH.Created_dt DESC
+                    LIMIT ?, ?";
                     
                     $stmt = $conn->prepare($sql);
-                    $stmt->bind_param("i", $customer_id);
+                    $stmt->bind_param("iii", $customer_id, $offset, $ordersPerPage);
                     $stmt->execute();
                     $result = $stmt->get_result();
 
@@ -64,6 +91,50 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
                             echo "<strong>Status:</strong> " . $row['Status'];
                         }
                         echo "</div>";
+
+                        // Pagination controls
+                        if ($totalPages > 1) {
+                            echo '<nav aria-label="Order pagination">';
+                            echo '<ul class="pagination justify-content-center">';
+                            
+                            // Previous button
+                            if ($currentPage > 1) {
+                                echo '<li class="page-item">';
+                                echo '<a class="page-link" href="?page='.($currentPage - 1).'" aria-label="Previous">';
+                                echo '<span aria-hidden="true">&laquo;</span>';
+                                echo '</a>';
+                                echo '</li>';
+                            } else {
+                                echo '<li class="page-item disabled">';
+                                echo '<a class="page-link" href="#" tabindex="-1" aria-disabled="true">&laquo;</a>';
+                                echo '</li>';
+                            }
+                            
+                            // Page numbers
+                            for ($i = 1; $i <= $totalPages; $i++) {
+                                if ($i == $currentPage) {
+                                    echo '<li class="page-item active"><a class="page-link" href="#">'.$i.'</a></li>';
+                                } else {
+                                    echo '<li class="page-item"><a class="page-link" href="?page='.$i.'">'.$i.'</a></li>';
+                                }
+                            }
+                            
+                            // Next button
+                            if ($currentPage < $totalPages) {
+                                echo '<li class="page-item">';
+                                echo '<a class="page-link" href="?page='.($currentPage + 1).'" aria-label="Next">';
+                                echo '<span aria-hidden="true">&raquo;</span>';
+                                echo '</a>';
+                                echo '</li>';
+                            } else {
+                                echo '<li class="page-item disabled">';
+                                echo '<a class="page-link" href="#" tabindex="-1" aria-disabled="true">&raquo;</a>';
+                                echo '</li>';
+                            }
+                            
+                            echo '</ul>';
+                            echo '</nav>';
+                        }
                     } else {
                         echo "<div class='alert alert-warning mt-4 text-center'>";
                         echo "<i class='fas fa-exclamation-triangle fa-2x mb-3'></i>";
