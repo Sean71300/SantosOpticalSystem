@@ -174,10 +174,6 @@
 
     function getMedicalRecords($customerID) {
         $connection = connect();
-        $records = array();
-
-        $success = isset($_GET['success']) ? $_GET['success'] : '';
-        $error = isset($_GET['error']) ? $_GET['error'] : '';
     
         $sql = "SELECT * FROM customerMedicalHistory WHERE CustomerID = ? ORDER BY visit_date DESC";
         
