@@ -3,22 +3,23 @@
     ini_set('display_errors', 1);
     // Connection
 
-    function connect() 
-    {
-        $db_host = 'localhost';
-        $db_username = 'u809407821_santosopticals';
-        $db_password = '8Bt?Q0]=w';
-        $db_name = 'u809407821_santosopticals';
+    if (!function_exists('connect')) {
+        function connect() 
+        {
+            $db_host = 'localhost';
+            $db_username = 'u809407821_santosopticals';
+            $db_password = '8Bt?Q0]=w';
+            $db_name = 'u809407821_santosopticals';
 
-        $conn = new mysqli($db_host, $db_username, $db_password, $db_name);
+            $conn = new mysqli($db_host, $db_username, $db_password, $db_name);
 
-        if ($conn->connect_error) {
-            die("Connection failed: " . $conn->connect_error);
+            if ($conn->connect_error) {
+                die("Connection failed: " . $conn->connect_error);
+            }
+
+            return $conn;
         }
-
-        return $conn;
     }
-
     // Create database
 
     function createDB()
