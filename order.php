@@ -1,151 +1,97 @@
 <?php
-// Enable full error reporting at the top
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+include_once 'setup.php';
+include 'loginChecker.php';
 
-require_once 'connect.php';
-require_once 'ActivityTracker.php';
-require_once 'loginChecker.php';
-require_once 'order-functions.php';
+$ordersPerPage = 10;
+$currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$offset = ($currentPage - 1) * $ordersPerPage;
 
-// Debug function
-function debug_log($message) {
-    file_put_contents('debug.log', date('Y-m-d H:i:s') . " - " . $message . "\n", FILE_APPEND);
+$query = "SELECT o.Orderhdr_id, o.Created_dt, c.CustomerName, 
+                 e.EmployeeName as CreatedBy, b.BranchName,
+                 COUNT(od.OrderDtlID) as ItemCount,
+                 SUM(p.Price * od.Quantity) as TotalAmount
+          FROM Order_hdr o
+          JOIN customer c ON o.CustomerID = c.CustomerID
+          JOIN employee e ON o.Created_by = e.LoginName
+          JOIN BranchMaster b ON o.BranchCode = b.BranchCode
+          LEFT JOIN orderDetails od ON o.Orderhdr_id = od.OrderHdr_id
+          LEFT JOIN ProductBranchMaster pbm ON od.ProductBranchID = pbm.ProductBranchID
+          LEFT JOIN productMstr p ON pbm.ProductID = p.ProductID";
+
+$where = [];
+$params = [];
+$types = '';
+
+if (isset($_GET['search']) && !empty($_GET['search'])) {
+    $where[] = "(c.CustomerName LIKE ? OR o.Orderhdr_id LIKE ?)";
+    $params[] = '%' . $_GET['search'] . '%';
+    $params[] = '%' . $_GET['search'] . '%';
+    $types .= 'ss';
 }
 
-try {
-    $ordersPerPage = 10;
-    $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-    $offset = ($currentPage - 1) * $ordersPerPage;
-
-    // Base query
-    $query = "SELECT o.Orderhdr_id, o.CustomerID, o.Created_dt, o.Status,
-                     c.CustomerName, e.EmployeeName as CreatedBy
-              FROM Order_hdr o
-              JOIN customer c ON o.CustomerID = c.CustomerID
-              JOIN employee e ON o.Created_by = e.EmployeeID";
-
-    $where = [];
-    $params = [];
-    $types = '';
-
-    // Search filter
-    if (isset($_GET['search']) && !empty($_GET['search'])) {
-        $where[] = "(c.CustomerName LIKE ? OR o.Orderhdr_id LIKE ?)";
-        $params[] = '%' . $_GET['search'] . '%';
-        $params[] = '%' . $_GET['search'] . '%';
-        $types .= 'ss';
-    }
-
-    // Status filter
-    if (isset($_GET['status']) && !empty($_GET['status'])) {
-        $where[] = "o.Status = ?";
-        $params[] = $_GET['status'];
-        $types .= 's';
-    }
-
-    // Add WHERE clause if filters exist
-    if (!empty($where)) {
-        $query .= " WHERE " . implode(' AND ', $where);
-    }
-
-    // Get total count of orders
-    // Get total count of orders
-    $countConn = connect();
-    if (!$countConn) {
-        throw new Exception("Database connection failed");
-    }
-
-    $totalQuery = "SELECT COUNT(*) as total FROM Order_hdr o";
-    if (!empty($where)) {
-        $totalQuery .= " WHERE " . implode(' AND ', $where);
-    }
-
-    $countStmt = $countConn->prepare($totalQuery);
-    if (!$countStmt) {
-        throw new Exception("Prepare failed: " . $countConn->error);
-    }
-
-    if (!empty($params)) {
-        $countStmt->bind_param($types, ...$params);
-    }
-
-    if (!$countStmt->execute()) {
-        throw new Exception("Execute failed: " . $countStmt->error);
-    }
-
-    $totalResult = $countStmt->get_result();
-    $totalOrders = $totalResult->fetch_assoc()['total'];
-    $totalResult->free();
-    $countStmt->close();
-    $countConn->close();
-
-    // Now execute main query with a new connection
-    $conn = connect();
-
-
-    // Add pagination to main query
-    $query .= " ORDER BY o.Created_dt DESC LIMIT ? OFFSET ?";
-    $types .= 'ii';
-    $params[] = $ordersPerPage;
-    $params[] = $offset;
-
-    debug_log("Main Query: " . $query);
-    debug_log("Final Params: " . print_r($params, true));
-
-    $stmt = $conn->prepare($query);
-    if (!$stmt) {
-        throw new Exception("Prepare failed: " . $conn->error);
-    }
-
-    if (!$stmt->bind_param($types, ...$params)) {
-        throw new Exception("Bind failed: " . $stmt->error);
-    }
-
-    if (!$stmt->execute()) {
-        throw new Exception("Execute failed: " . $stmt->error);
-    }
-
-    $ordersResult = $stmt->get_result();
-    $stmt->close();
-    $conn->close();
-
-    // Status options for filter
-    $statusOptions = ['Pending', 'Processing', 'Completed', 'Cancelled'];
-
-} catch (Exception $e) {
-    // Enhanced error display for debugging
-    $errorDetails = [
-        'message' => $e->getMessage(),
-        'file' => $e->getFile(),
-        'line' => $e->getLine(),
-        'trace' => $e->getTraceAsString(),
-        'sql_error' => isset($conn) ? $conn->error : null,
-        'stmt_error' => isset($stmt) ? $stmt->error : null
-    ];
-    
-    debug_log("Full Error: " . print_r($errorDetails, true));
-    
-    // Show detailed error during development
-    echo '<div class="alert alert-danger">';
-    echo '<h4>Error Details</h4>';
-    echo '<pre>' . print_r($errorDetails, true) . '</pre>';
-    echo '</div>';
-    die();
+if (isset($_GET['branch']) && !empty($_GET['branch'])) {
+    $where[] = "o.BranchCode = ?";
+    $params[] = $_GET['branch'];
+    $types .= 'i';
 }
+
+if (isset($_GET['status']) && !empty($_GET['status'])) {
+    $where[] = "od.Status = ?";
+    $params[] = $_GET['status'];
+    $types .= 's';
+}
+
+if (!empty($where)) {
+    $query .= " WHERE " . implode(' AND ', $where);
+}
+
+$query .= " GROUP BY o.Orderhdr_id";
+
+$conn = connect();
+$totalQuery = "SELECT COUNT(DISTINCT o.Orderhdr_id) as total 
+               FROM Order_hdr o
+               JOIN customer c ON o.CustomerID = c.CustomerID" . 
+               (!empty($where) ? " WHERE " . implode(' AND ', $where) : "");
+$stmt = $conn->prepare($totalQuery);
+
+if (!empty($params)) {
+    $stmt->bind_param($types, ...$params);
+}
+
+$stmt->execute();
+$totalResult = $stmt->get_result();
+$totalOrders = $totalResult->fetch_assoc()['total'];
+$totalPages = ceil($totalOrders / $ordersPerPage);
+$stmt->close();
+
+$query .= " ORDER BY o.Created_dt DESC LIMIT ? OFFSET ?";
+$types .= 'ii';
+$params[] = $ordersPerPage;
+$params[] = $offset;
+
+$stmt = $conn->prepare($query);
+$stmt->bind_param($types, ...$params);
+$stmt->execute();
+$ordersResult = $stmt->get_result();
+
+// Get branches for filter dropdown
+$branchesQuery = "SELECT BranchCode, BranchName FROM BranchMaster";
+$branchesResult = $conn->query($branchesQuery);
+
+$conn->close();
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="customCodes/custom.css">
     <link rel="shortcut icon" type="image/x-icon" href="Images/logo.png"/>
-    <title>Admin | Orders</title>
+    <title>Orders Management | Santos Optical</title>
     <style>
         body {
             background-color: #f5f7fa;
@@ -173,31 +119,27 @@ try {
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             padding: 20px;
         }
-        .order-entry {
+        .order-card {
             border-left: 4px solid #0d6efd;
-            padding-left: 15px;
+            padding: 15px;
             margin-bottom: 15px;
             transition: all 0.3s;
         }
-        .order-entry:hover {
+        .order-card:hover {
             background-color: #f8f9fa;
         }
         .order-time {
             font-size: 0.85rem;
             color: #6c757d;
         }
-        .order-action {
+        .order-title {
             font-weight: 500;
         }
         .badge-pending {
             background-color: #ffc107;
             color: #000;
         }
-        .badge-processing {
-            background-color: #0dcaf0;
-            color: #000;
-        }
-        .badge-completed {
+        .badge-complete {
             background-color: #198754;
         }
         .badge-cancelled {
@@ -223,10 +165,10 @@ try {
                 max-width: 100%;
                 margin-bottom: 10px;
             }
-            .order-entry {
+            .order-card {
                 padding: 10px;
             }
-            .order-action {
+            .order-title {
                 font-size: 0.9rem;
             }
             .order-time {
@@ -245,61 +187,60 @@ try {
                 margin-top: 10px;
                 width: 100%;
             }
-            .order-entry .d-flex {
+            .order-card .d-flex {
                 flex-direction: column;
             }
-            .order-entry .badge {
+            .order-card .badge {
                 margin-bottom: 5px;
             }
         }
-        /* Modal styles */
-        .customer-list-table {
-            max-height: 400px;
+        .customer-select-table {
+            max-height: 300px;
             overflow-y: auto;
-        }
-        .modal-content {
-            border-radius: 10px;
-        }
-        .modal-header {
-            border-bottom: 1px solid #dee2e6;
-        }
-        .modal-footer {
-            border-top: 1px solid #dee2e6;
         }
     </style>
 </head>
-
 <body>
-    <?php include "sidebar.php"?>
-    
-    <div class="main-content">
-        <div class="orders-container">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1><i class="fa-solid fa-pen-to-square me-2"></i>Orders</h1>
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newOrderModal">
-                    <i class="fas fa-plus me-2"></i>New Order
-                </button>            
-            </div>
+    <?php include "sidebar.php"; ?>
 
-            <form method="get" action="order.php" class="mb-4 filter-form">
+    <div class="main-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-shopping-cart me-2"></i>Orders Management</h2>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addOrderModal">
+                <i class="fas fa-plus me-1"></i> Add New Order
+            </button>
+        </div>
+
+        <div class="orders-container">
+            <form method="get" action="orders.php" class="mb-4 filter-form">
                 <div class="row g-3">
                     <div class="col-md-4">
                         <label for="search" class="form-label">Search</label>
                         <input type="text" class="form-control" id="search" name="search" 
-                               placeholder="Search by customer or order ID..." value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '' ?>">
+                               placeholder="Search orders or customers..." value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '' ?>">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="branch" class="form-label">Filter by Branch</label>
+                        <select class="form-select" id="branch" name="branch">
+                            <option value="">All Branches</option>
+                            <?php while ($branch = $branchesResult->fetch_assoc()): ?>
+                                <option value="<?php echo $branch['BranchCode']; ?>" 
+                                    <?php echo (isset($_GET['branch']) && $_GET['branch'] == $branch['BranchCode'] ? 'selected' : '' ?>>
+                                    <?php echo $branch['BranchName']; ?>
+                                </option>
+                            <?php endwhile; ?>
+                        </select>
                     </div>
                     <div class="col-md-3">
                         <label for="status" class="form-label">Filter by Status</label>
                         <select class="form-select" id="status" name="status">
                             <option value="">All Statuses</option>
-                            <?php foreach ($statusOptions as $status): ?>
-                                <option value="<?php echo $status; ?>" <?php echo (isset($_GET['status']) && $_GET['status'] == $status) ? 'selected' : '' ?>>
-                                    <?php echo $status; ?>
-                                </option>
-                            <?php endforeach; ?>
+                            <option value="Pending" <?php echo (isset($_GET['status']) && $_GET['status'] == 'Pending') ? 'selected' : '' ?>>Pending</option>
+                            <option value="Complete" <?php echo (isset($_GET['status']) && $_GET['status'] == 'Complete') ? 'selected' : '' ?>>Complete</option>
+                            <option value="Cancelled" <?php echo (isset($_GET['status']) && $_GET['status'] == 'Cancelled') ? 'selected' : '' ?>>Cancelled</option>
                         </select>
                     </div>
-                    <div class="col-md-3 d-flex align-items-end">
+                    <div class="col-md-2 d-flex align-items-end">
                         <button type="submit" class="btn btn-primary w-100">
                             <i class="fas fa-filter me-1"></i> Filter
                         </button>
@@ -314,9 +255,11 @@ try {
                             <tr>
                                 <th>Order ID</th>
                                 <th>Customer</th>
+                                <th>Branch</th>
                                 <th>Date</th>
+                                <th>Items</th>
+                                <th>Total</th>
                                 <th>Status</th>
-                                <th>Created By</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -325,31 +268,26 @@ try {
                                 <tr>
                                     <td><?php echo $order['Orderhdr_id']; ?></td>
                                     <td><?php echo $order['CustomerName']; ?></td>
-                                    <td><?php echo date('M j, Y g:i A', strtotime($order['Created_dt'])); ?></td>
+                                    <td><?php echo $order['BranchName']; ?></td>
+                                    <td><?php echo date('M j, Y', strtotime($order['Created_dt'])); ?></td>
+                                    <td><?php echo $order['ItemCount']; ?></td>
+                                    <td>₱<?php echo number_format($order['TotalAmount'], 2); ?></td>
                                     <td>
                                         <span class="badge 
                                             <?php 
                                                 switch($order['Status']) {
-                                                    case 'Pending': echo 'badge-pending'; break;
-                                                    case 'Processing': echo 'badge-processing'; break;
-                                                    case 'Completed': echo 'badge-completed'; break;
+                                                    case 'Complete': echo 'badge-complete'; break;
                                                     case 'Cancelled': echo 'badge-cancelled'; break;
-                                                    default: echo 'bg-secondary';
+                                                    default: echo 'badge-pending';
                                                 }
                                             ?>">
-                                            <?php echo $order['Status']; ?>
+                                            <?php echo $order['Status'] ?? 'Pending'; ?>
                                         </span>
                                     </td>
-                                    <td><?php echo $order['CreatedBy']; ?></td>
                                     <td>
-                                        <a href="order-details.php?id=<?php echo $order['Orderhdr_id']; ?>" class="btn btn-sm btn-outline-primary">
+                                        <a href="orderDetails.php?id=<?php echo $order['Orderhdr_id']; ?>" class="btn btn-sm btn-outline-primary">
                                             <i class="fas fa-eye"></i> View
                                         </a>
-                                        <?php if ($order['Status'] == 'Pending' || $order['Status'] == 'Processing'): ?>
-                                            <a href="edit-order.php?id=<?php echo $order['Orderhdr_id']; ?>" class="btn btn-sm btn-outline-warning">
-                                                <i class="fas fa-edit"></i> Edit
-                                            </a>
-                                        <?php endif; ?>
                                     </td>
                                 </tr>
                             <?php endwhile; ?>
@@ -405,17 +343,17 @@ try {
         </div>
     </div>
 
-    <!-- New Order Modal -->
-    <div class="modal fade" id="newOrderModal" tabindex="-1" aria-labelledby="newOrderModalLabel" aria-hidden="true">
+    <!-- Add Order Modal -->
+    <div class="modal fade" id="addOrderModal" tabindex="-1" aria-labelledby="addOrderModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="newOrderModalLabel">Create New Order</h5>
+                    <h5 class="modal-title" id="addOrderModalLabel">Create New Order</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="text-center mb-4">
-                        <h5>How would you like to create this order?</h5>
+                        <h5>Choose an option to create a new order:</h5>
                     </div>
                     
                     <div class="row">
@@ -423,9 +361,9 @@ try {
                             <div class="card h-100">
                                 <div class="card-body text-center">
                                     <i class="fas fa-user-plus fa-3x mb-3 text-primary"></i>
-                                    <h5 class="card-title">New Customer</h5>
+                                    <h5 class="card-title">Add New Customer</h5>
                                     <p class="card-text">Create a new customer profile and then add their order.</p>
-                                    <a href="customerCreate.php?redirect=order.php" class="btn btn-primary">
+                                    <a href="customerCreate.php?redirect=orders.php" class="btn btn-primary">
                                         <i class="fas fa-plus me-1"></i> Add New Customer
                                     </a>
                                 </div>
@@ -437,8 +375,8 @@ try {
                                 <div class="card-body text-center">
                                     <i class="fas fa-users fa-3x mb-3 text-success"></i>
                                     <h5 class="card-title">Existing Customer</h5>
-                                    <p class="card-text">Select an existing customer to create an order for them.</p>
-                                    <button type="button" class="btn btn-success" data-bs-toggle="collapse" data-bs-target="#customerListCollapse">
+                                    <p class="card-text">Select from existing customers to create an order.</p>
+                                    <button class="btn btn-success" data-bs-toggle="collapse" data-bs-target="#customerSelectSection">
                                         <i class="fas fa-list me-1"></i> Select Customer
                                     </button>
                                 </div>
@@ -446,14 +384,17 @@ try {
                         </div>
                     </div>
                     
-                    <div class="collapse" id="customerListCollapse">
+                    <div class="collapse" id="customerSelectSection">
                         <div class="card mt-3">
                             <div class="card-header">
-                                <h5 class="mb-0">Select Existing Customer</h5>
+                                <h5>Select Existing Customer</h5>
                             </div>
-                            <div class="card-body p-0">
-                                <div class="customer-list-table">
-                                    <table class="table table-hover mb-0">
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <input type="text" class="form-control" id="customerSearch" placeholder="Search customers...">
+                                </div>
+                                <div class="customer-select-table">
+                                    <table class="table table-hover">
                                         <thead>
                                             <tr>
                                                 <th>Customer ID</th>
@@ -465,25 +406,23 @@ try {
                                         <tbody>
                                             <?php
                                             $conn = connect();
-                                            $customerQuery = "SELECT CustomerID, CustomerName, CustomerContact FROM customer WHERE Status = 'Active' ORDER BY CustomerName";
-                                            $customerResult = $conn->query($customerQuery);
+                                            $customersQuery = "SELECT CustomerID, CustomerName, CustomerContact FROM customer WHERE Status = 'Active' ORDER BY CustomerName";
+                                            $customersResult = $conn->query($customersQuery);
                                             
-                                            if ($customerResult->num_rows > 0) {
-                                                while ($customer = $customerResult->fetch_assoc()) {
-                                                    echo '<tr>
-                                                        <td>'.$customer['CustomerID'].'</td>
-                                                        <td>'.$customer['CustomerName'].'</td>
-                                                        <td>'.$customer['CustomerContact'].'</td>
-                                                        <td>
-                                                            <a href="order-create.php?customer_id='.$customer['CustomerID'].'" class="btn btn-sm btn-primary">
-                                                                <i class="fas fa-check me-1"></i> Select
-                                                            </a>
-                                                        </td>
-                                                    </tr>';
-                                                }
-                                            } else {
-                                                echo '<tr><td colspan="4" class="text-center">No active customers found</td></tr>';
-                                            }
+                                            while ($customer = $customersResult->fetch_assoc()): ?>
+                                                <tr>
+                                                    <td><?php echo $customer['CustomerID']; ?></td>
+                                                    <td><?php echo $customer['CustomerName']; ?></td>
+                                                    <td><?php echo $customer['CustomerContact']; ?></td>
+                                                    <td>
+                                                        <button class="btn btn-sm btn-primary select-customer" 
+                                                                data-customer-id="<?php echo $customer['CustomerID']; ?>"
+                                                                data-customer-name="<?php echo htmlspecialchars($customer['CustomerName']); ?>">
+                                                            Select
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            <?php endwhile; 
                                             $conn->close();
                                             ?>
                                         </tbody>
@@ -539,12 +478,41 @@ try {
                 }
             });
 
-            // Handle modal state when returning from customer creation
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.has('showModal')) {
-                const modal = new bootstrap.Modal(document.getElementById('newOrderModal'));
-                modal.show();
+            // Customer search functionality
+            const customerSearch = document.getElementById('customerSearch');
+            if (customerSearch) {
+                customerSearch.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    const rows = document.querySelectorAll('.customer-select-table tbody tr');
+                    
+                    rows.forEach(row => {
+                        const name = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                        const contact = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+                        const id = row.querySelector('td:nth-child(1)').textContent.toLowerCase();
+                        
+                        if (name.includes(searchTerm) || contact.includes(searchTerm) || id.includes(searchTerm)) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                });
             }
+
+            // Customer selection
+            document.querySelectorAll('.select-customer').forEach(button => {
+                button.addEventListener('click', function() {
+                    const customerId = this.getAttribute('data-customer-id');
+                    const customerName = this.getAttribute('data-customer-name');
+                    
+                    // Close the modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('addOrderModal'));
+                    modal.hide();
+                    
+                    // Redirect to order creation page with customer ID
+                    window.location.href = `orderCreate.php?customer_id=${customerId}`;
+                });
+            });
         });
     </script>
 </body>
