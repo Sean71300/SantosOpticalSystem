@@ -101,49 +101,6 @@ function countTotalOrders($conn, $search, $branch, $status) {
     return $result->fetch_assoc()['total'];
 }
 
-function countTotalOrders($conn, $search, $branch, $status) {
-    $query = "SELECT COUNT(DISTINCT o.Orderhdr_id) as total 
-              FROM Order_hdr o
-              JOIN customer c ON o.CustomerID = c.CustomerID";
-    
-    $where = "";
-    $types = "";
-    
-    if (!empty($search)) {
-        $where .= " AND (c.CustomerName LIKE ? OR o.Orderhdr_id LIKE ?)";
-        $types .= "ss";
-    }
-    
-    if (!empty($branch)) {
-        $where .= " AND o.BranchCode = ?";
-        $types .= "i";
-    }
-    
-    if (!empty($status)) {
-        $where .= " AND od.Status = ?";
-        $types .= "s";
-    }
-    
-    if (!empty($where)) {
-        $query .= " WHERE " . substr($where, 5);
-    }
-    
-    $stmt = $conn->prepare($query);
-    
-    if (!empty($search)) {
-        $searchParam = "%$search%";
-        $stmt->bind_param($types, $searchParam, $searchParam, $branch, $status);
-    } elseif (!empty($branch)) {
-        $stmt->bind_param($types, $branch, $status);
-    } elseif (!empty($status)) {
-        $stmt->bind_param($types, $status);
-    }
-    
-    $stmt->execute();
-    $result = $stmt->get_result();
-    return $result->fetch_assoc()['total'];
-}
-
 function getAllBranches($conn) {
     $query = "SELECT BranchCode, BranchName FROM BranchMaster";
     $result = $conn->query($query);
