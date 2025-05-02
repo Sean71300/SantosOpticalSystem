@@ -3,8 +3,6 @@ include_once 'connect.php';
 include_once 'setup.php';
 include 'ActivityTracker.php';
 
-session_start();
-
 $username = $password = "";
 $username_err = $password_err = "";
 $login_err = "";
