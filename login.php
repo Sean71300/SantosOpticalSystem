@@ -135,6 +135,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['cancel'])) {
         width: 100%;
         text-align: center;
         border: 2px solid var(--cancel-color); /* keep the nice outline */
+        margin: 0 auto;
+    }
+
+    .container {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        max-width: none;
     }
 
     .logo {
@@ -231,7 +239,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['cancel'])) {
 
 </head>
 <body>
-
     <div class="container d-flex justify-content-center align-items-center vh-100">
         <div class="wrapper">
             <div class="titles">
@@ -267,19 +274,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['cancel'])) {
                 </div>
             </form>
         </div>
+    </div>
 
-        <div class="alert alert-info alert-dismissible fade show mt-3" role="alert">
-            <div class="d-flex">
-                <div class="flex-shrink-0 me-3">
-                <i class="bi bi-info-circle-fill fs-4"></i> <!-- Bootstrap Icons (requires separate include) -->
-                </div>
-                <div>
-                <h5 class="alert-heading">For customers:</h5>
-                <p class="mb-0">Use your full name as username and your reference number as password.</p>
-                </div>
+    <div class="alert alert-info alert-dismissible fade show mt-3" role="alert">
+        <div class="d-flex">
+            <div class="flex-shrink-0 me-3">
+            <i class="bi bi-info-circle-fill fs-4"></i> <!-- Bootstrap Icons (requires separate include) -->
             </div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <div>
+            <h5 class="alert-heading">For customers:</h5>
+            <p class="mb-0">Use your full name as username and your reference number as password.</p>
+            </div>
         </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
