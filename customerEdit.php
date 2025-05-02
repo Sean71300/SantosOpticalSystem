@@ -270,7 +270,144 @@ handleCancellation();
         </div>
     </div>
 
+    <!-- Add Medical Record Modal -->
+    <div class="modal fade" id="addMedicalRecordModal" tabindex="-1" aria-labelledby="addMedicalRecordModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="addMedicalRecordModalLabel">Add New Medical Record</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="medicalRecordForm" method="post" action="addMedicalRecord.php">
+                    <div class="modal-body">
+                        <input type="hidden" name="customerID" id="modalCustomerID">
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="visit_date" class="form-label">Visit Date <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="visit_date" name="visit_date" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="eye_condition" class="form-label">Eye Condition</label>
+                                <input type="text" class="form-control" id="eye_condition" name="eye_condition">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="systemic_diseases" class="form-label">Systemic Diseases</label>
+                                <input type="text" class="form-control" id="systemic_diseases" name="systemic_diseases" placeholder="e.g., diabetes, hypertension">
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="visual_acuity_right" class="form-label">Visual Acuity (Right)</label>
+                                <input type="text" class="form-control" id="visual_acuity_right" name="visual_acuity_right" placeholder="e.g., 20/20">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="visual_acuity_left" class="form-label">Visual Acuity (Left)</label>
+                                <input type="text" class="form-control" id="visual_acuity_left" name="visual_acuity_left" placeholder="e.g., 20/20">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="pupillary_distance" class="form-label">Pupillary Distance (mm)</label>
+                                <input type="number" class="form-control" id="pupillary_distance" name="pupillary_distance">
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="intraocular_pressure_right" class="form-label">Intraocular Pressure - Right (mmHg)</label>
+                                <input type="number" step="0.01" class="form-control" id="intraocular_pressure_right" name="intraocular_pressure_right">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="intraocular_pressure_left" class="form-label">Intraocular Pressure - Left (mmHg)</label>
+                                <input type="number" step="0.01" class="form-control" id="intraocular_pressure_left" name="intraocular_pressure_left">
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="refraction_right" class="form-label">Refraction (Right)</label>
+                                <input type="text" class="form-control" id="refraction_right" name="refraction_right" placeholder="e.g., -1.50 DS">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="refraction_left" class="form-label">Refraction (Left)</label>
+                                <input type="text" class="form-control" id="refraction_left" name="refraction_left" placeholder="e.g., -1.25 DS">
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="current_medications" class="form-label">Current Medications</label>
+                                <textarea class="form-control" id="current_medications" name="current_medications" rows="2"></textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="allergies" class="form-label">Allergies</label>
+                                <textarea class="form-control" id="allergies" name="allergies" rows="2"></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="family_eye_history" class="form-label">Family Eye History</label>
+                                <textarea class="form-control" id="family_eye_history" name="family_eye_history" rows="2"></textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="previous_eye_surgeries" class="form-label">Previous Eye Surgeries</label>
+                                <textarea class="form-control" id="previous_eye_surgeries" name="previous_eye_surgeries" rows="2"></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="corneal_topography" class="form-label">Corneal Topography</label>
+                                <textarea class="form-control" id="corneal_topography" name="corneal_topography" rows="2"></textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="fundus_examination" class="form-label">Fundus Examination</label>
+                                <textarea class="form-control" id="fundus_examination" name="fundus_examination" rows="2"></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <label for="additional_notes" class="form-label">Additional Notes</label>
+                                <textarea class="form-control" id="additional_notes" name="additional_notes" rows="3"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Record</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize the medical record modal
+            const addMedicalRecordModal = document.getElementById('addMedicalRecordModal');
+            if (addMedicalRecordModal) {
+                addMedicalRecordModal.addEventListener('show.bs.modal', function(event) {
+                    // Button that triggered the modal
+                    const button = event.relatedTarget;
+                    // Extract info from data-bs-* attributes
+                    const customerID = button.getAttribute('data-customer-id');
+                    // Update the modal's content
+                    const modalCustomerID = addMedicalRecordModal.querySelector('#modalCustomerID');
+                    modalCustomerID.value = customerID;
+                    
+                    // Set today's date as default
+                    const today = new Date().toISOString().split('T')[0];
+                    addMedicalRecordModal.querySelector('#visit_date').value = today;
+                });
+            }
+        });
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.min.js"></script>
 </body>
