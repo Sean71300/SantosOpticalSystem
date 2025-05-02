@@ -308,190 +308,176 @@ $conn->close();
                 <h4 class="mb-3">Please select a product</h4>
 
                 <?php if (!empty($products)): ?>
-                    <div class="row" id="productsContainer">
-                        <?php foreach ($products as $product): ?>
-                            <div class="col-md-4 product-item" data-shape="<?= $product['ShapeID'] ?>">
-                                <div class="product-card" onclick="selectProduct(this, <?= $product['ProductID'] ?>)">
-                                    <?php if (!empty($product['ProductImage'])): ?>
-                                        <img src="<?= $product['ProductImage'] ?>" class="img-fluid product-img" alt="<?= htmlspecialchars($product['Model']) ?>">
-                                    <?php else: ?>
-                                        <div class="text-center py-3 bg-light">
-                                            <i class="fas fa-image fa-3x text-muted"></i>
-                                        </div>
-                                    <?php endif; ?>
-                                    <h5><?= htmlspecialchars($product['Model']) ?></h5>
-                                    <p class="mb-1"><small class="text-muted"><?= htmlspecialchars($product['CategoryType']) ?></small></p>
-                                    <p class="mb-1"><strong>Brand:</strong> 
-                                        <?php 
-                                            $brandName = 'Unknown';
-                                            $conn = connect();
-                                            $brandQuery = "SELECT BrandName FROM brandMaster WHERE BrandID = ?";
-                                            $stmt = $conn->prepare($brandQuery);
-                                            $stmt->bind_param('i', $product['BrandID']);
-                                            $stmt->execute();
-                                            $result = $stmt->get_result();
-                                            if ($row = $result->fetch_assoc()) {
-                                                $brandName = $row['BrandName'];
-                                            }
-                                            $stmt->close();
-                                            $conn->close();
-                                            echo htmlspecialchars($brandName);
-                                        ?>
-                                    </p>
-                                    <p class="mb-1"><strong>Shape:</strong> 
-                                        <?php 
-                                            $shapeName = 'Unknown';
-                                            $conn = connect();
-                                            $shapeQuery = "SELECT Description FROM shapeMaster WHERE ShapeID = ?";
-                                            $stmt = $conn->prepare($shapeQuery);
-                                            $stmt->bind_param('i', $product['ShapeID']);
-                                            $stmt->execute();
-                                            $result = $stmt->get_result();
-                                            if ($row = $result->fetch_assoc()) {
-                                                $shapeName = $row['Description'];
-                                            }
-                                            $stmt->close();
-                                            $conn->close();
-                                            echo htmlspecialchars($shapeName);
-                                        ?>
-                                    </p>
-                                    <p class="mb-1"><strong>Price:</strong> <?= htmlspecialchars($product['Price']) ?></p>
-                                    <p class="mb-0"><strong>Stocks:</strong> <?= $product['Stocks'] ?></p>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-
-                    <form id="orderForm" method="post">
-                        <input type="hidden" name="customer_id" value="<?= $customerDetails['CustomerID'] ?>">
-                        <input type="hidden" name="branch_code" value="<?= $selectedBranch ?>">
-                        <input type="hidden" name="product_id" id="selectedProduct">
-                        
-                        <div class="row mt-4">
-                            <div class="col-md-3">
-                                <label for="quantity" class="form-label"><strong>Quantity:</strong></label>
-                                <input type="number" class="form-control" id="quantity" name="quantity" min="1" value="1" required>
-                            </div>
+    <div class="row" id="productsContainer">
+        <?php foreach ($products as $product): ?>
+            <div class="col-md-4 product-item" data-shape="<?= $product['ShapeID'] ?>">
+                <div class="product-card" onclick="selectProduct(this, <?= $product['ProductID'] ?>)">
+                    <?php if (!empty($product['ProductImage'])): ?>
+                        <img src="<?= $product['ProductImage'] ?>" class="img-fluid product-img" alt="<?= htmlspecialchars($product['Model']) ?>">
+                    <?php else: ?>
+                        <div class="text-center py-3 bg-light">
+                            <i class="fas fa-image fa-3x text-muted"></i>
                         </div>
-                        
-                        <div class="d-flex justify-content-end gap-3 mt-5">
-                            <button type="submit" class="btn btn-primary btn-action" id="continueBtn" name="create_order" disabled>
-                                <i class="fas fa-check-circle me-2"></i> Create Order
-                            </button>
-                        </div>
-                    </form>
-                <?php else: ?>
-                    <div class="alert alert-warning">
-                        No products available in this branch. Please check inventory.
-                    </div>
-                <?php endif; ?>
-            <?php else: ?>
-                <div class="alert alert-danger">
-                    No customer selected. Please go back and select a customer.
+                    <?php endif; ?>
+                    <h5><?= htmlspecialchars($product['Model']) ?></h5>
+                    <p class="mb-1"><small class="text-muted"><?= htmlspecialchars($product['CategoryType']) ?></small></p>
+                    <p class="mb-1"><strong>Brand:</strong> 
+                        <?php 
+                            $brandName = 'Unknown';
+                            $conn = connect();
+                            $brandQuery = "SELECT BrandName FROM brandMaster WHERE BrandID = ?";
+                            $stmt = $conn->prepare($brandQuery);
+                            $stmt->bind_param('i', $product['BrandID']);
+                            $stmt->execute();
+                            $result = $stmt->get_result();
+                            if ($row = $result->fetch_assoc()) {
+                                $brandName = $row['BrandName'];
+                            }
+                            $stmt->close();
+                            $conn->close();
+                            echo htmlspecialchars($brandName);
+                        ?>
+                    </p>
+                    <p class="mb-1"><strong>Shape:</strong> 
+                        <?php 
+                            $shapeName = 'Unknown';
+                            $conn = connect();
+                            $shapeQuery = "SELECT Description FROM shapeMaster WHERE ShapeID = ?";
+                            $stmt = $conn->prepare($shapeQuery);
+                            $stmt->bind_param('i', $product['ShapeID']);
+                            $stmt->execute();
+                            $result = $stmt->get_result();
+                            if ($row = $result->fetch_assoc()) {
+                                $shapeName = $row['Description'];
+                            }
+                            $stmt->close();
+                            $conn->close();
+                            echo htmlspecialchars($shapeName);
+                        ?>
+                    </p>
+                    <p class="mb-1"><strong>Price:</strong> <?= htmlspecialchars($product['Price']) ?></p>
+                    <p class="mb-0"><strong>Stocks:</strong> <?= $product['Stocks'] ?></p>
                 </div>
-            <?php endif; ?>
-        </div>
+            </div>
+        <?php endforeach; ?>
     </div>
 
-    <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+    <form id="orderForm" method="post">
+        <input type="hidden" name="customer_id" value="<?= $customerDetails['CustomerID'] ?>">
+        <input type="hidden" name="branch_code" value="<?= $selectedBranch ?>">
+        <input type="hidden" name="product_id" id="selectedProduct">
+        
+        <div class="row mt-4">
+            <div class="col-md-3">
+                <label for="quantity" class="form-label"><strong>Quantity:</strong></label>
+                <input type="number" class="form-control" id="quantity" name="quantity" min="1" value="1" required>
+            </div>
+        </div>
+        
+        <div class="d-flex justify-content-end gap-3 mt-5">
+            <button type="button" class="btn btn-primary btn-action" id="continueBtn" name="create_order" disabled onclick="prepareOrder()">
+                <i class="fas fa-check-circle me-2"></i> Create Order
+            </button>
+        </div>
+    </form>
+
+    <!-- Hidden form for actual order submission -->
+    <form id="hiddenOrderForm" method="post" style="display: none;">
+        <input type="hidden" name="confirm_order" value="1">
+        <input type="hidden" name="customer_id" id="hiddenCustomerId">
+        <input type="hidden" name="product_id" id="hiddenProductId">
+        <input type="hidden" name="quantity" id="hiddenQuantity">
+        <input type="hidden" name="branch_code" id="hiddenBranchCode">
+    </form>
+
+    <!-- Order Confirmation Modal -->
+    <div class="modal fade" id="confirmOrderModal" tabindex="-1" aria-labelledby="confirmOrderModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title" id="successModalLabel">Order Created Successfully</h5>
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="confirmOrderModalLabel">Confirm Order</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <?php if ($orderSuccess && !empty($orderDetails)): ?>
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <h5>Order Summary</h5>
-                                <p><strong>Order ID:</strong> <?= $orderDetails['order_id'] ?></p>
-                                <p><strong>Customer:</strong> <?= $orderDetails['customer_name'] ?></p>
-                                <p><strong>Branch:</strong> <?= $orderDetails['branch_name'] ?></p>
-                                <p><strong>Status:</strong> <span class="badge bg-warning"><?= $orderDetails['status'] ?></span></p>
-                            </div>
-                            <div class="col-md-6">
-                                <p><strong>Date Created:</strong> <?= $orderDetails['date_created'] ?></p>
-                            </div>
-                        </div>
-                        
-                        <div class="table-responsive">
-                            <table class="table table-bordered">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Product</th>
-                                        <th>Category</th>
-                                        <th>Quantity</th>
-                                        <th>Unit Price</th>
-                                        <th>Total</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td><?= $orderDetails['product_model'] ?></td>
-                                        <td><?= $orderDetails['product_category'] ?></td>
-                                        <td><?= $orderDetails['quantity'] ?></td>
-                                        <td><?= $orderDetails['price'] ?></td>
-                                        <td><?= $orderDetails['total'] ?></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    <?php endif; ?>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <a href="order.php?id=<?= $orderDetails['order_id'] ?? '' ?>" class="btn btn-primary">
-                        <i class="fas fa-eye me-2"></i> View Order Details
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="cancelModalLabel">Confirm Navigation</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    Are you sure you want cancel this order ?
+                    <p>Are you sure you want to create this order?</p>
+                    <div id="orderSummary">
+                        <!-- Order summary will be inserted here by JavaScript -->
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <a href="order.php?id=<?= $customerDetails['CustomerID'] ?? '' ?>" class="btn btn-danger">Yes, Go Back</a>
+                    <button type="button" class="btn btn-primary" onclick="submitOrder()">Confirm Order</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        <?php if ($orderSuccess): ?>
-            document.addEventListener('DOMContentLoaded', function() {
-                var successModal = new bootstrap.Modal(document.getElementById('successModal'));
-                successModal.show();
-            });
-        <?php endif; ?>
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const shapeFilter = document.getElementById('shapeFilter');
-            if (shapeFilter) {
-                shapeFilter.addEventListener('change', function() {
-                    const selectedShape = this.value;
-                    const productItems = document.querySelectorAll('.product-item');
-                    
-                    productItems.forEach(item => {
-                        if (selectedShape === '' || item.getAttribute('data-shape') === selectedShape) {
-                            item.style.display = 'block';
-                        } else {
-                            item.style.display = 'none';
-                        }
-                    });
-                });
+        function prepareOrder() {
+            const productId = document.getElementById('selectedProduct').value;
+            const quantity = document.getElementById('quantity').value;
+            const customerId = document.querySelector('input[name="customer_id"]').value;
+            const branchCode = document.querySelector('input[name="branch_code"]').value;
+            
+            if (!productId) {
+                alert('Please select a product first');
+                return;
             }
-        });
+            
+            if (!quantity || quantity < 1) {
+                alert('Please enter a valid quantity');
+                return;
+            }
+            
+            // Get the selected product card
+            const productCard = document.querySelector('.product-card.selected');
+            if (!productCard) {
+                alert('Please select a product first');
+                return;
+            }
+            
+            // Get product details safely
+            const productName = productCard.querySelector('h5')?.textContent || 'Unknown Product';
+            const priceElement = productCard.querySelector('p:nth-of-type(4)');
+            const productPrice = priceElement?.textContent.replace('Price: ', '') || '₱0.00';
+            const categoryElement = productCard.querySelector('p:nth-of-type(2) small');
+            const productCategory = categoryElement?.textContent || 'Unknown Category';
+            
+            // Get customer name safely
+            const customerNameElement = document.querySelector('.customer-info h4');
+            const customerName = customerNameElement?.textContent || 'Unknown Customer';
+            
+            // Calculate total
+            const priceValue = parseFloat(productPrice.replace('₱', '').replace(',', '')) || 0;
+            const total = (priceValue * quantity).toFixed(2);
+            
+            // Update confirmation modal content
+            const orderSummary = document.getElementById('orderSummary');
+            orderSummary.innerHTML = `
+                <div class="mb-3">
+                    <p><strong>Customer:</strong> ${customerName}</p>
+                    <p><strong>Product:</strong> ${productName}</p>
+                    <p><strong>Category:</strong> ${productCategory}</p>
+                    <p><strong>Quantity:</strong> ${quantity}</p>
+                    <p><strong>Unit Price:</strong> ${productPrice}</p>
+                    <p><strong>Total:</strong> ₱${total}</p>
+                </div>
+            `;
+            
+            // Set values for hidden form
+            document.getElementById('hiddenCustomerId').value = customerId;
+            document.getElementById('hiddenProductId').value = productId;
+            document.getElementById('hiddenQuantity').value = quantity;
+            document.getElementById('hiddenBranchCode').value = branchCode;
+            
+            // Show confirmation modal
+            const confirmModal = new bootstrap.Modal(document.getElementById('confirmOrderModal'));
+            confirmModal.show();
+        }
+        
+        function submitOrder() {
+            document.getElementById('hiddenOrderForm').submit();
+        }
 
         function selectProduct(element, productId) {
             document.querySelectorAll('.product-card').forEach(card => {
@@ -503,5 +489,10 @@ $conn->close();
             document.getElementById('continueBtn').disabled = false;
         }
     </script>
+<?php else: ?>
+    <div class="alert alert-warning">
+        No products available in this branch. Please check inventory.
+    </div>
+<?php endif; ?>
 </body>
 </html>
