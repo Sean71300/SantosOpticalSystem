@@ -159,3 +159,16 @@ body {
     background: black;
     color: white;
 }
+.site-footer {
+    padding: 20px 0;
+    text-align: center;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    color: #333; /* Dark gray text */
+    border-top: 1px solid #e7e7e7; /* Light gray border on top */
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+}
