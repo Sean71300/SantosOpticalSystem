@@ -471,9 +471,10 @@ $conn->close();
                         </div>
                     <?php endif; ?>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
-                    
+                <div class="modal-footer">                    
+                    <a href="order.php" class="btn btn-primary">
+                        <i class="fas fa-eye me-2"></i> Close
+                    </a>
                 </div>
             </div>
         </div>
