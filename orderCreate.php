@@ -27,16 +27,14 @@ if ($customer_result->num_rows === 0) {
 
 $customer = $customer_result->fetch_assoc();
 
-// Fetch available products
-$products_query = "SELECT * FROM productMstr WHERE Avail_FL = 'Available'";
-$products_result = $conn->query($products_query);
-
-// Handle form submission
+// Handle form submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['check_availability'])) {
         // Handle availability check
-        $branch_code = $_POST['branch_code'];
-        $_SESSION['selected_branch'] = $branch_code;
+        $_SESSION['selected_branch'] = $_POST['branch_code'];
+        $_SESSION['selected_shape'] = $_POST['shape_filter'] ?? '';
+        header("Location: ".$_SERVER['PHP_SELF']."?customer_id=".$customer_id);
+        exit();
     } elseif (isset($_POST['create_order'])) {
         // Handle order creation
         $product_id = $_POST['product_id'] ?? null;
@@ -102,7 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 );
                 
                 $conn->commit();
-                $successMessage = "Order created successfully!";
+                $_SESSION['successMessage'] = "Order created successfully!";
                 header("Location: order.php?order_id=$order_id");
                 exit();
             } catch (Exception $e) {
@@ -117,6 +115,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $branches_query = "SELECT * FROM BranchMaster";
 $branches_result = $conn->query($branches_query);
 
+// Fetch available shapes for filter
+$shapes_query = "SELECT DISTINCT ShapeID FROM productMstr";
+$shapes_result = $conn->query($shapes_query);
+
+// Fetch products based on filters
+$products_query = "SELECT p.* FROM productMstr p 
+                  WHERE p.Avail_FL = 'Available'";
+                  
+if (isset($_SESSION['selected_branch'])) {
+    $products_query .= " AND EXISTS (
+        SELECT 1 FROM ProductBranchMaster pb 
+        WHERE pb.ProductID = p.ProductID 
+        AND pb.BranchCode = '".$_SESSION['selected_branch']."'
+        AND pb.Stocks > 0
+    )";
+}
+
+if (!empty($_SESSION['selected_shape'])) {
+    $products_query .= " AND p.ShapeID = '".$_SESSION['selected_shape']."'";
+}
+
+$products_result = $conn->query($products_query);
+
 function getBrandName($brand_id) {
     global $conn;
     $query = "SELECT BrandName FROM brandMaster WHERE BrandID = ?";
@@ -126,6 +147,17 @@ function getBrandName($brand_id) {
     $result = $stmt->get_result();
     $row = $result->fetch_assoc();
     return $row['BrandName'];
+}
+
+function getShapeName($shape_id) {
+    global $conn;
+    $query = "SELECT Description FROM shapeMaster WHERE ShapeID = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("i", $shape_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    return $row['Description'];
 }
 
 function getProductStock($product_id, $branch_code) {
@@ -164,13 +196,11 @@ function getProductStock($product_id, $branch_code) {
             padding: 30px;
             margin-bottom: 30px;
         }
-        .customer-info-table {
-            width: 100%;
+        .customer-info-box {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
             margin-bottom: 20px;
-        }
-        .customer-info-table td {
-            padding: 8px;
-            vertical-align: top;
         }
         .product-card {
             border: 1px solid #dee2e6;
@@ -178,6 +208,7 @@ function getProductStock($product_id, $branch_code) {
             padding: 15px;
             margin-bottom: 15px;
             transition: all 0.3s;
+            height: 100%;
         }
         .product-card.selected {
             border: 2px solid #0d6efd;
@@ -193,32 +224,37 @@ function getProductStock($product_id, $branch_code) {
             font-weight: bold;
         }
         .notes-box {
-            background-color: #f8f9fa;
+            background-color: #e9ecef;
             padding: 10px;
             border-radius: 5px;
-            margin-top: 5px;
+            margin-top: 10px;
         }
-        .branch-select-container {
-            display: flex;
-            gap: 10px;
+        .filter-container {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
             margin-bottom: 20px;
-            align-items: flex-end;
+        }
+        .back-btn-container {
+            margin-bottom: 20px;
         }
         @media (max-width: 768px) {
-            .branch-select-container {
+            .filter-row {
                 flex-direction: column;
-            }
-            .customer-info-table td {
-                display: block;
-                width: 100%;
             }
         }
     </style>
 </head>
 <body>
-    <?php include "sidebar.php"; ?>
+    <?php include "navbar.php"; ?>
 
     <div class="container py-4">
+        <div class="back-btn-container">
+            <a href="customers.php" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i> Back to Customers
+            </a>
+        </div>
+
         <div class="form-container">
             <h1 class="mb-4"><i class="fas fa-cart-plus me-2"></i> New Order</h1>
             
@@ -228,56 +264,67 @@ function getProductStock($product_id, $branch_code) {
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             <?php endif; ?>
-            
-            <?php if (!empty($successMessage)): ?>
-                <div class="alert alert-success alert-dismissible fade show mb-4">
-                    <?= $successMessage ?>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            <?php endif; ?>
 
-            <table class="customer-info-table">
-                <tr>
-                    <td><strong>Name:</strong> <?= htmlspecialchars($customer['CustomerName']) ?></td>
-                    <td><strong>Contact:</strong> <?= htmlspecialchars($customer['CustomerContact']) ?></td>
-                    <td><strong>Address:</strong> <?= htmlspecialchars($customer['CustomerAddress']) ?></td>
-                </tr>
+            <div class="customer-info-box">
+                <div class="row">
+                    <div class="col-md-4">
+                        <p><strong>Name:</strong> <?= htmlspecialchars($customer['CustomerName']) ?></p>
+                    </div>
+                    <div class="col-md-4">
+                        <p><strong>Contact:</strong> <?= htmlspecialchars($customer['CustomerContact']) ?></p>
+                    </div>
+                    <div class="col-md-4">
+                        <p><strong>Address:</strong> <?= htmlspecialchars($customer['CustomerAddress']) ?></p>
+                    </div>
+                </div>
                 <?php if (!empty($customer['Notes'])): ?>
-                <tr>
-                    <td colspan="3">
-                        <strong>Notes:</strong>
-                        <div class="notes-box"><?= htmlspecialchars($customer['Notes']) ?></div>
-                    </td>
-                </tr>
+                    <div class="notes-box">
+                        <strong>Notes:</strong> <?= htmlspecialchars($customer['Notes']) ?>
+                    </div>
                 <?php endif; ?>
-            </table>
+            </div>
 
             <form method="POST" id="orderForm">
-                <div class="branch-select-container">
-                    <div style="flex-grow: 1;">
-                        <label class="form-label">Select Branch</label>
-                        <select class="form-select" name="branch_code" required>
-                            <option value="">-- Select Branch --</option>
-                            <?php while ($branch = $branches_result->fetch_assoc()): ?>
-                                <option value="<?= $branch['BranchCode'] ?>" 
-                                    <?= (isset($_SESSION['selected_branch']) && $_SESSION['selected_branch'] == $branch['BranchCode']) ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($branch['BranchName']) ?>
-                                </option>
-                            <?php endwhile; ?>
-                        </select>
+                <div class="filter-container">
+                    <div class="row filter-row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Select Branch</label>
+                            <select class="form-select" name="branch_code" required>
+                                <option value="">-- Select Branch --</option>
+                                <?php while ($branch = $branches_result->fetch_assoc()): ?>
+                                    <option value="<?= $branch['BranchCode'] ?>" 
+                                        <?= (isset($_SESSION['selected_branch']) && $_SESSION['selected_branch'] == $branch['BranchCode']) ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($branch['BranchName']) ?>
+                                    </option>
+                                <?php endwhile; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Filter by Shape</label>
+                            <select class="form-select" name="shape_filter">
+                                <option value="">All Shapes</option>
+                                <?php while ($shape = $shapes_result->fetch_assoc()): ?>
+                                    <option value="<?= $shape['ShapeID'] ?>" 
+                                        <?= (isset($_SESSION['selected_shape']) && $_SESSION['selected_shape'] == $shape['ShapeID']) ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars(getShapeName($shape['ShapeID'])) ?>
+                                    </option>
+                                <?php endwhile; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="submit" name="check_availability" class="btn btn-primary w-100">
+                                <i class="fas fa-filter me-2"></i> Apply Filters
+                            </button>
+                        </div>
                     </div>
-                    <button type="submit" name="check_availability" class="btn btn-primary">
-                        <i class="fas fa-search me-2"></i> Check Availability
-                    </button>
                 </div>
 
                 <h4 class="mt-4 mb-3">Available Products</h4>
                 
                 <?php if ($products_result->num_rows > 0): ?>
                     <div class="row">
-                        <?php $products_result->data_seek(0); ?>
                         <?php while ($product = $products_result->fetch_assoc()): ?>
-                            <div class="col-md-6">
+                            <div class="col-md-4 mb-4">
                                 <div class="product-card" onclick="selectProduct(this, <?= $product['ProductID'] ?>)">
                                     <img src="<?= htmlspecialchars($product['ProductImage']) ?>" 
                                          class="product-img" 
@@ -286,17 +333,13 @@ function getProductStock($product_id, $branch_code) {
                                     <p>
                                         <strong>Category:</strong> <?= htmlspecialchars($product['CategoryType']) ?><br>
                                         <strong>Brand:</strong> <?= htmlspecialchars(getBrandName($product['BrandID'])) ?><br>
+                                        <strong>Shape:</strong> <?= htmlspecialchars(getShapeName($product['ShapeID'])) ?><br>
                                         <strong>Price:</strong> <?= htmlspecialchars($product['Price']) ?><br>
-                                        <span class="stock-info" id="stock-<?= $product['ProductID'] ?>">
-                                            <?php if (isset($_SESSION['selected_branch'])): ?>
-                                                <?php 
-                                                $stock = getProductStock($product['ProductID'], $_SESSION['selected_branch']);
-                                                echo "<strong>Stocks:</strong> " . ($stock > 0 ? $stock : 'Not available');
-                                                ?>
-                                            <?php else: ?>
-                                                <strong>Stocks:</strong> Select branch and check availability
-                                            <?php endif; ?>
-                                        </span>
+                                        <?php if (isset($_SESSION['selected_branch'])): ?>
+                                            <span class="stock-info">
+                                                <strong>Stocks:</strong> <?= getProductStock($product['ProductID'], $_SESSION['selected_branch']) ?>
+                                            </span>
+                                        <?php endif; ?>
                                     </p>
                                     <div class="quantity-control mt-3" style="display: none;">
                                         <label class="form-label">Quantity</label>
@@ -310,13 +353,21 @@ function getProductStock($product_id, $branch_code) {
                         <?php endwhile; ?>
                     </div>
                     
-                    <div class="d-flex justify-content-end mt-4">
-                        <button type="submit" name="create_order" class="btn btn-primary btn-lg">
-                            <i class="fas fa-save me-2"></i> Create Order
-                        </button>
-                    </div>
+                    <?php if (isset($_SESSION['selected_branch'])): ?>
+                        <div class="d-flex justify-content-end mt-4">
+                            <button type="submit" name="create_order" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save me-2"></i> Create Order
+                            </button>
+                        </div>
+                    <?php endif; ?>
                 <?php else: ?>
-                    <div class="alert alert-info">No available products found.</div>
+                    <div class="alert alert-info">
+                        <?php if (isset($_SESSION['selected_branch'])): ?>
+                            No products available matching your filters.
+                        <?php else: ?>
+                            Please select a branch and apply filters to see available products.
+                        <?php endif; ?>
+                    </div>
                 <?php endif; ?>
             </form>
         </div>
@@ -334,14 +385,6 @@ function getProductStock($product_id, $branch_code) {
             card.classList.add('selected');
             card.querySelector('.quantity-control').style.display = 'block';
             card.querySelector('input[name="product_id"]').value = productId;
-            
-            // Set max quantity based on stock
-            const stockText = card.querySelector('.stock-info').textContent;
-            const stockMatch = stockText.match(/Stocks:\s*(\d+)/);
-            if (stockMatch) {
-                const stock = parseInt(stockMatch[1]);
-                card.querySelector('input[name="quantity"]').max = stock;
-            }
         }
     </script>
 </body>
