@@ -105,9 +105,7 @@
                 
                 echo "<div class='col d-flex product-card' data-search='".htmlspecialchars($searchableText, ENT_QUOTES)."'>";
                     echo "<div class='card w-100' style='max-width: 380px;'>";
-                        echo '<div class="card-img-container">';
-                        echo '<img src="' . $row['ProductImage']. '" class="card-img-top" alt="'. $row['Model'] .'">';
-                        echo '</div>';
+                        echo '<img src="' . $row['ProductImage']. '" class="card-img-top img-fluid" style="height: 280px;" alt="'. $row['Model'] .'">';
                         echo "<div class='card-body d-flex flex-column'>";
                             echo "<h5 class='card-title' style='min-height: 1.5rem;'>".$row['Model']."</h5>";
                             echo "<hr>";
@@ -286,34 +284,8 @@
             .modal-lg-custom {
                 max-width: 800px;
             }
-            /* Card Image Container */
-            .card-img-container {
-                height: 280px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                padding: 15px;
-                background-color: #f8f9fa;
-            }
-            
-            .card-img-top {
-                max-height: 100%;
-                max-width: 100%;
-                object-fit: contain;
-            }
-            /* Modal Image Container */
-            .modal-product-image-container {
-                height: 400px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                background-color: #f8f9fa;
-                padding: 20px;
-            }
-            
-            .modal-product-image {
-                max-height: 100%;
-                max-width: 100%;
+            .product-image {
+                max-height: 400px;
                 object-fit: contain;
             }
             .product-details {
@@ -362,9 +334,7 @@
                     <div class="modal-body">
                         <div class="row">
                             <div class="col-md-6">
-                                <div class="modal-product-image-container">
-                                    <img id="modalProductImage" src="" class="modal-product-image" alt="Product Image">
-                                </div>
+                                <img id="modalProductImage" src="" class="img-fluid product-image rounded" alt="Product Image">
                             </div>
                             <div class="col-md-6 product-details">
                                 <div class="detail-row">
