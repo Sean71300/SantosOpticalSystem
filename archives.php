@@ -35,7 +35,7 @@ if (isset($_POST['action'])) {
             $stmt->execute();
             
             // Log the restoration
-            ActivityTracker::logActivity($_SESSION['employee_id'], $targetID, $targetType, 3, 
+            ActivityTracker1::logActivity($_SESSION['employee_id'], $targetID, $targetType, 3, 
                                        "Restored $targetType from archives");
             
             // Delete from archives
@@ -70,7 +70,7 @@ if (isset($_POST['action'])) {
             $stmt->execute();
             
             // Log the deletion
-            ActivityTracker::logActivity($_SESSION['employee_id'], $targetID, $targetType, 5, 
+            ActivityTracker1::logActivity($_SESSION['employee_id'], $targetID, $targetType, 5, 
                                        "Permanently deleted $targetType from archives");
             
             // Then delete from archives
@@ -122,7 +122,7 @@ if (isset($_POST['action'])) {
                 
                 // Log the mass deletion
                 foreach ($targetIDs as $id) {
-                    ActivityTracker::logActivity($_SESSION['employee_id'], $id, $targetType, 5, 
+                    ActivityTracker1::logActivity($_SESSION['employee_id'], $id, $targetType, 5, 
                                                "Permanently deleted $targetType from archives (mass deletion)");
                 }
             }
