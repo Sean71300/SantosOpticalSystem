@@ -4,6 +4,9 @@ include 'ActivityTracker.php';
 include 'loginChecker.php';
 include 'order-functions.php';
 
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 $ordersPerPage = 10;
 $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($currentPage - 1) * $ordersPerPage;
@@ -36,7 +39,7 @@ if (!empty($where)) {
 }
 
 $conn = connect();
-$totalQuery = "SELECT COUNT(*) as total FROM Order_hdr o" . (!empty($where) ? " WHERE " . implode(' AND ', $where) : "";
+$totalQuery = "SELECT COUNT(*) as total FROM Order_hdr o" . (!empty($where) ? " WHERE " . implode(' AND ', $where) : "");
 $stmt = $conn->prepare($totalQuery);
 
 if (!empty($params)) {
