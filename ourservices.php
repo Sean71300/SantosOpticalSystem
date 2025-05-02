@@ -29,20 +29,15 @@ include 'ActivityTracker.php';
             
            <div class="container-fluid position-relative">
                 <div class="services-section">
-                    <div class="row align-items-center">
-                        <div class="col-md-6 text-overlay">
-                            <h2>SERVICES</h2><br>
-                            <p>At BVP Santos Optical, we are committed to delivering exceptional eye care and 
-                                customer service. Guided by our core standards, we ensure a consistent and excellent 
-                                experience across all our branches, providing quality eyewear and professional optical 
-                                services you can trust.</p>
-                        </div>
-                        <div class="col-md-6">
-                            <img src="Images/os1.png" alt="Services Image" class="services-img img-fluid">
-                        </div>
+                    <div class="text-overlay">
+                        <h2>SERVICES</h2><br>
+                        <p>At BVP Santos Optical, we are committed to delivering exceptional eye care and 
+                            customer service. Guided by our core standards, we ensure a consistent and excellent 
+                            experience across all our branches, providing quality eyewear and professional optical 
+                            services you can trust.</p>
                     </div>
+                    <img src="Images/os1.png" alt="Services Image" class="services-img">
                 </div>
-            </div>
             
             <div class="d-flex justify-content-center align-items-center min-vh-100">
                 <div class="services2-section">
