@@ -76,19 +76,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 function GenerateLogs($employee_id, $customerID, $action) {
     $conn = connect();
-    $sql = "INSERT INTO Logs (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description, Upd_dt) VALUES (?, ?, ?, ?, ?, ?, ?)";
+    $sql = "INSERT INTO Logs (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description, Upd_dt) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
     if ($stmt) {
         $logID = generate_LogsID();
-        $activityCode = 3; 
-        $logTargetType = 'Customer Medical Record';
+        $activityCode = 3; // Assuming 3 corresponds to 'Added' in activityMaster
+        $logTargetType = 'customer'; // Valid ENUM value
         $description = "$action for customer ID: $customerID";
-        $upd_dt = date("Y-m-d H:i:s");
-        $stmt->bind_param("iiisssss", $logID, $employee_id, $customerID, $logTargetType, $activityCode, $description, $upd_dt);
+        $upd_dt = date("Y-m-d H:i:s"); // Optional: Can be omitted to use DEFAULT
+        
+        // Correct format string: "iiisiss"
+        $stmt->bind_param("iiisiss", 
+            $logID, 
+            $employee_id, 
+            $customerID, 
+            $logTargetType, 
+            $activityCode, 
+            $description, 
+            $upd_dt // Remove this line if using DEFAULT
+        );
         
         if (!$stmt->execute()) {
-            // Handle error if log insertion fails
-            error_log("Failed to insert log: " . $stmt->error);
+            error_log("Failed to insert log: {$stmt->error}");
         }
     }
     $stmt->close();
