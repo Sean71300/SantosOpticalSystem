@@ -70,16 +70,16 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
                             <div class="card-body">
                                 <dl class="row">
                                     <dt class="col-sm-3">Name:</dt>
-                                    <dd class="col-sm-9"><?php echo htmlspecialchars($customer['CustomerName']); ?></dd>
+                                    <dd class="col-sm-9"><?php echo !empty($customer['CustomerName']) ? htmlspecialchars($customer['CustomerName']) : 'No record.'; ?></dd>
 
                                     <dt class="col-sm-3">Details:</dt>
-                                    <dd class="col-sm-9"><?php echo nl2br(htmlspecialchars($customer['CustomerInfo'])); ?></dd>
+                                    <dd class="col-sm-9"><?php echo !empty($customer['CustomerInfo']) ? nl2br(htmlspecialchars($customer['CustomerInfo'])) : 'No record.'; ?></dd>
 
                                     <dt class="col-sm-3">Last Updated By:</dt>
-                                    <dd class="col-sm-9"><?php echo htmlspecialchars($customer['Upd_by']); ?></dd>
+                                    <dd class="col-sm-9"><?php echo !empty($customer['Upd_by']) ? htmlspecialchars($customer['Upd_by']) : 'No record.'; ?></dd>
 
                                     <dt class="col-sm-3">Last Updated On:</dt>
-                                    <dd class="col-sm-9"><?php echo htmlspecialchars($customer['Upd_dt']); ?></dd>
+                                    <dd class="col-sm-9"><?php echo !empty($customer['Upd_dt']) ? htmlspecialchars($customer['Upd_dt']) : 'No record.'; ?></dd>
                                 </dl>
                             </div>
                         </div>
@@ -107,30 +107,30 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
                                             <tbody>
                                                 <?php while ($history = $historyResult->fetch_assoc()): ?>
                                                     <tr>
-                                                        <td><?php echo htmlspecialchars($history['visit_date']); ?></td>
-                                                        <td><?php echo htmlspecialchars($history['eye_condition']); ?></td>
+                                                        <td><?php echo !empty($history['visit_date']) ? htmlspecialchars($history['visit_date']) : 'No record.'; ?></td>
+                                                        <td><?php echo !empty($history['eye_condition']) ? htmlspecialchars($history['eye_condition']) : 'No record.'; ?></td>
                                                         <td>
-                                                            R: <?php echo htmlspecialchars($history['visual_acuity_right']); ?><br>
-                                                            L: <?php echo htmlspecialchars($history['visual_acuity_left']); ?>
+                                                            R: <?php echo !empty($history['visual_acuity_right']) ? htmlspecialchars($history['visual_acuity_right']) : 'No record.'; ?><br>
+                                                            L: <?php echo !empty($history['visual_acuity_left']) ? htmlspecialchars($history['visual_acuity_left']) : 'No record.'; ?>
                                                         </td>
                                                         <td>
-                                                            R: <?php echo htmlspecialchars($history['intraocular_pressure_right']); ?> mmHg<br>
-                                                            L: <?php echo htmlspecialchars($history['intraocular_pressure_left']); ?> mmHg
+                                                            R: <?php echo !empty($history['intraocular_pressure_right']) ? htmlspecialchars($history['intraocular_pressure_right']).' mmHg' : 'No record.'; ?><br>
+                                                            L: <?php echo !empty($history['intraocular_pressure_left']) ? htmlspecialchars($history['intraocular_pressure_left']).' mmHg' : 'No record.'; ?>
                                                         </td>
                                                         <td>
-                                                            R: <?php echo htmlspecialchars($history['refraction_right']); ?><br>
-                                                            L: <?php echo htmlspecialchars($history['refraction_left']); ?>
+                                                            R: <?php echo !empty($history['refraction_right']) ? htmlspecialchars($history['refraction_right']) : 'No record.'; ?><br>
+                                                            L: <?php echo !empty($history['refraction_left']) ? htmlspecialchars($history['refraction_left']) : 'No record.'; ?>
                                                         </td>
-                                                        <td><?php echo htmlspecialchars($history['pupillary_distance']); ?></td>
-                                                        <td><?php echo htmlspecialchars($history['additional_notes']); ?></td>
+                                                        <td><?php echo !empty($history['pupillary_distance']) ? htmlspecialchars($history['pupillary_distance']) : 'No record.'; ?></td>
+                                                        <td><?php echo !empty($history['additional_notes']) ? htmlspecialchars($history['additional_notes']) : 'No record.'; ?></td>
                                                     </tr>
                                                 <?php endwhile; ?>
                                             </tbody>
                                         </table>
                                     </div>
                                 <?php else: ?>
-                                    <div class="alert alert-info" role="alert">
-                                        No medical history records found.
+                                    <div class="text-center py-3">
+                                        <span class="text-muted">No record.</span>
                                     </div>
                                 <?php endif; ?>
                             </div>
