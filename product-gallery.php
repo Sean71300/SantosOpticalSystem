@@ -9,6 +9,7 @@
         if (isset($currentParams['sort'])) $params['sort'] = $currentParams['sort'];
         if (isset($currentParams['search'])) $params['search'] = $currentParams['search'];
         if (isset($currentParams['availability'])) $params['availability'] = $currentParams['availability'];
+        if (isset($currentParams['category'])) $params['category'] = $currentParams['category'];
         
         if ($page !== null) {
             $params['page'] = $page;
@@ -28,6 +29,7 @@
         $sort = isset($_GET['sort']) ? $_GET['sort'] : 'name_asc';
         $search = isset($_GET['search']) ? mysqli_real_escape_string($conn, $_GET['search']) : '';
         $availability = isset($_GET['availability']) ? $_GET['availability'] : '';
+        $category = isset($_GET['category']) ? $_GET['category'] : '';
         
         // Build the base SQL query
         $sql = "SELECT * FROM `productMstr`";
@@ -45,6 +47,12 @@
             } elseif ($availability == 'Not Available') {
                 $whereConditions[] = "Avail_FL != 'Available'";
             }
+        }
+        
+        // Add category filter condition
+        if (!empty($category)) {
+            $category = mysqli_real_escape_string($conn, $category);
+            $whereConditions[] = "CategoryType = '$category'";
         }
         
         if (!empty($whereConditions)) {
@@ -197,9 +205,11 @@
                 justify-content: flex-end;
                 gap: 20px;
                 margin-bottom: 20px;
+                flex-wrap: wrap;
             }
             .filter-dropdown {
                 max-width: 250px;
+                min-width: 200px;
             }
             .search-container {
                 margin-bottom: 30px;
@@ -270,6 +280,9 @@
                             <?php if(isset($_GET['availability'])): ?>
                                 <input type="hidden" name="availability" value="<?php echo $_GET['availability']; ?>">
                             <?php endif; ?>
+                            <?php if(isset($_GET['category'])): ?>
+                                <input type="hidden" name="category" value="<?php echo $_GET['category']; ?>">
+                            <?php endif; ?>
                         </div>
                         <div id="liveSearchResults"></div>
                     </form>
@@ -277,6 +290,38 @@
                 
                 <!-- Filter and Sort Container -->
                 <div class="filter-container">
+                    <!-- Category Filter -->
+                    <form method="get" action="" class="filter-dropdown">
+                        <?php if(isset($_GET['page'])): ?>
+                            <input type="hidden" name="page" value="<?php echo $_GET['page']; ?>">
+                        <?php endif; ?>
+                        <?php if(isset($_GET['search'])): ?>
+                            <input type="hidden" name="search" value="<?php echo $_GET['search']; ?>">
+                        <?php endif; ?>
+                        <?php if(isset($_GET['sort'])): ?>
+                            <input type="hidden" name="sort" value="<?php echo $_GET['sort']; ?>">
+                        <?php endif; ?>
+                        <?php if(isset($_GET['availability'])): ?>
+                            <input type="hidden" name="availability" value="<?php echo $_GET['availability']; ?>">
+                        <?php endif; ?>
+                        <div class="input-group">
+                            <label class="input-group-text" for="categorySelect">Category:</label>
+                            <select class="form-select" id="categorySelect" name="category" onchange="this.form.submit()">
+                                <option value="">All Categories</option>
+                                <option value="Bifocal Lens" <?php echo (isset($_GET['category']) && $_GET['category'] == 'Bifocal Lens') ? 'selected' : ''; ?>>Bifocal Lens</option>
+                                <option value="Concave Lens" <?php echo (isset($_GET['category']) && $_GET['category'] == 'Concave Lens') ? 'selected' : ''; ?>>Concave Lens</option>
+                                <option value="Contact Lenses" <?php echo (isset($_GET['category']) && $_GET['category'] == 'Contact Lenses') ? 'selected' : ''; ?>>Contact Lenses</option>
+                                <option value="Convex Lens" <?php echo (isset($_GET['category']) && $_GET['category'] == 'Convex Lens') ? 'selected' : ''; ?>>Convex Lens</option>
+                                <option value="Frame" <?php echo (isset($_GET['category']) && $_GET['category'] == 'Frame') ? 'selected' : ''; ?>>Frame</option>
+                                <option value="Photochromic Lens" <?php echo (isset($_GET['category']) && $_GET['category'] == 'Photochromic Lens') ? 'selected' : ''; ?>>Photochromic Lens</option>
+                                <option value="Polarized Lens" <?php echo (isset($_GET['category']) && $_GET['category'] == 'Polarized Lens') ? 'selected' : ''; ?>>Polarized Lens</option>
+                                <option value="Progressive Lens" <?php echo (isset($_GET['category']) && $_GET['category'] == 'Progressive Lens') ? 'selected' : ''; ?>>Progressive Lens</option>
+                                <option value="Sunglasses" <?php echo (isset($_GET['category']) && $_GET['category'] == 'Sunglasses') ? 'selected' : ''; ?>>Sunglasses</option>
+                                <option value="Trifocal Lens" <?php echo (isset($_GET['category']) && $_GET['category'] == 'Trifocal Lens') ? 'selected' : ''; ?>>Trifocal Lens</option>
+                            </select>
+                        </div>
+                    </form>
+                    
                     <!-- Availability Filter -->
                     <form method="get" action="" class="filter-dropdown">
                         <?php if(isset($_GET['page'])): ?>
@@ -287,6 +332,9 @@
                         <?php endif; ?>
                         <?php if(isset($_GET['sort'])): ?>
                             <input type="hidden" name="sort" value="<?php echo $_GET['sort']; ?>">
+                        <?php endif; ?>
+                        <?php if(isset($_GET['category'])): ?>
+                            <input type="hidden" name="category" value="<?php echo $_GET['category']; ?>">
                         <?php endif; ?>
                         <div class="input-group">
                             <label class="input-group-text" for="availabilitySelect">Filter:</label>
@@ -308,6 +356,9 @@
                         <?php endif; ?>
                         <?php if(isset($_GET['availability'])): ?>
                             <input type="hidden" name="availability" value="<?php echo $_GET['availability']; ?>">
+                        <?php endif; ?>
+                        <?php if(isset($_GET['category'])): ?>
+                            <input type="hidden" name="category" value="<?php echo $_GET['category']; ?>">
                         <?php endif; ?>
                         <div class="input-group">
                             <label class="input-group-text" for="sortSelect">Sort by:</label>
