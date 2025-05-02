@@ -7,22 +7,24 @@ include 'loginChecker.php';
 
 // Database functions
 function getOrderHeaders($conn, $search = '', $branch = '', $limit = 10, $offset = 0) {
-    $query = "SELECT Orderhdr_id, CustomerID, BranchCode, Created_dt, Created_by 
-              FROM Order_hdr";
+    $query = "SELECT oh.Orderhdr_id, oh.CustomerID, oh.BranchCode, oh.Created_dt, oh.Created_by, 
+                     c.CustomerName
+              FROM Order_hdr oh
+              LEFT JOIN customer c ON oh.CustomerID = c.CustomerID";
     
     $where = [];
     $params = [];
     $types = '';
     
     if (!empty($search)) {
-        $where[] = "(Orderhdr_id LIKE ? OR CustomerID IN (SELECT CustomerID FROM customer WHERE CustomerName LIKE ?))";
+        $where[] = "(oh.Orderhdr_id LIKE ? OR c.CustomerName LIKE ?)";
         $params[] = '%' . $search . '%'; // For Orderhdr_id
         $params[] = '%' . $search . '%'; // For CustomerName
         $types .= 'ss'; // Two string parameters
     }
     
     if (!empty($branch)) {
-        $where[] = "BranchCode = ?";
+        $where[] = "oh.BranchCode = ?";
         $params[] = $branch;
         $types .= 's';
     }
@@ -31,7 +33,7 @@ function getOrderHeaders($conn, $search = '', $branch = '', $limit = 10, $offset
         $query .= " WHERE " . implode(' AND ', $where);
     }
     
-    $query .= " ORDER BY Created_dt DESC LIMIT ? OFFSET ?";
+    $query .= " ORDER BY oh.Created_dt DESC LIMIT ? OFFSET ?";
     $params[] = $limit;
     $params[] = $offset;
     $types .= 'ii';
@@ -84,20 +86,23 @@ function getOrderDetails($conn, $orderId) {
 }
 
 function countOrderHeaders($conn, $search = '', $branch = '') {
-    $query = "SELECT COUNT(Orderhdr_id) as total FROM Order_hdr";
+    $query = "SELECT COUNT(oh.Orderhdr_id) as total 
+              FROM Order_hdr oh
+              LEFT JOIN customer c ON oh.CustomerID = c.CustomerID";
     
     $where = [];
     $params = [];
     $types = '';
     
     if (!empty($search)) {
-        $where[] = "Orderhdr_id LIKE ?";
+        $where[] = "(oh.Orderhdr_id LIKE ? OR c.CustomerName LIKE ?)";
         $params[] = '%' . $search . '%';
-        $types .= 's';
+        $params[] = '%' . $search . '%';
+        $types .= 'ss';
     }
     
     if (!empty($branch)) {
-        $where[] = "BranchCode = ?";
+        $where[] = "oh.BranchCode = ?";
         $params[] = $branch;
         $types .= 's';
     }
