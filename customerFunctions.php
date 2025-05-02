@@ -179,7 +179,7 @@
             echo '<div class="form-container">';
             echo '<div class="d-flex justify-content-between align-items-center mb-4">';
             echo '<h3><i class="fas fa-calendar-check me-2"></i> Medical History Records</h3>';
-            echo '<a href="addMedicalRecord.php?customerID='.$customerID.'" class="btn btn-primary">';
+            echo '<button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#addMedicalRecordModal" data-customer-id="'.$customerID.'">';
             echo '<i class="fas fa-plus me-2"></i> Add Record</a>';
             echo '</div>';
             
@@ -295,8 +295,12 @@
             echo '<i class="fas fa-plus me-2"></i> Add First Record</a>';
             echo '</div>';
         }
-        
         $stmt->close();
         $connection->close();
+    }
+
+    function addMedicalRecords($customerID) {
+        $conn = connect();
+        
     }
 ?>
