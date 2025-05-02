@@ -1,4 +1,5 @@
 <?php
+session_start();
 include_once 'connect.php';
 include_once 'setup.php';
 include 'ActivityTracker.php';
@@ -60,17 +61,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['cancel'])) {
                             $_SESSION["upd_dt"] = $upd_dt;
                             $_SESSION['last_activity'] = time();
 
-                            switch ($roleid) {
-                                case 1: // Admin
-                                    header("location: Dashboard.php");
-                                    exit();
-                                case 2: // Employee
-                                    header("location: Dashboard.php");
-                                    exit();
-                                default:
-                                    $login_err = "Error has occurred, please try logging in again.";
-                                    session_destroy();
-                            }
+                            header("location: Dashboard.php");
+                            exit();
                         } else {
                             $login_err = "The password you entered was not valid.";
                         }
