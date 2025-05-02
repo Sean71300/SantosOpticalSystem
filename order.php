@@ -50,8 +50,9 @@ try {
     }
 
     // Get total count of orders
-    $conn = connect();
-    if (!$conn) {
+    // Get total count of orders
+    $countConn = connect();
+    if (!$countConn) {
         throw new Exception("Database connection failed");
     }
 
@@ -59,25 +60,29 @@ try {
     if (!empty($where)) {
         $totalQuery .= " WHERE " . implode(' AND ', $where);
     }
-    
-    debug_log("Total Query: " . $totalQuery);
-    
-    $stmt = $conn->prepare($totalQuery);
-    if (!$stmt) {
-        throw new Exception("Prepare failed: " . $conn->error . " | Query: " . $totalQuery);
-    }
-    
-    // Only bind parameters if they exist
-    if (!empty($params)) {
-        if (!$stmt->bind_param($types, ...$params)) {
-            throw new Exception("Bind failed: " . $stmt->error);
-        }
+
+    $countStmt = $countConn->prepare($totalQuery);
+    if (!$countStmt) {
+        throw new Exception("Prepare failed: " . $countConn->error);
     }
 
-    $totalResult = $stmt->get_result();
+    if (!empty($params)) {
+        $countStmt->bind_param($types, ...$params);
+    }
+
+    if (!$countStmt->execute()) {
+        throw new Exception("Execute failed: " . $countStmt->error);
+    }
+
+    $totalResult = $countStmt->get_result();
     $totalOrders = $totalResult->fetch_assoc()['total'];
-    $totalPages = ceil($totalOrders / $ordersPerPage);
-    $stmt->close();
+    $totalResult->free();
+    $countStmt->close();
+    $countConn->close();
+
+    // Now execute main query with a new connection
+    $conn = connect();
+
 
     // Add pagination to main query
     $query .= " ORDER BY o.Created_dt DESC LIMIT ? OFFSET ?";
