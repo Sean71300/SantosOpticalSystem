@@ -91,11 +91,12 @@ body {
     padding: 10px;
     padding: 30px;
     padding-top: 30px;
-    margin-right: 650px;
+    margin-right: 850px;
     text-align: justify;
     font-size: 19px;
     text-decoration: none;
-}es2-section {
+}
+es2-section {
     position: relative;
     width: 80%;
     max-height: 400px; 
