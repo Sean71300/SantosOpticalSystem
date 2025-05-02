@@ -55,7 +55,6 @@ include 'ActivityTracker.php';
         </div>
     </div>
 
-
     <footer class="py-5 border-top mt-5 pt-4" style="background-color: #ffffff; margin-top: 50px; border-color: #ffffff;">
         <div class="container">
             <div class="row text-center text-md-start">
@@ -89,5 +88,7 @@ include 'ActivityTracker.php';
             </div>
         </div>
     </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
