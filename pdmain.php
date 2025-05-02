@@ -198,6 +198,9 @@
                     <p>Email: <a href="mailto:Santosoptical@gmail.com" class="text-dark">Santosoptical@gmail.com</a></p>
                 </div>
             </div>
+            <div>
+                <p>COPYRIGHT (C) SANTOS OPTICAL co., ltd. ALL RIGHTS RESERVED.</p>
+            </div>
         </div>
     </footer>
 
