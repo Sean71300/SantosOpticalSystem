@@ -107,6 +107,50 @@
                 </div>
               </div>
           </div>
+
+          
+
+            <!-- Footer Section -->
+<footer style="background-color: #f8f9fa; padding: 40px 0; margin-top: 50px;">
+    <div class="container">
+        <div class="row">
+            <!-- Products Column -->
+            <div class="col-md-4 mb-4">
+                <h5 style="font-weight: bold; margin-bottom: 20px; text-transform: uppercase;">PRODUCTS</h5>
+                <ul style="list-style: none; padding-left: 0;">
+                    <li style="margin-bottom: 8px;">Frames</li>
+                    <li style="margin-bottom: 8px;">Sunglasses</li>
+                </ul>
+            </div>
+            
+            <!-- Policy Column -->
+            <div class="col-md-4 mb-4">
+                <h5 style="font-weight: bold; margin-bottom: 20px; text-transform: uppercase;">POLICY</h5>
+                <ul style="list-style: none; padding-left: 0;">
+                    <li style="margin-bottom: 8px;">FAQ</li>
+                    <li style="margin-bottom: 8px;">Store Policy</li>
+                </ul>
+            </div>
+            
+            <!-- Contact Column -->
+            <div class="col-md-4 mb-4">
+                <h5 style="font-weight: bold; margin-bottom: 20px; text-transform: uppercase;">CONTACT US!</h5>
+                <address style="font-style: normal;">
+                    <p style="margin-bottom: 8px;">Address: #6 Rizal Avenue Extension, Bray.</p>
+                    <p style="margin-bottom: 8px;">San Agustín, Malabon City</p>
+                    <p style="margin-bottom: 8px;">Phone: 027-508-4792</p>
+                    <p style="margin-bottom: 8px;">Cell: 0932-844-7068</p>
+                    <p style="margin-bottom: 8px;">Email: Santosoptical@gmail.com</p>
+                </address>
+            </div>
+        </div>
+        
+        <!-- Copyright Notice -->
+        <div class="text-center mt-4 pt-4" style="border-top: 1px solid #dee2e6;">
+            <p>&copy; <?php echo date("Y"); ?> Santos Optical Clinic. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
         </div>
 
         <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
