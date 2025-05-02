@@ -33,7 +33,7 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
         <div class="container mt-5 mb-5">
             <div class="row justify-content-center">
                 <div class="col-md-8">
-                    <h1 class="text-center"> Hello there <?php echo htmlspecialchars($_SESSION['CustomerName']); ?>!</h1>
+                    <h2 class="text-center"> Hello there <?php echo htmlspecialchars($_SESSION['full_name']); ?>!</h2>
                     <hr>
                     <i class="fa-solid fa-file-medical me-2"></i><h2 class="text-center">Your Medical History</h2>
                     <?php
