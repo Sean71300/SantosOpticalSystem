@@ -30,18 +30,10 @@ include 'ActivityTracker.php';
         <div class="row justify-content-center mt-5 mb-5">
             <div class="col-md-8">
                 <i class="fa-solid fa-file-invoice-dollar me-2"></i><h1 class="text-center">Track Your Order</h1>
-                <form action="trackorder.php" method="POST" class="mt-4">
-                    <div class="mb-3">
-                        <label for="order_id" class="form-label">Order ID</label>
-                        <input type="text" class="form-control" id="order_id" name="order_id" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Track Order</button>
-                </form>
 
                 <?php
-                if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $conn = connect();
-                    $customer_id = $_POST['customer_id'];
+                    $customer_id = $_SESSION['CustomerID'];
 
                     $sql = "SELECT 
                         oH.Orderhdr_id AS OrderID,
@@ -73,7 +65,6 @@ include 'ActivityTracker.php';
                 
                     $stmt->close();
                     $conn->close();               
-                }
                 ?>
             </div>
         </div>
