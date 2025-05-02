@@ -27,7 +27,7 @@ include 'ActivityTracker.php';
                 <a href="ourservices.php" class="nav-button">Our Services</a>
             </div>        
             
-           <div class="container-fluid position-relative">
+           <div class="d-flex justify-content-center align-items-center min-vh-100">
                 <div class="services-section">
                     <div class="text-overlay">
                         <h2>SERVICES</h2><br>
