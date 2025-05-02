@@ -5,6 +5,47 @@ include_once 'setup.php';
 include 'ActivityTracker.php'; 
 include 'loginChecker.php';
 
+// Process form submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['create_order'])) {
+        $conn = connect();
+        $customerId = $_POST['customer_id'];
+        $productId = $_POST['product_id'];
+        $quantity = $_POST['quantity'];
+        $branchCode = $_POST['branch_code'];
+        $createdBy = $_SESSION['login_user'];
+        
+        // Create order header
+        $orderQuery = "INSERT INTO Order_hdr (CustomerID, BranchCode, Created_by) VALUES (?, ?, ?)";
+        $stmt = $conn->prepare($orderQuery);
+        $stmt->bind_param('iss', $customerId, $branchCode, $createdBy);
+        $stmt->execute();
+        $orderId = $conn->insert_id;
+        $stmt->close();
+        
+        // Create order detail
+        $detailQuery = "INSERT INTO orderDetails (OrderHdr_id, ProductBranchID, Quantity, Status) 
+                        VALUES (?, (SELECT ProductBranchID FROM ProductBranchMaster WHERE ProductID = ? AND BranchCode = ? LIMIT 1), ?, 'Pending')";
+        $stmt = $conn->prepare($detailQuery);
+        $stmt->bind_param('iiii', $orderId, $productId, $branchCode, $quantity);
+        $stmt->execute();
+        $stmt->close();
+        
+        // Update stock
+        $updateQuery = "UPDATE ProductBranchMaster SET Stocks = Stocks - ? WHERE ProductID = ? AND BranchCode = ?";
+        $stmt = $conn->prepare($updateQuery);
+        $stmt->bind_param('iis', $quantity, $productId, $branchCode);
+        $stmt->execute();
+        $stmt->close();
+        
+        $conn->close();
+        
+        // Redirect to order details
+        header("Location: orderDetails.php?id=$orderId");
+        exit();
+    }
+}
+
 // Get the logged-in employee's branch
 $employeeBranch = '';
 $conn = connect();
@@ -81,42 +122,40 @@ $conn->close();
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="customCodes/custom.css">
     <link rel="shortcut icon" type="image/x-icon" href="Images/logo.png"/>
     <title>New Order | Santos Optical</title>
     <style>
         body {
-            background-color: #f5f7fa;
-            padding-top: 60px;
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         .sidebar {
-            background-color: white;
-            height: 100vh;
-            padding: 20px 0 70px;
-            color: #2c3e50;
-            position: fixed;
-            width: 250px;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-            z-index: 1000;
+            background-color: #343a40;
+            color: white;
         }
         .main-content {
             margin-left: 250px;
             padding: 20px;
-            width: calc(100% - 250px);
-            transition: margin 0.3s ease;
         }
         .order-container {
             background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             padding: 20px;
             margin-bottom: 20px;
         }
+        .customer-info {
+            background-color: #f1f1f1;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
         .product-card {
-            border: 1px solid #dee2e6;
+            border: 1px solid #ddd;
             border-radius: 5px;
             padding: 15px;
             margin-bottom: 15px;
+            cursor: pointer;
             transition: all 0.3s;
         }
         .product-card:hover {
@@ -127,29 +166,10 @@ $conn->close();
             border-color: #0d6efd;
             background-color: #f0f7ff;
         }
-        .customer-info {
-            background-color: #f8f9fa;
-            border-radius: 5px;
-            padding: 15px;
-            margin-bottom: 20px;
-        }
-        @media (max-width: 992px) {
-            .sidebar {
-                transform: translateX(-100%);
-            }
-            .sidebar.active {
-                transform: translateX(0);
-            }
-            .main-content {
-                margin-left: 0;
-                width: 100%;
-            }
-        }
-        @media (max-width: 768px) {
-            .filter-row .col-md-6, 
-            .filter-row .col-md-3 {
-                margin-bottom: 10px;
-            }
+        .product-img {
+            max-height: 120px;
+            object-fit: contain;
+            margin-bottom: 10px;
         }
         .back-btn {
             position: absolute;
@@ -163,7 +183,7 @@ $conn->close();
 
     <div class="main-content">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2><i class="fas fa-shopping-cart me-2"></i>New Order</h2>
+            <h2><i class="fas fa-plus-circle me-2"></i>New Order</h2>
             <a href="customerDetails.php?id=<?= $customerDetails['CustomerID'] ?? '' ?>" class="btn btn-outline-secondary back-btn">
                 <i class="fas fa-arrow-left me-1"></i> Back to Customer
             </a>
@@ -172,101 +192,120 @@ $conn->close();
         <div class="order-container">
             <?php if (!empty($customerDetails)): ?>
                 <div class="customer-info">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <p><strong>Name:</strong> <?= htmlspecialchars($customerDetails['CustomerName']) ?></p>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h4><?= htmlspecialchars($customerDetails['CustomerName']) ?></h4>
+                            <?php if (!empty($customerDetails['Notes'])): ?>
+                                <p class="mb-0"><strong>Notes:</strong> <?= htmlspecialchars($customerDetails['Notes']) ?></p>
+                            <?php endif; ?>
                         </div>
-                        <div class="col-md-4">
-                            <p><strong>Contact:</strong> <?= htmlspecialchars($customerDetails['CustomerContact']) ?></p>
-                        </div>
-                        <div class="col-md-4">
-                            <p><strong>Address:</strong> <?= htmlspecialchars($customerDetails['CustomerAddress']) ?></p>
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Contact:</strong> <?= htmlspecialchars($customerDetails['CustomerContact']) ?></p>
+                            <p class="mb-0"><strong>Address:</strong> <?= htmlspecialchars($customerDetails['CustomerAddress']) ?></p>
                         </div>
                     </div>
-                    <?php if (!empty($customerDetails['Notes'])): ?>
-                        <p><strong>Notes:</strong> <?= htmlspecialchars($customerDetails['Notes']) ?></p>
-                    <?php endif; ?>
                 </div>
 
-                <div class="row filter-row mb-3">
+                <div class="row mb-4">
                     <div class="col-md-6">
-                        <label for="branch" class="form-label">Branch</label>
-                        <input type="text" class="form-control" value="<?= htmlspecialchars($branchName) ?>" readonly>
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Branch:</strong></label>
+                            <input type="text" class="form-control" value="<?= htmlspecialchars($branchName) ?>" readonly>
+                        </div>
                     </div>
                     <div class="col-md-6">
-                        <label for="shapeFilter" class="form-label">Filter by Shape</label>
-                        <select class="form-select" id="shapeFilter">
-                            <option value="">All Shapes</option>
-                            <?php foreach ($shapes as $shape): ?>
-                                <option value="<?= $shape['ShapeID'] ?>"><?= $shape['Description'] ?></option>
-                            <?php endforeach; ?>
-                        </select>
+                        <div class="mb-3">
+                            <label for="shapeFilter" class="form-label"><strong>Filter by Shape:</strong></label>
+                            <select class="form-select" id="shapeFilter">
+                                <option value="">All Shapes</option>
+                                <?php foreach ($shapes as $shape): ?>
+                                    <option value="<?= $shape['ShapeID'] ?>"><?= $shape['Description'] ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
                 <h4 class="mb-3">Please select a product</h4>
 
-                <div class="row" id="productsContainer">
-                    <?php foreach ($products as $product): ?>
-                        <div class="col-md-4 product-item" data-shape="<?= $product['ShapeID'] ?>">
-                            <div class="product-card" onclick="selectProduct(this, <?= $product['ProductID'] ?>)">
-                                <?php if (!empty($product['ProductImage'])): ?>
-                                    <img src="<?= $product['ProductImage'] ?>" class="img-fluid mb-2" alt="<?= htmlspecialchars($product['Model']) ?>" style="max-height: 150px;">
-                                <?php endif; ?>
-                                <h5><?= htmlspecialchars($product['Model']) ?></h5>
-                                <p><strong>Category:</strong> <?= htmlspecialchars($product['CategoryType']) ?></p>
-                                <p><strong>Brand:</strong> 
-                                    <?php 
-                                        $brandName = 'Unknown';
-                                        $conn = connect();
-                                        $brandQuery = "SELECT BrandName FROM brandMaster WHERE BrandID = ?";
-                                        $stmt = $conn->prepare($brandQuery);
-                                        $stmt->bind_param('i', $product['BrandID']);
-                                        $stmt->execute();
-                                        $result = $stmt->get_result();
-                                        if ($row = $result->fetch_assoc()) {
-                                            $brandName = $row['BrandName'];
-                                        }
-                                        $stmt->close();
-                                        $conn->close();
-                                        echo htmlspecialchars($brandName);
-                                    ?>
-                                </p>
-                                <p><strong>Shape:</strong> 
-                                    <?php 
-                                        $shapeName = 'Unknown';
-                                        $conn = connect();
-                                        $shapeQuery = "SELECT Description FROM shapeMaster WHERE ShapeID = ?";
-                                        $stmt = $conn->prepare($shapeQuery);
-                                        $stmt->bind_param('i', $product['ShapeID']);
-                                        $stmt->execute();
-                                        $result = $stmt->get_result();
-                                        if ($row = $result->fetch_assoc()) {
-                                            $shapeName = $row['Description'];
-                                        }
-                                        $stmt->close();
-                                        $conn->close();
-                                        echo htmlspecialchars($shapeName);
-                                    ?>
-                                </p>
-                                <p><strong>Price:</strong> <?= htmlspecialchars($product['Price']) ?></p>
-                                <p><strong>Stocks:</strong> <?= $product['Stocks'] ?></p>
+                <?php if (!empty($products)): ?>
+                    <div class="row" id="productsContainer">
+                        <?php foreach ($products as $product): ?>
+                            <div class="col-md-4 product-item" data-shape="<?= $product['ShapeID'] ?>">
+                                <div class="product-card" onclick="selectProduct(this, <?= $product['ProductID'] ?>)">
+                                    <?php if (!empty($product['ProductImage'])): ?>
+                                        <img src="<?= $product['ProductImage'] ?>" class="img-fluid product-img" alt="<?= htmlspecialchars($product['Model']) ?>">
+                                    <?php else: ?>
+                                        <div class="text-center py-3 bg-light">
+                                            <i class="fas fa-image fa-3x text-muted"></i>
+                                        </div>
+                                    <?php endif; ?>
+                                    <h5><?= htmlspecialchars($product['Model']) ?></h5>
+                                    <p class="mb-1"><small class="text-muted"><?= htmlspecialchars($product['CategoryType']) ?></small></p>
+                                    <p class="mb-1"><strong>Brand:</strong> 
+                                        <?php 
+                                            $brandName = 'Unknown';
+                                            $conn = connect();
+                                            $brandQuery = "SELECT BrandName FROM brandMaster WHERE BrandID = ?";
+                                            $stmt = $conn->prepare($brandQuery);
+                                            $stmt->bind_param('i', $product['BrandID']);
+                                            $stmt->execute();
+                                            $result = $stmt->get_result();
+                                            if ($row = $result->fetch_assoc()) {
+                                                $brandName = $row['BrandName'];
+                                            }
+                                            $stmt->close();
+                                            $conn->close();
+                                            echo htmlspecialchars($brandName);
+                                        ?>
+                                    </p>
+                                    <p class="mb-1"><strong>Shape:</strong> 
+                                        <?php 
+                                            $shapeName = 'Unknown';
+                                            $conn = connect();
+                                            $shapeQuery = "SELECT Description FROM shapeMaster WHERE ShapeID = ?";
+                                            $stmt = $conn->prepare($shapeQuery);
+                                            $stmt->bind_param('i', $product['ShapeID']);
+                                            $stmt->execute();
+                                            $result = $stmt->get_result();
+                                            if ($row = $result->fetch_assoc()) {
+                                                $shapeName = $row['Description'];
+                                            }
+                                            $stmt->close();
+                                            $conn->close();
+                                            echo htmlspecialchars($shapeName);
+                                        ?>
+                                    </p>
+                                    <p class="mb-1"><strong>Price:</strong> <?= htmlspecialchars($product['Price']) ?></p>
+                                    <p class="mb-0"><strong>Stocks:</strong> <?= $product['Stocks'] ?></p>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+
+                    <form id="orderForm" method="post">
+                        <input type="hidden" name="customer_id" value="<?= $customerDetails['CustomerID'] ?>">
+                        <input type="hidden" name="branch_code" value="<?= $employeeBranch ?>">
+                        <input type="hidden" name="product_id" id="selectedProduct">
+                        
+                        <div class="row mt-4">
+                            <div class="col-md-3">
+                                <label for="quantity" class="form-label"><strong>Quantity:</strong></label>
+                                <input type="number" class="form-control" id="quantity" name="quantity" min="1" value="1" required>
                             </div>
                         </div>
-                    <?php endforeach; ?>
-                </div>
-
-                <form id="orderForm" action="processOrder.php" method="post">
-                    <input type="hidden" name="customer_id" value="<?= $customerDetails['CustomerID'] ?>">
-                    <input type="hidden" name="branch_code" value="<?= $employeeBranch ?>">
-                    <input type="hidden" name="selected_product" id="selectedProduct">
-                    
-                    <div class="d-grid gap-2 mt-4">
-                        <button type="submit" class="btn btn-primary btn-lg" id="continueBtn" disabled>
-                            <i class="fas fa-arrow-right me-2"></i> Continue to Order Details
-                        </button>
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg" id="continueBtn" name="create_order" disabled>
+                                <i class="fas fa-check-circle me-2"></i> Create Order
+                            </button>
+                        </div>
+                    </form>
+                <?php else: ?>
+                    <div class="alert alert-warning">
+                        No products available in this branch. Please check inventory.
                     </div>
-                </form>
+                <?php endif; ?>
             <?php else: ?>
                 <div class="alert alert-danger">
                     No customer selected. Please go back and select a customer.
@@ -277,43 +316,6 @@ $conn->close();
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const sidebar = document.getElementById('sidebar');
-            const mobileToggle = document.getElementById('mobileMenuToggle');
-            const body = document.body;
-            
-            if (mobileToggle) {
-                mobileToggle.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    sidebar.classList.toggle('active');
-                    body.classList.toggle('sidebar-open');
-                });
-            }
-            
-            document.addEventListener('click', function(e) {
-                if (window.innerWidth <= 992 && 
-                    !sidebar.contains(e.target) && 
-                    (!mobileToggle || e.target !== mobileToggle)) {
-                    sidebar.classList.remove('active');
-                    body.classList.remove('sidebar-open');
-                }
-            });
-            
-            document.querySelectorAll('.sidebar-item').forEach(item => {
-                item.addEventListener('click', function() {
-                    if (window.innerWidth <= 992) {
-                        sidebar.classList.remove('active');
-                        body.classList.remove('sidebar-open');
-                    }
-                });
-            });
-            
-            window.addEventListener('resize', function() {
-                if (window.innerWidth > 992) {
-                    sidebar.classList.remove('active');
-                    body.classList.remove('sidebar-open');
-                }
-            });
-
             // Shape filter functionality
             const shapeFilter = document.getElementById('shapeFilter');
             if (shapeFilter) {
