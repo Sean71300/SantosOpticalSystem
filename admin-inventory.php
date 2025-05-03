@@ -618,18 +618,27 @@ $lowInventory = getLowInventoryProducts();
 
         <script>
             document.addEventListener('DOMContentLoaded', function() {
+                // Track all form submissions (edit/delete actions)
+                document.querySelectorAll('form').forEach(form => {
+                    form.addEventListener('submit', () => {
+                        sessionStorage.setItem('isFormAction', 'true');
+                    });
+                });
+
+                // Low inventory modal logic
                 const lowInventoryModalEl = document.getElementById('lowInventoryModal');
-                
-                // Always show modal on page load if low inventory exists
                 if (lowInventoryModalEl) {
-                    // Reset the flag on every page load
-                    sessionStorage.removeItem('lowInventoryShown');
-                    
-                    // Show modal only if not already shown during this page session
-                    if (!sessionStorage.getItem('lowInventoryShown')) {
+                    // Only show modal if:
+                    // 1. It's not a form submission reload
+                    // 2. It hasn't been shown in this session
+                    if (!sessionStorage.getItem('isFormAction') && 
+                        !sessionStorage.getItem('lowInventoryShown')) {
                         new bootstrap.Modal(lowInventoryModalEl).show();
                         sessionStorage.setItem('lowInventoryShown', 'true');
                     }
+                    
+                    // Clear form action flag after initial check
+                    sessionStorage.removeItem('isFormAction');
                 }
             });
         </script>
