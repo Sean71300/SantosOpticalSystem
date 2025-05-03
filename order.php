@@ -446,263 +446,332 @@ $conn->close();
     <?php include "sidebar.php"; ?>
 
     <div class="main-content">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2><i class="fas fa-shopping-cart me-2"></i>Orders Management</h2>
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addOrderModal">
-                <i class="fas fa-plus me-1"></i> Add New Order
-            </button>
-        </div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-shopping-cart me-2"></i>Orders Management</h2>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addOrderModal">
+            <i class="fas fa-plus me-1"></i> Add New Order
+        </button>
+    </div>
 
-        <div class="orders-container">
-            <form method="get" action="order.php" class="mb-4 filter-form">
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <label for="search" class="form-label">Search</label>
-                        <input type="text" class="form-control" id="search" name="search" 
-                               placeholder="Search orders or customers..." value="<?php echo htmlspecialchars($search); ?>">
-                    </div>
-                    <div class="col-md-3">
-                        <label for="branch" class="form-label">Filter by Branch</label>
-                        <select class="form-select" id="branch" name="branch">
-                            <option value="">All Branches</option>
-                            <?php 
-                            $branchesResult->data_seek(0); 
-                            while ($branchRow = $branchesResult->fetch_assoc()): ?>
-                                <option value="<?php echo $branchRow['BranchCode']; ?>" 
-                                    <?php echo ($branch == $branchRow['BranchCode'] ? 'selected' : ''); ?>>
-                                    <?php echo $branchRow['BranchName']; ?>
-                                </option>
-                            <?php endwhile; ?>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label for="status" class="form-label">Filter by Status</label>
-                        <select class="form-select" id="status" name="status">
-                            <option value="">All Statuses</option>
-                            <option value="Pending" <?php echo ($status == 'Pending' ? 'selected' : ''); ?>>Pending</option>
-                            <option value="Completed" <?php echo ($status == 'Completed' ? 'selected' : ''); ?>>Completed</option>
-                            <option value="Cancelled" <?php echo ($status == 'Cancelled' ? 'selected' : ''); ?>>Cancelled</option>                       
-                        </select>
-                    </div>
-                    <div class="col-md-2 d-flex align-items-end">
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="fas fa-filter me-1"></i> Filter
-                        </button>
-                    </div>
+    <div class="orders-container">
+        <form method="get" action="order.php" class="mb-4 filter-form">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label for="search" class="form-label">Search</label>
+                    <input type="text" class="form-control" id="search" name="search" 
+                           placeholder="Search orders or customers..." value="<?php echo htmlspecialchars($search); ?>">
                 </div>
-            </form>
+                <div class="col-md-3">
+                    <label for="branch" class="form-label">Filter by Branch</label>
+                    <select class="form-select" id="branch" name="branch">
+                        <option value="">All Branches</option>
+                        <?php 
+                        $branchesResult->data_seek(0); 
+                        while ($branchRow = $branchesResult->fetch_assoc()): ?>
+                            <option value="<?php echo $branchRow['BranchCode']; ?>" 
+                                <?php echo ($branch == $branchRow['BranchCode'] ? 'selected' : ''); ?>>
+                                <?php echo $branchRow['BranchName']; ?>
+                            </option>
+                        <?php endwhile; ?>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="status" class="form-label">Filter by Status</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="">All Statuses</option>
+                        <option value="Pending" <?php echo ($status == 'Pending' ? 'selected' : ''); ?>>Pending</option>
+                        <option value="Completed" <?php echo ($status == 'Completed' ? 'selected' : ''); ?>>Completed</option>
+                        <option value="Cancelled" <?php echo ($status == 'Cancelled' ? 'selected' : ''); ?>>Cancelled</option>                       
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-filter me-1"></i> Filter
+                    </button>
+                </div>
+            </div>
+        </form>
 
-            <?php if (!empty($orders)): ?>
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead class="table-light">
+        <?php if (!empty($orders)): ?>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Branch</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($orders as $order): ?>
                             <tr>
-                                <th>Order ID</th>
-                                <th>Customer</th>
-                                <th>Branch</th>
-                                <th>Date</th>
-                                <th>Status</th>
-                                <th>Actions</th>
+                                <td><?= htmlspecialchars($order['Orderhdr_id']) ?></td>
+                                <td><?= htmlspecialchars($order['CustomerName']) ?></td>
+                                <td><?= htmlspecialchars($order['BranchName']) ?></td>
+                                <td><?= date('M j, Y', strtotime($order['Created_dt'])) ?></td>
+                                <td>
+                                    <span class="badge 
+                                        <?= match($order['Status']) {
+                                            'Completed' => 'badge-complete',
+                                            'Cancelled' => 'badge-cancelled',
+                                            default => 'badge-pending'
+                                        } ?>">
+                                        <?= $order['Status'] ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary view-order-btn" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#orderDetailsModal"
+                                            data-order-id="<?= $order['Orderhdr_id'] ?>">
+                                        <i class="fas fa-eye"></i> View
+                                    </button>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+
+            <nav aria-label="Orders pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <?php if ($currentPage > 1): ?>
+                        <li class="page-item">
+                            <a class="page-link" href="?<?php 
+                                $newParams = $_GET;
+                                $newParams['page'] = $currentPage - 1;
+                                echo http_build_query($newParams); 
+                            ?>" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    <?php endif; ?>
+
+                    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                        <li class="page-item <?php echo ($i == $currentPage) ? 'active' : ''; ?>">
+                            <a class="page-link" href="?<?php 
+                                $newParams = $_GET;
+                                $newParams['page'] = $i;
+                                echo http_build_query($newParams); 
+                            ?>"><?php echo $i; ?></a>
+                        </li>
+                    <?php endfor; ?>
+
+                    <?php if ($currentPage < $totalPages): ?>
+                        <li class="page-item">
+                            <a class="page-link" href="?<?php 
+                                $newParams = $_GET;
+                                $newParams['page'] = $currentPage + 1;
+                                echo http_build_query($newParams); 
+                            ?>" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    <?php endif; ?>
+                </ul>
+            </nav>
+        <?php else: ?>
+            <div class="alert alert-info text-center">
+                <i class="fas fa-info-circle me-2"></i> No orders found.
+            </div>
+        <?php endif; ?>
+    </div>
+</div>
+
+<div class="modal fade" id="addOrderModal" tabindex="-1" aria-labelledby="addOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addOrderModalLabel">Create New Order</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="customerSearch" class="form-label">Search Customer</label>
+                    <input type="text" class="form-control" id="customerSearch" placeholder="Search by name or contact number...">
+                </div>
+                
+                <div class="customer-select-table">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Contact</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($orders as $order): ?>
+                            <?php
+                            $conn = connect();
+                            $customers = $conn->query("SELECT CustomerID, CustomerName, CustomerContact FROM customer ORDER BY CustomerName");
+                            while ($customer = $customers->fetch_assoc()): ?>
                                 <tr>
-                                    <td><?= htmlspecialchars($order['Orderhdr_id']) ?></td>
-                                    <td><?= htmlspecialchars($order['CustomerName']) ?></td>
-                                    <td><?= htmlspecialchars($order['BranchName']) ?></td>
-                                    <td><?= date('M j, Y', strtotime($order['Created_dt'])) ?></td>                                    <td>
-                                        <span class="badge 
-                                            <?= match($order['Status']) {
-                                                'Completed' => 'badge-complete',
-                                                'Cancelled' => 'badge-cancelled',
-                                                default => 'badge-pending'
-                                            } ?>">
-                                            <?= $order['Status'] ?>
-                                        </span>
-                                    </td>
+                                    <td><?= $customer['CustomerID'] ?></td>
+                                    <td><?= htmlspecialchars($customer['CustomerName']) ?></td>
+                                    <td><?= htmlspecialchars($customer['CustomerContact']) ?></td>
                                     <td>
-                                        <a href="orderDetails.php?id=<?= $order['Orderhdr_id'] ?>" 
-                                           class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-eye"></i> View
-                                        </a>
+                                        <button class="btn btn-sm btn-primary select-customer" 
+                                                data-customer-id="<?= $customer['CustomerID'] ?>"
+                                                data-customer-name="<?= htmlspecialchars($customer['CustomerName']) ?>">
+                                            Select
+                                        </button>
                                     </td>
                                 </tr>
-                            <?php endforeach; ?>
+                            <?php endwhile; 
+                            $conn->close();
+                            ?>
                         </tbody>
                     </table>
                 </div>
-
-                <nav aria-label="Orders pagination" class="mt-4">
-                    <ul class="pagination justify-content-center">
-                        <?php if ($currentPage > 1): ?>
-                            <li class="page-item">
-                                <a class="page-link" href="?<?php 
-                                    $newParams = $_GET;
-                                    $newParams['page'] = $currentPage - 1;
-                                    echo http_build_query($newParams); 
-                                ?>" aria-label="Previous">
-                                    <span aria-hidden="true">&laquo;</span>
-                                </a>
-                            </li>
-                        <?php endif; ?>
-
-                        <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                            <li class="page-item <?php echo ($i == $currentPage) ? 'active' : ''; ?>">
-                                <a class="page-link" href="?<?php 
-                                    $newParams = $_GET;
-                                    $newParams['page'] = $i;
-                                    echo http_build_query($newParams); 
-                                ?>"><?php echo $i; ?></a>
-                            </li>
-                        <?php endfor; ?>
-
-                        <?php if ($currentPage < $totalPages): ?>
-                            <li class="page-item">
-                                <a class="page-link" href="?<?php 
-                                    $newParams = $_GET;
-                                    $newParams['page'] = $currentPage + 1;
-                                    echo http_build_query($newParams); 
-                                ?>" aria-label="Next">
-                                    <span aria-hidden="true">&raquo;</span>
-                                </a>
-                            </li>
-                        <?php endif; ?>
-                    </ul>
-                </nav>
-            <?php else: ?>
-                <div class="alert alert-info text-center">
-                    <i class="fas fa-info-circle me-2"></i> No orders found.
-                </div>
-            <?php endif; ?>
-        </div>
-    </div>
-
-    <div class="modal fade" id="addOrderModal" tabindex="-1" aria-labelledby="addOrderModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addOrderModalLabel">Create New Order</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="customerSearch" class="form-label">Search Customer</label>
-                        <input type="text" class="form-control" id="customerSearch" placeholder="Search by name or contact number...">
-                    </div>
-                    
-                    <div class="customer-select-table">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Name</th>
-                                    <th>Contact</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php
-                                $conn = connect();
-                                $customers = $conn->query("SELECT CustomerID, CustomerName, CustomerContact FROM customer ORDER BY CustomerName");
-                                while ($customer = $customers->fetch_assoc()): ?>
-                                    <tr>
-                                        <td><?= $customer['CustomerID'] ?></td>
-                                        <td><?= htmlspecialchars($customer['CustomerName']) ?></td>
-                                        <td><?= htmlspecialchars($customer['CustomerContact']) ?></td>
-                                        <td>
-                                            <button class="btn btn-sm btn-primary select-customer" 
-                                                    data-customer-id="<?= $customer['CustomerID'] ?>"
-                                                    data-customer-name="<?= htmlspecialchars($customer['CustomerName']) ?>">
-                                                Select
-                                            </button>
-                                        </td>
-                                    </tr>
-                                <?php endwhile; 
-                                $conn->close();
-                                ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
+</div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const sidebar = document.getElementById('sidebar');
-            const mobileToggle = document.getElementById('mobileMenuToggle');
-            const body = document.body;
-            
-            if (mobileToggle) {
-                mobileToggle.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    sidebar.classList.toggle('active');
-                    body.classList.toggle('sidebar-open');
-                });
+<div class="modal fade" id="orderDetailsModal" tabindex="-1" aria-labelledby="orderDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="orderDetailsModalLabel">Order Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="orderDetailsContent">
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p>Loading order details...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const sidebar = document.getElementById('sidebar');
+        const mobileToggle = document.getElementById('mobileMenuToggle');
+        const body = document.body;
+        
+        if (mobileToggle) {
+            mobileToggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                sidebar.classList.toggle('active');
+                body.classList.toggle('sidebar-open');
+            });
+        }
+        
+        document.addEventListener('click', function(e) {
+            if (window.innerWidth <= 992 && 
+                !sidebar.contains(e.target) && 
+                (!mobileToggle || e.target !== mobileToggle)) {
+                sidebar.classList.remove('active');
+                body.classList.remove('sidebar-open');
             }
-            
-            document.addEventListener('click', function(e) {
-                if (window.innerWidth <= 992 && 
-                    !sidebar.contains(e.target) && 
-                    (!mobileToggle || e.target !== mobileToggle)) {
+        });
+        
+        document.querySelectorAll('.sidebar-item').forEach(item => {
+            item.addEventListener('click', function() {
+                if (window.innerWidth <= 992) {
                     sidebar.classList.remove('active');
                     body.classList.remove('sidebar-open');
                 }
             });
-            
-            document.querySelectorAll('.sidebar-item').forEach(item => {
-                item.addEventListener('click', function() {
-                    if (window.innerWidth <= 992) {
-                        sidebar.classList.remove('active');
-                        body.classList.remove('sidebar-open');
+        });
+        
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 992) {
+                sidebar.classList.remove('active');
+                body.classList.remove('sidebar-open');
+            }
+        });
+
+        const customerSearch = document.getElementById('customerSearch');
+        if (customerSearch) {
+            customerSearch.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const rows = document.querySelectorAll('.customer-select-table tbody tr');
+                
+                rows.forEach(row => {
+                    const name = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                    const contact = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+                    const id = row.querySelector('td:nth-child(1)').textContent.toLowerCase();
+                    
+                    if (name.includes(searchTerm) || contact.includes(searchTerm) || id.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
                     }
                 });
             });
-            
-            window.addEventListener('resize', function() {
-                if (window.innerWidth > 992) {
-                    sidebar.classList.remove('active');
-                    body.classList.remove('sidebar-open');
-                }
-            });
+        }
 
-            const customerSearch = document.getElementById('customerSearch');
-            if (customerSearch) {
-                customerSearch.addEventListener('input', function() {
-                    const searchTerm = this.value.toLowerCase();
-                    const rows = document.querySelectorAll('.customer-select-table tbody tr');
-                    
-                    rows.forEach(row => {
-                        const name = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
-                        const contact = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
-                        const id = row.querySelector('td:nth-child(1)').textContent.toLowerCase();
-                        
-                        if (name.includes(searchTerm) || contact.includes(searchTerm) || id.includes(searchTerm)) {
-                            row.style.display = '';
-                        } else {
-                            row.style.display = 'none';
-                        }
-                    });
-                });
-            }
-
-            document.querySelectorAll('.select-customer').forEach(button => {
-                button.addEventListener('click', function() {
-                    const customerId = this.getAttribute('data-customer-id');
-                    const customerName = this.getAttribute('data-customer-name');
-                    
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('addOrderModal'));
-                    modal.hide();
-                    
-                    window.location.href = `orderCreate.php?customer_id=${customerId}`;
-                });
+        document.querySelectorAll('.select-customer').forEach(button => {
+            button.addEventListener('click', function() {
+                const customerId = this.getAttribute('data-customer-id');
+                const customerName = this.getAttribute('data-customer-name');
+                
+                const modal = bootstrap.Modal.getInstance(document.getElementById('addOrderModal'));
+                modal.hide();
+                
+                window.location.href = `orderCreate.php?customer_id=${customerId}`;
             });
         });
-    </script>
+
+        const orderDetailsModal = document.getElementById('orderDetailsModal');
+        if (orderDetailsModal) {
+            orderDetailsModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const orderId = button.getAttribute('data-order-id');
+                const modalBody = orderDetailsModal.querySelector('.modal-body');
+                
+                modalBody.innerHTML = `
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p>Loading order details...</p>
+                    </div>
+                `;
+                
+                fetch(`orderDetails.php?id=${orderId}`)
+                    .then(response => response.text())
+                    .then(data => {
+                        modalBody.innerHTML = data;
+                    })
+                    .catch(error => {
+                        modalBody.innerHTML = `
+                            <div class="alert alert-danger">
+                                Failed to load order details. Please try again.
+                            </div>
+                        `;
+                        console.error('Error loading order details:', error);
+                    });
+            });
+            
+            orderDetailsModal.addEventListener('hidden.bs.modal', function() {
+                const modalBody = orderDetailsModal.querySelector('.modal-body');
+                modalBody.innerHTML = `
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p>Loading order details...</p>
+                    </div>
+                `;
+            });
+        }
+    });
+</script>
 </body>
 </html>
