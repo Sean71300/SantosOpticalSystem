@@ -58,12 +58,17 @@
               <div class="col-12 col-sm-6 col-md-4 col-lg-3">
                 <div class="branch-card" data-aos="fade-up" data-aos-delay="100">
                   <div class="image-container">
-                    <img src="Images/pascual st.jpg" alt="Pascual St, Malabon" class="branch-image">
-                    <img src="Images/loc.png" alt="Map Icon" class="map-icon">
+                    <a href="https://maps.app.goo.gl/8gff1kz1FyvZ6FCK8" target="_blank">
+                      <img src="Images/pascual st.jpg" alt="Pascual St, Malabon" class="branch-image">
+                      <img src="Images/loc.png" alt="Map Icon" class="map-icon">
+                    </a>
                   </div>
                   <div class="branch-info">
+                    <strong>SO Santos Optical SBP</strong><br>
+                    Near Malabon City Hall<br>
                     Pascual St, Malabon<br>
-                    02 88183480
+                    ☎️ 02 88183480<br>
+                    <small>Beside 7eleven Malabon City</small>
                   </div>
                 </div>
               </div>
@@ -71,12 +76,17 @@
               <div class="col-12 col-sm-6 col-md-4 col-lg-3">
                 <div class="branch-card" data-aos="fade-up" data-aos-delay="200">
                   <div class="image-container">
-                    <img src="Images/quiapo.jpg" alt="Quiapo, Manila" class="branch-image">
-                    <img src="Images/loc.png" alt="Map Icon" class="map-icon">
+                    <a href="https://maps.app.goo.gl/FCzggs1hSusNxnMq7" target="_blank">
+                      <img src="Images/bayan.jpg" alt="Bayan, Malabon" class="branch-image">
+                      <img src="Images/loc.png" alt="Map Icon" class="map-icon">
+                    </a>
                   </div>
                   <div class="branch-info">
-                    Quiapo, Manila<br>
-                    09328447068
+                    <strong>SO Santos Optical Symaco</strong><br>
+                    In front of Mcdonalds<br>
+                    Bayan, Malabon<br>
+                    ☎️ 02 86321972<br>
+                    <small>Infront of MCDO Malabon City</small>
                   </div>
                 </div>
               </div>
@@ -84,12 +94,17 @@
               <div class="col-12 col-sm-6 col-md-4 col-lg-3">
                 <div class="branch-card" data-aos="fade-up" data-aos-delay="300">
                   <div class="image-container">
-                    <img src="Images/bayan.jpg" alt="Bayan, Malabon" class="branch-image">
-                    <img src="Images/loc.png" alt="Map Icon" class="map-icon">
+                    <a href="https://maps.app.goo.gl/JGjVQRtRNCQYwkus6" target="_blank">
+                      <img src="Images/quiapo.jpg" alt="Quiapo, Manila" class="branch-image">
+                      <img src="Images/loc.png" alt="Map Icon" class="map-icon">
+                    </a>
                   </div>
                   <div class="branch-info">
-                    Bayan, Malabon<br>
-                    02 86321972
+                    <strong>SO Santos Optical Quiapo</strong><br>
+                    #536 Quiapo Boulevard<br>
+                    Manila<br>
+                    ☎️ 09328447068<br>
+                    <small>Near Reddoorz Hotel opposite side of Quiapo Church</small>
                   </div>
                 </div>
               </div>
@@ -97,12 +112,17 @@
               <div class="col-12 col-sm-6 col-md-4 col-lg-3">
                 <div class="branch-card" data-aos="fade-up" data-aos-delay="400">
                   <div class="image-container">
-                    <img src="Images/tangos.png" alt="Tangos, Navotas" class="branch-image">
-                    <img src="Images/loc.png" alt="Map Icon" class="map-icon">
+                    <a href="https://maps.app.goo.gl/riu7zr7VhunhW1Tq8" target="_blank">
+                      <img src="Images/tangos.png" alt="Tangos, Navotas" class="branch-image">
+                      <img src="Images/loc.png" alt="Map Icon" class="map-icon">
+                    </a>
                   </div>
                   <div class="branch-info">
+                    <strong>SO Santos Optical Tangos</strong><br>
+                    Near Tangos Market<br>
                     Tangos, Navotas<br>
-                    09328447068
+                    ☎️ 09328447068<br>
+                    <small>Near Tangos Market Navotas City</small>
                   </div>
                 </div>
               </div>
