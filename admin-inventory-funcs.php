@@ -785,9 +785,9 @@ function confirmEditProduct() {
         mysqli_stmt_close($stmt1);
         
         // Update productbranchmaster table
-        $sql2 = "UPDATE ProductBranchMaster SET ProductBranchID = ?, BranchCode = ?, Stocks = ?, Avail_FL = ?, Upd_by = ?, Upd_dt = ? WHERE ProductID = ?";
+        $sql2 = "UPDATE ProductBranchMaster SET BranchCode = ?, Stocks = ?, Avail_FL = ?, Upd_by = ?, Upd_dt = ? WHERE ProductID = ?";
         $stmt2 = mysqli_prepare($link, $sql2);
-        mysqli_stmt_bind_param($stmt2, "sssssss", $productBranchID, $branchCode, $count, $avail_FL, $employeeName, $upd_dt, $productID);
+        mysqli_stmt_bind_param($stmt2, "ssssss", $branchCode, $count, $avail_FL, $employeeName, $upd_dt, $productID);
         if (!mysqli_stmt_execute($stmt2)) {
             $success = false;
         }
