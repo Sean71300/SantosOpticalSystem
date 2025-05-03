@@ -671,84 +671,6 @@ $conn->close();
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize Bootstrap tooltips
-            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl)
-            });
-
-            // Sidebar toggle functionality
-            const sidebar = document.getElementById('sidebar');
-            const mobileToggle = document.getElementById('mobileMenuToggle');
-            const body = document.body;
-            
-            if (mobileToggle) {
-                mobileToggle.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    sidebar.classList.toggle('active');
-                    body.classList.toggle('sidebar-open');
-                });
-            }
-            
-            document.addEventListener('click', function(e) {
-                if (window.innerWidth <= 992 && 
-                    !sidebar.contains(e.target) && 
-                    (!mobileToggle || e.target !== mobileToggle)) {
-                    sidebar.classList.remove('active');
-                    body.classList.remove('sidebar-open');
-                }
-            });
-            
-            document.querySelectorAll('.sidebar-item').forEach(item => {
-                item.addEventListener('click', function() {
-                    if (window.innerWidth <= 992) {
-                        sidebar.classList.remove('active');
-                        body.classList.remove('sidebar-open');
-                    }
-                });
-            });
-            
-            window.addEventListener('resize', function() {
-                if (window.innerWidth > 992) {
-                    sidebar.classList.remove('active');
-                    body.classList.remove('sidebar-open');
-                }
-            });
-
-            // Customer search functionality
-            const customerSearch = document.getElementById('customerSearch');
-            if (customerSearch) {
-                customerSearch.addEventListener('input', function() {
-                    const searchTerm = this.value.toLowerCase();
-                    const rows = document.querySelectorAll('.customer-select-table tbody tr');
-                    
-                    rows.forEach(row => {
-                        const name = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
-                        const contact = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
-                        const id = row.querySelector('td:nth-child(1)').textContent.toLowerCase();
-                        
-                        if (name.includes(searchTerm) || contact.includes(searchTerm) || id.includes(searchTerm)) {
-                            row.style.display = '';
-                        } else {
-                            row.style.display = 'none';
-                        }
-                    });
-                });
-            }
-
-            // Customer selection
-            document.querySelectorAll('.select-customer').forEach(button => {
-                button.addEventListener('click', function() {
-                    const customerId = this.getAttribute('data-customer-id');
-                    const customerName = this.getAttribute('data-customer-name');
-                    
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('addOrderModal'));
-                    modal.hide();
-                    
-                    window.location.href = `orderCreate.php?customer_id=${customerId}`;
-                });
-            });
-
             // Order details modal
             const orderDetailsModal = document.getElementById('orderDetailsModal');
             if (orderDetailsModal) {
@@ -756,15 +678,6 @@ $conn->close();
                     const button = event.relatedTarget;
                     const orderId = button.getAttribute('data-order-id');
                     const modalBody = orderDetailsModal.querySelector('.modal-body');
-                    
-                    modalBody.innerHTML = `
-                        <div class="text-center">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                            <p>Loading order details...</p>
-                        </div>
-                    `;
                     
                     // Load order details via AJAX
                     fetch(`orderDetails.php?id=${orderId}`)
@@ -809,6 +722,6 @@ $conn->close();
                 });
             });
         });
-    </script>
+        </script>
 </body>
 </html>
