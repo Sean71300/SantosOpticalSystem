@@ -245,17 +245,7 @@ $salesData = getSalesOverviewData();
                     </div>
                 </div>
                 
-                <!-- Claimed Orders Card -->
-                <div class="col-md-3">
-                    <div class="dashboard-card">
-                        <div class="card-icon text-success">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
-                        <h5>Claimed Orders</h5>
-                        <div class="stat-number"><?php echo number_format($claimedOrderCount); ?></div>
-                        <a href="order.php?status=Complete" class="btn btn-sm btn-outline-success mt-2">View Claimed</a>
-                    </div>
-                </div>
+                <!-- Claimed Orders Card -->                
             </div>
             
             <!-- Sales Overview Section -->
