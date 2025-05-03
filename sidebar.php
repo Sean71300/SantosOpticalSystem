@@ -56,12 +56,14 @@ else {
                 <i class="fas fa-user-tie"></i> 
                 <span class="sidebar-item-text">Manage Employees</span>
             </a>
-                
             <a href="admin-inventory.php" class="sidebar-item <?php echo ($current_page == 'admin-inventory.php') ? 'active' : ''; ?>">
                 <i class="fas fa-boxes"></i> 
                 <span class="sidebar-item-text">Manage Inventory</span>
             </a>
-
+            <a href="admin-brands.php" class="sidebar-item <?php echo ($current_page == 'admin-brands.php') ? 'active' : ''; ?>">
+                <i class="fas fa-tags"></i> 
+                <span class="sidebar-item-text">Manage Brands</span>
+            </a>
             <a href="order.php" class="sidebar-item <?php echo ($current_page == 'order.php') ? 'active' : ''; ?>">
                 <i class="fas fa-shopping-cart"></i> 
                 <span class="sidebar-item-text">Manage Orders</span>

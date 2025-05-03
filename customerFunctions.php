@@ -5,7 +5,9 @@
     function customerData($sort = 'CustomerID', $order = 'ASC')
         {
             $isAdmin = false;
-            $isAdmin = isset($_SESSION['roleid']) && $_SESSION['roleid'] === 1;        
+            $isOptometrist = false;
+            $isAdmin = isset($_SESSION['roleid']) && $_SESSION['roleid'] === 1;
+            $isOptometrist = isset($_SESSION['roleid']) && $_SESSION['roleid'] === 3;        
             
             $customerData = "";
             $connection = connect();
@@ -42,13 +44,20 @@
 
                             ";
                         }
+                    else if ($isOptometrist) {
+                        echo 
+                            "
+                                <a class='btn btn-primary btn-sm' href='optometrist-medicalhistory.php?CustomerID={$row['CustomerID']}'>Medical History</a>
+                            ";
+                    } else {
                         echo "
                             <button class='btn btn-info btn-sm view-orders' data-customer-id='$row[CustomerID]'>Orders</button>
-                        
                     </td>
                 </tr>";
+                }
             }            
         }
+        
 
     // New function to get ordered products by customer
     function getCustomerOrders($customerID) {

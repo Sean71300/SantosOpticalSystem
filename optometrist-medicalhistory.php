@@ -3,6 +3,163 @@ include 'ActivityTracker.php';
 include 'customerFunctions.php'; 
 include 'loginChecker.php';
 include_once 'setup.php';
+
+function getAllMedicalRecords($searchTerm = null) {
+    $connection = connect();
+
+    $sql = "SELECT cmh.*, c.CustomerName 
+    FROM customerMedicalHistory cmh
+    JOIN customer c ON cmh.CustomerID = c.CustomerID
+    WHERE c.CustomerName LIKE ?
+    ORDER BY cmh.visit_date DESC";
+
+    $stmt = $connection->prepare($sql);
+    $searchTerm = "%$searchTerm%";
+    $stmt->bind_param("s", $searchTerm);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows > 0) {
+        echo '<div class="form-container">';
+        echo '<div class="d-flex justify-content-between align-items-center mb-4">';
+        echo '<h3><i class="fas fa-calendar-check me-2"></i> All Medical History Records</h3>';
+        echo '</div>';
+
+        // Search Form
+        echo '<form method="GET" class="mb-4">';
+        echo '<div class="input-group">';
+        echo '<input type="text" name="search" class="form-control" placeholder="Search patient name..." 
+               value="'.htmlspecialchars($_GET['search'] ?? '').'">';
+        echo '<button type="submit" class="btn btn-primary">';
+        echo '<i class="fas fa-search"></i> Search</button>';
+        echo '</div>';
+        echo '</form>';
+            
+        while ($row = $result->fetch_assoc()) {
+            echo '<div class="medical-record-card mb-4 p-4 border rounded">';
+            echo '<div class="customer-header mb-4">';
+            echo '<h4 class="mb-1">'.htmlspecialchars($row['CustomerName']).'</h4>';
+            echo '<small class="text-muted">Customer ID: '.htmlspecialchars($row['CustomerID']).'</small>';
+            echo '</div>';
+            echo '<h5 class="mb-3"><i class="fas fa-calendar-day me-2"></i> '.htmlspecialchars($row['visit_date']).'</h5>';
+            // Basic Information
+            echo '<div class="row mb-3">';
+            echo '<div class="col-md-6">';
+            echo '<label class="form-label">Eye Condition</label>';
+            echo '<p class="form-control-static">'.(!empty($row['eye_condition']) ? htmlspecialchars($row['eye_condition']) : 'No record.').'</p>';
+            echo '</div>';
+            echo '<div class="col-md-6">';
+            echo '<label class="form-label">Systemic Diseases</label>';
+            echo '<p class="form-control-static">'.(!empty($row['systemic_diseases']) ? htmlspecialchars($row['systemic_diseases']) : 'No record.').'</p>';
+            echo '</div>';
+            echo '</div>';
+                
+            // Visual Acuity
+            echo '<div class="row mb-3">';
+            echo '<div class="col-md-4">';
+            echo '<label class="form-label">Visual Acuity (Right)</label>';
+            echo '<p class="form-control-static">'.(!empty($row['visual_acuity_right']) ? htmlspecialchars($row['visual_acuity_right']) : 'No record.').'</p>';
+            echo '</div>';
+            echo '<div class="col-md-4">';
+            echo '<label class="form-label">Visual Acuity (Left)</label>';
+            echo '<p class="form-control-static">'.(!empty($row['visual_acuity_left']) ? htmlspecialchars($row['visual_acuity_left']) : 'No record.').'</p>';
+            echo '</div>';
+            echo '<div class="col-md-4">';
+            echo '<label class="form-label">Pupillary Distance (mm)</label>';
+            echo '<p class="form-control-static">'.(!empty($row['pupillary_distance']) ? htmlspecialchars($row['pupillary_distance']) : 'No record.').'</p>';
+            echo '</div>';
+            echo '</div>';
+            
+            // Intraocular Pressure
+            echo '<div class="row mb-3">';
+            echo '<div class="col-md-6">';
+            echo '<label class="form-label">Intraocular Pressure - Right (mmHg)</label>';
+            echo '<p class="form-control-static">'.(!empty($row['intraocular_pressure_right']) ? htmlspecialchars($row['intraocular_pressure_right']) : 'No record.').'</p>';
+            echo '</div>';
+            echo '<div class="col-md-6">';
+            echo '<label class="form-label">Intraocular Pressure - Left (mmHg)</label>';
+            echo '<p class="form-control-static">'.(!empty($row['intraocular_pressure_left']) ? htmlspecialchars($row['intraocular_pressure_left']) : 'No record.').'</p>';
+            echo '</div>';
+            echo '</div>';
+            
+            // Refraction
+            echo '<div class="row mb-3">';
+            echo '<div class="col-md-6">';
+            echo '<label class="form-label">Refraction (Right)</label>';
+            echo '<p class="form-control-static">'.(!empty($row['refraction_right']) ? htmlspecialchars($row['refraction_right']) : 'No record.').'</p>';
+            echo '</div>';
+            echo '<div class="col-md-6">';
+            echo '<label class="form-label">Refraction (Left)</label>';
+            echo '<p class="form-control-static">'.(!empty($row['refraction_left']) ? htmlspecialchars($row['refraction_left']) : 'No record.').'</p>';
+            echo '</div>';
+            echo '</div>';
+            
+            // Medications and Allergies
+            echo '<div class="row mb-3">';
+            echo '<div class="col-md-6">';
+            echo '<label class="form-label">Current Medications</label>';
+            echo '<p class="form-control-static">'.(!empty($row['current_medications']) ? nl2br(htmlspecialchars($row['current_medications'])) : 'No record.').'</p>';
+            echo '</div>';
+            echo '<div class="col-md-6">';
+            echo '<label class="form-label">Allergies</label>';
+            echo '<p class="form-control-static">'.(!empty($row['allergies']) ? nl2br(htmlspecialchars($row['allergies'])) : 'No record.').'</p>';
+            echo '</div>';
+            echo '</div>';
+            
+            // Family History and Previous Surgeries
+            echo '<div class="row mb-3">';
+            echo '<div class="col-md-6">';
+            echo '<label class="form-label">Family Eye History</label>';
+            echo '<p class="form-control-static">'.(!empty($row['family_eye_history']) ? nl2br(htmlspecialchars($row['family_eye_history'])) : 'No record.').'</p>';
+            echo '</div>';
+            echo '<div class="col-md-6">';
+            echo '<label class="form-label">Previous Eye Surgeries</label>';
+            echo '<p class="form-control-static">'.(!empty($row['previous_eye_surgeries']) ? nl2br(htmlspecialchars($row['previous_eye_surgeries'])) : 'No record.').'</p>';
+            echo '</div>';
+            echo '</div>';
+            
+            // Examinations
+            echo '<div class="row mb-3">';
+            echo '<div class="col-md-6">';
+            echo '<label class="form-label">Corneal Topography</label>';
+            echo '<p class="form-control-static">'.(!empty($row['corneal_topography']) ? nl2br(htmlspecialchars($row['corneal_topography'])) : 'No record.').'</p>';
+            echo '</div>';
+            echo '<div class="col-md-6">';
+            echo '<label class="form-label">Fundus Examination</label>';
+            echo '<p class="form-control-static">'.(!empty($row['fundus_examination']) ? nl2br(htmlspecialchars($row['fundus_examination'])) : 'No record.').'</p>';
+            echo '</div>';
+            echo '</div>';
+            
+            // Additional Notes
+            if (!empty($row['additional_notes'])) {
+                echo '<div class="row mb-3">';
+                echo '<div class="col-12">';
+                echo '<label class="form-label">Additional Notes</label>';
+                echo '<p class="form-control-static">'.nl2br(htmlspecialchars($row['additional_notes'])).'</p>';
+                echo '</div>';
+                echo '</div>';
+            }
+            echo '</div>'; // Close medical-record-card
+            }
+            echo '</div>'; // Close form-container
+        } else {
+            // Search Form (shown even when no results)
+        echo '<form method="GET" class="mb-4">';
+        echo '<div class="input-group">';
+        echo '<input type="text" name="search" class="form-control" placeholder="Search patient name..." 
+               value="'.htmlspecialchars($_GET['search'] ?? '').'">';
+        echo '<button type="submit" class="btn btn-primary">';
+        echo '<i class="fas fa-search"></i> Search</button>';
+        echo '</div>';
+        echo '</form>';
+        
+        $message = isset($_GET['search']) ? 
+            'No records found for "'.htmlspecialchars($_GET['search']).'"' :
+            'No medical records found in the system.';
+        echo '<div class="alert alert-info">'.$message.'</div>';
+    }
+    $connection->close();
+}
 ?>
 
 <!DOCTYPE html>
@@ -68,87 +225,31 @@ include_once 'setup.php';
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             padding: 20px;
         }
-        /* Sorting styles */
-        .sortable {
-            cursor: pointer;
-            position: relative;
-            padding-right: 25px;
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            width: calc(100% - 250px);
         }
-        .sortable:hover {
-            background-color: #f8f9fa;
+        .form-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 30px;
         }
-        .sort-icon {
-            position: absolute;
-            right: 8px;
-            top: 50%;
-            transform: translateY(-50%);
-            display: none;
+        .form-label {
+            font-weight: 500;
         }
-        .sortable.active .sort-icon {
-            display: inline-block;                
-        }     
-        .table th { white-space: nowrap; }
-        .table td { vertical-align: middle; }
     </style>
 </head>
 <body>
     <?php include "sidebar.php"?>
 
-    <div class="container mt-5">
-    <i class="fa-solid fa-notes-medical me-2"></i><h2 class="mb-4">Customer Medical Records</h2>
-        
-        <div class="table-responsive">
-            <table class="table table-bordered table-hover">
-                <thead class="table-light">
-                    <tr>
-                        <?php
-                        // Define columns in desired order
-                        $columns = [
-                            'history_id', 'CustomerID', 'CustomerName', 'visit_date',
-                            'eye_condition', 'current_medications', 'allergies',
-                            'family_eye_history', 'previous_eye_surgeries', 'systemic_diseases',
-                            'visual_acuity_right', 'visual_acuity_left',
-                            'intraocular_pressure_right', 'intraocular_pressure_left',
-                            'refraction_right', 'refraction_left', 'pupillary_distance',
-                            'corneal_topography', 'fundus_examination', 'additional_notes',
-                            'created_at', 'updated_at'
-                        ];
-                        
-                        foreach ($columns as $col) {
-                            $header = ucwords(str_replace('_', ' ', $col));
-                            echo "<th>$header</th>";
-                        }
-                        ?>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    $conn = connect();
-                    $query = "SELECT m.*, c.CustomerName 
-                              FROM customerMedicalHistory m
-                              JOIN customer c ON m.CustomerID = c.CustomerID
-                              ORDER BY m.visit_date DESC";
-                    
-                    $result = mysqli_query($conn, $query);
-
-                    if(mysqli_num_rows($result) > 0) {
-                        while($row = mysqli_fetch_assoc($result)) {
-                            echo "<tr>";
-                            foreach ($columns as $col) {
-                                $value = $row[$col] ?? '';
-                                $display_value = empty(trim($value)) ? 'No record.' : htmlspecialchars($value);
-                                echo "<td>$display_value</td>";
-                            }
-                            echo "</tr>";
-                        }
-                    } else {
-                        echo "<tr><td colspan='" . count($columns) . "' class='text-center'>No medical records found</td></tr>";
-                    }
-                    
-                    $conn->close();
-                    ?>
-                </tbody>
-            </table>
+    <div class="main-content">
+        <div class="form-container">
+            <?php
+            $searchTerm = $_GET['search'] ?? null;
+            getAllMedicalRecords($searchTerm); 
+            ?>
         </div>
     </div>
 
