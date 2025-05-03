@@ -20,7 +20,7 @@
     /* Enhanced Carousel styling */
     #eyeglassCarousel {
         width: 100%;
-        margin: 0;
+        margin: 0 auto;
     }
     
     .carousel-inner {
@@ -39,7 +39,7 @@
         height: 100%;
         object-fit: contain;
         background-color: #f8f9fa;
-        padding: 0;
+        padding: 0 5%;
     }
     
     .carousel-control-prev,
@@ -61,14 +61,12 @@
         transition: transform 0.6s ease-in-out;
     }
     
-    /* Vision Statement Section - Now Flush with Carousel */
+    /* New Vision Statement Section */
     .vision-statement {
         background-color: #f8f9fa;
-        padding: 2rem 0;
+        padding: 3rem 0;
         text-align: center;
-        margin: 0;
-        border-top: 1px solid #e9ecef;
-        border-bottom: 1px solid #e9ecef;
+        margin-top: -1px;
     }
     
     .vision-text {
@@ -78,26 +76,41 @@
         color: #2c3e50;
         letter-spacing: 1px;
         line-height: 1.3;
-        margin-bottom: 0.5rem;
+        position: relative;
+        display: inline-block;
+        padding: 0 2rem;
+    }
+    
+    .vision-text:before, .vision-text:after {
+        content: "❝";
+        position: absolute;
+        font-size: 4rem;
+        color: rgba(44, 62, 80, 0.1);
+        line-height: 0;
+    }
+    
+    .vision-text:before {
+        left: -10px;
+        top: 30px;
+    }
+    
+    .vision-text:after {
+        right: -10px;
+        bottom: 20px;
+        transform: rotate(180deg);
     }
     
     .vision-subtext {
         font-family: 'Arial', sans-serif;
         font-size: 1rem;
         color: #7f8c8d;
+        margin-top: 1rem;
         letter-spacing: 2px;
         text-transform: uppercase;
     }
     
-    /* Remove all gaps */
-    body {
-        margin: 0;
-        padding: 0;
-    }
-    
-    header {
-        margin: 0;
-        padding: 0;
+    .container-fluid.py-5 {
+        padding-top: 2rem !important;
     }
 </style>
 </head>
@@ -120,18 +133,26 @@
                     <img src="Images/cp4.png" class="d-block w-100" alt="Eyeglass Sale 4">
                 </div>
             </div>
+
+            <button class="carousel-control-prev" type="button" data-bs-target="#eyeglassCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#eyeglassCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
         </div>
     </header>
 
-    <!-- Vision Statement - Now flush with carousel -->
+    <!-- New Vision Statement Section -->
     <div class="vision-statement" data-aos="fade-up">
         <div class="container">
             <div class="vision-text">We value your sight. We care.</div>
-            <div class="vision-subtext">QUALITY VISION FOR QUALITY LIFE</div>
+            <div class="vision-subtext">Quality Vision for Quality Life</div>
         </div>
     </div>
 
-    <!-- Rest of your content remains exactly the same -->
     <div class="container-fluid py-5" style="background-color: #fdfdfd;" data-aos="fade-up">
         <div class="container text-center my-4">
             <div class="row justify-content-center">
@@ -142,4 +163,146 @@
                     <button class="category-btn new-arrivals">NEW ARRIVALS</button>
                 </div>
             </div>
-            [rest of your existing HTML...]
+            <div class="row justify-content-center">
+                <div class="col-md-4 col-sm-6 text-center">
+                    <img src="Images/imgm1.png" alt="Minima M608" class="product-img" data-aos="fade-up">
+                </div>
+                <div class="col-md-4 col-sm-6 text-center">
+                    <img src="Images/imgm2.png" alt="Paul Hueman" class="product-img" data-aos="fade-up" data-aos-delay="200">
+                </div>
+                <div class="col-md-4 col-sm-6 text-center">
+                    <img src="Images/imgm3.png" alt="Paul Hueman PHF" class="product-img" data-aos="fade-up" data-aos-delay="400">
+                </div>
+            </div>
+            <div class="text-center my-4" data-aos="fade-up">
+                <a href="product-gallery.php" class="see-more-btn">SEE MORE</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid py-5" style="background-color: #e0e0e0;" data-aos="fade-up">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6" data-aos="fade-right">
+                    <img src="Images/imgs.jpg" alt="Our Services" class="service-img">
+                </div>
+                <div class="col-lg-6 text-content" data-aos="fade-left">
+                    <h2 class="service-title">OUR SERVICES</h2>
+                    <p class="service-text">
+                        We provide high-quality eyewear with expert consultations, premium lenses, 
+                        and stylish frames to match your personality. Explore our wide range of services today!
+                    </p>
+                    <div class="d-flex justify-content-end">
+                        <a href="ourservices.php" class="nav-button">KNOW MORE</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid py-5" style="background-color: white;" data-aos="fade-up">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h2 class="fw-bold">ABOUT US</h2>
+                    <p class="about-text">
+                        Know and learn more about PBV Santos Optical!
+                    </p>
+                    <a href="aboutus.php" class="btn-see-all">SEE ALL <span>></span></a>
+                </div>
+                <div class="col-lg-6 text-center" data-aos="fade-left">
+                    <img src="Images/imgabt.jpg" alt="About Us Image" class="img-fluid rounded">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid text-center bg-light vh-100 d-flex flex-column justify-content-center" style="background-color: #f8f5f2; height: 100vh;" data-aos="fade-up">
+        <h2 class="fw-bold pb-3 pt-5">OUR LOCATION</h2>
+        <div class="ratio ratio-16x9 w-75 mx-auto">
+            <iframe 
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d768.9767236191218!2d120.95072416949931!3d14.6581210991147!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397b452e915147b%3A0x910e6ce82d8b5bd7!2sSantos%20Optical!5e1!3m2!1sen!2sph!4v1741535090106!5m2!1sen!2sph" 
+                class="w-100 h-100 border-0" 
+                allowfullscreen="" 
+                loading="lazy" 
+                referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
+        </div>
+    </div>
+
+    <footer class="py-5 border-top mt-5 pt-4" style="background-color: #ffffff; margin-top: 50px; border-color: #ffffff;">
+        <div class="container">
+            <div class="row text-center text-md-start">
+                <div class="col-md-3 mb-3 mb-md-0 text-center">
+                    <img src="Images/logo.png" alt="Logo" width="200">
+                </div>
+
+                <div class="col-md-3 mb-3 mb-md-0">
+                    <h6 class="fw-bold">PRODUCTS</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-dark text-decoration-none">Frames</a></li>
+                        <li><a href="#" class="text-dark text-decoration-none">Sunglasses</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-md-3 mb-3 mb-md-0">
+                    <h6 class="fw-bold">About</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="aboutus.php" class="text-dark text-decoration-none">About Us</a></li>
+                        <li><a href="ourservices.php" class="text-dark text-decoration-none">Services</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-md-3">
+                    <h6 class="fw-bold">CONTACT US!</h6>
+                    <p class="mb-1">Address: #6 Rizal Avenue Extension, Brgy. San Agustin, Malabon City</p>
+                    <p class="mb-1">Phone: 027-508-4792</p>
+                    <p class="mb-1">Cell: 0932-844-7068</p>
+                    <p>Email: <a href="mailto:Santosoptical@gmail.com" class="text-dark">Santosoptical@gmail.com</a></p>
+                </div>
+            </div>
+            <div class="container-fluid text-center py-3" style="background-color: white">
+                <p class="m-0">COPYRIGHT &copy; SANTOS OPTICAL co., ltd. ALL RIGHTS RESERVED.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            AOS.init({
+                duration: 800,
+                easing: 'ease-in-out',
+                once: true
+            });
+            
+            var myCarousel = document.querySelector('#eyeglassCarousel');
+            var carousel = new bootstrap.Carousel(myCarousel, {
+                interval: 3000,
+                wrap: true
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true
+        });
+        
+        var myCarousel = document.querySelector('#eyeglassCarousel');
+        var carousel = new bootstrap.Carousel(myCarousel, {
+            interval: 3000,
+            wrap: true,
+            ride: 'carousel',
+            pause: false
+        });
+        
+        myCarousel.addEventListener('slid.bs.carousel', function() {
+            carousel.cycle();
+        });
+    });
+    </script>
+</body>
+</html>
