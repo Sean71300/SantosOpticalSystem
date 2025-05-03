@@ -301,6 +301,26 @@
                 font-weight: 600;
                 color: #6c757d;
             }
+            
+            .badge.available {
+                background-color: #d1e7dd;
+                color: #0f5132;
+            }
+            
+            .badge.not-available {
+                background-color: #f8d7da;
+                color: #842029;
+            }
+            
+            .badge.low-stock {
+                background-color: #fff3cd;
+                color: #664d03;
+            }
+            
+            .list-group-item {
+                background-color: transparent;
+                border-color: rgba(0,0,0,0.05);
+            }
         </style>
     </head>
 
@@ -321,16 +341,21 @@
                     </div>
                     <div class="modal-body p-4">
                         <div class="row g-4">
+                         
                             <div class="col-md-6">
                                 <div class="product-image-container">
                                     <img id="modalProductImage" src="" class="img-fluid mh-100" alt="Product Image" style="max-height: 300px; width: auto; object-fit: contain;">
                                 </div>
                             </div>
                             
+              
                             <div class="col-md-6">
                                 <div class="d-flex flex-column h-100">
                                     <div class="mb-3 border-bottom pb-3">
                                         <h3 id="modalProductName" class="fw-bold mb-2"></h3>
+                                        <div>
+                                            <span id="modalProductStock" class="badge rounded-pill fs-6"></span>
+                                        </div>
                                     </div>
                                     
                                     <div class="flex-grow-1">
@@ -354,6 +379,7 @@
                                         </ul>
                                     </div>
                                     
+                         
                                     <div class="mt-auto pt-3 border-top">
                                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                                             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
@@ -533,6 +559,7 @@
                 const productCards = document.querySelectorAll('.product-card');
                 const searchForm = document.getElementById('searchForm');
                 
+       
                 const productModal = document.getElementById('productModal');
                 if (productModal) {
                     productModal.addEventListener('show.bs.modal', function(event) {
@@ -543,8 +570,10 @@
                         const productCategory = button.getAttribute('data-product-category');
                         const productMaterial = button.getAttribute('data-product-material');
                         const productPrice = button.getAttribute('data-product-price');
+                        const productStock = parseInt(button.getAttribute('data-product-stock'));
                         const productFaceShape = button.getAttribute('data-product-faceshape');
                         
+                      
                         document.getElementById('modalProductName').textContent = productName;
                         document.getElementById('modalProductImage').src = productImage;
                         document.getElementById('modalProductImage').alt = productName;
@@ -552,6 +581,17 @@
                         document.getElementById('modalProductMaterial').textContent = productMaterial;
                         document.getElementById('modalProductPrice').textContent = productPrice;
                         document.getElementById('modalProductFaceShape').textContent = productFaceShape;
+                        
+                        // Update stock badge
+                        const stockBadge = document.getElementById('modalProductStock');
+                        if (productStock > 0) {
+                            stockBadge.textContent = productStock + ' in stock';
+                            stockBadge.className = 'badge rounded-pill fs-6 ' + 
+                                (productStock < 5 ? 'low-stock' : 'available');
+                        } else {
+                            stockBadge.textContent = 'Out of stock';
+                            stockBadge.className = 'badge rounded-pill fs-6 not-available';
+                        }
                     });
                 }
                 
