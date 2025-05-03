@@ -6,13 +6,61 @@ include 'adminFunctions.php';
 
 $isAdmin = isset($_SESSION['roleid']) && $_SESSION['roleid'] === 1;
 
-// Get all counts
 $customerCount = getCustomerCount();
 $employeeCount = getEmployeeCount();
 $inventoryCount = getInventoryCount();
 $orderCount = getOrderCount();
 $recentActivities = getRecentActivities();
 $lowInventory = getLowInventoryProducts();
+
+function getClaimedSalesData($conn, $period = 30) {
+    $endDate = date('Y-m-d');
+    $startDate = date('Y-m-d', strtotime("-$period days"));
+
+    $query = "SELECT 
+                DATE(o.Created_dt) as order_date,
+                SUM(od.Quantity * REPLACE(REPLACE(p.Price, '₱', ''), ',', '')) as total_amount
+              FROM Order_hdr o
+              JOIN orderDetails od ON o.Orderhdr_id = od.OrderHdr_id
+              JOIN ProductBranchMaster pb ON od.ProductBranchID = pb.ProductBranchID
+              JOIN productMstr p ON pb.ProductID = p.ProductID
+              WHERE o.Created_dt BETWEEN ? AND ?
+              AND NOT EXISTS (
+                  SELECT 1 FROM orderDetails 
+                  WHERE OrderHdr_id = o.Orderhdr_id 
+                  AND Status != 'Claimed'
+              )
+              GROUP BY DATE(o.Created_dt)
+              ORDER BY order_date";
+
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param('ss', $startDate, $endDate);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $data = [
+        'labels' => [],
+        'values' => []
+    ];
+
+    while ($row = $result->fetch_assoc()) {
+        $data['labels'][] = date('M j', strtotime($row['order_date']));
+        $data['values'][] = (float)$row['total_amount'];
+    }
+
+    return $data;
+}
+
+if (isset($_GET['getSalesData']) {
+    $conn = connect();
+    $period = isset($_GET['period']) ? (int)$_GET['period'] : 30;
+    $salesData = getClaimedSalesData($conn, $period);
+    $conn->close();
+    
+    header('Content-Type: application/json');
+    echo json_encode($salesData);
+    exit();
+}
 ?>
 
 <!DOCTYPE html>
@@ -73,7 +121,6 @@ $lowInventory = getLowInventoryProducts();
                 height: 100%;
             }
             
-            /* Mobile styles */
             @media (max-width: 992px) {
                 .main-content {
                     margin-left: 0;
@@ -81,7 +128,6 @@ $lowInventory = getLowInventoryProducts();
                 }
             }
             
-            /* Responsive cards */
             @media (max-width: 768px) {
                 .col-md-3 {
                     flex: 0 0 50%;
@@ -106,16 +152,13 @@ $lowInventory = getLowInventoryProducts();
     <body>
         <?php include "sidebar.php"; ?>
 
-        <!-- Main Content -->
         <div class="main-content">
             <?php
                 $username = $_SESSION["username"];
                 echo "<h2 class='mb-4'>Welcome back, $username</h2>";
             ?>
             
-            <!-- Dashboard Cards -->
             <div class="row">
-                <!-- Customers Card -->
                 <div class="col-md-3">
                     <div class="dashboard-card">
                         <div class="card-icon text-primary">
@@ -127,7 +170,6 @@ $lowInventory = getLowInventoryProducts();
                     </div>
                 </div>
                 
-                <!-- Employees Card -->
                 <?php if ($isAdmin): ?>
                 <div class="col-md-3">
                     <div class="dashboard-card">
@@ -140,7 +182,6 @@ $lowInventory = getLowInventoryProducts();
                     </div>
                 </div>
                 <?php endif; ?>
-                <!-- Inventory Card -->
                 <div class="col-md-3">
                     <div class="dashboard-card">
                         <div class="card-icon text-warning">
@@ -152,7 +193,6 @@ $lowInventory = getLowInventoryProducts();
                     </div>
                 </div>
                 
-                <!-- Orders Card -->
                 <div class="col-md-3">
                     <div class="dashboard-card">
                         <div class="card-icon text-info">
@@ -165,12 +205,11 @@ $lowInventory = getLowInventoryProducts();
                 </div>
             </div>
             
-            <!-- Recent Activity Section -->
             <div class="row mt-4">
                 <div class="col-md-8">
                     <div class="dashboard-card">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Sales Overview</h5>
+                            <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Claimed Sales Overview</h5>
                             <div class="btn-group">
                                 <button type="button" class="btn btn-sm btn-outline-secondary chart-period" data-period="7">7 Days</button>
                                 <button type="button" class="btn btn-sm btn-outline-secondary chart-period active" data-period="30">30 Days</button>
@@ -246,25 +285,32 @@ $lowInventory = getLowInventoryProducts();
         </div>
 
         <script>
-            // Sales Chart Implementation
             function renderSalesChart(period = 30) {
                 const ctx = document.getElementById('salesChart');
                 const loadingElement = document.getElementById('chartLoading');
                 
-                // Show loading state
                 ctx.style.display = 'none';
                 loadingElement.style.display = 'block';
                 
-                fetch(`getSalesData.php?period=${period}`)
-                    .then(response => response.json())
+                fetch(`Dashboard.php?getSalesData=1&period=${period}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
                     .then(data => {
-                        // Hide loading state
                         loadingElement.style.display = 'none';
                         ctx.style.display = 'block';
                         
-                        // Destroy previous chart if it exists
                         if (window.salesChart instanceof Chart) {
                             window.salesChart.destroy();
+                        }
+                        
+                        if (data.labels.length === 0) {
+                            loadingElement.innerHTML = 
+                                '<div class="text-muted p-4"><i class="fas fa-info-circle me-2"></i>No claimed sales data available</div>';
+                            return;
                         }
                         
                         window.salesChart = new Chart(ctx, {
@@ -272,7 +318,7 @@ $lowInventory = getLowInventoryProducts();
                             data: {
                                 labels: data.labels,
                                 datasets: [{
-                                    label: 'Sales Amount',
+                                    label: 'Claimed Sales Amount',
                                     data: data.values,
                                     backgroundColor: 'rgba(54, 162, 235, 0.2)',
                                     borderColor: 'rgba(54, 162, 235, 1)',
@@ -339,10 +385,8 @@ $lowInventory = getLowInventoryProducts();
                 const mobileToggle = document.getElementById('mobileMenuToggle');
                 const body = document.body;
                 
-                // Initialize sales chart
                 renderSalesChart(30);
                 
-                // Period selector buttons
                 document.querySelectorAll('.chart-period').forEach(button => {
                     button.addEventListener('click', function() {
                         document.querySelectorAll('.chart-period').forEach(btn => {
@@ -353,7 +397,6 @@ $lowInventory = getLowInventoryProducts();
                     });
                 });
                 
-                // Toggle sidebar on mobile
                 if (mobileToggle) {
                     mobileToggle.addEventListener('click', function(e) {
                         e.stopPropagation();
@@ -362,7 +405,6 @@ $lowInventory = getLowInventoryProducts();
                     });
                 }
                 
-                // Close sidebar when clicking outside
                 document.addEventListener('click', function(e) {
                     if (window.innerWidth <= 992 && 
                         !sidebar.contains(e.target) && 
@@ -372,7 +414,6 @@ $lowInventory = getLowInventoryProducts();
                     }
                 });
                 
-                // Close sidebar when a link is clicked (on mobile)
                 document.querySelectorAll('.sidebar-item').forEach(item => {
                     item.addEventListener('click', function() {
                         if (window.innerWidth <= 992) {
@@ -382,7 +423,6 @@ $lowInventory = getLowInventoryProducts();
                     });
                 });
                 
-                // Auto-close sidebar when resizing to larger screens
                 window.addEventListener('resize', function() {
                     if (window.innerWidth > 992) {
                         sidebar.classList.remove('active');
