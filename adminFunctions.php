@@ -74,52 +74,6 @@ function getRecentActivities($limit = 20) {
     return $activities;
 }
 
-function getLowInventoryProducts() {
-    $conn = connect();
-    $lowInventory = [];
-    $query = "SELECT pbm.ProductBranchID, pbm.ProductID, pbm.BranchCode, pbm.Stocks, pm.*
-              FROM ProductBranchMaster pbm 
-              JOIN productMstr pm ON pbm.ProductID = pm.ProductID
-              WHERE pbm.Stocks <= 10 
-              ORDER BY pbm.Stocks ASC";
-    $result = mysqli_query($conn, $query);
-    if ($result) {
-        while ($row = mysqli_fetch_assoc($result)) {
-            $lowInventory[] = $row;
-        }
-    }
-    mysqli_close($conn);
-    return $lowInventory;
-}
-
-function getCustomerCount() {
-    global $conn;
-    $query = "SELECT COUNT(*) as count FROM customer WHERE Status = 'Active'";
-    $result = $conn->query($query);
-    return $result->fetch_assoc()['count'];
-}
-
-function getEmployeeCount() {
-    global $conn;
-    $query = "SELECT COUNT(*) as count FROM employee WHERE Status = 'Active'";
-    $result = $conn->query($query);
-    return $result->fetch_assoc()['count'];
-}
-
-function getInventoryCount() {
-    global $conn;
-    $query = "SELECT COUNT(*) as count FROM productMstr WHERE Avail_FL = 'Available'";
-    $result = $conn->query($query);
-    return $result->fetch_assoc()['count'];
-}
-
-function getOrderCount() {
-    global $conn;
-    $query = "SELECT COUNT(DISTINCT Orderhdr_id) as count FROM Order_hdr";
-    $result = $conn->query($query);
-    return $result->fetch_assoc()['count'];
-}
-
 function getClaimedOrderCount() {
     global $conn;
     $query = "SELECT SUM(od.Quantity) as claimed_count 
@@ -128,16 +82,6 @@ function getClaimedOrderCount() {
               WHERE od.Status = 'Complete'";
     $result = $conn->query($query);
     return ($result && $result->num_rows > 0) ? $result->fetch_assoc()['claimed_count'] : 0;
-}
-
-function getRecentActivities() {
-    global $conn;
-    $query = "SELECT l.*, e.EmployeeName 
-              FROM Logs l
-              JOIN employee e ON l.EmployeeID = e.EmployeeID
-              ORDER BY l.Upd_dt DESC LIMIT 5";
-    $result = $conn->query($query);
-    return $result->fetch_all(MYSQLI_ASSOC);
 }
 
 function getLowInventoryProducts() {
