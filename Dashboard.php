@@ -13,69 +13,6 @@ $inventoryCount = getInventoryCount();
 $orderCount = getOrderCount();
 $recentActivities = getRecentActivities();
 $lowInventory = getLowInventoryProducts();
-
-// Add this new function to fetch order statistics
-function getOrderStatistics($conn, $period = 30) {
-    $endDate = date('Y-m-d');
-    $startDate = date('Y-m-d', strtotime("-$period days"));
-
-    // Query to get completed orders count by date
-    $query = "SELECT DATE(o.Created_dt) as order_date, COUNT(od.OrderDtlID) as completed_count
-              FROM Order_hdr o
-              JOIN orderDetails od ON o.Orderhdr_id = od.OrderHdr_id
-              WHERE od.ActivityCode = 1 AND od.Status = 'Completed'
-                AND DATE(o.Created_dt) BETWEEN ? AND ?
-              GROUP BY DATE(o.Created_dt)
-              ORDER BY order_date";
-
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param("ss", $startDate, $endDate);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    $data = ['labels' => [], 'values' => []];
-    
-    // Generate all dates in the period
-    $periodDates = [];
-    $currentDate = new DateTime($startDate);
-    $endDateObj = new DateTime($endDate);
-    
-    while ($currentDate <= $endDateObj) {
-        $periodDates[$currentDate->format('Y-m-d')] = 0;
-        $currentDate->modify('+1 day');
-    }
-    
-    // Fill in actual data
-    while ($row = $result->fetch_assoc()) {
-        $periodDates[$row['order_date']] = (int)$row['completed_count'];
-    }
-    
-    // Prepare final response
-    foreach ($periodDates as $date => $count) {
-        $data['labels'][] = date('M j', strtotime($date));
-        $data['values'][] = $count;
-    }
-
-    return $data;
-}
-
-// Handle AJAX request for order statistics
-if (isset($_GET['action']) && $_GET['action'] == 'get_order_stats') {
-    try {
-        $conn = connect();
-        $period = isset($_GET['period']) ? (int)$_GET['period'] : 30;
-        $data = getOrderStatistics($conn, $period);
-        $conn->close();
-        
-        header('Content-Type: application/json');
-        echo json_encode($data);
-        exit();
-    } catch (Exception $e) {
-        http_response_code(500);
-        echo json_encode(['error' => $e->getMessage()]);
-        exit();
-    }
-}
 ?>
 
 <!DOCTYPE html>
@@ -125,7 +62,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_order_stats') {
                 overflow-y: auto;
             }
             .chart-period.active {
-                background-color: #28a745;
+                background-color: #0d6efd;
                 color: white;
             }
             #chartLoading {
@@ -136,6 +73,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_order_stats') {
                 height: 100%;
             }
             
+            /* Mobile styles */
             @media (max-width: 992px) {
                 .main-content {
                     margin-left: 0;
@@ -143,6 +81,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_order_stats') {
                 }
             }
             
+            /* Responsive cards */
             @media (max-width: 768px) {
                 .col-md-3 {
                     flex: 0 0 50%;
@@ -167,13 +106,16 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_order_stats') {
     <body>
         <?php include "sidebar.php"; ?>
 
+        <!-- Main Content -->
         <div class="main-content">
             <?php
                 $username = $_SESSION["username"];
                 echo "<h2 class='mb-4'>Welcome back, $username</h2>";
             ?>
             
+            <!-- Dashboard Cards -->
             <div class="row">
+                <!-- Customers Card -->
                 <div class="col-md-3">
                     <div class="dashboard-card">
                         <div class="card-icon text-primary">
@@ -185,6 +127,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_order_stats') {
                     </div>
                 </div>
                 
+                <!-- Employees Card -->
                 <?php if ($isAdmin): ?>
                 <div class="col-md-3">
                     <div class="dashboard-card">
@@ -197,7 +140,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_order_stats') {
                     </div>
                 </div>
                 <?php endif; ?>
-                
+                <!-- Inventory Card -->
                 <div class="col-md-3">
                     <div class="dashboard-card">
                         <div class="card-icon text-warning">
@@ -205,10 +148,11 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_order_stats') {
                         </div>
                         <h5>Inventory</h5>
                         <div class="stat-number"><?php echo number_format($inventoryCount); ?></div>
-                        <a href="<?php echo ($isAdmin) ? 'admin-inventory.php' : 'Employee-inventory.php'; ?>" class="btn btn-sm btn-outline-warning mt-2">View All</a>
+                        <a href="<?php echo ($isAdmin) ? 'admin-inventory.php' : 'Employee-inventory.php'; ?>"class="btn btn-sm btn-outline-warning mt-2">View All</a>
                     </div>
                 </div>
                 
+                <!-- Orders Card -->
                 <div class="col-md-3">
                     <div class="dashboard-card">
                         <div class="card-icon text-info">
@@ -221,11 +165,12 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_order_stats') {
                 </div>
             </div>
             
+            <!-- Recent Activity Section -->
             <div class="row mt-4">
                 <div class="col-md-8">
                     <div class="dashboard-card">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Completed Orders</h5>
+                            <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Sales Overview</h5>
                             <div class="btn-group">
                                 <button type="button" class="btn btn-sm btn-outline-secondary chart-period" data-period="7">7 Days</button>
                                 <button type="button" class="btn btn-sm btn-outline-secondary chart-period active" data-period="30">30 Days</button>
@@ -233,12 +178,12 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_order_stats') {
                             </div>
                         </div>
                         <div class="mt-3" style="height: 300px;">
-                            <canvas id="ordersChart"></canvas>
+                            <canvas id="salesChart"></canvas>
                             <div id="chartLoading" class="text-center py-5">
-                                <div class="spinner-border text-success" role="status">
+                                <div class="spinner-border text-primary" role="status">
                                     <span class="visually-hidden">Loading...</span>
                                 </div>
-                                <p class="mt-2">Loading orders data...</p>
+                                <p class="mt-2">Loading sales data...</p>
                             </div>
                         </div>
                     </div>
@@ -301,35 +246,42 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_order_stats') {
         </div>
 
         <script>
-            function renderOrdersChart(period = 30) {
-                const ctx = document.getElementById('ordersChart');
+            // Sales Chart Implementation
+            function renderSalesChart(period = 30) {
+                const ctx = document.getElementById('salesChart');
                 const loadingElement = document.getElementById('chartLoading');
                 
+                // Show loading state
                 ctx.style.display = 'none';
-                loadingElement.style.display = 'flex';
+                loadingElement.style.display = 'block';
                 
-                fetch(`Dashboard.php?action=get_order_stats&period=${period}`)
+                fetch(`getSalesData.php?period=${period}`)
                     .then(response => response.json())
                     .then(data => {
+                        // Hide loading state
                         loadingElement.style.display = 'none';
                         ctx.style.display = 'block';
                         
-                        if (window.ordersChart instanceof Chart) {
-                            window.ordersChart.destroy();
+                        // Destroy previous chart if it exists
+                        if (window.salesChart instanceof Chart) {
+                            window.salesChart.destroy();
                         }
                         
-                        window.ordersChart = new Chart(ctx, {
+                        window.salesChart = new Chart(ctx, {
                             type: 'line',
                             data: {
                                 labels: data.labels,
                                 datasets: [{
-                                    label: 'Completed Orders',
+                                    label: 'Sales Amount',
                                     data: data.values,
-                                    backgroundColor: 'rgba(40, 167, 69, 0.2)',
-                                    borderColor: 'rgba(40, 167, 69, 1)',
+                                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                    borderColor: 'rgba(54, 162, 235, 1)',
                                     borderWidth: 2,
-                                    tension: 0.1,
-                                    fill: true
+                                    tension: 0.4,
+                                    fill: true,
+                                    pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                                    pointRadius: 4,
+                                    pointHoverRadius: 6
                                 }]
                             },
                             options: {
@@ -340,9 +292,11 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_order_stats') {
                                         display: false
                                     },
                                     tooltip: {
+                                        mode: 'index',
+                                        intersect: false,
                                         callbacks: {
                                             label: function(context) {
-                                                return `${context.parsed.y} order${context.parsed.y !== 1 ? 's' : ''} completed`;
+                                                return '₱' + context.parsed.y.toLocaleString();
                                             }
                                         }
                                     }
@@ -351,35 +305,32 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_order_stats') {
                                     y: {
                                         beginAtZero: true,
                                         ticks: {
-                                            precision: 0,
                                             callback: function(value) {
-                                                if (value % 1 === 0) {
-                                                    return value;
-                                                }
+                                                return '₱' + value.toLocaleString();
                                             }
                                         },
-                                        title: {
-                                            display: true,
-                                            text: 'Number of Orders'
+                                        grid: {
+                                            drawBorder: false
                                         }
                                     },
                                     x: {
                                         grid: {
                                             display: false
-                                        },
-                                        title: {
-                                            display: true,
-                                            text: 'Date'
                                         }
                                     }
+                                },
+                                interaction: {
+                                    mode: 'nearest',
+                                    axis: 'x',
+                                    intersect: false
                                 }
                             }
                         });
                     })
                     .catch(error => {
-                        console.error('Error loading orders data:', error);
+                        console.error('Error loading sales data:', error);
                         loadingElement.innerHTML = 
-                            '<div class="text-danger p-4"><i class="fas fa-exclamation-triangle me-2"></i>Failed to load orders data</div>';
+                            '<div class="text-danger p-4"><i class="fas fa-exclamation-triangle me-2"></i>Could not load sales data</div>';
                     });
             }
 
@@ -388,18 +339,21 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_order_stats') {
                 const mobileToggle = document.getElementById('mobileMenuToggle');
                 const body = document.body;
                 
-                renderOrdersChart(30);
+                // Initialize sales chart
+                renderSalesChart(30);
                 
+                // Period selector buttons
                 document.querySelectorAll('.chart-period').forEach(button => {
                     button.addEventListener('click', function() {
                         document.querySelectorAll('.chart-period').forEach(btn => {
                             btn.classList.remove('active');
                         });
                         this.classList.add('active');
-                        renderOrdersChart(this.dataset.period);
+                        renderSalesChart(this.dataset.period);
                     });
                 });
                 
+                // Toggle sidebar on mobile
                 if (mobileToggle) {
                     mobileToggle.addEventListener('click', function(e) {
                         e.stopPropagation();
@@ -408,6 +362,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_order_stats') {
                     });
                 }
                 
+                // Close sidebar when clicking outside
                 document.addEventListener('click', function(e) {
                     if (window.innerWidth <= 992 && 
                         !sidebar.contains(e.target) && 
@@ -417,6 +372,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_order_stats') {
                     }
                 });
                 
+                // Close sidebar when a link is clicked (on mobile)
                 document.querySelectorAll('.sidebar-item').forEach(item => {
                     item.addEventListener('click', function() {
                         if (window.innerWidth <= 992) {
@@ -426,6 +382,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'get_order_stats') {
                     });
                 });
                 
+                // Auto-close sidebar when resizing to larger screens
                 window.addEventListener('resize', function() {
                     if (window.innerWidth > 992) {
                         sidebar.classList.remove('active');
