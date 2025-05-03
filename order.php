@@ -92,6 +92,8 @@ function getOrderStatus($conn, $orderId) {
     
     $completeCount = 0;
     $cancelledCount = 0;
+    $returnedCount = 0;
+    $claimedCount = 0;
     $totalItems = 0;
     
     while ($row = $result->fetch_assoc()) {
@@ -100,6 +102,10 @@ function getOrderStatus($conn, $orderId) {
             $completeCount++;
         } elseif ($row['Status'] === 'Cancelled') {
             $cancelledCount++;
+        } elseif ($row['Status'] === 'Returned') {
+            $returnedCount++;
+        } elseif ($row['Status'] === 'Claimed') {
+            $claimedCount++;
         }
     }
     
@@ -109,6 +115,10 @@ function getOrderStatus($conn, $orderId) {
         return 'Completed';
     } elseif ($cancelledCount === $totalItems && $totalItems > 0) {
         return 'Cancelled';
+    } elseif ($returnedCount === $totalItems && $totalItems > 0) {
+        return 'Returned';
+    } elseif ($claimedCount === $totalItems && $totalItems > 0) {
+        return 'Claimed';
     }
     return 'Pending';
 }
@@ -457,6 +467,12 @@ $conn->close();
         .badge-cancelled {
             background-color: #dc3545;
         }
+        .badge-returned {
+            background-color: #fd7e14;
+        }
+        .badge-claimed {
+            background-color: #17a2b8;
+        }
         @media (max-width: 992px) {
             .sidebar {
                 transform: translateX(-100%);
@@ -577,7 +593,8 @@ $conn->close();
                         <option value="Pending" <?php echo ($status == 'Pending' ? 'selected' : ''); ?>>Pending</option>
                         <option value="Completed" <?php echo ($status == 'Completed' ? 'selected' : ''); ?>>Completed</option>
                         <option value="Cancelled" <?php echo ($status == 'Cancelled' ? 'selected' : ''); ?>>Cancelled</option>
-                        <option value="Canceled" <?php echo ($status == 'Processing' ? 'selected' : ''); ?>>Canceled</option>
+                        <option value="Returned" <?php echo ($status == 'Returned' ? 'selected' : ''); ?>>Returned</option>
+                        <option value="Claimed" <?php echo ($status == 'Claimed' ? 'selected' : ''); ?>>Claimed</option>
                     </select>
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
@@ -613,6 +630,8 @@ $conn->close();
                                         <?= match($order['Status']) {
                                             'Completed' => 'badge-complete',
                                             'Cancelled' => 'badge-cancelled',
+                                            'Returned' => 'badge-returned',
+                                            'Claimed' => 'badge-claimed',
                                             default => 'badge-pending'
                                         } ?>">
                                         <?= $order['Status'] ?>
@@ -879,7 +898,9 @@ $conn->close();
 
                     order.Details.forEach(detail => {
                         const statusClass = detail.Status === 'Completed' ? 'badge-complete' : 
-                                        detail.Status === 'Cancelled' ? 'badge-cancelled' : 'badge-pending';
+                                        detail.Status === 'Cancelled' ? 'badge-cancelled' :
+                                        detail.Status === 'Returned' ? 'badge-returned' :
+                                        detail.Status === 'Claimed' ? 'badge-claimed' : 'badge-pending';
                         
                         html += `
                             <tr>
