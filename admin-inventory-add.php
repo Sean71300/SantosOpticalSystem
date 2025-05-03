@@ -250,7 +250,7 @@ include 'loginChecker.php';
             <form method="post" enctype="multipart/form-data" id="addForm">
                 <div class="row mb-4 mt-3 border border-secondary-subtle rounded p-3">
                     <div class="col-12">
-                        <label class="form-label h5 mb-3"><i class="fas fa-store me-2"></i>Select Branches & Quantities</label>
+                        <label class="form-label h5 mb-3"><i class="fas fa-store me-2 mt-3"></i>Select Branches & Quantities</label>
                         <hr>
                         <?php displayBranchesWithCheckboxes(); ?>
                     </div>

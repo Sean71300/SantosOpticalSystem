@@ -447,7 +447,7 @@ function addProduct(){ //Add function to add a new product to the database
                     $sql = "INSERT INTO ProductBranchMaster (ProductBranchID, ProductID, BranchCode, Stocks, Avail_FL, Upd_by, Upd_dt)
                             VALUES (?, ?, ?, ?, ?, ?, ?)"; 
                             $stmt = mysqli_prepare($link, $sql);
-                            mysqli_stmt_bind_param($stmt, "sssisds", $newProductBranchID, $newProductID, $branchCode, 
+                            mysqli_stmt_bind_param($stmt, "sssssss", $newProductBranchID, $newProductID, $branchCode, 
                             $qty, $branchAvailFL, $upd_by, $upd_dt);
                             mysqli_stmt_execute($stmt);
                             mysqli_stmt_close($stmt);
