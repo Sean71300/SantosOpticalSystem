@@ -35,7 +35,7 @@
                     <td>$row[CustomerContact]</td>
                     <td>";
                         
-                    if ($isAdmin && $isOptometrist)
+                    if ($isAdmin)
                         {
                             echo 
                             "
@@ -44,13 +44,20 @@
 
                             ";
                         }
+                    else if ($isOptometrist) {
+                        echo 
+                            "
+                                <a class='btn btn-primary btn-sm' href='customerEdit.php?CustomerID={$row['CustomerID']}'>Profile</a>
+                            ";
+                    } else {
                         echo "
                             <button class='btn btn-info btn-sm view-orders' data-customer-id='$row[CustomerID]'>Orders</button>
-                        
                     </td>
                 </tr>";
+                }
             }            
         }
+        
 
     // New function to get ordered products by customer
     function getCustomerOrders($customerID) {
