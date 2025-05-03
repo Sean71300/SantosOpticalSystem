@@ -47,9 +47,7 @@
         $category = isset($_GET['category']) ? $_GET['category'] : '';
         
         // Build the base SQL query with JOIN to ProductBranchMaster
-        $sql = "SELECT p.*, pb.Stocks, pb.Avail_FL as BranchAvailability 
-                FROM `productMstr` p
-                LEFT JOIN ProductBranchMaster pb ON p.ProductID = pb.ProductID";
+        $sql = "SELECT p.* FROM `productMstr` p";
         
         $whereConditions = [];
         
@@ -120,7 +118,7 @@
                             $numeric_price = preg_replace('/[^0-9.]/', '', $price);
                             $formatted_price = is_numeric($numeric_price) ? '₱' . number_format((float)$numeric_price, 2) : '₱0.00';
                             echo "<div class='card-text mb-2'>".$formatted_price."</div>";
-                            $availability = isset($row['BranchAvailability']) ? $row['BranchAvailability'] : $row['Avail_FL'];
+                            $availability = $row['Avail_FL'];
                             if ($availability == "Available") {
                                 echo "<div class='card-text mb-2 text-success'>".$availability."</div>";
                             echo "</div>";
