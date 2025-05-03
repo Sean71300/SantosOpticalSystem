@@ -15,6 +15,23 @@ function getEmployeeID() {
     mysqli_close($link);
 }
 
+function displayBranchesWithCheckboxes() {
+    $link = connect();
+    $sql = "SELECT BranchCode, BranchName FROM BranchMaster";
+    $result = mysqli_query($link, $sql);
+    
+    while($row = mysqli_fetch_array($result)) {
+        echo '<div class="form-check mb-2">';
+        echo '<input class="form-check-input branch-checkbox" type="checkbox" 
+               id="branch_'.$row['BranchCode'].'" value="'.$row['BranchCode'].'">';
+        echo '<label class="form-check-label" for="branch_'.$row['BranchCode'].'">';
+        echo htmlspecialchars($row['BranchName']);
+        echo '</label>';
+        echo '</div>';
+    }
+    mysqli_close($link);
+}
+
 function getBranches() { // For inventory show
     $link = connect();
     $sql = "SELECT BranchName from BranchMaster";

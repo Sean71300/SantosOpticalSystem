@@ -170,6 +170,20 @@ include 'loginChecker.php';
             .product-img-container {
                 margin-bottom: 20px;
             }
+
+            .branch-checkbox {
+                transform: scale(1.2);
+                margin-right: 10px;
+            }
+
+            .quantity-input {
+                margin-left: 28px;
+                max-width: 200px;
+            }
+
+            .form-check-label {
+                font-size: 1.1rem;
+            }
         }
     </style>
 </head>
@@ -194,26 +208,31 @@ include 'loginChecker.php';
             
             <form method="post" enctype="multipart/form-data" id="addForm">
                 <div class="row mb-4">
-                    <div class="col-md-6 mb-3 mb-md-0">
-                        <label for="productBranches" class="form-label">Branches</label>
-                        <select name="productBranches[]" id="productBranches" class="form-select form-control-lg" multiple required>
-                            <?php getBranch(); ?>
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="productName" class="form-label">Product Name</label>
-                        <input type="text" name="productName" id="productName" class="form-control form-control-lg" required>
+                    <div class="col-12">
+                        <label class="form-label">Select Branches</label>
+                        <div class="border p-3 rounded" id="branchCheckboxContainer">
+                            <?php displayBranchesWithCheckboxes(); ?>
+                        </div>
                     </div>
                 </div>
 
                 <div class="row mb-4" id="branchQuantitiesContainer">
                     <!-- Dynamic quantity fields will be added here by JavaScript -->
                 </div>
-                
+            
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label for="productName" class="form-label">Product Name</label>
+                        <input type="text" name="productName" id="productName" class="form-control form-control-lg" required>
+                    </div>
+                </div>
+             
                 <div class="row mb-4">
                     <div class="col-md-6 mb-3 mb-md-0">
                         <label for="productBrand" class="form-label">Brand</label>
-                        <input type="text" name="productBrand" id="productBrand" class="form-control form-control-lg" required>
+                        <select name="productBrand" id="productBrand" class="form-select form-control-lg" required>
+                            <?php getBrands(); ?>
+                        </select>
                     </div>
                     <div class="col-md-6">
                         <label for="productQty" class="form-label">Quantity</label>
@@ -330,30 +349,30 @@ include 'loginChecker.php';
     </script>
 
     <script>
-        document.getElementById('productBranches').addEventListener('change', function() {
-            const selectedBranches = Array.from(this.selectedOptions);
-            const container = document.getElementById('branchQuantitiesContainer');
-            container.innerHTML = ''; // Clear previous inputs
-
-            selectedBranches.forEach((option, index) => {
-                const branchName = option.text;
-                const branchCode = option.value;
-
-                const row = document.createElement('div');
-                row.className = 'row mb-3';
-
-                row.innerHTML = `
-                    <div class="col-md-6">
-                        <input type="hidden" name="productBranches[]" value="${branchCode}">
-                    </div>
-                    <div class="col-md-6">
-                        <input type="number" name="productQtys[]" class="form-control form-control-lg" 
-                            min="0" placeholder="Quantity" required>
-                    </div>
-                `;
-                container.appendChild(row);
-            });
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.getElementById('branchCheckboxContainer');
+        
+        container.addEventListener('change', function(e) {
+            if (e.target.classList.contains('branch-checkbox')) {
+                const checkbox = e.target;
+                const quantityDiv = checkbox.parentElement.querySelector('.quantity-input');
+                
+                if (checkbox.checked && !quantityDiv) {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'quantity-input mt-2';
+                    wrapper.innerHTML = `
+                        <input type="number" name="qtys[${checkbox.value}]" 
+                            class="form-control form-control-sm" 
+                            placeholder="Quantity for ${checkbox.nextElementSibling.textContent}"
+                            min="0" required>
+                    `;
+                    checkbox.parentElement.appendChild(wrapper);
+                } else if (!checkbox.checked && quantityDiv) {
+                    quantityDiv.remove();
+                }
+            }
         });
+    });
     </script>
 </body>
 </html>
