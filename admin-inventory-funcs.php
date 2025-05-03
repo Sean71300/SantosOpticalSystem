@@ -265,6 +265,91 @@ function addProduct(){ //Add function to add a new product to the database
     $upd_by = $_SESSION['full_name'];
     $date = new DateTime();
     $upd_dt = $date->format('Y-m-d H:i:s');
+
+    //VALIDATION FOR DUPLICATION
+    $selectedBranches = !empty($_POST['qtys']) ? array_keys($_POST['qtys']) : [];
+    $sql = "SELECT ProductID FROM productMstr 
+            WHERE Model = ? AND BrandID = ? AND ShapeID = ? AND CategoryType = ?";
+    $stmt = mysqli_prepare($link, $sql);
+    mysqli_stmt_bind_param($stmt, "ssss", $newProductName, $newProductBrand, $newProductShape, $newProductCategory);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $existingProductIDs = [];
+    while ($row = mysqli_fetch_assoc($result)) {
+        $existingProductIDs[] = $row['ProductID'];
+    }
+    mysqli_stmt_close($stmt);
+
+    $conflictingBranches = [];
+    if (!empty($existingProductIDs) && !empty($selectedBranches)) {
+        $productPlaceholders = implode(',', array_fill(0, count($existingProductIDs), '?'));
+        $branchPlaceholders = implode(',', array_fill(0, count($selectedBranches), '?'));
+        $sql = "SELECT b.BranchName 
+                FROM ProductBranchMaster pbm
+                JOIN BranchMaster b ON pbm.BranchCode = b.BranchCode
+                WHERE pbm.ProductID IN ($productPlaceholders) 
+                AND pbm.BranchCode IN ($branchPlaceholders)";
+        $stmt = mysqli_prepare($link, $sql);
+        $types = str_repeat('s', count($existingProductIDs) + count($selectedBranches));
+        $params = array_merge($existingProductIDs, $selectedBranches);
+        mysqli_stmt_bind_param($stmt, $types, ...$params);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        while ($row = mysqli_fetch_assoc($result)) {
+            $conflictingBranches[] = $row['BranchName'];
+        }
+        mysqli_stmt_close($stmt);
+    }
+
+    // Check if model already exists in selected branches
+    if (!empty($selectedBranches)) {
+        $branchPlaceholders = implode(',', array_fill(0, count($selectedBranches), '?'));
+        $sql = "SELECT DISTINCT b.BranchName 
+                FROM productMstr pm
+                JOIN ProductBranchMaster pbm ON pm.ProductID = pbm.ProductID
+                JOIN BranchMaster b ON pbm.BranchCode = b.BranchCode
+                WHERE pm.Model = ? 
+                AND pbm.BranchCode IN ($branchPlaceholders)";
+        $stmt = mysqli_prepare($link, $sql);
+        $types = 's' . str_repeat('s', count($selectedBranches));
+        $params = array_merge([$newProductName], $selectedBranches);
+        mysqli_stmt_bind_param($stmt, $types, ...$params);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        while ($row = mysqli_fetch_assoc($result)) {
+            $conflictingBranches[] = $row['BranchName'];
+        }
+        mysqli_stmt_close($stmt);
+    }
+
+    if (!empty($conflictingBranches)) {
+        $errorMessage = "This product already exists in the following branches: " . implode(', ', $conflictingBranches);
+        echo '
+        <div class="modal fade" id="errorModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">Duplicate Entry</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        '.htmlspecialchars($errorMessage).'
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                new bootstrap.Modal(document.getElementById("errorModal")).show();
+            });
+        </script>';
+        mysqli_close($link);
+        exit();
+    }
+    mysqli_close($link);
     
     if (isset($_POST['addProduct'])) {
         // Validate and upload the product image
@@ -495,6 +580,7 @@ function editProduct(){ //Edit function to edit an existing product in the datab
     $productImg = $_POST['productImg'] ?? '';
     $branchName = $_POST['chooseBranch'] ?? '';
     $productBranchID = $_POST['productBranchID'] ?? '';
+    $branchName = $_POST['chooseBranch'] ?? '';
 
     echo '<div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" role="document">
@@ -505,6 +591,9 @@ function editProduct(){ //Edit function to edit an existing product in the datab
                     </div>      
                     <div class="modal-body" style="margin-top: -1.5rem;">
                     <hr>
+                        <div class="container d-flex align-items-center justify-content-center mb-3">
+                            <h5 class="text-center">' . $branchName . '</h5>
+                        </div>
                         <form method="post" enctype="multipart/form-data">
                             <input type="hidden" name="productID" value="' . htmlspecialchars($productID) . '" />
                             <input type="hidden" name="chooseBranch" value="' . htmlspecialchars($branchName) . '" />
