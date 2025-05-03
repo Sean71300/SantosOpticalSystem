@@ -300,7 +300,7 @@ function getAllBranches($conn) {
 }
 
 // Handle order claiming
-if (isset($_POST['complete_order'])) {
+if (isset($_POST['claim_order'])) {
     $orderId = $_POST['order_id'];
     $conn = connect();
     
