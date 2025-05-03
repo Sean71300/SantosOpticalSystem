@@ -79,7 +79,7 @@ function getClaimedOrderCount() {
     $query = "SELECT SUM(od.Quantity) as claimed_count 
               FROM orderDetails od
               JOIN Order_hdr oh ON od.OrderHdr_id = oh.Orderhdr_id
-              WHERE od.Status = 'Complete'";
+              WHERE od.Status = 'Claimed'";
     $result = $conn->query($query);
     return ($result && $result->num_rows > 0) ? $result->fetch_assoc()['claimed_count'] : 0;
 }
@@ -97,15 +97,18 @@ function getLowInventoryProducts() {
 
 function getSalesOverviewData($days = 7) {
     global $conn;
+    
+    // Query to get claimed orders (where Status = 'Complete')
     $query = "SELECT 
                 DATE(oh.Created_dt) as date, 
                 SUM(od.Quantity) as total_sold 
               FROM orderDetails od
               JOIN Order_hdr oh ON od.OrderHdr_id = oh.Orderhdr_id
               WHERE oh.Created_dt >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
-              AND od.Status = 'Complete'
+              AND od.Status = 'Claimed'
               GROUP BY DATE(oh.Created_dt)
               ORDER BY date ASC";
+    
     $stmt = $conn->prepare($query);
     $stmt->bind_param("i", $days);
     $stmt->execute();
@@ -139,7 +142,7 @@ function getSalesOverviewData($days = 7) {
         
         $currentDate->modify('+1 day');
     }
-    
+    echo "<pre>Sales Data: "; print_r($filledData); echo "</pre>";
     return $filledData;
 }
 ?>
