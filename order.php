@@ -5,7 +5,7 @@ include_once 'setup.php';
 include 'ActivityTracker.php'; 
 include 'loginChecker.php';
 
-function getOrderHeaders($conn, $search = '', $branch = '', $status = '', $limit = 10, $offset = 0) {
+function getOrderHeaders($conn, $search = '', $branch = '', $status = '', $limit = 15, $offset = 0) {
     $query = "SELECT Orderhdr_id, CustomerID, BranchCode, Created_dt, Created_by FROM Order_hdr";
     
     $where = [];
@@ -666,15 +666,7 @@ $conn->close();
                         <?php endwhile; ?>
                     </select>
                 </div>
-                <div class="col-md-3">
-    <label for="start_date" class="form-label">Start Date</label>
-    <input type="date" class="form-control" id="start_date" name="start_date" value="<?php echo htmlspecialchars($_GET['start_date'] ?? ''); ?>">
-</div>
-<div class="col-md-3">
-    <label for="end_date" class="form-label">End Date</label>
-    <input type="date" class="form-control" id="end_date" name="end_date" value="<?php echo htmlspecialchars($_GET['end_date'] ?? ''); ?>">
-</div>
-
+                
                 <div class="col-md-3">
                     <label for="status" class="form-label">Filter by Status</label>
                     <select class="form-select" id="status" name="status">
