@@ -341,21 +341,18 @@
                     </div>
                     <div class="modal-body p-4">
                         <div class="row g-4">
-                         
                             <div class="col-md-6">
                                 <div class="product-image-container">
                                     <img id="modalProductImage" src="" class="img-fluid mh-100" alt="Product Image" style="max-height: 300px; width: auto; object-fit: contain;">
                                 </div>
                             </div>
                             
-              
                             <div class="col-md-6">
                                 <div class="d-flex flex-column h-100">
                                     <div class="mb-3 border-bottom pb-3">
                                         <h3 id="modalProductName" class="fw-bold mb-2"></h3>
                                         <div>
                                             <span id="modalProductAvailability" class="badge rounded-pill fs-6"></span>
-                                            <span id="modalProductStock" class="badge rounded-pill ms-2 fs-6"></span>
                                         </div>
                                     </div>
                                     
@@ -378,16 +375,20 @@
                                                 <span id="modalProductFaceShape" class="text-end"></span>
                                             </li>
                                         </ul>
+                                        
+                                        <!-- Branch availability section -->
+                                        <div class="mt-3">
+                                            <h6 class="fw-semibold text-muted mb-2">Available at:</h6>
+                                            <div id="branchAvailability" class="small">
+                                                <!-- Branches will be populated here -->
+                                            </div>
+                                        </div>
                                     </div>
                                     
-                         
                                     <div class="mt-auto pt-3 border-top">
                                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                                             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
                                                 <i class="fas fa-times me-2"></i>Close
-                                            </button>
-                                            <button type="button" class="btn btn-primary" id="addToCartBtn">
-                                                <i class="fas fa-shopping-cart me-2"></i>Add to Cart
                                             </button>
                                         </div>
                                     </div>
@@ -429,7 +430,6 @@
                 </div>
                 
                 <div class="filter-container">
-                  
                     <form method="get" action="" class="filter-dropdown">
                         <?php if(isset($_GET['page'])): ?>
                             <input type="hidden" name="page" value="<?php echo $_GET['page']; ?>">
@@ -484,7 +484,6 @@
                         </div>
                     </form>
                     
-                
                     <form method="get" action="" class="filter-dropdown">
                         <?php if(isset($_GET['page'])): ?>
                             <input type="hidden" name="page" value="<?php echo $_GET['page']; ?>">
@@ -563,7 +562,7 @@
                 const productCards = document.querySelectorAll('.product-card');
                 const searchForm = document.getElementById('searchForm');
                 
-       
+                // Modal functionality with branch availability
                 const productModal = document.getElementById('productModal');
                 if (productModal) {
                     productModal.addEventListener('show.bs.modal', function(event) {
@@ -575,10 +574,9 @@
                         const productMaterial = button.getAttribute('data-product-material');
                         const productPrice = button.getAttribute('data-product-price');
                         const productAvailability = button.getAttribute('data-product-availability');
-                        const productStock = parseInt(button.getAttribute('data-product-stock'));
                         const productFaceShape = button.getAttribute('data-product-faceshape');
                         
-                      
+                        // Set basic product info
                         document.getElementById('modalProductName').textContent = productName;
                         document.getElementById('modalProductImage').src = productImage;
                         document.getElementById('modalProductImage').alt = productName;
@@ -587,33 +585,42 @@
                         document.getElementById('modalProductPrice').textContent = productPrice;
                         document.getElementById('modalProductFaceShape').textContent = productFaceShape;
                         
-                   
+                        // Set availability
                         const availabilityBadge = document.getElementById('modalProductAvailability');
                         availabilityBadge.textContent = productAvailability;
                         availabilityBadge.className = 'badge rounded-pill fs-6 ' + 
                             (productAvailability === 'Available' ? 'available' : 'not-available');
                         
-          
-                        const stockBadge = document.getElementById('modalProductStock');
-                        if (productStock > 0) {
-                            stockBadge.textContent = productStock + ' in stock';
-                            stockBadge.className = 'badge rounded-pill fs-6 ' + 
-                                (productStock < 5 ? 'low-stock' : 'bg-secondary');
-                            stockBadge.style.display = 'inline-block';
-                        } else {
-                            stockBadge.style.display = 'none';
-                        }
-                        
-                      
-                        const addToCartBtn = document.getElementById('addToCartBtn');
-                        if (productAvailability !== 'Available' || productStock <= 0) {
-                            addToCartBtn.disabled = true;
-                            addToCartBtn.classList.add('disabled');
-                        } else {
-                            addToCartBtn.disabled = false;
-                            addToCartBtn.classList.remove('disabled');
-                        }
+                        // Fetch branch availability via AJAX
+                        fetchBranchAvailability(productId);
                     });
+                }
+                
+                function fetchBranchAvailability(productId) {
+                    const branchAvailabilityDiv = document.getElementById('branchAvailability');
+                    branchAvailabilityDiv.innerHTML = '<div class="text-center py-2"><i class="fas fa-spinner fa-spin"></i> Loading availability...</div>';
+                    
+                    fetch(`get_branches.php?product_id=${productId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.length > 0) {
+                                let html = '<ul class="list-unstyled mb-0">';
+                                data.forEach(branch => {
+                                    html += `<li class="d-flex justify-content-between py-1">
+                                                <span>${branch.BranchName}</span>
+                                                <span class="text-muted">${branch.Stocks} in stock</span>
+                                            </li>`;
+                                });
+                                html += '</ul>';
+                                branchAvailabilityDiv.innerHTML = html;
+                            } else {
+                                branchAvailabilityDiv.innerHTML = '<div class="text-muted">Not currently available at any branch</div>';
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error fetching branch availability:', error);
+                            branchAvailabilityDiv.innerHTML = '<div class="text-danger">Error loading availability information</div>';
+                        });
                 }
                 
                 function performLiveSearch() {
