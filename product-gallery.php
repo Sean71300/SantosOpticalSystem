@@ -50,10 +50,10 @@
     $sql = "SELECT p.*, SUM(pb.Stocks) as Stocks 
         FROM `productMstr` p
         JOIN ProductBranchMaster pb ON p.ProductID = pb.ProductID
-        GROUP BY p.ProductID
         LEFT JOIN archives a ON (p.ProductID = a.TargetID AND a.TargetType = 'product')
         WHERE (p.Avail_FL = 'Available' OR p.Avail_FL IS NULL)
-        AND a.ArchiveID IS NULL"; // Only show non-archived products
+        AND a.ArchiveID IS NULL
+        GROUP BY p.ProductID"; // Only show non-archived products
     
     $whereConditions = [];
     
