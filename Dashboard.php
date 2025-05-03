@@ -21,7 +21,93 @@ if (!$isOptometrist) {
 <!DOCTYPE html>
 <html>
     <head>
-        <!-- Head content remains the same -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="customCodes/custom.css">
+    <link rel="shortcut icon" type="image/x-icon" href="Images/logo.png"/>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Dashboard</title>
+        <style>
+            body {
+                background-color: #f5f7fa;
+                padding-top: 60px;
+            }
+            .main-content {
+                margin-left: 250px;
+                padding: 20px;
+                width: calc(100% - 250px);
+                transition: margin 0.3s ease;
+            }
+            .dashboard-card {
+                border-radius: 10px;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                margin-bottom: 20px;
+                padding: 20px;
+                background-color: white;
+                transition: transform 0.3s;
+            }
+            .dashboard-card:hover {
+                transform: translateY(-5px);
+            }
+            .card-icon {
+                font-size: 2rem;
+                margin-bottom: 15px;
+            }
+            .stat-number {
+                font-size: 2rem;
+                font-weight: bold;
+            }
+            .recent-activity {
+                max-height: 400px;
+                overflow-y: auto;
+            }
+            .chart-period.active {
+                background-color: #0d6efd;
+                color: white;
+            }
+            #chartLoading {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: 100%;
+            }
+
+            /* Mobile styles */
+            @media (max-width: 992px) {
+                .main-content {
+                    margin-left: 0;
+                    width: 100%;
+                }
+            }
+
+        
+            /* Responsive cards */
+            @media (max-width: 768px) {
+                .col-md-3 {
+                    flex: 0 0 50%;
+                    max-width: 50%;
+                }
+
+                .stat-number {
+                    font-size: 1.5rem;
+                }
+            }
+
+            @media (max-width: 576px) {
+                .col-md-3 {
+                    flex: 0 0 100%;
+                    max-width: 100%;
+                }
+
+                .main-content {
+                    padding: 15px;
+                }
+            }
+        </style>
     </head>
 
     <body>
