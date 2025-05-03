@@ -23,7 +23,7 @@ function displayBranchesWithCheckboxes() {
     echo '<div class="branch-selection-container">';
     while($row = mysqli_fetch_array($result)) {
         echo '<div class="branch-item row align-items-center mb-3">';
-        echo '  <div class="col-5" style="height: 2rem:">';
+        echo '  <div class="col-6" style="height: 2rem:">';
         echo '    <div class="form-check">';
         echo '      <input class="form-check-input branch-checkbox" type="checkbox" ';
         echo '             id="branch_'.$row['BranchCode'].'" value="'.$row['BranchCode'].'">';
@@ -32,7 +32,7 @@ function displayBranchesWithCheckboxes() {
         echo '      </label>';
         echo '    </div>';
         echo '  </div>';
-        echo '  <div class="col-5" style="height: 2rem:">';
+        echo '  <div class="col-6" style="height: 2rem:">';
         echo '    <input type="number" name="qtys['.$row['BranchCode'].']" ';
         echo '           class="form-control quantity-input" placeholder="Qty" ';
         echo '           min="0" disabled style="display: none;">';
