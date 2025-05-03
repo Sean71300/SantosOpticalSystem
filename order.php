@@ -96,7 +96,7 @@ function getOrderStatus($conn, $orderId) {
     
     while ($row = $result->fetch_assoc()) {
         $totalItems++;
-        if ($row['Status'] === 'Complete') {
+        if ($row['Status'] === 'Completed') {
             $completeCount++;
         } elseif ($row['Status'] === 'Cancelled') {
             $cancelledCount++;
@@ -106,7 +106,7 @@ function getOrderStatus($conn, $orderId) {
     $stmt->close();
     
     if ($completeCount === $totalItems && $totalItems > 0) {
-        return 'Complete';
+        return 'Completed';
     } elseif ($cancelledCount === $totalItems && $totalItems > 0) {
         return 'Cancelled';
     }
@@ -480,7 +480,7 @@ $conn->close();
                         <select class="form-select" id="status" name="status">
                             <option value="">All Statuses</option>
                             <option value="Pending" <?php echo ($status == 'Pending' ? 'selected' : ''); ?>>Pending</option>
-                            <option value="Complete" <?php echo ($status == 'Complete' ? 'selected' : ''); ?>>Complete</option>
+                            <option value="Completed" <?php echo ($status == 'Completed' ? 'selected' : ''); ?>>Completed</option>
                             <option value="Cancelled" <?php echo ($status == 'Cancelled' ? 'selected' : ''); ?>>Cancelled</option>                       
                         </select>
                     </div>
@@ -514,7 +514,7 @@ $conn->close();
                                     <td><?= date('M j, Y', strtotime($order['Created_dt'])) ?></td>                                    <td>
                                         <span class="badge 
                                             <?= match($order['Status']) {
-                                                'Complete' => 'badge-complete',
+                                                'Completed' => 'badge-complete',
                                                 'Cancelled' => 'badge-cancelled',
                                                 default => 'badge-pending'
                                             } ?>">
