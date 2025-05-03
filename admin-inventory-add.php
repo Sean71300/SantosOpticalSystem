@@ -344,7 +344,6 @@ include 'loginChecker.php';
 
                 row.innerHTML = `
                     <div class="col-md-6">
-                        <label class="form-label">${branchName}</label>
                         <input type="hidden" name="productBranches[]" value="${branchCode}">
                     </div>
                     <div class="col-md-6">
