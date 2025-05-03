@@ -63,7 +63,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['cancel'])) {
 
                             header("location: Dashboard.php");
                             exit();
-                        } else {
+                        }                     
+                        else {
                             $login_err = "The password you entered was not valid.";
                         }
                     }
