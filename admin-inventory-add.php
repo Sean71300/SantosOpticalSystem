@@ -219,24 +219,17 @@ include 'loginChecker.php';
                 <div class="row mb-4" id="branchQuantitiesContainer">
                     <!-- Dynamic quantity fields will be added here by JavaScript -->
                 </div>
-            
+             
                 <div class="row mb-4">
                     <div class="col-md-6">
                         <label for="productName" class="form-label">Product Name</label>
                         <input type="text" name="productName" id="productName" class="form-control form-control-lg" required>
                     </div>
-                </div>
-             
-                <div class="row mb-4">
                     <div class="col-md-6 mb-3 mb-md-0">
                         <label for="productBrand" class="form-label">Brand</label>
                         <select name="productBrand" id="productBrand" class="form-select form-control-lg" required>
                             <?php getBrands(); ?>
                         </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="productQty" class="form-label">Quantity</label>
-                        <input type="number" name="productQty" id="productQty" class="form-control form-control-lg" min="0" required>
                     </div>
                 </div>
                 
