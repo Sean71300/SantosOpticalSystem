@@ -47,9 +47,10 @@
     $category = isset($_GET['category']) ? $_GET['category'] : '';
     
     // Build the base SQL query with JOINs to check availability and archive status
-    $sql = "SELECT p.*, pb.Stocks 
+    $sql = "SELECT p.*, SUM(pb.Stocks) as Stocks 
         FROM `productMstr` p
         JOIN ProductBranchMaster pb ON p.ProductID = pb.ProductID
+        GROUP BY p.ProductID
         LEFT JOIN archives a ON (p.ProductID = a.TargetID AND a.TargetType = 'product')
         WHERE (p.Avail_FL = 'Available' OR p.Avail_FL IS NULL)
         AND a.ArchiveID IS NULL"; // Only show non-archived products
@@ -106,7 +107,7 @@
     if ($total > 0) {
         while($row = mysqli_fetch_assoc($result)) {
             $searchableText = strtolower($row['Model']);
-            $stock = 'N/A';
+            $stock = isset($row['Stocks']) ? $row['Stocks'] : 'N/A';
             $faceShape = isset($row['ShapeID']) ? getFaceShapeName($row['ShapeID']) : 'Not specified';
             
             echo "<div class='col d-flex product-card' data-search='".htmlspecialchars($searchableText, ENT_QUOTES)."'>";
