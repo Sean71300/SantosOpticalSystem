@@ -16,7 +16,6 @@ $recentActivities = getRecentActivities();
 $lowInventory = getLowInventoryProducts();
 $salesData = getSalesOverviewData();
 
-
 ?>
 
 <!DOCTYPE html>
@@ -163,11 +162,18 @@ $salesData = getSalesOverviewData();
                     <a href="order.php" class="btn btn-sm btn-outline-info mt-2">View All</a>
                 </div>
             </div>
-            
-            
         </div>
         
         <div class="row mt-4">
+            <div class="col-md-8">
+                <div class="dashboard-card">
+                    <h5><i class="fas fa-chart-line me-2"></i>Sales Overview (Last 7 Days)</h5>
+                    <hr class="border-1 border-black opacity-25">
+                    <div class="chart-container">
+                        <canvas id="salesChart"></canvas>
+                    </div>
+                </div>
+            </div>
             
             <div class="col-md-4">
                 <div class="dashboard-card recent-activity">    
