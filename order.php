@@ -319,7 +319,6 @@ if (isset($_POST['cancel_order']) && isset($_POST['order_id'])) {
         
         // Log the cancellation
         
-        $conn = connect();
         $LID=generate_LogsID();
         $CID=getCustomerID($conn, $orderId);
         $CName=getCustomerName($conn, $CID);
