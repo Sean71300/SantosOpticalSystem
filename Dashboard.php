@@ -168,6 +168,7 @@ $salesData = getSalesOverviewData();
             <div class="col-md-8">
             <div class="dashboard-card">
                     <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Sales Overview</h5>
                         <div class="btn-group" role="group">
                             <button type="button" class="btn btn-sm btn-outline-secondary period-btn active" data-period="daily">Daily</button>
                             <button type="button" class="btn btn-sm btn-outline-secondary period-btn" data-period="weekly">Weekly</button>
