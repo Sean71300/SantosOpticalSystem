@@ -301,7 +301,7 @@ function getAllBranches($conn) {
 
 // Handle order claiming
 
-if (isset($_POST['cancel_order']) && isset($_POST['order_id'])) {
+if (isset($_POST['return_order']) && isset($_POST['order_id'])) {
     $orderId = $_POST['order_id'];
     $conn = connect();
     
