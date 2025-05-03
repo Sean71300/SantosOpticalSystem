@@ -163,49 +163,87 @@ $salesData = getSalesOverviewData();
                     <a href="order.php" class="btn btn-sm btn-outline-info mt-2">View All</a>
                 </div>
             </div>
+            
+            <div class="col-md-3">
+                <div class="dashboard-card">
+                    <div class="card-icon text-success">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h5>Claimed Products</h5>
+                    <div class="stat-number"><?php echo number_format($claimedOrderCount); ?></div>
+                    <a href="order.php?status=Complete" class="btn btn-sm btn-outline-success mt-2">View All</a>
+                </div>
+            </div>
         </div>
         
         <div class="row mt-4">
-    <div class="col-md-8">
-        <div class="dashboard-card">
-            <h5 class="mb-3"><i class="fas fa-chart-line me-2"></i>Sales Overview (Last 30 Days)</h5>
-            <div class="chart-container">
-                <canvas id="salesChart"></canvas>
+            <div class="col-md-8">
+                <div class="dashboard-card">
+                    <h5 class="mb-3"><i class="fas fa-chart-line me-2"></i>Sales Overview (Last 7 Days)</h5>
+                    <div class="chart-container">
+                        <canvas id="salesChart"></canvas>
+                    </div>
+                </div>
             </div>
             
-            <!-- In the monthly summary section -->
-<?php if ($isAdmin && !empty($salesData['monthly'])): ?>
-<div class="mt-4">
-    <h6>Monthly Summary (Last 6 Months)</h6>
-    <div class="table-responsive">
-        <table class="table table-sm">
-            <thead>
-                <tr>
-                    <th>Month</th>
-                    <th>Total Claimed</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($salesData['monthly'] as $month): ?>
-                <tr>
-                    <td><?php echo date('F Y', strtotime($month['month'].'-01')); ?></td>
-                    <td><?php echo number_format($month['total_claimed']); ?></td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-    </div>
-</div>
-<?php elseif ($isAdmin): ?>
-<div class="mt-4">
-    <p class="text-muted">No monthly sales data available</p>
-</div>
-<?php endif; ?>
+            <div class="col-md-4">
+                <div class="dashboard-card recent-activity">    
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0"><i class="fa-solid fa-circle-exclamation me-2"></i>Low Stocks</h5>
+                        <a href="<?php echo ($isAdmin) ? 'admin-inventory.php' : 'Employee-inventory.php'; ?>" class="btn btn-sm btn-outline-secondary">
+                        <i class="fa-solid fa-boxes-stacked"></i> Show Inventory
+                        </a>
+                    </div>
+                    <hr class="border-1 border-black opacity-25">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div class="row">
+                                <?php
+                                if (count($lowInventory) > 0) {
+                                    foreach ($lowInventory as $product) {
+                                        echo '<div class="container d-flex align-items-center">';
+                                        echo '<img src="' . htmlspecialchars($product['ProductImage']) . '" alt="Product Image" style="height:100px; width:100px;" class="img-thumbnail">';
+                                            echo '<div class="fw-bold ms-3">';
+                                                echo htmlspecialchars($product['Model']);
+                                                echo "<br> Available Stocks: ".htmlspecialchars($product['Stocks']);
+                                            echo '</div>';
+                                        echo '</div>';
+                                    }
+                                } else {
+                                    echo '<p class="text-center">No low stock products.</p>';
+                                } 
+                                ?>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            <?php if ($isAdmin): ?>                    
+                <div class="dashboard-card recent-activity">    
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Recent Activity</h5>
+                        <a href="logs.php" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-list me-1"></i> Show All Logs
+                        </a>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <?php foreach ($recentActivities as $activity): ?>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <small><?php echo date('M j, g:i A', strtotime($activity['Upd_dt'])); ?></small>
+                                <div><?php echo htmlspecialchars($activity['Description']) ." ". ($activity['TargetType']). " # " . ($activity['TargetID']); ?></div>
+                            </div>
+                            <span class="badge bg-primary rounded-pill">New</span>
+                        </li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
+            </div>
+            <?php endif; ?>
         </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function()) {
+        document.addEventListener('DOMContentLoaded', function() {
             const sidebar = document.getElementById('sidebar');
             const mobileToggle = document.getElementById('mobileMenuToggle');
             const body = document.body;
@@ -242,62 +280,57 @@ $salesData = getSalesOverviewData();
                     body.classList.remove('sidebar-open');
                 }
             });
-        }
-            const salesData = {
-        labels: <?php echo json_encode(array_column($salesData['daily'], 'date')); ?>,
-        datasets: [{
-            label: 'Claimed Products',
-            data: <?php echo json_encode(array_column($salesData['daily'], 'total_claimed')); ?>,
-            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-            borderColor: 'rgba(75, 192, 192, 1)',
-            borderWidth: 2,
-            tension: 0.1,
-            fill: true
-        }]
-    };
 
-    const salesCtx = document.getElementById('salesChart').getContext('2d');
-    const salesChart = new Chart(salesCtx, {
-        type: 'bar',
-        data: salesData,
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Claimed Products'
+            const salesData = {
+                labels: <?php echo json_encode(array_column($salesData, 'date')); ?>,
+                datasets: [{
+                    label: 'Products Sold',
+                    data: <?php echo json_encode(array_column($salesData, 'total_sold')); ?>,
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 2,
+                    tension: 0.1,
+                    fill: true
+                }]
+            };
+
+            const salesCtx = document.getElementById('salesChart').getContext('2d');
+            const salesChart = new Chart(salesCtx, {
+                type: 'line',
+                data: salesData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Products Sold'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            }
+                        }
                     },
-                    ticks: {
-                        precision: 0
-                    }
-                },
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Date'
-                    },
-                    grid: {
-                        display: false
-                    }
-                }
-            },
-            plugins: {
-                legend: {
-                    position: 'top',
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return context.parsed.y + ' claimed products';
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y + ' products sold';
+                                }
+                            }
                         }
                     }
                 }
-            }
-        }
-    });
+            });
+        });
     </script>
 </body>
 </html>
