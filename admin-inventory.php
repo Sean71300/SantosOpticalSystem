@@ -631,12 +631,16 @@ $lowInventory = getLowInventoryProducts();
                     // Only show modal if:
                     // 1. It's not a form submission reload
                     // 2. It hasn't been shown in this session
-                    if (!sessionStorage.getItem('isFormAction') && 
-                        !sessionStorage.getItem('lowInventoryShown')) {
+                    // 3. The editProductModal was not recently closed
+                    if (
+                        !sessionStorage.getItem('isFormAction') &&
+                        !sessionStorage.getItem('lowInventoryShown') &&
+                        !sessionStorage.getItem('editProductModalClosed')
+                    ) {
                         new bootstrap.Modal(lowInventoryModalEl).show();
                         sessionStorage.setItem('lowInventoryShown', 'true');
                     }
-                    
+
                     // Clear form action flag after initial check
                     sessionStorage.removeItem('isFormAction');
                 }
@@ -644,7 +648,10 @@ $lowInventory = getLowInventoryProducts();
                 // Handle modal closure reloads
                 document.querySelectorAll('.modal').forEach(modal => {
                     modal.addEventListener('hidden.bs.modal', e => {
-                        if (e.target.id === 'editProductModal' || e.target.id === 'deleteProductModal') {
+                        if (e.target.id === 'editProductModal') {
+                            // Set a flag indicating the editProductModal was closed
+                            sessionStorage.setItem('editProductModalClosed', 'true');
+                        } else if (e.target.id === 'deleteProductModal') {
                             // Set temporary flag for modal-triggered reload
                             sessionStorage.setItem('isModalRefresh', 'true');
                         }
@@ -658,6 +665,7 @@ $lowInventory = getLowInventoryProducts();
                         sessionStorage.removeItem('lowInventoryShown');
                     }
                     sessionStorage.removeItem('isModalRefresh');
+                    sessionStorage.removeItem('editProductModalClosed'); // Clear the editProductModalClosed flag
                 });
             });
         </script>
