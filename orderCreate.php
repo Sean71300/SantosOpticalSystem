@@ -36,9 +36,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_order'])) {
             $orderDetailId = generate_OrderDtlID();
             
             $productBranchQuery = "SELECT pb.ProductBranchID, p.Model, p.Price, p.CategoryType 
-                                  FROM ProductBranchMaster pb
-                                  JOIN productMstr p ON pb.ProductID = p.ProductID
-                                  WHERE pb.ProductID = ? AND pb.BranchCode = ? LIMIT 1";
+                                    FROM ProductBranchMaster pb
+                                    JOIN productMstr p ON pb.ProductID = p.ProductID
+                                    WHERE pb.ProductID = ? AND pb.BranchCode = ? LIMIT 1";
             $stmt = $conn->prepare($productBranchQuery);
             $stmt->bind_param('is', $productId, $branchCode);
             $stmt->execute();
@@ -49,6 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_order'])) {
             if ($productData) {
                 $productBranchId = $productData['ProductBranchID'];
                 
+                // Insert order details
                 $detailQuery = "INSERT INTO orderDetails (OrderDtlID, OrderHdr_id, ProductBranchID, Quantity, ActivityCode, Status) 
                                 VALUES (?, ?, ?, ?, 2, 'Pending')";
                 $stmt = $conn->prepare($detailQuery);
@@ -56,12 +57,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_order'])) {
                 $stmt->execute();
                 $stmt->close();
                 
+                // Update stock
                 $updateQuery = "UPDATE ProductBranchMaster SET Stocks = Stocks - ? WHERE ProductID = ? AND BranchCode = ?";
                 $stmt = $conn->prepare($updateQuery);
                 $stmt->bind_param('iis', $quantity, $productId, $branchCode);
                 $stmt->execute();
                 $stmt->close();
                 
+                // Fetch customer name
                 $customerQuery = "SELECT CustomerName FROM customer WHERE CustomerID = ?";
                 $stmt = $conn->prepare($customerQuery);
                 $stmt->bind_param('i', $customerId);
@@ -70,6 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_order'])) {
                 $customerData = $customerResult->fetch_assoc();
                 $stmt->close();
                 
+                // Fetch branch name
                 $branchQuery = "SELECT BranchName FROM BranchMaster WHERE BranchCode = ?";
                 $stmt = $conn->prepare($branchQuery);
                 $stmt->bind_param('s', $branchCode);
@@ -77,16 +81,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_order'])) {
                 $branchResult = $stmt->get_result();
                 $branchData = $branchResult->fetch_assoc();
                 $stmt->close();
-
+            
+                // Get price and total
                 $price = (float)str_replace(['₱', ','], '', $productData['Price']);
                 $total = $price * $quantity;
                 
+                // Prepare order details
                 $orderDetails = [
                     'order_id' => $orderId,
                     'customer_name' => $customerData['CustomerName'] ?? '',
                     'branch_name' => $branchData['BranchName'] ?? '',
                     'product_model' => $productData['Model'] ?? '',
-                    'product_category' => $productData['CategoryType'] ?? '',
+                    'product_category' => $productData['CategoryType'] ?? '', // Ensure this is correctly set
                     'quantity' => $quantity,
                     'price' => '₱' . number_format($price, 2),
                     'total' => '₱' . number_format($total, 2),
@@ -94,10 +100,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_order'])) {
                     'date_created' => date('Y-m-d H:i:s')
                 ];
                 
+                // Log the order
                 $logId = generate_LogsID();
                 $logDescription = "#$orderId for customer " . $customerData['CustomerName'];
                 $logQuery = "INSERT INTO Logs (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description) 
-                            VALUES (?, ?, ?, 'order', 3, ?)";
+                              VALUES (?, ?, ?, 'order', 3, ?)";
                 $stmt = $conn->prepare($logQuery);
                 $stmt->bind_param('iiis', $logId, $employeeId, $orderId, $logDescription);
                 $stmt->execute();
@@ -105,7 +112,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_order'])) {
                 
                 $conn->commit();
                 $orderSuccess = true;
-                
             } else {
                 throw new Exception("Product not found in selected branch inventory!");
             }
@@ -161,12 +167,15 @@ if (isset($_POST['branch_code'])) {
     $selectedBranch = $_POST['branch_code'];
 }
 
+// Fetch products with stocks > 0, including brand and shape info
 $products = [];
 if ($selectedBranch) {
-    $productQuery = "SELECT p.*, pb.Stocks 
+    $productQuery = "SELECT p.*, pb.Stocks, b.BrandName, s.Description as ShapeDescription
                      FROM productMstr p
                      JOIN ProductBranchMaster pb ON p.ProductID = pb.ProductID
-                     WHERE pb.BranchCode = ? AND p.Avail_FL = 'Available'";
+                     LEFT JOIN brandMaster b ON p.BrandID = b.BrandID
+                     LEFT JOIN shapeMaster s ON p.ShapeID = s.ShapeID
+                     WHERE pb.BranchCode = ? AND p.Avail_FL = 'Available' AND pb.Stocks > 0";
     $stmt = $conn->prepare($productQuery);
     $stmt->bind_param('s', $selectedBranch);
     $stmt->execute();

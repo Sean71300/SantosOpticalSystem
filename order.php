@@ -92,6 +92,8 @@ function getOrderStatus($conn, $orderId) {
     
     $completeCount = 0;
     $cancelledCount = 0;
+    $returnedCount = 0;
+    $claimedCount = 0;
     $totalItems = 0;
     
     while ($row = $result->fetch_assoc()) {
@@ -100,6 +102,10 @@ function getOrderStatus($conn, $orderId) {
             $completeCount++;
         } elseif ($row['Status'] === 'Cancelled') {
             $cancelledCount++;
+        } elseif ($row['Status'] === 'Returned') {
+            $returnedCount++;
+        } elseif ($row['Status'] === 'Claimed') {
+            $claimedCount++;
         }
     }
     
@@ -109,6 +115,10 @@ function getOrderStatus($conn, $orderId) {
         return 'Completed';
     } elseif ($cancelledCount === $totalItems && $totalItems > 0) {
         return 'Cancelled';
+    } elseif ($returnedCount === $totalItems && $totalItems > 0) {
+        return 'Returned';
+    } elseif ($claimedCount === $totalItems && $totalItems > 0) {
+        return 'Claimed';
     }
     return 'Pending';
 }
@@ -122,6 +132,17 @@ function getCustomerName($conn, $customerId) {
     $row = $result->fetch_assoc();
     $stmt->close();
     return $row ? $row['CustomerName'] : 'Unknown';
+}
+
+function getCustomerID($conn, $OrderId) {
+    $query = "SELECT CustomerID FROM Order_hdr WHERE Orderhdr_id = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param('i', $OrderId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    $stmt->close();
+    return $row ? $row['CustomerID'] : 'Unknown';
 }
 
 function getBranchName($conn, $branchCode) {
@@ -307,10 +328,14 @@ if (isset($_POST['cancel_order']) && isset($_POST['order_id'])) {
         }
         
         // Log the cancellation
-        $description = "Order #$orderId cancelled by employee";
-        $logQuery = "INSERT INTO Logs (EmployeeID, TargetID, TargetType, ActivityCode, Description) VALUES (?, ?, 'order', 5, ?)";
+        
+        $LID=generate_LogsID();
+        $CID=getCustomerID($conn, $orderId);
+        $CName=getCustomerName($conn, $CID);
+        $description = "#$orderId for customer ". $CName;
+        $logQuery = "INSERT INTO Logs (LogsID,EmployeeID, TargetID, TargetType, ActivityCode, Description) VALUES (?,?, ?, 'order', 7, ?)";
         $stmt = $conn->prepare($logQuery);
-        $stmt->bind_param('iis', $_SESSION['id'], $orderId, $description);
+        $stmt->bind_param('iiis',$LID, $_SESSION['id'], $orderId, $description);
         $stmt->execute();
         $stmt->close();
         
@@ -442,6 +467,12 @@ $conn->close();
         .badge-cancelled {
             background-color: #dc3545;
         }
+        .badge-returned {
+            background-color: #fd7e14;
+        }
+        .badge-claimed {
+            background-color: #17a2b8;
+        }
         @media (max-width: 992px) {
             .sidebar {
                 transform: translateX(-100%);
@@ -561,7 +592,9 @@ $conn->close();
                         <option value="">All Statuses</option>
                         <option value="Pending" <?php echo ($status == 'Pending' ? 'selected' : ''); ?>>Pending</option>
                         <option value="Completed" <?php echo ($status == 'Completed' ? 'selected' : ''); ?>>Completed</option>
-                        <option value="Cancelled" <?php echo ($status == 'Cancelled' ? 'selected' : ''); ?>>Cancelled</option>                       
+                        <option value="Cancelled" <?php echo ($status == 'Cancelled' ? 'selected' : ''); ?>>Cancelled</option>
+                        <option value="Returned" <?php echo ($status == 'Returned' ? 'selected' : ''); ?>>Returned</option>
+                        <option value="Claimed" <?php echo ($status == 'Claimed' ? 'selected' : ''); ?>>Claimed</option>
                     </select>
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
@@ -597,6 +630,8 @@ $conn->close();
                                         <?= match($order['Status']) {
                                             'Completed' => 'badge-complete',
                                             'Cancelled' => 'badge-cancelled',
+                                            'Returned' => 'badge-returned',
+                                            'Claimed' => 'badge-claimed',
                                             default => 'badge-pending'
                                         } ?>">
                                         <?= $order['Status'] ?>
@@ -863,7 +898,9 @@ $conn->close();
 
                     order.Details.forEach(detail => {
                         const statusClass = detail.Status === 'Completed' ? 'badge-complete' : 
-                                        detail.Status === 'Cancelled' ? 'badge-cancelled' : 'badge-pending';
+                                        detail.Status === 'Cancelled' ? 'badge-cancelled' :
+                                        detail.Status === 'Returned' ? 'badge-returned' :
+                                        detail.Status === 'Claimed' ? 'badge-claimed' : 'badge-pending';
                         
                         html += `
                             <tr>
@@ -879,18 +916,6 @@ $conn->close();
                     html += `
                                     </tbody>
                                 </table>
-                            </div>
-                            
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <h5 class="card-title">Order Summary</h5>
-                                            <p><strong>Total Items:</strong> ${order.ItemCount}</p>
-                                            <p><strong>Total Amount:</strong> ₱${order.TotalAmount.toFixed(2)}</p>
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
                         </div>`;
                     

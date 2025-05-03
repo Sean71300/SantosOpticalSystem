@@ -261,7 +261,8 @@ $conn->close();
                                                 case 3: $activity = 'added'; break;
                                                 case 4: $activity = 'edited'; break;
                                                 case 5: $activity = 'deleted'; break;
-                                                case 6: $activity = 'archived'; break;
+                                                case 6: $activity = 'archived'; break;                                                
+                                                case 7: $activity = 'cancelled'; break;
                                                 default: $activity = 'performed an action on';
                                             }                                            
                                             echo "<strong>" . $activity . "</strong> " . $log['TargetType'] .": ". $log['Description']; 
