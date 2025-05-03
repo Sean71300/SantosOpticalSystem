@@ -671,6 +671,13 @@ $conn->close();
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Bootstrap tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl)
+            });
+
+            // Sidebar toggle functionality
             const sidebar = document.getElementById('sidebar');
             const mobileToggle = document.getElementById('mobileMenuToggle');
             const body = document.body;
@@ -708,6 +715,7 @@ $conn->close();
                 }
             });
 
+            // Customer search functionality
             const customerSearch = document.getElementById('customerSearch');
             if (customerSearch) {
                 customerSearch.addEventListener('input', function() {
@@ -728,6 +736,7 @@ $conn->close();
                 });
             }
 
+            // Customer selection
             document.querySelectorAll('.select-customer').forEach(button => {
                 button.addEventListener('click', function() {
                     const customerId = this.getAttribute('data-customer-id');
@@ -740,6 +749,7 @@ $conn->close();
                 });
             });
 
+            // Order details modal
             const orderDetailsModal = document.getElementById('orderDetailsModal');
             if (orderDetailsModal) {
                 orderDetailsModal.addEventListener('show.bs.modal', function(event) {
@@ -756,18 +766,25 @@ $conn->close();
                         </div>
                     `;
                     
+                    // Load order details via AJAX
                     fetch(`orderDetails.php?id=${orderId}`)
-                        .then(response => response.text())
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.text();
+                        })
                         .then(data => {
                             modalBody.innerHTML = data;
                         })
                         .catch(error => {
+                            console.error('Error loading order details:', error);
                             modalBody.innerHTML = `
                                 <div class="alert alert-danger">
                                     Failed to load order details. Please try again.
+                                    <p class="text-muted">${error.message}</p>
                                 </div>
                             `;
-                            console.error('Error loading order details:', error);
                         });
                 });
                 
@@ -783,6 +800,14 @@ $conn->close();
                     `;
                 });
             }
+
+            // Initialize all view buttons
+            document.querySelectorAll('.view-order-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const orderId = this.getAttribute('data-order-id');
+                    // The modal will handle the rest via the show.bs.modal event
+                });
+            });
         });
     </script>
 </body>
