@@ -880,18 +880,6 @@ $conn->close();
                                     </tbody>
                                 </table>
                             </div>
-                            
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <h5 class="card-title">Order Summary</h5>
-                                            <p><strong>Total Items:</strong> ${order.ItemCount}</p>
-                                            <p><strong>Total Amount:</strong> ₱${order.TotalAmount.toFixed(2)}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
                         </div>`;
                     
                     // Only show action buttons if order is pending
