@@ -11,19 +11,4 @@ if (isset($_GET['product_id'])) {
             ORDER BY b.BranchName";
     
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $productID);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    
-    $branches = [];
-    while ($row = $result->fetch_assoc()) {
-        $branches[] = $row;
-    }
-    
-    header('Content-Type: application/json');
-    echo json_encode($branches);
-    
-    $stmt->close();
-    $conn->close();
-}
-?>
+   
