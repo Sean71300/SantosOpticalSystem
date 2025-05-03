@@ -61,7 +61,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['cancel'])) {
                             $_SESSION["upd_dt"] = $upd_dt;
                             $_SESSION['last_activity'] = time();
 
-                            header("location: Dashboard.php");
+                            if ($roleid == 3) {
+                                header("location: customerRecords.php");
+                            } else {
+                                header("location: Dashboard.php");
+                            }
                             exit();
                         }                     
                         else {

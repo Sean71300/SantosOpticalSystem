@@ -14,6 +14,7 @@ if (!$isAdmin) {
     $recentActivities = getRecentActivities();
     $lowInventory = getLowInventoryProducts();
 }
+
 ?>
 
 <!DOCTYPE html>
