@@ -455,7 +455,6 @@ $conn->close();
                                         <th>Category</th>
                                         <th>Quantity</th>
                                         <th>Unit Price</th>
-                                        <th>Total</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -464,7 +463,6 @@ $conn->close();
                                         <td><?= $orderDetails['product_category'] ?></td>
                                         <td><?= $orderDetails['quantity'] ?></td>
                                         <td><?= $orderDetails['price'] ?></td>
-                                        <td><?= $orderDetails['total'] ?></td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -553,7 +551,6 @@ $conn->close();
                     <p><strong>Category:</strong> ${productCategory}</p>
                     <p><strong>Quantity:</strong> ${quantity}</p>
                     <p><strong>Unit Price:</strong> ${productPrice}</p>
-                    <p><strong>Total:</strong> ₱${total}</p>
                 </div>
             `;
             

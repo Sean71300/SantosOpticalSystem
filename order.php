@@ -182,7 +182,9 @@ function getOrderDetails($conn, $orderId) {
     $details = [];
     
     while ($row = $result->fetch_assoc()) {
-        $row['Price'] = (float)$row['Price'];
+        // Extract numeric value from price string (remove ₱ symbol)
+        $price = str_replace('₱', '', $row['Price']);
+        $row['Price'] = (float)$price;
         $row['Quantity'] = (int)$row['Quantity'];
         $details[] = $row;
     }
@@ -445,6 +447,32 @@ $conn->close();
             max-height: 300px;
             overflow-y: auto;
         }
+        .modal-footer .btn {
+            margin-left: 5px;
+            margin-right: 5px;
+        }
+
+        #completeOrderBtn {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+
+        #editOrderBtn {
+            background-color: #ffc107;
+            border-color: #ffc107;
+            color: #212529;
+        }
+        
+        /* New styles for order details modal */
+        .order-details-container {
+            padding-bottom: 20px;
+        }
+        .order-details-footer {
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -654,10 +682,7 @@ $conn->close();
                     </div>
                     <p>Loading order details...</p>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            </div>
+            </div>            
         </div>
     </div>
 </div>
@@ -779,16 +804,14 @@ $conn->close();
                                             <th>Category</th>
                                             <th>Price</th>
                                             <th>Qty</th>
-                                            <th>Subtotal</th>
                                             <th>Status</th>
                                         </tr>
                                     </thead>
                                     <tbody>`;
-                    
+
                     order.Details.forEach(detail => {
-                        const subtotal = detail.Price * detail.Quantity;
                         const statusClass = detail.Status === 'Completed' ? 'badge-complete' : 
-                                          detail.Status === 'Cancelled' ? 'badge-cancelled' : 'badge-pending';
+                                        detail.Status === 'Cancelled' ? 'badge-cancelled' : 'badge-pending';
                         
                         html += `
                             <tr>
@@ -797,19 +820,21 @@ $conn->close();
                                 <td>${detail.CategoryType || 'N/A'}</td>
                                 <td>₱${detail.Price.toFixed(2)}</td>
                                 <td>${detail.Quantity}</td>
-                                <td>₱${subtotal.toFixed(2)}</td>
                                 <td><span class="badge ${statusClass}">${detail.Status}</span></td>
                             </tr>`;
                     });
-                    
+
                     html += `
-                                    </tbody>
-                                </table>
-                            </div>
-                            
-                            <div class="text-end mt-3">
-                                <h4>Total: ₱${order.TotalAmount.toFixed(2)}</h4>
-                            </div>
+                        <div class="order-details-footer d-flex justify-content-end">
+                            <button type="button" class="btn btn-success me-2" id="completeOrderBtn">
+                                <i class="fas fa-check-circle me-1"></i> Complete Order
+                            </button>
+                            <button type="button" class="btn btn-danger me-2" id="cancelOrderBtn">
+                                <i class="fas fa-times-circle me-1"></i> Cancel Order
+                            </button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <i class="fas fa-times me-1"></i> Close
+                            </button>
                         </div>`;
                     
                     modalBody.innerHTML = html;
