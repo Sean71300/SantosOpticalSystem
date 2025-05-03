@@ -166,8 +166,15 @@ $salesData = getSalesOverviewData();
         
         <div class="row mt-4">
             <div class="col-md-8">
-                <div class="dashboard-card">
-                    <h5><i class="fas fa-chart-line me-2"></i>Sales Overview (Last 7 Days)</h5>
+            <div class="dashboard-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-sm btn-outline-secondary period-btn active" data-period="daily">Daily</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary period-btn" data-period="weekly">Weekly</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary period-btn" data-period="monthly">Monthly</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary period-btn" data-period="yearly">Yearly</button>
+                        </div>
+                    </div>
                     <hr class="border-1 border-black opacity-25">
                     <div class="chart-container">
                         <canvas id="salesChart"></canvas>
@@ -232,6 +239,23 @@ $salesData = getSalesOverviewData();
     </div>
 
     <script>
+                let salesChart;
+        const initialData = <?php echo json_encode(getSalesDataByPeriod('daily', 7)); ?>;
+
+        function updateChart(period) {
+            fetch(`getSalesData.php?period=${period}`)
+                .then(response => response.json())
+                .then(data => {
+                    const labels = data.map(item => item.label);
+                    const salesData = data.map(item => item.total_sold);
+                    
+                    salesChart.data.labels = labels;
+                    salesChart.data.datasets[0].data = salesData;
+                    salesChart.update();
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             const sidebar = document.getElementById('sidebar');
             const mobileToggle = document.getElementById('mobileMenuToggle');
@@ -284,42 +308,62 @@ $salesData = getSalesOverviewData();
             };
 
             const salesCtx = document.getElementById('salesChart').getContext('2d');
-            const salesChart = new Chart(salesCtx, {
-                type: 'line',
-                data: salesData,
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Products Sold'
-                            }
-                        },
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Date'
-                            }
+        salesChart = new Chart(salesCtx, {
+            type: 'line',
+            data: {
+                labels: initialData.map(item => item.label),
+                datasets: [{
+                    label: 'Products Sold',
+                    data: initialData.map(item => item.total_sold),
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 2,
+                    tension: 0.1,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Products Sold'
                         }
                     },
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return context.parsed.y + ' products sold';
-                                }
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Period'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.parsed.y + ' products sold';
                             }
                         }
                     }
                 }
+            }
+        });
+
+        // Period button click handlers
+        document.querySelectorAll('.period-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                updateChart(this.dataset.period);
             });
         });
-    </script>
+    });
+</script>
 </body>
 </html>
