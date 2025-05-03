@@ -825,17 +825,12 @@ $conn->close();
                     });
 
                     html += `
-                                    </tbody>
-                                </table>
-                            </div>                            
-                        </div>
-                        
                         <div class="order-details-footer d-flex justify-content-end">
                             <button type="button" class="btn btn-success me-2" id="completeOrderBtn">
                                 <i class="fas fa-check-circle me-1"></i> Complete Order
                             </button>
-                            <button type="button" class="btn btn-warning me-2" id="editOrderBtn">
-                                <i class="fas fa-edit me-1"></i> Edit Order
+                            <button type="button" class="btn btn-danger me-2" id="cancelOrderBtn">
+                                <i class="fas fa-times-circle me-1"></i> Cancel Order
                             </button>
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                                 <i class="fas fa-times me-1"></i> Close
