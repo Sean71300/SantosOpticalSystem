@@ -380,7 +380,7 @@ $conn->close();
                         <div class="row mt-4">
                             <div class="col-md-3">
                                 <label for="quantity" class="form-label"><strong>Quantity:</strong></label>
-                                <input type="number" class="form-control" id="quantity" name="quantity" min="1" value="1" required>
+                                <input type="number" class="form-control" id="quantity" name="quantity" min="1" max="10" value="1" required>
                             </div>
                         </div>
                         

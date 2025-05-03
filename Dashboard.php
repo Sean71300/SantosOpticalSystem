@@ -11,10 +11,27 @@ $customerCount = getCustomerCount();
 $employeeCount = getEmployeeCount();
 $inventoryCount = getInventoryCount();
 $orderCount = getOrderCount();
+$claimedOrderCount = getClaimedOrderCount(); // New claimed orders count
 $recentActivities = getRecentActivities();
 $lowInventory = getLowInventoryProducts();
 
-// Modified function to get sales overview data based on your actual database structure
+function getClaimedOrderCount() {
+    global $conn;
+    
+    $query = "SELECT COUNT(DISTINCT od.OrderHdr_id) as claimed_count 
+              FROM orderDetails od
+              WHERE od.Status = 'Complete'";
+              
+    $result = $conn->query($query);
+    
+    if ($result && $result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        return $row['claimed_count'];
+    }
+    
+    return 0;
+}
+
 function getSalesOverviewData($days = 7) {
     global $conn;
     
@@ -119,6 +136,20 @@ $salesData = getSalesOverviewData();
                 width: 100%;
             }
             
+            /* New styles for claimed orders */
+            .card-icon.text-success {
+                color: #28a745 !important;
+            }
+            .btn-outline-success {
+                color: #28a745;
+                border-color: #28a745;
+            }
+            .btn-outline-success:hover {
+                color: #fff;
+                background-color: #28a745;
+                border-color: #28a745;
+            }
+            
             /* Mobile styles */
             @media (max-width: 992px) {
                 .main-content {
@@ -188,6 +219,7 @@ $salesData = getSalesOverviewData();
                     </div>
                 </div>
                 <?php endif; ?>
+                
                 <!-- Inventory Card -->
                 <div class="col-md-3">
                     <div class="dashboard-card">
@@ -200,15 +232,27 @@ $salesData = getSalesOverviewData();
                     </div>
                 </div>
                 
-                <!-- Orders Card -->
+                <!-- Total Orders Card -->
                 <div class="col-md-3">
                     <div class="dashboard-card">
                         <div class="card-icon text-info">
                             <i class="fas fa-shopping-cart"></i>
                         </div>
-                        <h5>Orders</h5>
+                        <h5>Total Orders</h5>
                         <div class="stat-number"><?php echo number_format($orderCount); ?></div>
                         <a href="order.php" class="btn btn-sm btn-outline-info mt-2">View All</a>
+                    </div>
+                </div>
+                
+                <!-- Claimed Orders Card -->
+                <div class="col-md-3">
+                    <div class="dashboard-card">
+                        <div class="card-icon text-success">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <h5>Claimed Orders</h5>
+                        <div class="stat-number"><?php echo number_format($claimedOrderCount); ?></div>
+                        <a href="order.php?status=Complete" class="btn btn-sm btn-outline-success mt-2">View Claimed</a>
                     </div>
                 </div>
             </div>
