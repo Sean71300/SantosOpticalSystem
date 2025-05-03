@@ -32,7 +32,8 @@
         }
         return 'Not specified';
     }
-function pagination() {
+
+   function pagination() {
     $conn = connect();
 
     $perPage = 12; 
@@ -46,11 +47,12 @@ function pagination() {
     $category = isset($_GET['category']) ? $_GET['category'] : '';
     
     // Build the base SQL query with JOINs to check availability and archive status
-    $sql = "SELECT p.* 
-        FROM `productMstr` p
-        LEFT JOIN archives a ON (p.ProductID = a.TargetID AND a.TargetType = 'product')
-        WHERE (p.Avail_FL = 'Available' OR p.Avail_FL IS NULL)
-        AND a.ArchiveID IS NULL"; // Only show non-archived products
+    $sql = "SELECT p.*, pb.Stocks, pb.Avail_FL as BranchAvailability 
+            FROM `productMstr` p
+            LEFT JOIN ProductBranchMaster pb ON p.ProductID = pb.ProductID
+            LEFT JOIN archives a ON (p.ProductID = a.TargetID AND a.TargetType = 'product')
+            WHERE (p.Avail_FL = 'Available' OR p.Avail_FL IS NULL)
+            AND a.ArchiveID IS NULL"; // Only show non-archived products
     
     $whereConditions = [];
     
@@ -89,10 +91,7 @@ function pagination() {
     }
     
     // First get the total count without limits
-    $countSql = "SELECT COUNT(*) as total FROM `productMstr` p
-             LEFT JOIN archives a ON (p.ProductID = a.TargetID AND a.TargetType = 'product')
-             WHERE (p.Avail_FL = 'Available' OR p.Avail_FL IS NULL)
-             AND a.ArchiveID IS NULL";
+    $countSql = str_replace("p.*, pb.Stocks, pb.Avail_FL as BranchAvailability", "COUNT(*) as total", $sql);
     $countResult = mysqli_query($conn, $countSql);
     $totalData = mysqli_fetch_assoc($countResult);
     $total = $totalData['total'];
@@ -107,7 +106,7 @@ function pagination() {
     if ($total > 0) {
         while($row = mysqli_fetch_assoc($result)) {
             $searchableText = strtolower($row['Model']);
-            $stock = 'N/A';
+            $stock = isset($row['Stocks']) ? $row['Stocks'] : 0;
             $faceShape = isset($row['ShapeID']) ? getFaceShapeName($row['ShapeID']) : 'Not specified';
             
             echo "<div class='col d-flex product-card' data-search='".htmlspecialchars($searchableText, ENT_QUOTES)."'>";
@@ -122,7 +121,7 @@ function pagination() {
                         $numeric_price = preg_replace('/[^0-9.]/', '', $price);
                         $formatted_price = is_numeric($numeric_price) ? '₱' . number_format((float)$numeric_price, 2) : '₱0.00';
                         echo "<div class='card-text mb-2'>".$formatted_price."</div>";
-                        $availability = $row['Avail_FL'];
+                        $availability = isset($row['BranchAvailability']) ? $row['BranchAvailability'] : $row['Avail_FL'];
                         if ($availability == "Available") {
                             echo "<div class='card-text mb-2 text-success'>".$availability."</div>";
                         echo "</div>";
