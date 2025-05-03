@@ -252,20 +252,20 @@ function getInventory($sort = 'ProductID', $order = 'ASC')
     mysqli_close($link);
 }
 
-function addProduct(){ //Add function to add a new product to the database
+function addProduct() { // Add function to add a new product to the database
     $link = connect();
     $newProductID = generate_ProductMstrID();
-    $newProductName = $_POST['productName'];
-    $newProductBrand = $_POST['productBrand'];
-    $newProductShape = $_POST['productShape'];
-    $newProductCategory = $_POST['productCategory'];
-    $newProductMaterial = $_POST['productMaterial'];
-    $newProductPrice = "₱". $_POST['productPrice'];
-    $newProductImg = $_FILES['productImg'];
-    $upd_by = $_SESSION['full_name'];
+    $newProductName = $_POST['productName'] ?? '';
+    $newProductBrand = $_POST['productBrand'] ?? '';
+    $newProductShape = $_POST['productShape'] ?? '';
+    $newProductCategory = $_POST['productCategory'] ?? '';
+    $newProductMaterial = $_POST['productMaterial'] ?? '';
+    $newProductPrice = "₱" . ($_POST['productPrice'] ?? '');
+    $newProductImg = $_FILES['productImg'] ?? null;
+    $upd_by = $_SESSION['full_name'] ?? 'Unknown';
     $date = new DateTime();
     $upd_dt = $date->format('Y-m-d H:i:s');
-    
+
     if (isset($_POST['addProduct'])) {
         // Validate and upload the product image
         $targetDir = "uploads/";
@@ -274,147 +274,109 @@ function addProduct(){ //Add function to add a new product to the database
         $imageFileType = strtolower(pathinfo($targetFile, PATHINFO_EXTENSION));
 
         // Check if image file is a valid image
-        $check = getimagesize($newProductImg["tmp_name"]);
-        if (empty($check)) {
-            echo "Error: Unable to process the image. Please upload a valid image file.";
-            $uploadOk = 0;
-        }
+        if ($newProductImg && isset($newProductImg["tmp_name"]) && is_uploaded_file($newProductImg["tmp_name"])) {
+            $check = getimagesize($newProductImg["tmp_name"]);
+            if ($check === false) {
+                echo "Error: File is not a valid image.";
+                $uploadOk = 0;
+            }
 
-        if ($check === false) {
-            echo "File is not an image.";
-            $uploadOk = 0;
-        }
+            // Check file size (limit to 2MB)
+            if ($newProductImg["size"] > 2000000) {
+                echo "Error: File size exceeds 2MB.";
+                $uploadOk = 0;
+            }
 
-        // Check file size (limit to 2MB)
-        if ($newProductImg["size"] > 2000000) {
-            echo "Sorry, your file is too large.";
-            $uploadOk = 0;
-        }
+            // Allow certain file formats
+            if (!in_array($imageFileType, ["jpg", "png", "jpeg", "gif"])) {
+                echo "Error: Only JPG, JPEG, PNG, and GIF files are allowed.";
+                $uploadOk = 0;
+            }
 
-        // Allow certain file formats
-        if (!in_array($imageFileType, ["jpg", "png", "jpeg", "gif"])) {
-            echo "Sorry, only JPG, JPEG, PNG & GIF files are allowed.";
-            $uploadOk = 0;
-        }
-
-        // Attempt to upload file
-        if ($uploadOk) {
-            $sourceImage = null;
-            switch ($imageFileType) {
-                case 'jpg':
-                case 'jpeg':
-                    $sourceImage = imagecreatefromjpeg($newProductImg["tmp_name"]);
-                    break;
-                case 'png':
-                    $sourceImage = imagecreatefrompng($newProductImg["tmp_name"]);
-                    break;
-                case 'gif':
-                    $sourceImage = imagecreatefromgif($newProductImg["tmp_name"]);
-                    break;
-                default:
-                    echo "Unsupported image format.";
+            // Attempt to upload file
+            if ($uploadOk) {
+                if (!move_uploaded_file($newProductImg["tmp_name"], $targetFile)) {
+                    echo "Error: Failed to upload the image.";
                     $uploadOk = 0;
-            }
-
-            if ($sourceImage) {
-                $resizedImage = imagecreatetruecolor(600, 600);
-                $originalWidth = $check[0];
-                $originalHeight = $check[1];
-                imagecopyresampled(
-                    $resizedImage,
-                    $sourceImage,
-                    0, 0, 0, 0,
-                    600, 600,
-                    $originalWidth,
-                    $originalHeight
-                );
-
-                switch ($imageFileType) {
-                    case 'jpg':
-                    case 'jpeg':
-                        imagejpeg($resizedImage, $targetFile);
-                        break;
-                    case 'png':
-                        imagepng($resizedImage, $targetFile);
-                        break;
-                    case 'gif':
-                        imagegif($resizedImage, $targetFile);
-                        break;
                 }
-
-                // Free memory
-                imagedestroy($sourceImage);
-                imagedestroy($resizedImage);
             }
+        } else {
+            echo "Error: No image file uploaded.";
+            $uploadOk = 0;
         }
 
-        if ($uploadOk && file_exists($targetFile)) {
+        if ($uploadOk) {
             // Insert product details into the product master database
-            $qty = $_POST['qty'];
+            $qty = $_POST['qty'] ?? 0;
             $avail_FL = ($qty > 0) ? 'Available' : 'Not Available';
             $sql = "INSERT INTO productMstr (ProductID, CategoryType, ShapeID, BrandID, Model, Material, Price, ProductImage, Avail_FL, Upd_by, Upd_dt) 
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $stmt = mysqli_prepare($link, $sql);
-            mysqli_stmt_bind_param($stmt, "sssssssssss", $newProductID, $newProductCategory, $newProductShape, $newProductBrand, $newProductName, $newProductMaterial, $newProductPrice, $targetFile, $avail_FL, $upd_by, $upd_dt);          
-            mysqli_stmt_execute($stmt);
-            mysqli_stmt_close($stmt);
-            
-            // Insert product-branch mapping into the product branch master database
-            if (!empty($_POST['qtys'])) {
-                foreach ($_POST['qtys'] as $branchCode => $qty) {
-                    $avail_FL = ($qty > 0) ? 'Available' : 'Not Available';
-                    $newProductBranchID = generate_ProductBrnchMstrID();
-                    $sql = "INSERT INTO ProductBranchMaster (ProductBranchID, ProductID, BranchCode, Stocks, Avail_FL, Upd_by, Upd_dt)
-                            VALUES (?, ?, ?, ?, ?, ?, ?)"; 
-                            $stmt = mysqli_prepare($link, $sql);
-                            mysqli_stmt_bind_param($stmt, "sssisds", $newProductBranchID, $newProductID, $branchCode, 
-                            $qty, $avail_FL, $upd_by, $upd_dt);
-                            mysqli_stmt_execute($stmt);
-                            mysqli_stmt_close($stmt);
-                }
-            }
+            mysqli_stmt_bind_param($stmt, "sssssssssss", $newProductID, $newProductCategory, $newProductShape, $newProductBrand, $newProductName, $newProductMaterial, $newProductPrice, $targetFile, $avail_FL, $upd_by, $upd_dt);
 
-            //Insert Logs into logs database
-            $code = '3';
-            GenerateLogs($newProductID,$newProductName,$code);
-            echo 
-                '<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="successModalLabel">Success</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                The product has been added to the database successfully!
-                            </div>
-                            <div class="modal-footer">
-                                <a href="admin-inventory.php" class="btn btn-secondary" data-bs-dismiss="modal">Close</a>
+            if (mysqli_stmt_execute($stmt)) {
+                mysqli_stmt_close($stmt);
+
+                // Insert product-branch mapping into the product branch master database
+                if (!empty($_POST['qtys'])) {
+                    foreach ($_POST['qtys'] as $branchCode => $qty) {
+                        $avail_FL = ($qty > 0) ? 'Available' : 'Not Available';
+                        $newProductBranchID = generate_ProductBrnchMstrID();
+                        $sql = "INSERT INTO ProductBranchMaster (ProductBranchID, ProductID, BranchCode, Stocks, Avail_FL, Upd_by, Upd_dt)
+                                VALUES (?, ?, ?, ?, ?, ?, ?)";
+                        $stmt = mysqli_prepare($link, $sql);
+                        mysqli_stmt_bind_param($stmt, "sssisds", $newProductBranchID, $newProductID, $branchCode, $qty, $avail_FL, $upd_by, $upd_dt);
+                        mysqli_stmt_execute($stmt);
+                        mysqli_stmt_close($stmt);
+                    }
+                }
+
+                // Insert logs into the logs database
+                $code = '3';
+                GenerateLogs($newProductID, $newProductName, $code);
+
+                // Display success modal
+                echo '<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="successModalLabel">Success</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    The product has been added to the database successfully!
+                                </div>
+                                <div class="modal-footer">
+                                    <a href="admin-inventory.php" class="btn btn-secondary" data-bs-dismiss="modal">Close</a>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>';
-            
+                    </div>';
+            } else {
+                echo "Error: Failed to insert product details into the database.";
+            }
         } else {
-            echo 
-            '<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+            // Display error modal
+            echo '<div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="successModalLabel">Error</h5>
+                                <h5 class="modal-title" id="errorModalLabel">Error</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                The product has not been added to the database, please try again or contact tech support.
+                                The product has not been added to the database. Please try again or contact tech support.
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                             </div>
                         </div>
                     </div>
-            </div>';
+                </div>';
         }
     }
+
+    mysqli_close($link);
 }
 
 function editShape($currentShapeDescription = '') { // Function to edit shape
@@ -933,4 +895,4 @@ function deleteProduct()
         mysqli_close($link);
         return $lowInventory;
     }
-?>          
+?>
