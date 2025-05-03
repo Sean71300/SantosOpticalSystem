@@ -524,7 +524,7 @@ $conn->close();
                 return;
             }
             
-            if (!quantity || quantity < 1 || quantity > $orderDetails['quantity']) {
+            if (!quantity || quantity < 1 || quantity > 10) {
                 alert('Please enter a valid quantity');
                 return;
             }
