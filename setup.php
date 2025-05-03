@@ -203,7 +203,7 @@
         if (mysqli_query($conn, $sql))
         {
             $Code = 0;
-            $Actions = ['Complete','Pending','Added','Edited','Deleted','Archived'];
+            $Actions = ['Completed','Pending','Added','Edited','Deleted','Archived','Canceled'];
             foreach ($Actions as $actName) {
                 ++$Code;
                 $sql = "INSERT INTO activityMaster
@@ -560,10 +560,10 @@
                 $i++;                       
                 switch ($i) {
                     case 1:                        
-                        $shape = 'Oval';
+                        $shape = 'Oblong';
                         break;
                     case 2:                        
-                        $shape = 'Triangle';
+                        $shape = 'V-Triangle';
                         break;
                     case 3:                        
                         $shape = 'Diamond';
@@ -573,6 +573,12 @@
                         break;    
                     case 5:                        
                         $shape = 'Square';
+                        break;  
+                    case 6:                        
+                        $shape = 'A-Triangle';
+                    break;  
+                    case 7:                        
+                        $shape = 'Rectangle';
                         break;  
                     default:                    
                     break;                
@@ -776,7 +782,7 @@
     
             foreach ($products as $prod) {
                 $id = generate_ProductMstrID();
-                $shape = rand(1,5);
+                $shape = rand(1,7);
     
                 $sql = "INSERT INTO productMstr
                         (ProductID, CategoryType, ShapeID, BrandID, Model, Material, Price,
