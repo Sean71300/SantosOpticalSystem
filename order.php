@@ -933,6 +933,29 @@ $conn->close();
                                 <i class="fas fa-times me-1"></i> Close
                             </button>
                         </div>`;
+                    } else if (order.Status === 'Completed') {
+                        html += `
+                        <div class="order-details-footer d-flex justify-content-end">
+                            <button type="button" class="btn btn-primary me-2" id="claimOrderBtn">
+                                <i class="fas fa-check-circle me-1"></i> Claim Order
+                            </button>
+                            <button type="button" class="btn btn-danger me-2" id="cancelOrderBtn">
+                                <i class="fas fa-times-circle me-1"></i> Cancel Order
+                            </button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <i class="fas fa-times me-1"></i> Close
+                            </button>
+                        </div>`;
+                    } else if (order.Status === 'Claimed') {
+                        html += `
+                        <div class="order-details-footer d-flex justify-content-end">
+                            <button type="button" class="btn btn-warning me-2" id="returnOrderBtn">
+                                <i class="fas fa-undo me-1"></i> Return
+                            </button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <i class="fas fa-times me-1"></i> Close
+                            </button>
+                        </div>`;
                     } else {
                         html += `
                         <div class="order-details-footer d-flex justify-content-end">
