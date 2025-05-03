@@ -5,7 +5,7 @@ include_once 'setup.php';
 include 'ActivityTracker.php'; 
 include 'loginChecker.php';
 
-function getOrderHeaders($conn, $search = '', $branch = '', $status = '', $limit = 15, $offset = 0) {
+function getOrderHeaders($conn, $search = '', $branch = '', $status = '', $limit = 10, $offset = 0) {
     $query = "SELECT Orderhdr_id, CustomerID, BranchCode, Created_dt, Created_by FROM Order_hdr";
     
     $where = [];
