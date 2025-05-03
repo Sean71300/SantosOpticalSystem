@@ -240,7 +240,7 @@ include 'loginChecker.php';
     <div class="main-content">
         <div class="form-container">
             <div class="d-flex justify-content-between align-items-center mb-4 mt-2">
-                <h1><i class="fas fa-boxes me-2"></i> Add New Inventory</h1>
+                <h1><i class="fas fa-boxes me-2 mt-3"></i> Add New Inventory</h1>
                 <a class="btn btn-outline-secondary" href="admin-inventory.php" role="button" data-bs-toggle="modal" 
                 data-bs-target="#cancelModal">
                     <i class="fas fa-arrow-left me-2"></i> Back to List
