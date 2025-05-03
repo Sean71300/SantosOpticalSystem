@@ -254,9 +254,6 @@ function getInventory($sort = 'ProductID', $order = 'ASC')
 
 function addProduct(){ //Add function to add a new product to the database
     $link = connect();
-    global $employeeName;
-    getEmployeeName();
-
     $newProductID = generate_ProductMstrID();
     $newProductName = $_POST['productName'];
     $newProductBrand = $_POST['productBrand'];
@@ -265,11 +262,9 @@ function addProduct(){ //Add function to add a new product to the database
     $newProductMaterial = $_POST['productMaterial'];
     $newProductPrice = "₱". $_POST['productPrice'];
     $newProductImg = $_FILES['productImg'];
-    $upd_by = $employeeName;
+    $upd_by = $_SESSION['full_name'];
     $date = new DateTime();
     $upd_dt = $date->format('Y-m-d H:i:s');
-    $upd_by = $employeeName;
-    $date = new DateTime();
     
     if (isset($_POST['addProduct'])) {
         // Validate and upload the product image
@@ -354,6 +349,17 @@ function addProduct(){ //Add function to add a new product to the database
         }
 
         if ($uploadOk && file_exists($targetFile)) {
+            $anyAvailable = false;
+            if (!empty($_POST['qtys'])) {
+                foreach ($_POST['qtys'] as $qty) {
+                    if ($qty > 0) {
+                        $anyAvailable = true;
+                        break;
+                    }
+                }
+            }
+            $avail_FL = $anyAvailable ? 'Available' : 'Not Available';
+
             // Insert product details into the product master database
             $sql = "INSERT INTO productMstr (ProductID, CategoryType, ShapeID, BrandID, Model, Material, Price, ProductImage, Avail_FL, Upd_by, Upd_dt) 
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -365,12 +371,13 @@ function addProduct(){ //Add function to add a new product to the database
             // Insert product-branch mapping into the product branch master database
             if (!empty($_POST['qtys'])) {
                 foreach ($_POST['qtys'] as $branchCode => $qty) {
-                    $avail_FL = ($qty > 0) ? 'Available' : 'Not Available';
+                    $branchAvailFL = ($qty > 0) ? 'Available' : 'Not Available';
                     $newProductBranchID = generate_ProductBrnchMstrID();
                     $sql = "INSERT INTO ProductBranchMaster (ProductBranchID, ProductID, BranchCode, Stocks, Avail_FL, Upd_by, Upd_dt)
                             VALUES (?, ?, ?, ?, ?, ?, ?)"; 
                             $stmt = mysqli_prepare($link, $sql);
-                            mysqli_stmt_bind_param($stmt, "sssisds", $newProductBranchID, $newProductID, $newProductBranchCode, $qty, $avail_FL, $upd_by, $upd_dt);
+                            mysqli_stmt_bind_param($stmt, "sssisds", $newProductBranchID, $newProductID, $branchCode, 
+                            $qty, $branchAvailFL, $upd_by, $upd_dt);
                             mysqli_stmt_execute($stmt);
                             mysqli_stmt_close($stmt);
                 }
