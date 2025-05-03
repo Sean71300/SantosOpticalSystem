@@ -1,5 +1,3 @@
-goated
-
 <?php
     include_once 'setup.php';
     require_once 'connect.php';
@@ -56,7 +54,7 @@ goated
         $whereConditions = [];
         
         if (!empty($search)) {
-            $whereConditions[] = "p.Model LIKE '" . $search . "%'"; // Changed to search for products starting with search term
+            $whereConditions[] = "p.Model LIKE '%$search%'";
         }
         
         if ($shape > 0) {
@@ -245,33 +243,6 @@ goated
             .product-card.hidden {
                 display: none;
             }
-            #liveSearchResults {
-                position: absolute;
-                width: 100%;
-                max-width: 500px;
-                left: 50%;
-                transform: translateX(-50%);
-                z-index: 1000;
-                background: white;
-                border: 1px solid #ddd;
-                border-radius: 0 0 5px 5px;
-                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-                max-height: 300px;
-                overflow-y: auto;
-                display: none;
-            }
-            .live-search-item {
-                padding: 10px;
-                border-bottom: 1px solid #eee;
-                cursor: pointer;
-            }
-            .live-search-item:hover {
-                background-color: #f8f9fa;
-            }
-            .live-search-item.highlight {
-                background-color: #e9ecef;
-            }
-            
             .product-image-container {
                 height: 350px;
                 border: 1px solid #eee;
@@ -310,6 +281,10 @@ goated
             .list-group-item {
                 background-color: transparent;
                 border-color: rgba(0,0,0,0.05);
+            }
+            .btn-loading .spinner-border {
+                vertical-align: middle;
+                margin-right: 0.5rem;
             }
         </style>
     </head>
@@ -394,7 +369,7 @@ goated
                                 <i class="fas fa-search"></i>
                             </button>
                             <?php if(isset($_GET['search']) && !empty($_GET['search'])): ?>
-                                <a href="?" class="btn btn-outline-secondary">Clear</a>
+                                <a href="?" class="btn btn-outline-secondary btn-clear-search">Clear</a>
                             <?php endif; ?>
                             <?php if(isset($_GET['sort'])): ?>
                                 <input type="hidden" name="sort" value="<?php echo $_GET['sort']; ?>">
@@ -406,7 +381,6 @@ goated
                                 <input type="hidden" name="category" value="<?php echo $_GET['category']; ?>">
                             <?php endif; ?>
                         </div>
-                        <div id="liveSearchResults"></div>
                     </form>
                 </div>
                 
@@ -429,11 +403,11 @@ goated
                             <label class="input-group-text" for="shapeSelect">Face Shape:</label>
                             <select class="form-select" id="shapeSelect" name="shape" onchange="this.form.submit()">
                                 <option value="">All Shapes</option>
-                                <option value="1" <?php echo (isset($_GET['shape']) && $_GET['shape'] == '1') ? 'selected' : ''; ?>>Oval</option>
-                                <option value="2" <?php echo (isset($_GET['shape']) && $_GET['shape'] == '2') ? 'selected' : ''; ?>>Triangle</option>
-                                <option value="3" <?php echo (isset($_GET['shape']) && $_GET['shape'] == '3') ? 'selected' : ''; ?>>Diamond</option>
-                                <option value="4" <?php echo (isset($_GET['shape']) && $_GET['shape'] == '4') ? 'selected' : ''; ?>>Round</option>
-                                <option value="5" <?php echo (isset($_GET['shape']) && $_GET['shape'] == '5') ? 'selected' : ''; ?>>Square</option>
+                                <option value="1" <?php echo (isset($_GET['shape']) && $_GET['shape'] == '1' ? 'selected' : ''; ?>>Oval</option>
+                                <option value="2" <?php echo (isset($_GET['shape']) && $_GET['shape'] == '2' ? 'selected' : ''; ?>>Triangle</option>
+                                <option value="3" <?php echo (isset($_GET['shape']) && $_GET['shape'] == '3' ? 'selected' : ''; ?>>Diamond</option>
+                                <option value="4" <?php echo (isset($_GET['shape']) && $_GET['shape'] == '4' ? 'selected' : ''; ?>>Round</option>
+                                <option value="5" <?php echo (isset($_GET['shape']) && $_GET['shape'] == '5' ? 'selected' : ''; ?>>Square</option>
                             </select>
                         </div>
                     </form>
@@ -456,16 +430,16 @@ goated
                             <label class="input-group-text" for="categorySelect">Category:</label>
                             <select class="form-select" id="categorySelect" name="category" onchange="this.form.submit()">
                                 <option value="">All Categories</option>
-                                <option value="Bifocal Lens" <?php echo (isset($_GET['category']) && $_GET['category'] == 'Bifocal Lens') ? 'selected' : ''; ?>>Bifocal Lens</option>
-                                <option value="Concave Lens" <?php echo (isset($_GET['category']) && $_GET['category'] == 'Concave Lens') ? 'selected' : ''; ?>>Concave Lens</option>
-                                <option value="Contact Lenses" <?php echo (isset($_GET['category']) && $_GET['category'] == 'Contact Lenses') ? 'selected' : ''; ?>>Contact Lenses</option>
-                                <option value="Convex Lens" <?php echo (isset($_GET['category']) && $_GET['category'] == 'Convex Lens') ? 'selected' : ''; ?>>Convex Lens</option>
-                                <option value="Frame" <?php echo (isset($_GET['category']) && $_GET['category'] == 'Frame') ? 'selected' : ''; ?>>Frame</option>
-                                <option value="Photochromic Lens" <?php echo (isset($_GET['category']) && $_GET['category'] == 'Photochromic Lens') ? 'selected' : ''; ?>>Photochromic Lens</option>
-                                <option value="Polarized Lens" <?php echo (isset($_GET['category']) && $_GET['category'] == 'Polarized Lens') ? 'selected' : ''; ?>>Polarized Lens</option>
-                                <option value="Progressive Lens" <?php echo (isset($_GET['category']) && $_GET['category'] == 'Progressive Lens') ? 'selected' : ''; ?>>Progressive Lens</option>
-                                <option value="Sunglasses" <?php echo (isset($_GET['category']) && $_GET['category'] == 'Sunglasses') ? 'selected' : ''; ?>>Sunglasses</option>
-                                <option value="Trifocal Lens" <?php echo (isset($_GET['category']) && $_GET['category'] == 'Trifocal Lens') ? 'selected' : ''; ?>>Trifocal Lens</option>
+                                <option value="Bifocal Lens" <?php echo (isset($_GET['category']) && $_GET['category'] == 'Bifocal Lens' ? 'selected' : ''; ?>>Bifocal Lens</option>
+                                <option value="Concave Lens" <?php echo (isset($_GET['category']) && $_GET['category'] == 'Concave Lens' ? 'selected' : ''; ?>>Concave Lens</option>
+                                <option value="Contact Lenses" <?php echo (isset($_GET['category']) && $_GET['category'] == 'Contact Lenses' ? 'selected' : ''; ?>>Contact Lenses</option>
+                                <option value="Convex Lens" <?php echo (isset($_GET['category']) && $_GET['category'] == 'Convex Lens' ? 'selected' : ''; ?>>Convex Lens</option>
+                                <option value="Frame" <?php echo (isset($_GET['category']) && $_GET['category'] == 'Frame' ? 'selected' : ''; ?>>Frame</option>
+                                <option value="Photochromic Lens" <?php echo (isset($_GET['category']) && $_GET['category'] == 'Photochromic Lens' ? 'selected' : ''; ?>>Photochromic Lens</option>
+                                <option value="Polarized Lens" <?php echo (isset($_GET['category']) && $_GET['category'] == 'Polarized Lens' ? 'selected' : ''; ?>>Polarized Lens</option>
+                                <option value="Progressive Lens" <?php echo (isset($_GET['category']) && $_GET['category'] == 'Progressive Lens' ? 'selected' : ''; ?>>Progressive Lens</option>
+                                <option value="Sunglasses" <?php echo (isset($_GET['category']) && $_GET['category'] == 'Sunglasses' ? 'selected' : ''; ?>>Sunglasses</option>
+                                <option value="Trifocal Lens" <?php echo (isset($_GET['category']) && $_GET['category'] == 'Trifocal Lens' ? 'selected' : ''; ?>>Trifocal Lens</option>
                             </select>
                         </div>
                     </form>
@@ -487,10 +461,10 @@ goated
                         <div class="input-group">
                             <label class="input-group-text" for="sortSelect">Sort by:</label>
                             <select class="form-select" id="sortSelect" name="sort" onchange="this.form.submit()">
-                                <option value="name_asc" <?php echo (isset($_GET['sort']) && $_GET['sort'] == 'name_asc') ? 'selected' : ''; ?>>Name (A-Z)</option>
-                                <option value="name_desc" <?php echo (isset($_GET['sort']) && $_GET['sort'] == 'name_desc') ? 'selected' : ''; ?>>Name (Z-A)</option>
-                                <option value="price_asc" <?php echo (isset($_GET['sort']) && $_GET['sort'] == 'price_asc') ? 'selected' : ''; ?>>Price (Low to High)</option>
-                                <option value="price_desc" <?php echo (isset($_GET['sort']) && $_GET['sort'] == 'price_desc') ? 'selected' : ''; ?>>Price (High to Low)</option>
+                                <option value="name_asc" <?php echo (isset($_GET['sort']) && $_GET['sort'] == 'name_asc' ? 'selected' : ''; ?>>Name (A-Z)</option>
+                                <option value="name_desc" <?php echo (isset($_GET['sort']) && $_GET['sort'] == 'name_desc' ? 'selected' : ''; ?>>Name (Z-A)</option>
+                                <option value="price_asc" <?php echo (isset($_GET['sort']) && $_GET['sort'] == 'price_asc' ? 'selected' : ''; ?>>Price (Low to High)</option>
+                                <option value="price_desc" <?php echo (isset($_GET['sort']) && $_GET['sort'] == 'price_desc' ? 'selected' : ''; ?>>Price (High to Low)</option>
                             </select>
                         </div>
                     </form>
@@ -544,10 +518,6 @@ goated
 
         <script>
             document.addEventListener('DOMContentLoaded', function() {
-                const searchInput = document.getElementById('searchInput');
-                const liveSearchResults = document.getElementById('liveSearchResults');
-                const searchForm = document.getElementById('searchForm');
-                
                 const productModal = document.getElementById('productModal');
                 if (productModal) {
                     productModal.addEventListener('show.bs.modal', function(event) {
@@ -580,116 +550,22 @@ goated
                         }
                     });
                 }
-                
-                function performLiveSearch() {
-                    const searchTerm = searchInput.value.trim();
-                    
-                    if (searchTerm.length < 1) { // Show results even for single character
-                        liveSearchResults.style.display = 'none';
-                        return;
-                    }
-                    
-                    fetch(`search_products.php?term=${encodeURIComponent(searchTerm)}`)
-                        .then(response => response.json())
-                        .then(results => {
-                            liveSearchResults.innerHTML = '';
-                            
-                            if (results.length > 0) {
-                                results.slice(0, 5).forEach(result => {
-                                    const resultItem = document.createElement('div');
-                                    resultItem.className = 'live-search-item';
-                                    resultItem.textContent = result;
-                                    
-                                    resultItem.addEventListener('click', function() {
-                                        searchInput.value = result;
-                                        liveSearchResults.style.display = 'none';
-                                        searchForm.submit();
-                                    });
-                                    
-                                    liveSearchResults.appendChild(resultItem);
-                                });
-                                
-                                if (results.length > 5) {
-                                    const moreItem = document.createElement('div');
-                                    moreItem.className = 'live-search-item text-center text-muted small';
-                                    moreItem.textContent = `+${results.length - 5} more items...`;
-                                    liveSearchResults.appendChild(moreItem);
-                                }
-                                
-                                liveSearchResults.style.display = 'block';
-                            } else {
-                                liveSearchResults.innerHTML = '<div class="live-search-item text-muted">No matches found</div>';
-                                liveSearchResults.style.display = 'block';
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            liveSearchResults.style.display = 'none';
-                        });
+
+                // Clear search button functionality
+                document.querySelector('.btn-clear-search')?.addEventListener('click', function() {
+                    window.location.href = window.location.pathname;
+                });
+
+                // Search form loading indicator
+                const searchForm = document.getElementById('searchForm');
+                if (searchForm) {
+                    searchForm.addEventListener('submit', function() {
+                        // Show loading indicator
+                        const submitButton = this.querySelector('button[type="submit"]');
+                        submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Searching...';
+                        submitButton.disabled = true;
+                    });
                 }
-                
-                searchInput.addEventListener('input', function() {
-                    performLiveSearch();
-                });
-                
-                searchInput.addEventListener('focus', function() {
-                    if (searchInput.value.trim().length >= 1) {
-                        performLiveSearch();
-                    }
-                });
-                
-                document.addEventListener('click', function(e) {
-                    if (!searchInput.contains(e.target) && !liveSearchResults.contains(e.target)) {
-                        liveSearchResults.style.display = 'none';
-                    }
-                });
-                
-                searchInput.addEventListener('keydown', function(e) {
-                    const items = liveSearchResults.querySelectorAll('.live-search-item');
-                    let currentHighlight = liveSearchResults.querySelector('.live-search-item.highlight');
-                    
-                    if (e.key === 'Escape') {
-                        liveSearchResults.style.display = 'none';
-                        return;
-                    }
-                    
-                    if (items.length === 0) return;
-                    
-                    if (e.key === 'ArrowDown') {
-                        e.preventDefault();
-                        if (!currentHighlight) {
-                            items[0].classList.add('highlight');
-                        } else {
-                            currentHighlight.classList.remove('highlight');
-                            const next = currentHighlight.nextElementSibling || items[0];
-                            next.classList.add('highlight');
-                            next.scrollIntoView({ block: 'nearest' });
-                        }
-                    } else if (e.key === 'ArrowUp') {
-                        e.preventDefault();
-                        if (!currentHighlight) {
-                            items[items.length - 1].classList.add('highlight');
-                        } else {
-                            currentHighlight.classList.remove('highlight');
-                            const prev = currentHighlight.previousElementSibling || items[items.length - 1];
-                            prev.classList.add('highlight');
-                            prev.scrollIntoView({ block: 'nearest' });
-                        }
-                    } else if (e.key === 'Enter' && currentHighlight) {
-                        e.preventDefault();
-                        searchInput.value = currentHighlight.textContent;
-                        liveSearchResults.style.display = 'none';
-                        searchForm.submit();
-                    }
-                });
-                
-                // Submit the form when pressing Enter in the search input
-                searchInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter' && !liveSearchResults.querySelector('.live-search-item.highlight')) {
-                        e.preventDefault();
-                        searchForm.submit();
-                    }
-                });
             });
         </script>
     </body>
