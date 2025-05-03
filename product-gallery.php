@@ -152,7 +152,7 @@
             echo "<div class='col-12 py-5 no-results' style='display: flex; justify-content: center; align-items: center; min-height: 300px;'>";
             if ($shape > 0) {
                 $shapeName = getFaceShapeName($shape);
-                echo "<h4 class='text-center'>No products found for face shape: $shapeName</h4>";
+                echo "<h4 class='text-center'>No products found for frame shape: $shapeName</h4>"; // Changed text from "face shape" to "frame shape"
             } else {
                 echo "<h4 class='text-center'>No products found matching your search.</h4>";
             }
@@ -358,7 +358,7 @@
                                                 <span id="modalProductPrice" class="text-end fw-bold text-primary"></span>
                                             </li>
                                             <li class="list-group-item px-0 py-2 d-flex justify-content-between">
-                                                <span class="fw-semibold text-muted">Face Shape:</span>
+                                                <span class="fw-semibold text-muted">Frame Shape:</span> <!-- Changed from "Face Shape" to "Frame Shape" -->
                                                 <span id="modalProductFaceShape" class="text-end"></span>
                                             </li>
                                         </ul>
@@ -409,7 +409,7 @@
                 </div>
                 
                 <div class="filter-container">
-                    <!-- Face Shape Filter -->
+                    <!-- Frame Shape Filter (changed from Face Shape) -->
                     <form method="get" action="" class="filter-dropdown">
                         <?php if(isset($_GET['page'])): ?>
                             <input type="hidden" name="page" value="<?php echo $_GET['page']; ?>">
@@ -424,14 +424,16 @@
                             <input type="hidden" name="category" value="<?php echo $_GET['category']; ?>">
                         <?php endif; ?>
                         <div class="input-group">
-                            <label class="input-group-text" for="shapeSelect">Face Shape:</label>
+                            <label class="input-group-text" for="shapeSelect">Frame Shape:</label> <!-- Changed label -->
                             <select class="form-select" id="shapeSelect" name="shape" onchange="this.form.submit()">
                                 <option value="">All Shapes</option>
-                                <option value="1" <?php echo (isset($_GET['shape']) && $_GET['shape'] == '1') ? 'selected' : ''; ?>>Oval</option>
-                                <option value="2" <?php echo (isset($_GET['shape']) && $_GET['shape'] == '2') ? 'selected' : ''; ?>>Triangle</option>
+                                <option value="1" <?php echo (isset($_GET['shape']) && $_GET['shape'] == '1') ? 'selected' : ''; ?>>Oblong</option>
+                                <option value="2" <?php echo (isset($_GET['shape']) && $_GET['shape'] == '2') ? 'selected' : ''; ?>>V-Triangle</option>
                                 <option value="3" <?php echo (isset($_GET['shape']) && $_GET['shape'] == '3') ? 'selected' : ''; ?>>Diamond</option>
                                 <option value="4" <?php echo (isset($_GET['shape']) && $_GET['shape'] == '4') ? 'selected' : ''; ?>>Round</option>
                                 <option value="5" <?php echo (isset($_GET['shape']) && $_GET['shape'] == '5') ? 'selected' : ''; ?>>Square</option>
+                                <option value="6" <?php echo (isset($_GET['shape']) && $_GET['shape'] == '6') ? 'selected' : ''; ?>>A-Triangle</option>
+                                <option value="7" <?php echo (isset($_GET['shape']) && $_GET['shape'] == '7') ? 'selected' : ''; ?>>Rectangle</option>
                             </select>
                         </div>
                     </form>
