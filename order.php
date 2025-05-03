@@ -124,6 +124,17 @@ function getCustomerName($conn, $customerId) {
     return $row ? $row['CustomerName'] : 'Unknown';
 }
 
+function getCustomerID($conn, $OrderId) {
+    $query = "SELECT CustomerID FROM Order_hdr WHERE Orderhdr_id = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param('i', $OrderId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    $stmt->close();
+    return $row ? $row['CustomerID'] : 'Unknown';
+}
+
 function getBranchName($conn, $branchCode) {
     $query = "SELECT BranchName FROM BranchMaster WHERE BranchCode = ?";
     $stmt = $conn->prepare($query);
@@ -307,8 +318,12 @@ if (isset($_POST['cancel_order']) && isset($_POST['order_id'])) {
         }
         
         // Log the cancellation
-        $description = "#$orderId for customer" ;
-        $LID=generate_LogsID()
+        
+        $conn = connect();
+        $LID=generate_LogsID();
+        $CID=getCustomerID($conn, $OrderId);
+        $CName=getCustomerName($conn, $CID);
+        $description = "#$orderId for customer". $CName;
         $logQuery = "INSERT INTO Logs (LogsID,EmployeeID, TargetID, TargetType, ActivityCode, Description) VALUES (?, ?, 'order', 7, ?)";
         $stmt = $conn->prepare($logQuery);
         $stmt->bind_param('iiis',$LID, $_SESSION['id'], $orderId, $description);
