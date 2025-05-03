@@ -5,7 +5,9 @@
     function customerData($sort = 'CustomerID', $order = 'ASC')
         {
             $isAdmin = false;
-            $isAdmin = isset($_SESSION['roleid']) && $_SESSION['roleid'] === 1;        
+            $isOptometrist = false;
+            $isAdmin = isset($_SESSION['roleid']) && $_SESSION['roleid'] === 1;
+            $isOptometrist = isset($_SESSION['roleid']) && $_SESSION['roleid'] === 3;        
             
             $customerData = "";
             $connection = connect();
@@ -33,7 +35,7 @@
                     <td>$row[CustomerContact]</td>
                     <td>";
                         
-                    if ($isAdmin)
+                    if ($isAdmin && $isOptometrist)
                         {
                             echo 
                             "
