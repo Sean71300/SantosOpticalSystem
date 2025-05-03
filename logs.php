@@ -256,7 +256,7 @@ $conn->close();
                                         <?php 
                                             $activity = '';
                                             switch($log['ActivityCode']) {
-                                                case 1: $activity = 'Completed'; break;
+                                                case 1: $activity = 'completed'; break;
                                                 case 2: $activity = 'marked as pending'; break;
                                                 case 3: $activity = 'added'; break;
                                                 case 4: $activity = 'edited'; break;
