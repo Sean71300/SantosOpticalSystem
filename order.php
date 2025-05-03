@@ -322,7 +322,7 @@ if (isset($_POST['cancel_order']) && isset($_POST['order_id'])) {
         $LID=generate_LogsID();
         $CID=getCustomerID($conn, $orderId);
         $CName=getCustomerName($conn, $CID);
-        $description = "#$orderId for customer". $CName;
+        $description = "#$orderId for customer ". $CName;
         $logQuery = "INSERT INTO Logs (LogsID,EmployeeID, TargetID, TargetType, ActivityCode, Description) VALUES (?,?, ?, 'order', 7, ?)";
         $stmt = $conn->prepare($logQuery);
         $stmt->bind_param('iiis',$LID, $_SESSION['id'], $orderId, $description);
@@ -576,7 +576,8 @@ $conn->close();
                         <option value="">All Statuses</option>
                         <option value="Pending" <?php echo ($status == 'Pending' ? 'selected' : ''); ?>>Pending</option>
                         <option value="Completed" <?php echo ($status == 'Completed' ? 'selected' : ''); ?>>Completed</option>
-                        <option value="Cancelled" <?php echo ($status == 'Cancelled' ? 'selected' : ''); ?>>Cancelled</option>                       
+                        <option value="Cancelled" <?php echo ($status == 'Cancelled' ? 'selected' : ''); ?>>Cancelled</option>
+                        <option value="Canceled" <?php echo ($status == 'Processing' ? 'selected' : ''); ?>>Canceled</option>
                     </select>
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
