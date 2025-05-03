@@ -301,27 +301,6 @@ function addProduct(){ //Add function to add a new product to the database
         mysqli_stmt_close($stmt);
     }
 
-    // Check if model already exists in selected branches
-    if (!empty($selectedBranches)) {
-        $branchPlaceholders = implode(',', array_fill(0, count($selectedBranches), '?'));
-        $sql = "SELECT DISTINCT b.BranchName 
-                FROM productMstr pm
-                JOIN ProductBranchMaster pbm ON pm.ProductID = pbm.ProductID
-                JOIN BranchMaster b ON pbm.BranchCode = b.BranchCode
-                WHERE pm.Model = ? 
-                AND pbm.BranchCode IN ($branchPlaceholders)";
-        $stmt = mysqli_prepare($link, $sql);
-        $types = 's' . str_repeat('s', count($selectedBranches));
-        $params = array_merge([$newProductName], $selectedBranches);
-        mysqli_stmt_bind_param($stmt, $types, ...$params);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        while ($row = mysqli_fetch_assoc($result)) {
-            $conflictingBranches[] = $row['BranchName'];
-        }
-        mysqli_stmt_close($stmt);
-    }
-
     if (!empty($conflictingBranches)) {
         $errorMessage = "This product already exists in the following branches: " . implode(', ', $conflictingBranches);
         echo '
