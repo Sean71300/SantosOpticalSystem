@@ -10,6 +10,7 @@
         if (isset($currentParams['search'])) $params['search'] = $currentParams['search'];
         if (isset($currentParams['shape'])) $params['shape'] = $currentParams['shape'];
         if (isset($currentParams['category'])) $params['category'] = $currentParams['category'];
+        if (isset($currentParams['branch'])) $params['branch'] = $currentParams['branch'];
         
         if ($page !== null) {
             $params['page'] = $page;
@@ -33,6 +34,21 @@
         return 'Not specified';
     }
 
+    function getBranchName($branchCode) {
+        $conn = connect();
+        $sql = "SELECT BranchName FROM BranchMaster WHERE BranchCode = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $branchCode);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            return $row['BranchName'];
+        }
+        return 'Unknown Branch';
+    }
+
    function pagination() {
     $conn = connect();
 
@@ -45,11 +61,13 @@
     $search = isset($_GET['search']) ? mysqli_real_escape_string($conn, $_GET['search']) : '';
     $shape = isset($_GET['shape']) ? (int)$_GET['shape'] : 0;
     $category = isset($_GET['category']) ? $_GET['category'] : '';
+    $branch = isset($_GET['branch']) ? (int)$_GET['branch'] : 0;
     
     // Build the base SQL query with JOINs to check availability and archive status
-    $sql = "SELECT p.*, pb.Stocks, pb.Avail_FL as BranchAvailability 
+    $sql = "SELECT p.*, pb.Stocks, pb.Avail_FL as BranchAvailability, b.BranchName
             FROM `productMstr` p
             LEFT JOIN ProductBranchMaster pb ON p.ProductID = pb.ProductID
+            LEFT JOIN BranchMaster b ON pb.BranchCode = b.BranchCode
             LEFT JOIN archives a ON (p.ProductID = a.TargetID AND a.TargetType = 'product')
             WHERE (p.Avail_FL = 'Available' OR p.Avail_FL IS NULL)
             AND a.ArchiveID IS NULL"; // Only show non-archived products
@@ -67,6 +85,10 @@
     if (!empty($category)) {
         $category = mysqli_real_escape_string($conn, $category);
         $whereConditions[] = "p.CategoryType = '$category'";
+    }
+    
+    if ($branch > 0) {
+        $whereConditions[] = "pb.BranchCode = $branch";
     }
     
     if (!empty($whereConditions)) {
@@ -91,7 +113,7 @@
     }
     
     // First get the total count without limits
-    $countSql = str_replace("p.*, pb.Stocks, pb.Avail_FL as BranchAvailability", "COUNT(*) as total", $sql);
+    $countSql = str_replace("p.*, pb.Stocks, pb.Avail_FL as BranchAvailability, b.BranchName", "COUNT(DISTINCT p.ProductID) as total", $sql);
     $countResult = mysqli_query($conn, $countSql);
     $totalData = mysqli_fetch_assoc($countResult);
     $total = $totalData['total'];
@@ -108,6 +130,7 @@
             $searchableText = strtolower($row['Model']);
             $stock = isset($row['Stocks']) ? $row['Stocks'] : 0;
             $faceShape = isset($row['ShapeID']) ? getFaceShapeName($row['ShapeID']) : 'Not specified';
+            $branchName = isset($row['BranchName']) ? $row['BranchName'] : 'All Branches';
             
             echo "<div class='col d-flex product-card' data-search='".htmlspecialchars($searchableText, ENT_QUOTES)."'>";
                 echo "<div class='card w-100' style='max-width: 380px;'>";
@@ -124,6 +147,7 @@
                         $availability = isset($row['BranchAvailability']) ? $row['BranchAvailability'] : $row['Avail_FL'];
                         if ($availability == "Available") {
                             echo "<div class='card-text mb-2 text-success'>".$availability."</div>";
+                            echo "<div class='card-text mb-2 small text-muted'>".$branchName."</div>";
                         echo "</div>";
                             echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
                                 echo "<button type='button' class='btn btn-primary w-100 py-2 view-details' data-bs-toggle='modal' data-bs-target='#productModal' 
@@ -135,7 +159,8 @@
                                       data-product-price='".htmlspecialchars($formatted_price, ENT_QUOTES)."'
                                       data-product-availability='".htmlspecialchars($availability, ENT_QUOTES)."'
                                       data-product-stock='".htmlspecialchars($stock, ENT_QUOTES)."'
-                                      data-product-faceshape='".htmlspecialchars($faceShape, ENT_QUOTES)."'>
+                                      data-product-faceshape='".htmlspecialchars($faceShape, ENT_QUOTES)."'
+                                      data-product-branch='".htmlspecialchars($branchName, ENT_QUOTES)."'>
                                       More details
                                   </button>";
                             echo "</div>";
@@ -151,7 +176,10 @@
         }
     } else {
         echo "<div class='col-12 py-5 no-results' style='display: flex; justify-content: center; align-items: center; min-height: 300px;'>";
-        if ($shape > 0) {
+        if ($branch > 0) {
+            $branchName = getBranchName($branch);
+            echo "<h4 class='text-center'>No products found for branch: $branchName</h4>";
+        } elseif ($shape > 0) {
             $shapeName = getFaceShapeName($shape);
             echo "<h4 class='text-center'>No products found for frame shape: $shapeName</h4>";
         } else {
@@ -388,6 +416,10 @@
                                                 <span class="fw-semibold text-muted">Frame Shape:</span>
                                                 <span id="modalProductFaceShape" class="text-end"></span>
                                             </li>
+                                            <li class="list-group-item px-0 py-2 d-flex justify-content-between">
+                                                <span class="fw-semibold text-muted">Branch:</span>
+                                                <span id="modalProductBranch" class="text-end"></span>
+                                            </li>
                                         </ul>
                                     </div>
                                     
@@ -430,12 +462,49 @@
                             <?php if(isset($_GET['category'])): ?>
                                 <input type="hidden" name="category" value="<?php echo $_GET['category']; ?>">
                             <?php endif; ?>
+                            <?php if(isset($_GET['branch'])): ?>
+                                <input type="hidden" name="branch" value="<?php echo $_GET['branch']; ?>">
+                            <?php endif; ?>
                         </div>
                         <div id="liveSearchResults"></div>
                     </form>
                 </div>
                 
                 <div class="filter-container">
+                    <!-- Branch Filter -->
+                    <form method="get" action="" class="filter-dropdown">
+                        <?php if(isset($_GET['page'])): ?>
+                            <input type="hidden" name="page" value="<?php echo $_GET['page']; ?>">
+                        <?php endif; ?>
+                        <?php if(isset($_GET['search'])): ?>
+                            <input type="hidden" name="search" value="<?php echo $_GET['search']; ?>">
+                        <?php endif; ?>
+                        <?php if(isset($_GET['sort'])): ?>
+                            <input type="hidden" name="sort" value="<?php echo $_GET['sort']; ?>">
+                        <?php endif; ?>
+                        <?php if(isset($_GET['shape'])): ?>
+                            <input type="hidden" name="shape" value="<?php echo $_GET['shape']; ?>">
+                        <?php endif; ?>
+                        <?php if(isset($_GET['category'])): ?>
+                            <input type="hidden" name="category" value="<?php echo $_GET['category']; ?>">
+                        <?php endif; ?>
+                        <div class="input-group">
+                            <label class="input-group-text" for="branchSelect">Branch:</label>
+                            <select class="form-select" id="branchSelect" name="branch" onchange="this.form.submit()">
+                                <option value="">All Branches</option>
+                                <?php
+                                    $conn = connect();
+                                    $sql = "SELECT BranchCode, BranchName FROM BranchMaster";
+                                    $result = mysqli_query($conn, $sql);
+                                    while($row = mysqli_fetch_assoc($result)) {
+                                        $selected = (isset($_GET['branch']) && $_GET['branch'] == $row['BranchCode']) ? 'selected' : '';
+                                        echo "<option value='".$row['BranchCode']."' $selected>".$row['BranchName']."</option>";
+                                    }
+                                ?>
+                            </select>
+                        </div>
+                    </form>
+                    
                     <!-- Frame Shape Filter -->
                     <form method="get" action="" class="filter-dropdown">
                         <?php if(isset($_GET['page'])): ?>
@@ -449,6 +518,9 @@
                         <?php endif; ?>
                         <?php if(isset($_GET['category'])): ?>
                             <input type="hidden" name="category" value="<?php echo $_GET['category']; ?>">
+                        <?php endif; ?>
+                        <?php if(isset($_GET['branch'])): ?>
+                            <input type="hidden" name="branch" value="<?php echo $_GET['branch']; ?>">
                         <?php endif; ?>
                         <div class="input-group">
                             <label class="input-group-text" for="shapeSelect">Frame Shape:</label>
@@ -478,6 +550,9 @@
                         <?php endif; ?>
                         <?php if(isset($_GET['shape'])): ?>
                             <input type="hidden" name="shape" value="<?php echo $_GET['shape']; ?>">
+                        <?php endif; ?>
+                        <?php if(isset($_GET['branch'])): ?>
+                            <input type="hidden" name="branch" value="<?php echo $_GET['branch']; ?>">
                         <?php endif; ?>
                         <div class="input-group">
                             <label class="input-group-text" for="categorySelect">Category:</label>
@@ -510,6 +585,9 @@
                         <?php endif; ?>
                         <?php if(isset($_GET['category'])): ?>
                             <input type="hidden" name="category" value="<?php echo $_GET['category']; ?>">
+                        <?php endif; ?>
+                        <?php if(isset($_GET['branch'])): ?>
+                            <input type="hidden" name="branch" value="<?php echo $_GET['branch']; ?>">
                         <?php endif; ?>
                         <div class="input-group">
                             <label class="input-group-text" for="sortSelect">Sort by:</label>
@@ -587,14 +665,15 @@
                         const productPrice = button.getAttribute('data-product-price');
                         const productStock = parseInt(button.getAttribute('data-product-stock'));
                         const productFaceShape = button.getAttribute('data-product-faceshape');
+                        const productBranch = button.getAttribute('data-product-branch');
                         
                         document.getElementById('modalProductName').textContent = productName;
                         document.getElementById('modalProductImage').src = productImage;
                         document.getElementById('modalProductImage').alt = productName;
                         document.getElementById('modalProductCategory').textContent = productCategory;
-                        document.getElementById('modalProductMaterial').textContent = productMaterial;
-                        document.getElementById('modalProductPrice').textContent = productPrice;
+                        document.getElementById('modalProductMaterial').text                        document.getElementById('modalProductPrice').textContent = productPrice;
                         document.getElementById('modalProductFaceShape').textContent = productFaceShape;
+                        document.getElementById('modalProductBranch').textContent = productBranch;
                         
                         const stockBadge = document.getElementById('modalProductStock');
                         if (productStock > 0) {
