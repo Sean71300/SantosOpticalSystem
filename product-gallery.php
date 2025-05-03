@@ -46,18 +46,15 @@
         $shape = isset($_GET['shape']) ? (int)$_GET['shape'] : 0;
         $category = isset($_GET['category']) ? $_GET['category'] : '';
         
-        // Build the base SQL query with JOINs to check availability and archive status
+        // Build the base SQL query with JOIN to ProductBranchMaster
         $sql = "SELECT p.*, pb.Stocks, pb.Avail_FL as BranchAvailability 
                 FROM `productMstr` p
-                LEFT JOIN ProductBranchMaster pb ON p.ProductID = pb.ProductID
-                LEFT JOIN archives a ON (p.ProductID = a.TargetID AND a.TargetType = 'product')
-                WHERE (p.Avail_FL = 'Available' OR p.Avail_FL IS NULL)
-                AND a.ArchiveID IS NULL"; // Only show non-archived products
+                LEFT JOIN ProductBranchMaster pb ON p.ProductID = pb.ProductID";
         
         $whereConditions = [];
         
         if (!empty($search)) {
-            $whereConditions[] = "p.Model LIKE '" . $search . "%'";
+            $whereConditions[] = "p.Model LIKE '" . $search . "%'"; // Changed to search for products starting with search term
         }
         
         if ($shape > 0) {
@@ -70,7 +67,7 @@
         }
         
         if (!empty($whereConditions)) {
-            $sql .= " AND " . implode(' AND ', $whereConditions);
+            $sql .= " WHERE " . implode(' AND ', $whereConditions);
         }
         
         switch($sort) {
@@ -94,12 +91,9 @@
         
         $result = mysqli_query($conn, $sql);
         
-        $countSql = "SELECT COUNT(*) as total FROM `productMstr` p
-                    LEFT JOIN archives a ON (p.ProductID = a.TargetID AND a.TargetType = 'product')
-                    WHERE (p.Avail_FL = 'Available' OR p.Avail_FL IS NULL)
-                    AND a.ArchiveID IS NULL";
+        $countSql = "SELECT COUNT(*) as total FROM `productMstr` p";
         if (!empty($whereConditions)) {
-            $countSql .= " AND " . implode(' AND ', $whereConditions);
+            $countSql .= " WHERE " . implode(' AND ', $whereConditions);
         }
         $countResult = mysqli_query($conn, $countSql);
         $totalData = mysqli_fetch_assoc($countResult);
@@ -158,7 +152,7 @@
             echo "<div class='col-12 py-5 no-results' style='display: flex; justify-content: center; align-items: center; min-height: 300px;'>";
             if ($shape > 0) {
                 $shapeName = getFaceShapeName($shape);
-                echo "<h4 class='text-center'>No products found for frame shape: $shapeName</h4>";
+                echo "<h4 class='text-center'>No products found for frame shape: $shapeName</h4>"; // Changed text from "face shape" to "frame shape"
             } else {
                 echo "<h4 class='text-center'>No products found matching your search.</h4>";
             }
@@ -364,7 +358,7 @@
                                                 <span id="modalProductPrice" class="text-end fw-bold text-primary"></span>
                                             </li>
                                             <li class="list-group-item px-0 py-2 d-flex justify-content-between">
-                                                <span class="fw-semibold text-muted">Frame Shape:</span>
+                                                <span class="fw-semibold text-muted">Frame Shape:</span> <!-- Changed from "Face Shape" to "Frame Shape" -->
                                                 <span id="modalProductFaceShape" class="text-end"></span>
                                             </li>
                                         </ul>
@@ -415,7 +409,7 @@
                 </div>
                 
                 <div class="filter-container">
-                    <!-- Frame Shape Filter -->
+                    <!-- Frame Shape Filter (changed from Face Shape) -->
                     <form method="get" action="" class="filter-dropdown">
                         <?php if(isset($_GET['page'])): ?>
                             <input type="hidden" name="page" value="<?php echo $_GET['page']; ?>">
@@ -430,7 +424,7 @@
                             <input type="hidden" name="category" value="<?php echo $_GET['category']; ?>">
                         <?php endif; ?>
                         <div class="input-group">
-                            <label class="input-group-text" for="shapeSelect">Frame Shape:</label>
+                            <label class="input-group-text" for="shapeSelect">Frame Shape:</label> <!-- Changed label -->
                             <select class="form-select" id="shapeSelect" name="shape" onchange="this.form.submit()">
                                 <option value="">All Shapes</option>
                                 <option value="1" <?php echo (isset($_GET['shape']) && $_GET['shape'] == '1') ? 'selected' : ''; ?>>Oblong</option>
@@ -590,7 +584,7 @@
                 function performLiveSearch() {
                     const searchTerm = searchInput.value.trim();
                     
-                    if (searchTerm.length < 1) {
+                    if (searchTerm.length < 1) { // Show results even for single character
                         liveSearchResults.style.display = 'none';
                         return;
                     }
