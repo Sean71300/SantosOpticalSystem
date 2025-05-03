@@ -625,15 +625,24 @@ $lowInventory = getLowInventoryProducts();
                     });
                 });
 
+                // Track table sorting actions
+                document.querySelectorAll('.sortable').forEach(header => {
+                    header.addEventListener('click', () => {
+                        sessionStorage.setItem('isTableSortAction', 'true');
+                    });
+                });
+
                 // Low inventory modal logic
                 const lowInventoryModalEl = document.getElementById('lowInventoryModal');
                 if (lowInventoryModalEl) {
                     // Only show modal if:
                     // 1. It's not a form submission reload
-                    // 2. It hasn't been shown in this session
-                    // 3. The editProductModal was not recently closed
+                    // 2. It's not a table sort action
+                    // 3. It hasn't been shown in this session
+                    // 4. The editProductModal was not recently closed
                     if (
                         !sessionStorage.getItem('isFormAction') &&
+                        !sessionStorage.getItem('isTableSortAction') &&
                         !sessionStorage.getItem('lowInventoryShown') &&
                         !sessionStorage.getItem('editProductModalClosed')
                     ) {
@@ -641,8 +650,9 @@ $lowInventory = getLowInventoryProducts();
                         sessionStorage.setItem('lowInventoryShown', 'true');
                     }
 
-                    // Clear form action flag after initial check
+                    // Clear form action and table sort flags after initial check
                     sessionStorage.removeItem('isFormAction');
+                    sessionStorage.removeItem('isTableSortAction');
                 }
 
                 // Handle modal closure reloads
