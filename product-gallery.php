@@ -47,8 +47,9 @@
     $category = isset($_GET['category']) ? $_GET['category'] : '';
     
     // Build the base SQL query with JOINs to check availability and archive status
-    $sql = "SELECT p.*, p.Stocks 
+    $sql = "SELECT p.*, pb.Stocks 
         FROM `productMstr` p
+        JOIN productBranch pb ON p.ProductID = pb.ProductID
         LEFT JOIN archives a ON (p.ProductID = a.TargetID AND a.TargetType = 'product')
         WHERE (p.Avail_FL = 'Available' OR p.Avail_FL IS NULL)
         AND a.ArchiveID IS NULL"; // Only show non-archived products
