@@ -299,6 +299,46 @@ function getAllBranches($conn) {
     return $result;
 }
 
+// Handle order claiming
+if (isset($_POST['complete_order'])) {
+    $orderId = $_POST['order_id'];
+    $conn = connect();
+    
+    try {
+        // Start transaction
+        $conn->begin_transaction();
+        
+        // Update order status to Completed and activity code
+        $updateQuery = "UPDATE orderDetails SET Status = 'Claimed', ActivityCode = 9 WHERE OrderHdr_id = ?";
+        $stmt = $conn->prepare($updateQuery);
+        $stmt->bind_param('i', $orderId);
+        $stmt->execute();
+        $stmt->close();
+        
+        // Log the completion
+        $LID = generate_LogsID();
+        $CID = getCustomerID($conn, $orderId);
+        $CName = getCustomerName($conn, $CID);
+        $description = "#$orderId for customer ". $CName;
+        $logQuery = "INSERT INTO Logs (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description) VALUES (?, ?, ?, 'order', 9, ?)";
+        $stmt = $conn->prepare($logQuery);
+        $stmt->bind_param('iiis', $LID, $_SESSION['id'], $orderId, $description);
+        $stmt->execute();
+        $stmt->close();
+        
+        // Commit transaction
+        $conn->commit();
+        
+        // Redirect to refresh the page
+        header("Location: order.php");
+        exit();
+    } catch (Exception $e) {
+        // Rollback transaction on error
+        $conn->rollback();
+        die("Error completing order: " . $e->getMessage());
+    }
+}
+
 // Handle order completion
 if (isset($_POST['complete_order'])) {
     $orderId = $_POST['order_id'];
@@ -809,6 +849,10 @@ $conn->close();
     </div>
 </div>
 
+<form id="claimlOrderForm" method="post" style="display: none;">
+    <input type="hidden" name="claim_order" value="1">
+    <input type="hidden" name="order_id" id="claimOrderId">
+</form>
 <form id="cancelOrderForm" method="post" style="display: none;">
     <input type="hidden" name="cancel_order" value="1">
     <input type="hidden" name="order_id" id="cancelOrderId">
@@ -1010,6 +1054,16 @@ $conn->close();
                     }
                     
                     modalBody.innerHTML = html;
+
+                    const claimBtn = document.getElementById('claimOrderBtn');
+                    if (completeBtn) {
+                        completeBtn.addEventListener('click', function() {
+                            
+                                document.getElementById('claimOrderBtn').value = order.Orderhdr_id;
+                                document.getElementById('claimOrderBtn').submit();
+                            
+                        });
+                    }
 
                     const completeBtn = document.getElementById('completeOrderBtn');
                     if (completeBtn) {
