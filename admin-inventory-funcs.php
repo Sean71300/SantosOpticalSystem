@@ -20,7 +20,7 @@ function displayBranchesWithCheckboxes() {
     $sql = "SELECT BranchCode, BranchName FROM BranchMaster";
     $result = mysqli_query($link, $sql);
     
-    echo '<div class="branch-selection-container mt-3 border border-black rounded p-3">';
+    echo '<div class="branch-selection-container">';
     while($row = mysqli_fetch_array($result)) {
         echo '<div class="branch-item row align-items-center mb-3">';
         echo '  <div class="col-8">';
