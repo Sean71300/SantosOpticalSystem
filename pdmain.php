@@ -16,10 +16,11 @@
     <link rel="shortcut icon" type="image/x-icon" href="Images/logo.png">
     
     <style>
-    /* Improved Carousel styling */
+    /* Optimized Carousel styling */
     #eyeglassCarousel {
         width: 100%;
         margin: 0 auto;
+        margin-bottom: 0; /* Remove bottom margin */
     }
     
     .carousel-inner {
@@ -28,7 +29,7 @@
     }
     
     .carousel-item {
-        height: 60vh;
+        height: 55vh;
         min-height: 350px;
         background-color: #f5f5f5;
     }
@@ -40,34 +41,29 @@
         padding: 20px;
     }
     
-    /* Hide carousel controls */
-    .carousel-control-prev,
-    .carousel-control-next {
-        display: none !important;
-    }
-    
-    /* Improved Product section */
+    /* Product section - tight spacing */
     .product-section {
-        padding: 3rem 0;
+        padding: 2rem 0 1rem; /* Reduced padding */
         background-color: #fdfdfd;
     }
     
     .category-btn {
-        padding: 10px 25px;
-        margin: 0 10px 20px;
+        padding: 8px 20px;
+        margin: 0 5px 15px;
         border: none;
         border-radius: 30px;
         font-weight: 600;
         transition: all 0.3s ease;
     }
     
+    /* Restored original button colors */
     .best-sellers {
-        background-color: #2c3e50;
+        background-color: #6c757d; /* Original gray color */
         color: white;
     }
     
     .new-arrivals {
-        background-color: #e74c3c;
+        background-color: #dc3545; /* Original red color */
         color: white;
     }
     
@@ -75,7 +71,7 @@
         max-width: 90%;
         height: auto;
         transition: transform 0.3s ease;
-        margin-bottom: 20px;
+        margin-bottom: 15px;
     }
     
     .product-img:hover {
@@ -84,49 +80,49 @@
     
     .see-more-btn {
         display: inline-block;
-        padding: 10px 30px;
-        background-color: #3498db;
+        padding: 8px 25px;
+        background-color: #007bff; /* Original blue color */
         color: white;
         text-decoration: none;
         border-radius: 30px;
         font-weight: 600;
         transition: background-color 0.3s;
+        margin-top: 10px;
     }
     
     .see-more-btn:hover {
-        background-color: #2980b9;
+        background-color: #0069d9;
         color: white;
     }
     
-    /* Services section improvements */
+    /* Services section - tight spacing */
     .service-section {
-        padding: 4rem 0;
-        background-color: #f0f0f0;
+        padding: 2.5rem 0;
+        background-color: #e0e0e0; /* Original color */
     }
     
     .service-img {
         width: 100%;
         border-radius: 8px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     }
     
     .service-title {
-        font-size: 2rem;
-        color: #2c3e50;
-        margin-bottom: 1.5rem;
+        font-size: 1.8rem;
+        color: #343a40;
+        margin-bottom: 1rem;
         font-weight: 700;
     }
     
     .service-text {
-        font-size: 1.1rem;
+        font-size: 1rem;
         line-height: 1.6;
         color: #555;
-        margin-bottom: 2rem;
+        margin-bottom: 1.5rem;
     }
     
     .nav-button {
-        padding: 10px 25px;
-        background-color: #2c3e50;
+        padding: 8px 20px;
+        background-color: #343a40; /* Original dark color */
         color: white;
         text-decoration: none;
         border-radius: 30px;
@@ -135,32 +131,33 @@
     }
     
     .nav-button:hover {
-        background-color: #1a252f;
+        background-color: #23272b;
         color: white;
     }
     
-    /* About section improvements */
+    /* About section - tight spacing */
     .about-section {
-        padding: 4rem 0;
+        padding: 2.5rem 0;
+        background-color: white;
     }
     
     .about-section h2 {
-        color: #2c3e50;
-        font-size: 2rem;
-        margin-bottom: 1.5rem;
+        color: #343a40;
+        font-size: 1.8rem;
+        margin-bottom: 1rem;
     }
     
     .about-text {
-        font-size: 1.1rem;
+        font-size: 1rem;
         line-height: 1.6;
         color: #555;
-        margin-bottom: 2rem;
+        margin-bottom: 1.5rem;
     }
     
     .btn-see-all {
         display: inline-block;
-        padding: 10px 25px;
-        background-color: #3498db;
+        padding: 8px 20px;
+        background-color: #007bff; /* Matching blue */
         color: white;
         text-decoration: none;
         border-radius: 30px;
@@ -169,7 +166,7 @@
     }
     
     .btn-see-all:hover {
-        background-color: #2980b9;
+        background-color: #0069d9;
         color: white;
     }
     
@@ -177,16 +174,16 @@
         margin-left: 5px;
     }
     
-    /* Location section improvements */
+    /* Location section - tight spacing */
     .location-section {
-        padding: 4rem 0;
+        padding: 2.5rem 0;
         background-color: #f8f5f2;
     }
     
     .location-section h2 {
-        color: #2c3e50;
-        font-size: 2rem;
-        margin-bottom: 2rem;
+        color: #343a40;
+        font-size: 1.8rem;
+        margin-bottom: 1.5rem;
     }
     
     .map-container {
@@ -194,23 +191,22 @@
         margin: 0 auto;
         border-radius: 8px;
         overflow: hidden;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     }
     
-    /* Footer improvements */
+    /* Footer - tight spacing */
     footer {
-        padding: 3rem 0 0;
+        padding: 2rem 0 0;
         background-color: #ffffff;
     }
     
     footer h6 {
         font-size: 1.1rem;
-        color: #2c3e50;
-        margin-bottom: 1.2rem;
+        color: #343a40;
+        margin-bottom: 1rem;
     }
     
     footer ul li {
-        margin-bottom: 0.8rem;
+        margin-bottom: 0.5rem;
     }
     
     footer a {
@@ -218,32 +214,32 @@
     }
     
     footer a:hover {
-        color: #3498db !important;
+        color: #007bff !important;
     }
     
     .copyright {
-        padding: 1.5rem 0;
+        padding: 1rem 0;
         background-color: white;
-        margin-top: 2rem;
+        margin-top: 1.5rem;
     }
     
     /* Responsive adjustments */
     @media (max-width: 992px) {
         .carousel-item {
-            height: 50vh;
+            height: 45vh;
         }
     }
     
     @media (max-width: 768px) {
         .carousel-item {
-            height: 40vh;
+            height: 35vh;
             min-height: 250px;
         }
         
         .service-section, 
         .about-section,
         .location-section {
-            padding: 3rem 0;
+            padding: 2rem 0;
         }
     }
     
@@ -254,6 +250,11 @@
         
         .product-img {
             max-width: 80%;
+        }
+        
+        .category-btn {
+            padding: 6px 15px;
+            font-size: 0.9rem;
         }
     }
 </style>
@@ -282,7 +283,7 @@
 
     <section class="product-section" data-aos="fade-up">
         <div class="container">
-            <div class="row justify-content-center mb-4">
+            <div class="row justify-content-center mb-3">
                 <div class="col-auto">
                     <button class="category-btn best-sellers">BEST SELLER</button>
                 </div>
@@ -301,7 +302,7 @@
                     <img src="Images/imgm3.png" alt="Paul Hueman PHF" class="product-img" data-aos="fade-up" data-aos-delay="400">
                 </div>
             </div>
-            <div class="text-center mt-3" data-aos="fade-up">
+            <div class="text-center mt-2" data-aos="fade-up">
                 <a href="product-gallery.php" class="see-more-btn">SEE MORE</a>
             </div>
         </div>
@@ -338,7 +339,7 @@
                     <a href="aboutus.php" class="btn-see-all">SEE ALL <span>></span></a>
                 </div>
                 <div class="col-lg-6 text-center" data-aos="fade-left">
-                    <img src="Images/imgabt.jpg" alt="About Us Image" class="img-fluid rounded shadow">
+                    <img src="Images/imgabt.jpg" alt="About Us Image" class="img-fluid rounded">
                 </div>
             </div>
         </div>
@@ -346,7 +347,7 @@
 
     <section class="location-section" data-aos="fade-up">
         <div class="container text-center">
-            <h2 class="fw-bold mb-5">OUR LOCATION</h2>
+            <h2 class="fw-bold mb-4">OUR LOCATION</h2>
             <div class="ratio ratio-16x9 map-container">
                 <iframe 
                     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d768.9767236191218!2d120.95072416949931!3d14.6581210991147!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397b452e915147b%3A0x910e6ce82d8b5bd7!2sSantos%20Optical!5e1!3m2!1sen!2sph!4v1741535090106!5m2!1sen!2sph" 
@@ -362,7 +363,7 @@
         <div class="container">
             <div class="row text-center text-md-start">
                 <div class="col-md-3 mb-4 mb-md-0 text-center">
-                    <img src="Images/logo.png" alt="Logo" width="180" class="mb-3">
+                    <img src="Images/logo.png" alt="Logo" width="160" class="mb-2">
                 </div>
 
                 <div class="col-md-3 mb-4 mb-md-0">
@@ -383,9 +384,9 @@
 
                 <div class="col-md-3">
                     <h6 class="fw-bold">CONTACT US</h6>
-                    <p class="mb-2">Address: #6 Rizal Avenue Extension, Brgy. San Agustin, Malabon City</p>
-                    <p class="mb-2">Phone: 027-508-4792</p>
-                    <p class="mb-2">Cell: 0932-844-7068</p>
+                    <p class="mb-1">Address: #6 Rizal Avenue Extension, Brgy. San Agustin, Malabon City</p>
+                    <p class="mb-1">Phone: 027-508-4792</p>
+                    <p class="mb-1">Cell: 0932-844-7068</p>
                     <p class="mb-0">Email: <a href="mailto:Santosoptical@gmail.com" class="text-dark">Santosoptical@gmail.com</a></p>
                 </div>
             </div>

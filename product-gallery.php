@@ -26,13 +26,13 @@
         $start = ($page - 1) * $perPage;
         
         // Get parameters from URL
-        $sort = isset($_GET['sort'])) ? $_GET['sort'] : 'name_asc';
-        $search = isset($_GET['search'])) ? mysqli_real_escape_string($conn, $_GET['search']) : '';
-        $availability = isset($_GET['availability'])) ? $_GET['availability'] : '';
-        $category = isset($_GET['category'])) ? $_GET['category'] : '';
+        $sort = isset($_GET['sort']) ? $_GET['sort'] : 'name_asc';
+        $search = isset($_GET['search']) ? mysqli_real_escape_string($conn, $_GET['search']) : '';
+        $availability = isset($_GET['availability']) ? $_GET['availability'] : '';
+        $category = isset($_GET['category']) ? $_GET['category'] : '';
         
         // Build the base SQL query with JOIN to ProductBranchMaster
-        $sql = "SELECT p.*, SUM(pb.Stocks) as TotalStocks, pb.Avail_FL as BranchAvailability 
+        $sql = "SELECT p.*, pb.Stocks, pb.Avail_FL as BranchAvailability 
                 FROM `productMstr` p
                 LEFT JOIN ProductBranchMaster pb ON p.ProductID = pb.ProductID";
         
@@ -61,7 +61,6 @@
             $sql .= " WHERE " . implode(' AND ', $whereConditions);
         }
         
-        $sql .= " GROUP BY p.ProductID";
       
         switch($sort) {
             case 'price_asc':
@@ -86,7 +85,7 @@
         $result = mysqli_query($conn, $sql);
         
         
-        $countSql = "SELECT COUNT(DISTINCT p.ProductID) as total FROM `productMstr` p";
+        $countSql = "SELECT COUNT(*) as total FROM `productMstr` p";
         if (!empty($whereConditions)) {
             $countSql .= " WHERE " . implode(' AND ', $whereConditions);
         }
@@ -101,7 +100,7 @@
         if ($total > 0) {
             while($row = mysqli_fetch_assoc($result)) {
                 $searchableText = strtolower($row['Model']);
-                $stock = isset($row['TotalStocks']) ? $row['TotalStocks'] : 0;
+                $stock = isset($row['Stocks']) ? $row['Stocks'] : 0;
                 $faceShape = isset($row['ShapeID']) ? getFaceShapeName($row['ShapeID']) : 'Not specified';
                 
                 echo "<div class='col d-flex product-card' data-search='".htmlspecialchars($searchableText, ENT_QUOTES)."'>";
@@ -118,7 +117,7 @@
                             echo "<div class='card-text mb-2'>".$formatted_price."</div>";
                             $availability = isset($row['BranchAvailability']) ? $row['BranchAvailability'] : $row['Avail_FL'];
                             if ($availability == "Available") {
-                                echo "<div class='card-text mb-2 text-success'>Available ($stock in stock)</div>";
+                                echo "<div class='card-text mb-2 text-success'>".$availability."</div>";
                             echo "</div>";
                                 echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
                                     echo "<button type='button' class='btn btn-primary w-100 py-2 view-details' data-bs-toggle='modal' data-bs-target='#productModal' 
@@ -135,7 +134,7 @@
                                       </button>";
                                 echo "</div>";
                             } else {
-                                echo "<div class='card-text mb-2 text-danger'>Not Available</div>";
+                                echo "<div class='card-text mb-2 text-danger'>".$availability."</div>";
                             echo "</div>";
                             echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
                                 echo "<a href='#' class='btn btn-secondary w-100 py-2 disabled'>Not Available</a>";
@@ -282,6 +281,7 @@
                 background-color: #e9ecef;
             }
             
+         
             .product-image-container {
                 height: 350px;
                 border: 1px solid #eee;
@@ -341,19 +341,21 @@
                     </div>
                     <div class="modal-body p-4">
                         <div class="row g-4">
+                         
                             <div class="col-md-6">
                                 <div class="product-image-container">
                                     <img id="modalProductImage" src="" class="img-fluid mh-100" alt="Product Image" style="max-height: 300px; width: auto; object-fit: contain;">
                                 </div>
                             </div>
                             
+              
                             <div class="col-md-6">
                                 <div class="d-flex flex-column h-100">
                                     <div class="mb-3 border-bottom pb-3">
                                         <h3 id="modalProductName" class="fw-bold mb-2"></h3>
                                         <div>
                                             <span id="modalProductAvailability" class="badge rounded-pill fs-6"></span>
-                                            <span id="modalProductStock" class="badge rounded-pill ms-2 fs-6 bg-secondary"></span>
+                                            <span id="modalProductStock" class="badge rounded-pill ms-2 fs-6"></span>
                                         </div>
                                     </div>
                                     
@@ -378,10 +380,14 @@
                                         </ul>
                                     </div>
                                     
+                         
                                     <div class="mt-auto pt-3 border-top">
                                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                                             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
                                                 <i class="fas fa-times me-2"></i>Close
+                                            </button>
+                                            <button type="button" class="btn btn-primary" id="addToCartBtn">
+                                                <i class="fas fa-shopping-cart me-2"></i>Add to Cart
                                             </button>
                                         </div>
                                     </div>
@@ -423,6 +429,7 @@
                 </div>
                 
                 <div class="filter-container">
+                  
                     <form method="get" action="" class="filter-dropdown">
                         <?php if(isset($_GET['page'])): ?>
                             <input type="hidden" name="page" value="<?php echo $_GET['page']; ?>">
@@ -477,6 +484,7 @@
                         </div>
                     </form>
                     
+                
                     <form method="get" action="" class="filter-dropdown">
                         <?php if(isset($_GET['page'])): ?>
                             <input type="hidden" name="page" value="<?php echo $_GET['page']; ?>">
@@ -555,7 +563,7 @@
                 const productCards = document.querySelectorAll('.product-card');
                 const searchForm = document.getElementById('searchForm');
                 
-                // Modal functionality
+       
                 const productModal = document.getElementById('productModal');
                 if (productModal) {
                     productModal.addEventListener('show.bs.modal', function(event) {
@@ -567,10 +575,10 @@
                         const productMaterial = button.getAttribute('data-product-material');
                         const productPrice = button.getAttribute('data-product-price');
                         const productAvailability = button.getAttribute('data-product-availability');
-                        const productStock = button.getAttribute('data-product-stock');
+                        const productStock = parseInt(button.getAttribute('data-product-stock'));
                         const productFaceShape = button.getAttribute('data-product-faceshape');
                         
-                        // Set product info
+                      
                         document.getElementById('modalProductName').textContent = productName;
                         document.getElementById('modalProductImage').src = productImage;
                         document.getElementById('modalProductImage').alt = productName;
@@ -579,15 +587,32 @@
                         document.getElementById('modalProductPrice').textContent = productPrice;
                         document.getElementById('modalProductFaceShape').textContent = productFaceShape;
                         
-                        // Set availability and stock
+                   
                         const availabilityBadge = document.getElementById('modalProductAvailability');
                         availabilityBadge.textContent = productAvailability;
                         availabilityBadge.className = 'badge rounded-pill fs-6 ' + 
                             (productAvailability === 'Available' ? 'available' : 'not-available');
                         
+          
                         const stockBadge = document.getElementById('modalProductStock');
-                        stockBadge.textContent = productStock + ' in stock';
-                        stockBadge.style.display = productAvailability === 'Available' ? 'inline-block' : 'none';
+                        if (productStock > 0) {
+                            stockBadge.textContent = productStock + ' in stock';
+                            stockBadge.className = 'badge rounded-pill fs-6 ' + 
+                                (productStock < 5 ? 'low-stock' : 'bg-secondary');
+                            stockBadge.style.display = 'inline-block';
+                        } else {
+                            stockBadge.style.display = 'none';
+                        }
+                        
+                      
+                        const addToCartBtn = document.getElementById('addToCartBtn');
+                        if (productAvailability !== 'Available' || productStock <= 0) {
+                            addToCartBtn.disabled = true;
+                            addToCartBtn.classList.add('disabled');
+                        } else {
+                            addToCartBtn.disabled = false;
+                            addToCartBtn.classList.remove('disabled');
+                        }
                     });
                 }
                 
