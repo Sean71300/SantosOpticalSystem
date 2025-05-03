@@ -1056,9 +1056,9 @@ $conn->close();
                     modalBody.innerHTML = html;
 
                     const claimBtn = document.getElementById('claimOrderBtn');
-                    if (completeBtn) {
-                        completeBtn.addEventListener('click', function() {
-                            if (confirm('Are you sure you want to mark this order as completed?')) {
+                    if (claimBtn) {
+                        claimteBtn.addEventListener('click', function() {
+                            if (confirm('This Product will now be claimed by the customer.')) {
                                 document.getElementById('claimOrderId').value = order.Orderhdr_id;
                                 document.getElementById('claimOrderForm').submit();
                             }
