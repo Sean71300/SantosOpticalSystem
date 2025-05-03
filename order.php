@@ -5,7 +5,7 @@ include_once 'setup.php';
 include 'ActivityTracker.php'; 
 include 'loginChecker.php';
 
-function getOrderHeaders($conn, $search = '', $branch = '', $status = '', $limit = 10, $offset = 0) {
+function getOrderHeaders($conn, $search = '', $branch = '', $status = '', $limit = 15, $offset = 0) {
     $query = "SELECT Orderhdr_id, CustomerID, BranchCode, Created_dt, Created_by FROM Order_hdr";
     
     $where = [];
@@ -299,6 +299,86 @@ function getAllBranches($conn) {
     return $result;
 }
 
+// Handle order claiming
+if (isset($_POST['claim_order'])) {
+    $orderId = $_POST['order_id'];
+    $conn = connect();
+    
+    try {
+        // Start transaction
+        $conn->begin_transaction();
+        
+        // Update order status to Completed and activity code
+        $updateQuery = "UPDATE orderDetails SET Status = 'Claimed', ActivityCode = 9 WHERE OrderHdr_id = ?";
+        $stmt = $conn->prepare($updateQuery);
+        $stmt->bind_param('i', $orderId);
+        $stmt->execute();
+        $stmt->close();
+        
+        // Log the completion
+        $LID = generate_LogsID();
+        $CID = getCustomerID($conn, $orderId);
+        $CName = getCustomerName($conn, $CID);
+        $description = "#$orderId for customer ". $CName;
+        $logQuery = "INSERT INTO Logs (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description) VALUES (?, ?, ?, 'order', 9, ?)";
+        $stmt = $conn->prepare($logQuery);
+        $stmt->bind_param('iiis', $LID, $_SESSION['id'], $orderId, $description);
+        $stmt->execute();
+        $stmt->close();
+        
+        // Commit transaction
+        $conn->commit();
+        
+        // Redirect to refresh the page
+        header("Location: order.php");
+        exit();
+    } catch (Exception $e) {
+        // Rollback transaction on error
+        $conn->rollback();
+        die("Error completing order: " . $e->getMessage());
+    }
+}
+
+// Handle order completion
+if (isset($_POST['complete_order'])) {
+    $orderId = $_POST['order_id'];
+    $conn = connect();
+    
+    try {
+        // Start transaction
+        $conn->begin_transaction();
+        
+        // Update order status to Completed and activity code
+        $updateQuery = "UPDATE orderDetails SET Status = 'Completed', ActivityCode = 1 WHERE OrderHdr_id = ?";
+        $stmt = $conn->prepare($updateQuery);
+        $stmt->bind_param('i', $orderId);
+        $stmt->execute();
+        $stmt->close();
+        
+        // Log the completion
+        $LID = generate_LogsID();
+        $CID = getCustomerID($conn, $orderId);
+        $CName = getCustomerName($conn, $CID);
+        $description = "#$orderId for customer ". $CName;
+        $logQuery = "INSERT INTO Logs (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description) VALUES (?, ?, ?, 'order', 1, ?)";
+        $stmt = $conn->prepare($logQuery);
+        $stmt->bind_param('iiis', $LID, $_SESSION['id'], $orderId, $description);
+        $stmt->execute();
+        $stmt->close();
+        
+        // Commit transaction
+        $conn->commit();
+        
+        // Redirect to refresh the page
+        header("Location: order.php");
+        exit();
+    } catch (Exception $e) {
+        // Rollback transaction on error
+        $conn->rollback();
+        die("Error completing order: " . $e->getMessage());
+    }
+}
+
 // Handle order cancellation
 if (isset($_POST['cancel_order']) && isset($_POST['order_id'])) {
     $orderId = $_POST['order_id'];
@@ -311,10 +391,10 @@ if (isset($_POST['cancel_order']) && isset($_POST['order_id'])) {
     $conn->begin_transaction();
     
     try {
-        // Update order status to Cancelled
-        $updateQuery = "UPDATE orderDetails SET Status = 'Cancelled' WHERE OrderHdr_id = ?";
+        // Update order status to Cancelled and activity code
+        $updateQuery = "UPDATE orderDetails SET Status = 'Cancelled', ActivityCode = 7 WHERE OrderHdr_id = ?";
         $stmt = $conn->prepare($updateQuery);
-        $stmt->bind_param('i', $orderId);
+        $stmt->bind_param('i', $orderId); // Assuming activityCode is a string
         $stmt->execute();
         $stmt->close();
         
@@ -586,6 +666,7 @@ $conn->close();
                         <?php endwhile; ?>
                     </select>
                 </div>
+                
                 <div class="col-md-3">
                     <label for="status" class="form-label">Filter by Status</label>
                     <select class="form-select" id="status" name="status">
@@ -769,9 +850,17 @@ $conn->close();
     </div>
 </div>
 
+<form id="claimOrderForm" method="post" style="display: none;">
+    <input type="hidden" name="claim_order" value="1">
+    <input type="hidden" name="order_id" id="claimOrderId">
+</form>
 <form id="cancelOrderForm" method="post" style="display: none;">
     <input type="hidden" name="cancel_order" value="1">
     <input type="hidden" name="order_id" id="cancelOrderId">
+</form>
+<form id="completeOrderForm" method="post" style="display: none;">
+    <input type="hidden" name="complete_order" value="1">
+    <input type="hidden" name="order_id" id="completeOrderId">
 </form>
 
 <script>
@@ -898,9 +987,9 @@ $conn->close();
 
                     order.Details.forEach(detail => {
                         const statusClass = detail.Status === 'Completed' ? 'badge-complete' : 
-                                        detail.Status === 'Cancelled' ? 'badge-cancelled' :
-                                        detail.Status === 'Returned' ? 'badge-returned' :
-                                        detail.Status === 'Claimed' ? 'badge-claimed' : 'badge-pending';
+                                            detail.Status === 'Cancelled' ? 'badge-cancelled' :
+                                            detail.Status === 'Returned' ? 'badge-returned' :
+                                            detail.Status === 'Claimed' ? 'badge-claimed' : 'badge-pending';
                         
                         html += `
                             <tr>
@@ -933,6 +1022,29 @@ $conn->close();
                                 <i class="fas fa-times me-1"></i> Close
                             </button>
                         </div>`;
+                    } else if (order.Status === 'Completed') {
+                        html += `
+                        <div class="order-details-footer d-flex justify-content-end">
+                            <button type="button" class="btn btn-primary me-2" id="claimOrderBtn">
+                                <i class="fas fa-check-circle me-1"></i> Claim Order
+                            </button>
+                            <button type="button" class="btn btn-danger me-2" id="cancelOrderBtn">
+                                <i class="fas fa-times-circle me-1"></i> Cancel Order
+                            </button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <i class="fas fa-times me-1"></i> Close
+                            </button>
+                        </div>`;
+                    } else if (order.Status === 'Claimed') {
+                        html += `
+                        <div class="order-details-footer d-flex justify-content-end">
+                            <button type="button" class="btn btn-warning me-2" id="returnOrderBtn">
+                                <i class="fas fa-undo me-1"></i> Return
+                            </button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <i class="fas fa-times me-1"></i> Close
+                            </button>
+                        </div>`;
                     } else {
                         html += `
                         <div class="order-details-footer d-flex justify-content-end">
@@ -944,6 +1056,25 @@ $conn->close();
                     
                     modalBody.innerHTML = html;
 
+                    const claimBtn = document.getElementById('claimOrderBtn');
+                    if (claimBtn) {
+                        claimBtn.addEventListener('click', function() {
+                            if (confirm('This Product will now be claimed by the customer.')) {
+                                document.getElementById('claimOrderId').value = order.Orderhdr_id;
+                                document.getElementById('claimOrderForm').submit();
+                            }
+                        });
+                    }
+
+                    const completeBtn = document.getElementById('completeOrderBtn');
+                    if (completeBtn) {
+                        completeBtn.addEventListener('click', function() {
+                            if (confirm('Are you sure you want to mark this order as completed?')) {
+                                document.getElementById('completeOrderId').value = order.Orderhdr_id;
+                                document.getElementById('completeOrderForm').submit();
+                            }
+                        });
+                    }
                     // Add event listener for cancel button if it exists
                     const cancelBtn = document.getElementById('cancelOrderBtn');
                     if (cancelBtn) {
