@@ -324,7 +324,7 @@ if (isset($_POST['cancel_order']) && isset($_POST['order_id'])) {
         $CID=getCustomerID($conn, $orderId);
         $CName=getCustomerName($conn, $CID);
         $description = "#$orderId for customer". $CName;
-        $logQuery = "INSERT INTO Logs (LogsID,EmployeeID, TargetID, TargetType, ActivityCode, Description) VALUES (?, ?, 'order', 7, ?)";
+        $logQuery = "INSERT INTO Logs (LogsID,EmployeeID, TargetID, TargetType, ActivityCode, Description) VALUES (?,?, ?, 'order', 7, ?)";
         $stmt = $conn->prepare($logQuery);
         $stmt->bind_param('iiis',$LID, $_SESSION['id'], $orderId, $description);
         $stmt->execute();
