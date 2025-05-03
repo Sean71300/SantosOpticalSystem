@@ -986,9 +986,9 @@ $conn->close();
 
                     order.Details.forEach(detail => {
                         const statusClass = detail.Status === 'Completed' ? 'badge-complete' : 
-                                        detail.Status === 'Cancelled' ? 'badge-cancelled' :
-                                        detail.Status === 'Returned' ? 'badge-returned' :
-                                        detail.Status === 'Claimed' ? 'badge-claimed' : 'badge-pending';
+                                            detail.Status === 'Cancelled' ? 'badge-cancelled' :
+                                            detail.Status === 'Returned' ? 'badge-returned' :
+                                            detail.Status === 'Claimed' ? 'badge-claimed' : 'badge-pending';
                         
                         html += `
                             <tr>

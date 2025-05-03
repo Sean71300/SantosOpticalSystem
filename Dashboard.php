@@ -62,7 +62,7 @@ $lowInventory = getLowInventoryProducts();
                 overflow-y: auto;
             }
             .chart-period.active {
-                background-color: #0d6efd;
+                background-color: #28a745;
                 color: white;
             }
             #chartLoading {
@@ -73,7 +73,6 @@ $lowInventory = getLowInventoryProducts();
                 height: 100%;
             }
             
-            /* Mobile styles */
             @media (max-width: 992px) {
                 .main-content {
                     margin-left: 0;
@@ -81,7 +80,6 @@ $lowInventory = getLowInventoryProducts();
                 }
             }
             
-            /* Responsive cards */
             @media (max-width: 768px) {
                 .col-md-3 {
                     flex: 0 0 50%;
@@ -106,16 +104,13 @@ $lowInventory = getLowInventoryProducts();
     <body>
         <?php include "sidebar.php"; ?>
 
-        <!-- Main Content -->
         <div class="main-content">
             <?php
                 $username = $_SESSION["username"];
                 echo "<h2 class='mb-4'>Welcome back, $username</h2>";
             ?>
             
-            <!-- Dashboard Cards -->
             <div class="row">
-                <!-- Customers Card -->
                 <div class="col-md-3">
                     <div class="dashboard-card">
                         <div class="card-icon text-primary">
@@ -127,7 +122,6 @@ $lowInventory = getLowInventoryProducts();
                     </div>
                 </div>
                 
-                <!-- Employees Card -->
                 <?php if ($isAdmin): ?>
                 <div class="col-md-3">
                     <div class="dashboard-card">
@@ -140,7 +134,7 @@ $lowInventory = getLowInventoryProducts();
                     </div>
                 </div>
                 <?php endif; ?>
-                <!-- Inventory Card -->
+                
                 <div class="col-md-3">
                     <div class="dashboard-card">
                         <div class="card-icon text-warning">
@@ -148,11 +142,10 @@ $lowInventory = getLowInventoryProducts();
                         </div>
                         <h5>Inventory</h5>
                         <div class="stat-number"><?php echo number_format($inventoryCount); ?></div>
-                        <a href="<?php echo ($isAdmin) ? 'admin-inventory.php' : 'Employee-inventory.php'; ?>"class="btn btn-sm btn-outline-warning mt-2">View All</a>
+                        <a href="<?php echo ($isAdmin) ? 'admin-inventory.php' : 'Employee-inventory.php'; ?>" class="btn btn-sm btn-outline-warning mt-2">View All</a>
                     </div>
                 </div>
                 
-                <!-- Orders Card -->
                 <div class="col-md-3">
                     <div class="dashboard-card">
                         <div class="card-icon text-info">
@@ -165,12 +158,11 @@ $lowInventory = getLowInventoryProducts();
                 </div>
             </div>
             
-            <!-- Recent Activity Section -->
             <div class="row mt-4">
                 <div class="col-md-8">
                     <div class="dashboard-card">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Products Sold</h5>
+                            <h5 class="mb-0"><i class="fas fa-box-open me-2"></i>Completed Products Sold</h5>
                             <div class="btn-group">
                                 <button type="button" class="btn btn-sm btn-outline-secondary chart-period" data-period="7">7 Days</button>
                                 <button type="button" class="btn btn-sm btn-outline-secondary chart-period active" data-period="30">30 Days</button>
@@ -178,12 +170,12 @@ $lowInventory = getLowInventoryProducts();
                             </div>
                         </div>
                         <div class="mt-3" style="height: 300px;">
-                            <canvas id="salesChart"></canvas>
+                            <canvas id="productsSoldChart"></canvas>
                             <div id="chartLoading" class="text-center py-5">
-                                <div class="spinner-border text-primary" role="status">
+                                <div class="spinner-border text-success" role="status">
                                     <span class="visually-hidden">Loading...</span>
                                 </div>
-                                <p class="mt-2">Loading sales data...</p>
+                                <p class="mt-2">Loading completed products data...</p>
                             </div>
                         </div>
                     </div>
@@ -246,42 +238,34 @@ $lowInventory = getLowInventoryProducts();
         </div>
 
         <script>
-            // Sales Chart Implementation - Shows Product Counts
-            function renderSalesChart(period = 30) {
-                const ctx = document.getElementById('salesChart');
+            function renderProductsSoldChart(period = 30) {
+                const ctx = document.getElementById('productsSoldChart');
                 const loadingElement = document.getElementById('chartLoading');
                 
-                // Show loading state
                 ctx.style.display = 'none';
-                loadingElement.style.display = 'block';
+                loadingElement.style.display = 'flex';
                 
-                fetch(`getSalesData.php?period=${period}`)
+                fetch(`getCompletedProductsData.php?period=${period}`)
                     .then(response => response.json())
                     .then(data => {
-                        // Hide loading state
                         loadingElement.style.display = 'none';
                         ctx.style.display = 'block';
                         
-                        // Destroy previous chart if it exists
-                        if (window.salesChart instanceof Chart) {
-                            window.salesChart.destroy();
+                        if (window.productsSoldChart instanceof Chart) {
+                            window.productsSoldChart.destroy();
                         }
                         
-                        window.salesChart = new Chart(ctx, {
-                            type: 'line',
+                        window.productsSoldChart = new Chart(ctx, {
+                            type: 'bar',
                             data: {
                                 labels: data.labels,
                                 datasets: [{
-                                    label: 'Products Sold',
+                                    label: 'Completed Products Sold',
                                     data: data.values,
-                                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                                    borderColor: 'rgba(75, 192, 192, 1)',
-                                    borderWidth: 2,
-                                    tension: 0.4,
-                                    fill: true,
-                                    pointBackgroundColor: 'rgba(75, 192, 192, 1)',
-                                    pointRadius: 4,
-                                    pointHoverRadius: 6
+                                    backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                                    borderColor: 'rgba(40, 167, 69, 1)',
+                                    borderWidth: 1,
+                                    borderRadius: 4
                                 }]
                             },
                             options: {
@@ -292,11 +276,9 @@ $lowInventory = getLowInventoryProducts();
                                         display: false
                                     },
                                     tooltip: {
-                                        mode: 'index',
-                                        intersect: false,
                                         callbacks: {
                                             label: function(context) {
-                                                return context.parsed.y.toLocaleString() + ' products';
+                                                return `${context.parsed.y} product${context.parsed.y !== 1 ? 's' : ''} completed`;
                                             }
                                         }
                                     }
@@ -305,32 +287,35 @@ $lowInventory = getLowInventoryProducts();
                                     y: {
                                         beginAtZero: true,
                                         ticks: {
+                                            precision: 0,
                                             callback: function(value) {
-                                                return value.toLocaleString();
+                                                if (value % 1 === 0) {
+                                                    return value;
+                                                }
                                             }
                                         },
-                                        grid: {
-                                            drawBorder: false
+                                        title: {
+                                            display: true,
+                                            text: 'Number of Products'
                                         }
                                     },
                                     x: {
                                         grid: {
                                             display: false
+                                        },
+                                        title: {
+                                            display: true,
+                                            text: 'Date'
                                         }
                                     }
-                                },
-                                interaction: {
-                                    mode: 'nearest',
-                                    axis: 'x',
-                                    intersect: false
                                 }
                             }
                         });
                     })
                     .catch(error => {
-                        console.error('Error loading sales data:', error);
+                        console.error('Error loading completed products data:', error);
                         loadingElement.innerHTML = 
-                            '<div class="text-danger p-4"><i class="fas fa-exclamation-triangle me-2"></i>Could not load sales data</div>';
+                            '<div class="text-danger p-4"><i class="fas fa-exclamation-triangle me-2"></i>Failed to load completed products data</div>';
                     });
             }
 
@@ -339,21 +324,18 @@ $lowInventory = getLowInventoryProducts();
                 const mobileToggle = document.getElementById('mobileMenuToggle');
                 const body = document.body;
                 
-                // Initialize sales chart with product counts
-                renderSalesChart(30);
+                renderProductsSoldChart(30);
                 
-                // Period selector buttons
                 document.querySelectorAll('.chart-period').forEach(button => {
                     button.addEventListener('click', function() {
                         document.querySelectorAll('.chart-period').forEach(btn => {
                             btn.classList.remove('active');
                         });
                         this.classList.add('active');
-                        renderSalesChart(this.dataset.period);
+                        renderProductsSoldChart(this.dataset.period);
                     });
                 });
                 
-                // Toggle sidebar on mobile
                 if (mobileToggle) {
                     mobileToggle.addEventListener('click', function(e) {
                         e.stopPropagation();
@@ -362,7 +344,6 @@ $lowInventory = getLowInventoryProducts();
                     });
                 }
                 
-                // Close sidebar when clicking outside
                 document.addEventListener('click', function(e) {
                     if (window.innerWidth <= 992 && 
                         !sidebar.contains(e.target) && 
@@ -372,7 +353,6 @@ $lowInventory = getLowInventoryProducts();
                     }
                 });
                 
-                // Close sidebar when a link is clicked (on mobile)
                 document.querySelectorAll('.sidebar-item').forEach(item => {
                     item.addEventListener('click', function() {
                         if (window.innerWidth <= 992) {
@@ -382,7 +362,6 @@ $lowInventory = getLowInventoryProducts();
                     });
                 });
                 
-                // Auto-close sidebar when resizing to larger screens
                 window.addEventListener('resize', function() {
                     if (window.innerWidth > 992) {
                         sidebar.classList.remove('active');
