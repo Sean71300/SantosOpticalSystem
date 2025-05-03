@@ -618,25 +618,17 @@ $lowInventory = getLowInventoryProducts();
 
         <script>
             document.addEventListener('DOMContentLoaded', function() {
-                // Track all form submissions to preserve sessionStorage flag
-                document.querySelectorAll('form').forEach(form => {
-                    form.addEventListener('submit', () => {
-                        sessionStorage.setItem('isFormSubmit', 'true');
-                    });
-                });
-
-                // Show low inventory modal only once per visit
+                // Show low inventory modal only once per browser session
                 const lowInventoryModalEl = document.getElementById('lowInventoryModal');
                 if (lowInventoryModalEl && !sessionStorage.getItem('lowInventoryShown')) {
                     new bootstrap.Modal(lowInventoryModalEl).show();
                     sessionStorage.setItem('lowInventoryShown', 'true');
                 }
 
-                // Clear flag only when leaving the page (not during form submissions)
+                // Clear flag ONLY when leaving the domain or closing browser
                 window.addEventListener('beforeunload', function() {
-                    if (sessionStorage.getItem('isFormSubmit')) {
-                        sessionStorage.removeItem('isFormSubmit');
-                    } else {
+                    // Keep the flag for page reloads/navigation within the app
+                    if (!window.location.href.includes('admin-inventory.php')) {
                         sessionStorage.removeItem('lowInventoryShown');
                     }
                 });
