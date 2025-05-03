@@ -30,7 +30,7 @@ else {
     </div>
     
     <!-- Sidebar Header -->
-    <div class="sidebar-header text-center mt-3">
+    <div class="sidebar-header text-center mt-4">
         <h4><i class="fas fa-cog"></i> <?php echo $panel ?></h4>
     </div>
     
@@ -77,10 +77,6 @@ else {
         <?php endif; ?>
 
         <?php if ($isOptometrist): ?>
-            <a href="optometrist-records.php" class="sidebar-item <?php echo ($current_page == 'optometrist-records.php') ? 'active' : ''; ?>">
-                <i class="fas fa-user-md"></i> 
-                <span class="sidebar-item-text">Customer Info</span>
-            </a>
             <a href="optometrist-medicalhistory.php" class="sidebar-item <?php echo ($current_page == 'optometrist-medicalhistory.php') ? 'active' : ''; ?>">
                 <i class="fas fa-notes-medical"></i> 
                 <span class="sidebar-item-text">Medical History</span>
