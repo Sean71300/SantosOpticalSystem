@@ -5,11 +5,9 @@ include 'loginChecker.php';
 include 'adminFunctions.php';
 
 $isAdmin = isset($_SESSION['roleid']) && $_SESSION['roleid'] === 1;
-$isOptometrist = isset($_SESSION['roleid']) && $_SESSION['roleid'] === 3;
-
 // Get counts (only what's needed for each role)
 $customerCount = getCustomerCount();
-if (!$isOptometrist) {
+if (!$isAdmin) {
     $employeeCount = getEmployeeCount();
     $inventoryCount = getInventoryCount();
     $orderCount = getOrderCount();
@@ -134,8 +132,8 @@ if (!$isOptometrist) {
                     </div>
                 </div>
                 
-                <?php if (!$isOptometrist): ?>
-                    <!-- Employees Card - Only for non-optometrists -->
+                <?php if (!$isAdmin): ?>
+                    <!-- Employees Card -->
                     <?php if ($isAdmin): ?>
                     <div class="col-md-3">
                         <div class="dashboard-card">
@@ -149,7 +147,7 @@ if (!$isOptometrist) {
                     </div>
                     <?php endif; ?>
                     
-                    <!-- Inventory Card - Only for non-optometrists -->
+                    <!-- Inventory Card -->
                     <div class="col-md-3">
                         <div class="dashboard-card">
                             <div class="card-icon text-warning">
@@ -161,7 +159,7 @@ if (!$isOptometrist) {
                         </div>
                     </div>
                     
-                    <!-- Orders Card - Only for non-optometrists -->
+                    <!-- Orders Card -->
                     <div class="col-md-3">
                         <div class="dashboard-card">
                             <div class="card-icon text-info">
@@ -175,8 +173,8 @@ if (!$isOptometrist) {
                 <?php endif; ?>
             </div>
             
-            <?php if (!$isOptometrist): ?>
-                <!-- Recent Activity and Sales Sections - Only for non-optometrists -->
+            <?php if (!$isAdmin): ?>
+                <!-- Recent Activity and Sales Sections -->
                 <div class="row mt-4">
                     <div class="col-md-8">
                         <div class="dashboard-card">
