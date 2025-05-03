@@ -164,16 +164,7 @@ $salesData = getSalesOverviewData();
                 </div>
             </div>
             
-            <div class="col-md-3">
-                <div class="dashboard-card">
-                    <div class="card-icon text-success">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                    <h5>Claimed Products</h5>
-                    <div class="stat-number"><?php echo number_format($claimedOrderCount); ?></div>
-                    <a href="order.php?status=Complete" class="btn btn-sm btn-outline-success mt-2">View All</a>
-                </div>
-            </div>
+            
         </div>
         
         <div class="row mt-4">
