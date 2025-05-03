@@ -32,169 +32,189 @@
         }
         return 'Not specified';
     }
+function pagination() {
+    $conn = connect();
 
-    function pagination() {
-        $conn = connect();
+    $perPage = 12; 
+    $page = (isset($_GET['page'])) ? (int)$_GET['page'] : 1;
+    $start = ($page - 1) * $perPage;
+    
+    // Get parameters from URL
+    $sort = isset($_GET['sort']) ? $_GET['sort'] : 'name_asc';
+    $search = isset($_GET['search']) ? mysqli_real_escape_string($conn, $_GET['search']) : '';
+    $shape = isset($_GET['shape']) ? (int)$_GET['shape'] : 0;
+    $category = isset($_GET['category']) ? $_GET['category'] : '';
+    
+    // Build the base SQL query with JOINs to check availability and archive status
+    $sql = "SELECT p.*, pb.Stocks, pb.Avail_FL as BranchAvailability 
+            FROM `productMstr` p
+            LEFT JOIN ProductBranchMaster pb ON p.ProductID = pb.ProductID
+            LEFT JOIN archives a ON (p.ProductID = a.TargetID AND a.TargetType = 'product')
+            WHERE (p.Avail_FL = 'Available' OR p.Avail_FL IS NULL)
+            AND a.ArchiveID IS NULL"; // Only show non-archived products
+    
+    $whereConditions = [];
+    
+    if (!empty($search)) {
+        $whereConditions[] = "p.Model LIKE '%" . $search . "%'";
+    }
+    
+    if ($shape > 0) {
+        $whereConditions[] = "p.ShapeID = $shape";
+    }
+    
+    if (!empty($category)) {
+        $category = mysqli_real_escape_string($conn, $category);
+        $whereConditions[] = "p.CategoryType = '$category'";
+    }
+    
+    if (!empty($whereConditions)) {
+        $sql .= " AND " . implode(' AND ', $whereConditions);
+    }
+    
+    switch($sort) {
+        case 'price_asc':
+            $sql .= " ORDER BY CAST(REPLACE(REPLACE(p.Price, '₱', ''), ',', '') AS DECIMAL(10,2)) ASC";
+            break;
+        case 'price_desc':
+            $sql .= " ORDER BY CAST(REPLACE(REPLACE(p.Price, '₱', ''), ',', '') AS DECIMAL(10,2)) DESC";
+            break;
+        case 'name_asc':
+            $sql .= " ORDER BY p.Model ASC";
+            break;
+        case 'name_desc':
+            $sql .= " ORDER BY p.Model DESC";
+            break;
+        default:
+            $sql .= " ORDER BY p.Model ASC";
+    }
+    
+    // First get the total count without limits
+    $countSql = str_replace("p.*, pb.Stocks, pb.Avail_FL as BranchAvailability", "COUNT(*) as total", $sql);
+    $countResult = mysqli_query($conn, $countSql);
+    $totalData = mysqli_fetch_assoc($countResult);
+    $total = $totalData['total'];
+    $totalPages = ceil($total / $perPage);
 
-        $perPage = 12; 
-        $page = (isset($_GET['page'])) ? (int)$_GET['page'] : 1;
-        $start = ($page - 1) * $perPage;
-        
-        // Get parameters from URL
-        $sort = isset($_GET['sort']) ? $_GET['sort'] : 'name_asc';
-        $search = isset($_GET['search']) ? mysqli_real_escape_string($conn, $_GET['search']) : '';
-        $shape = isset($_GET['shape']) ? (int)$_GET['shape'] : 0;
-        $category = isset($_GET['category']) ? $_GET['category'] : '';
-        
-        // Build the base SQL query with JOINs to check availability and archive status
-        $sql = "SELECT p.*, pb.Stocks, pb.Avail_FL as BranchAvailability 
-                FROM `productMstr` p
-                LEFT JOIN ProductBranchMaster pb ON p.ProductID = pb.ProductID
-                LEFT JOIN archives a ON (p.ProductID = a.TargetID AND a.TargetType = 'product')
-                WHERE (p.Avail_FL = 'Available' OR p.Avail_FL IS NULL)
-                AND a.ArchiveID IS NULL"; // Only show non-archived products
-        
-        $whereConditions = [];
-        
-        if (!empty($search)) {
-            $whereConditions[] = "p.Model LIKE '" . $search . "%'";
-        }
-        
-        if ($shape > 0) {
-            $whereConditions[] = "p.ShapeID = $shape";
-        }
-        
-        if (!empty($category)) {
-            $category = mysqli_real_escape_string($conn, $category);
-            $whereConditions[] = "p.CategoryType = '$category'";
-        }
-        
-        if (!empty($whereConditions)) {
-            $sql .= " AND " . implode(' AND ', $whereConditions);
-        }
-        
-        switch($sort) {
-            case 'price_asc':
-                $sql .= " ORDER BY CAST(REPLACE(REPLACE(p.Price, '₱', ''), ',', '') AS DECIMAL(10,2)) ASC";
-                break;
-            case 'price_desc':
-                $sql .= " ORDER BY CAST(REPLACE(REPLACE(p.Price, '₱', ''), ',', '') AS DECIMAL(10,2)) DESC";
-                break;
-            case 'name_asc':
-                $sql .= " ORDER BY p.Model ASC";
-                break;
-            case 'name_desc':
-                $sql .= " ORDER BY p.Model DESC";
-                break;
-            default:
-                $sql .= " ORDER BY p.Model ASC";
-        }
-        
-        $sql .= " LIMIT $start, $perPage";
-        
-        $result = mysqli_query($conn, $sql);
-        
-        $countSql = "SELECT COUNT(*) as total FROM `productMstr` p
-                    LEFT JOIN archives a ON (p.ProductID = a.TargetID AND a.TargetType = 'product')
-                    WHERE (p.Avail_FL = 'Available' OR p.Avail_FL IS NULL)
-                    AND a.ArchiveID IS NULL";
-        if (!empty($whereConditions)) {
-            $countSql .= " AND " . implode(' AND ', $whereConditions);
-        }
-        $countResult = mysqli_query($conn, $countSql);
-        $totalData = mysqli_fetch_assoc($countResult);
-        $total = $totalData['total'];
-        $totalPages = ceil($total / $perPage);
-
-        echo "<div class='row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4' id='productGrid'>";
-        
-        if ($total > 0) {
-            while($row = mysqli_fetch_assoc($result)) {
-                $searchableText = strtolower($row['Model']);
-                $stock = isset($row['Stocks']) ? $row['Stocks'] : 0;
-                $faceShape = isset($row['ShapeID']) ? getFaceShapeName($row['ShapeID']) : 'Not specified';
-                
-                echo "<div class='col d-flex product-card' data-search='".htmlspecialchars($searchableText, ENT_QUOTES)."'>";
-                    echo "<div class='card w-100' style='max-width: 380px;'>";
-                        echo '<img src="' . $row['ProductImage']. '" class="card-img-top img-fluid" style="height: 280px;" alt="'. $row['Model'] .'">';
-                        echo "<div class='card-body d-flex flex-column'>";
-                            echo "<h5 class='card-title' style='min-height: 1.5rem;'>".$row['Model']."</h5>";
-                            echo "<hr>";
-                            echo "<div class='card-text mb-2'>".$row['CategoryType']."</div>";
-                            echo "<div class='card-text mb-2'>".$row['Material']."</div>";
-                            $price = $row['Price'];
-                            $numeric_price = preg_replace('/[^0-9.]/', '', $price);
-                            $formatted_price = is_numeric($numeric_price) ? '₱' . number_format((float)$numeric_price, 2) : '₱0.00';
-                            echo "<div class='card-text mb-2'>".$formatted_price."</div>";
-                            $availability = $row['Avail_FL'];
-                            if ($availability == "Available") {
-                                echo "<div class='card-text mb-2 text-success'>".$availability."</div>";
-                            echo "</div>";
-                                echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
-                                    echo "<button type='button' class='btn btn-primary w-100 py-2 view-details' data-bs-toggle='modal' data-bs-target='#productModal' 
-                                          data-product-id='".$row['ProductID']."'
-                                          data-product-name='".htmlspecialchars($row['Model'], ENT_QUOTES)."'
-                                          data-product-image='".htmlspecialchars($row['ProductImage'], ENT_QUOTES)."'
-                                          data-product-category='".htmlspecialchars($row['CategoryType'], ENT_QUOTES)."'
-                                          data-product-material='".htmlspecialchars($row['Material'], ENT_QUOTES)."'
-                                          data-product-price='".htmlspecialchars($formatted_price, ENT_QUOTES)."'
-                                          data-product-availability='".htmlspecialchars($availability, ENT_QUOTES)."'
-                                          data-product-stock='".htmlspecialchars($stock, ENT_QUOTES)."'
-                                          data-product-faceshape='".htmlspecialchars($faceShape, ENT_QUOTES)."'>
-                                          More details
-                                      </button>";
-                                echo "</div>";
-                            } else {
-                                echo "<div class='card-text mb-2 text-danger'>".$availability."</div>";
-                            echo "</div>";
+    // Now add the limit for pagination
+    $sql .= " LIMIT $start, $perPage";
+    $result = mysqli_query($conn, $sql);
+    
+    echo "<div class='row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4' id='productGrid'>";
+    
+    if ($total > 0) {
+        while($row = mysqli_fetch_assoc($result)) {
+            $searchableText = strtolower($row['Model']);
+            $stock = isset($row['Stocks']) ? $row['Stocks'] : 0;
+            $faceShape = isset($row['ShapeID']) ? getFaceShapeName($row['ShapeID']) : 'Not specified';
+            
+            echo "<div class='col d-flex product-card' data-search='".htmlspecialchars($searchableText, ENT_QUOTES)."'>";
+                echo "<div class='card w-100' style='max-width: 380px;'>";
+                    echo '<img src="' . $row['ProductImage']. '" class="card-img-top img-fluid" style="height: 280px;" alt="'. $row['Model'] .'">';
+                    echo "<div class='card-body d-flex flex-column'>";
+                        echo "<h5 class='card-title' style='min-height: 1.5rem;'>".$row['Model']."</h5>";
+                        echo "<hr>";
+                        echo "<div class='card-text mb-2'>".$row['CategoryType']."</div>";
+                        echo "<div class='card-text mb-2'>".$row['Material']."</div>";
+                        $price = $row['Price'];
+                        $numeric_price = preg_replace('/[^0-9.]/', '', $price);
+                        $formatted_price = is_numeric($numeric_price) ? '₱' . number_format((float)$numeric_price, 2) : '₱0.00';
+                        echo "<div class='card-text mb-2'>".$formatted_price."</div>";
+                        $availability = isset($row['BranchAvailability']) ? $row['BranchAvailability'] : $row['Avail_FL'];
+                        if ($availability == "Available") {
+                            echo "<div class='card-text mb-2 text-success'>".$availability."</div>";
+                        echo "</div>";
                             echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
-                                echo "<a href='#' class='btn btn-secondary w-100 py-2 disabled'>Not Available</a>";
+                                echo "<button type='button' class='btn btn-primary w-100 py-2 view-details' data-bs-toggle='modal' data-bs-target='#productModal' 
+                                      data-product-id='".$row['ProductID']."'
+                                      data-product-name='".htmlspecialchars($row['Model'], ENT_QUOTES)."'
+                                      data-product-image='".htmlspecialchars($row['ProductImage'], ENT_QUOTES)."'
+                                      data-product-category='".htmlspecialchars($row['CategoryType'], ENT_QUOTES)."'
+                                      data-product-material='".htmlspecialchars($row['Material'], ENT_QUOTES)."'
+                                      data-product-price='".htmlspecialchars($formatted_price, ENT_QUOTES)."'
+                                      data-product-availability='".htmlspecialchars($availability, ENT_QUOTES)."'
+                                      data-product-stock='".htmlspecialchars($stock, ENT_QUOTES)."'
+                                      data-product-faceshape='".htmlspecialchars($faceShape, ENT_QUOTES)."'>
+                                      More details
+                                  </button>";
                             echo "</div>";
-                            }                               
-                    echo "</div>";
+                        } else {
+                            echo "<div class='card-text mb-2 text-danger'>".$availability."</div>";
+                        echo "</div>";
+                        echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
+                            echo "<a href='#' class='btn btn-secondary w-100 py-2 disabled'>Not Available</a>";
+                        echo "</div>";
+                        }                               
                 echo "</div>";
-            }
-        } else {
-            echo "<div class='col-12 py-5 no-results' style='display: flex; justify-content: center; align-items: center; min-height: 300px;'>";
-            if ($shape > 0) {
-                $shapeName = getFaceShapeName($shape);
-                echo "<h4 class='text-center'>No products found for frame shape: $shapeName</h4>";
-            } else {
-                echo "<h4 class='text-center'>No products found matching your search.</h4>";
-            }
             echo "</div>";
         }
-        
-        echo "</div>"; 
-
-        if ($totalPages > 1) {
-            echo "<div class='col-12 mt-5'>";
-                echo "<div class='d-flex justify-content-center'>";
-                    echo "<ul class='pagination'>";
-                    if ($page > 1) {
-                        echo "<li class='page-item'><a class='page-link' href='" . buildQueryString($page - 1, $_GET) . "'>Previous</a></li>";
-                    } else {
-                        echo "<li class='page-item disabled'><a class='page-link'>Previous</a></li>";
-                    }
-
-                    for ($i = 1; $i <= $totalPages; $i++) {                       
-                        if ($i == $page) {
-                            echo "<li class='page-item active' aria-current='page'><a class='page-link disabled'>$i</a></li>"; 
-                        } else {
-                            echo "<li class='page-item'><a class='page-link' href='" . buildQueryString($i, $_GET) . "'>$i</a></li>";
-                        }
-                    }
-
-                    if ($page < $totalPages) {
-                        echo "<li class='page-item'><a class='page-link' href='" . buildQueryString($page + 1, $_GET) . "'>Next</a></li>";
-                    } else {
-                        echo "<li class='page-item disabled'><a class='page-link'>Next</a></li>";
-                    }
-                    echo "</ul>";
-                echo "</div>";
-            echo "</div>"; 
+    } else {
+        echo "<div class='col-12 py-5 no-results' style='display: flex; justify-content: center; align-items: center; min-height: 300px;'>";
+        if ($shape > 0) {
+            $shapeName = getFaceShapeName($shape);
+            echo "<h4 class='text-center'>No products found for frame shape: $shapeName</h4>";
+        } else {
+            echo "<h4 class='text-center'>No products found matching your search.</h4>";
         }
+        echo "</div>";
     }
+    
+    echo "</div>"; 
+
+    if ($totalPages > 1) {
+        echo "<div class='col-12 mt-5'>";
+            echo "<div class='d-flex justify-content-center'>";
+                echo "<ul class='pagination'>";
+                if ($page > 1) {
+                    echo "<li class='page-item'><a class='page-link' href='" . buildQueryString($page - 1, $_GET) . "'>Previous</a></li>";
+                } else {
+                    echo "<li class='page-item disabled'><a class='page-link'>Previous</a></li>";
+                }
+
+                // Show page numbers
+                $maxPagesToShow = 5; // Maximum number of page links to show
+                $startPage = max(1, $page - floor($maxPagesToShow / 2));
+                $endPage = min($totalPages, $startPage + $maxPagesToShow - 1);
+                
+                // Adjust if we're at the start or end
+                if ($endPage - $startPage < $maxPagesToShow - 1) {
+                    $startPage = max(1, $endPage - $maxPagesToShow + 1);
+                }
+                
+                // Always show first page
+                if ($startPage > 1) {
+                    echo "<li class='page-item'><a class='page-link' href='" . buildQueryString(1, $_GET) . "'>1</a></li>";
+                    if ($startPage > 2) {
+                        echo "<li class='page-item disabled'><span class='page-link'>...</span></li>";
+                    }
+                }
+                
+                for ($i = $startPage; $i <= $endPage; $i++) {                       
+                    if ($i == $page) {
+                        echo "<li class='page-item active' aria-current='page'><a class='page-link disabled'>$i</a></li>"; 
+                    } else {
+                        echo "<li class='page-item'><a class='page-link' href='" . buildQueryString($i, $_GET) . "'>$i</a></li>";
+                    }
+                }
+                
+                // Always show last page
+                if ($endPage < $totalPages) {
+                    if ($endPage < $totalPages - 1) {
+                        echo "<li class='page-item disabled'><span class='page-link'>...</span></li>";
+                    }
+                    echo "<li class='page-item'><a class='page-link' href='" . buildQueryString($totalPages, $_GET) . "'>$totalPages</a></li>";
+                }
+
+                if ($page < $totalPages) {
+                    echo "<li class='page-item'><a class='page-link' href='" . buildQueryString($page + 1, $_GET) . "'>Next</a></li>";
+                } else {
+                    echo "<li class='page-item disabled'><a class='page-link'>Next</a></li>";
+                }
+                echo "</ul>";
+            echo "</div>";
+        echo "</div>"; 
+    }
+}
 ?>
 
 <!DOCTYPE html>
