@@ -350,6 +350,8 @@ function addProduct(){ //Add function to add a new product to the database
 
         if ($uploadOk && file_exists($targetFile)) {
             // Insert product details into the product master database
+            $qty = $_POST['qty'];
+            $avail_FL = ($qty > 0) ? 'Available' : 'Not Available';
             $sql = "INSERT INTO productMstr (ProductID, CategoryType, ShapeID, BrandID, Model, Material, Price, ProductImage, Avail_FL, Upd_by, Upd_dt) 
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $stmt = mysqli_prepare($link, $sql);
