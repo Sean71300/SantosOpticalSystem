@@ -10,6 +10,7 @@
         if (isset($currentParams['search'])) $params['search'] = $currentParams['search'];
         if (isset($currentParams['shape'])) $params['shape'] = $currentParams['shape'];
         if (isset($currentParams['category'])) $params['category'] = $currentParams['category'];
+        if (isset($currentParams['branch'])) $params['branch'] = $currentParams['branch'];
         
         if ($page !== null) {
             $params['page'] = $page;
@@ -45,11 +46,13 @@
     $search = isset($_GET['search']) ? mysqli_real_escape_string($conn, $_GET['search']) : '';
     $shape = isset($_GET['shape']) ? (int)$_GET['shape'] : 0;
     $category = isset($_GET['category']) ? $_GET['category'] : '';
+    $branch = isset($_GET['branch']) ? (int)$_GET['branch'] : 0;
     
     // Build the base SQL query with JOINs to check availability and archive status
-    $sql = "SELECT p.*, pb.Stocks, pb.Avail_FL as BranchAvailability 
+    $sql = "SELECT p.*, pb.Stocks, pb.Avail_FL as BranchAvailability, b.BranchName
             FROM `productMstr` p
             LEFT JOIN ProductBranchMaster pb ON p.ProductID = pb.ProductID
+            LEFT JOIN BranchMaster b ON pb.BranchCode = b.BranchCode
             LEFT JOIN archives a ON (p.ProductID = a.TargetID AND a.TargetType = 'product')
             WHERE (p.Avail_FL = 'Available' OR p.Avail_FL IS NULL)
             AND a.ArchiveID IS NULL"; // Only show non-archived products
@@ -67,6 +70,10 @@
     if (!empty($category)) {
         $category = mysqli_real_escape_string($conn, $category);
         $whereConditions[] = "p.CategoryType = '$category'";
+    }
+    
+    if ($branch > 0) {
+        $whereConditions[] = "pb.BranchCode = $branch";
     }
     
     if (!empty($whereConditions)) {
@@ -91,7 +98,7 @@
     }
     
     // First get the total count without limits
-    $countSql = str_replace("p.*, pb.Stocks, pb.Avail_FL as BranchAvailability", "COUNT(*) as total", $sql);
+    $countSql = str_replace("p.*, pb.Stocks, pb.Avail_FL as BranchAvailability, b.BranchName", "COUNT(*) as total", $sql);
     $countResult = mysqli_query($conn, $countSql);
     $totalData = mysqli_fetch_assoc($countResult);
     $total = $totalData['total'];
@@ -108,6 +115,7 @@
             $searchableText = strtolower($row['Model']);
             $stock = isset($row['Stocks']) ? $row['Stocks'] : 0;
             $faceShape = isset($row['ShapeID']) ? getFaceShapeName($row['ShapeID']) : 'Not specified';
+            $branchName = isset($row['BranchName']) ? " at " . $row['BranchName'] : '';
             
             echo "<div class='col d-flex product-card' data-search='".htmlspecialchars($searchableText, ENT_QUOTES)."'>";
                 echo "<div class='card w-100' style='max-width: 380px;'>";
@@ -123,7 +131,7 @@
                         echo "<div class='card-text mb-2'>".$formatted_price."</div>";
                         $availability = isset($row['BranchAvailability']) ? $row['BranchAvailability'] : $row['Avail_FL'];
                         if ($availability == "Available") {
-                            echo "<div class='card-text mb-2 text-success'>".$availability."</div>";
+                            echo "<div class='card-text mb-2 text-success'>".$availability.$branchName."</div>";
                         echo "</div>";
                             echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
                                 echo "<button type='button' class='btn btn-primary w-100 py-2 view-details' data-bs-toggle='modal' data-bs-target='#productModal' 
@@ -140,7 +148,7 @@
                                   </button>";
                             echo "</div>";
                         } else {
-                            echo "<div class='card-text mb-2 text-danger'>".$availability."</div>";
+                            echo "<div class='card-text mb-2 text-danger'>".$availability.$branchName."</div>";
                         echo "</div>";
                         echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
                             echo "<a href='#' class='btn btn-secondary w-100 py-2 disabled'>Not Available</a>";
@@ -154,6 +162,13 @@
         if ($shape > 0) {
             $shapeName = getFaceShapeName($shape);
             echo "<h4 class='text-center'>No products found for frame shape: $shapeName</h4>";
+        } else if ($branch > 0) {
+            $conn = connect();
+            $branchQuery = "SELECT BranchName FROM BranchMaster WHERE BranchCode = $branch";
+            $branchResult = mysqli_query($conn, $branchQuery);
+            $branchName = mysqli_fetch_assoc($branchResult)['BranchName'];
+            $conn->close();
+            echo "<h4 class='text-center'>No products found at branch: $branchName</h4>";
         } else {
             echo "<h4 class='text-center'>No products found matching your search.</h4>";
         }
@@ -349,37 +364,58 @@
         <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="productModalLabel">Product Details</h5>
+                    <div class="modal-header bg-light">
+                        <h5 class="modal-title fw-bold" id="productModalLabel">Product Details</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="modal-body">
-                        <div class="row">
+                    <div class="modal-body p-4">
+                        <div class="row g-4">
                             <div class="col-md-6">
-                                <img id="modalProductImage" src="" class="img-fluid rounded" alt="Product Image" style="max-height: 400px; width: 100%; object-fit: contain;">
+                                <div class="product-image-container">
+                                    <img id="modalProductImage" src="" class="img-fluid mh-100" alt="Product Image" style="max-height: 300px; width: auto; object-fit: contain;">
+                                </div>
                             </div>
+                            
                             <div class="col-md-6">
-                                <h3 id="modalProductName" class="mb-3"></h3>
-                                <div class="mb-3">
-                                    <span id="modalProductStock" class="badge"></span>
-                                </div>
-                                <div class="mb-3">
-                                    <strong>Category:</strong> <span id="modalProductCategory"></span>
-                                </div>
-                                <div class="mb-3">
-                                    <strong>Material:</strong> <span id="modalProductMaterial"></span>
-                                </div>
-                                <div class="mb-3">
-                                    <strong>Price:</strong> <span id="modalProductPrice" class="text-primary fw-bold"></span>
-                                </div>
-                                <div class="mb-3">
-                                    <strong>Frame Shape:</strong> <span id="modalProductFaceShape"></span>
+                                <div class="d-flex flex-column h-100">
+                                    <div class="mb-3 border-bottom pb-3">
+                                        <h3 id="modalProductName" class="fw-bold mb-2"></h3>
+                                        <div>
+                                            <span id="modalProductStock" class="badge rounded-pill fs-6"></span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex-grow-1">
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item px-0 py-2 d-flex justify-content-between">
+                                                <span class="fw-semibold text-muted">Category:</span>
+                                                <span id="modalProductCategory" class="text-end"></span>
+                                            </li>
+                                            <li class="list-group-item px-0 py-2 d-flex justify-content-between">
+                                                <span class="fw-semibold text-muted">Material:</span>
+                                                <span id="modalProductMaterial" class="text-end"></span>
+                                            </li>
+                                            <li class="list-group-item px-0 py-2 d-flex justify-content-between">
+                                                <span class="fw-semibold text-muted">Price:</span>
+                                                <span id="modalProductPrice" class="text-end fw-bold text-primary"></span>
+                                            </li>
+                                            <li class="list-group-item px-0 py-2 d-flex justify-content-between">
+                                                <span class="fw-semibold text-muted">Frame Shape:</span>
+                                                <span id="modalProductFaceShape" class="text-end"></span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <div class="mt-auto pt-3 border-top">
+                                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                                                <i class="fas fa-times me-2"></i>Close
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     </div>
                 </div>
             </div>
@@ -409,12 +445,50 @@
                             <?php if(isset($_GET['category'])): ?>
                                 <input type="hidden" name="category" value="<?php echo $_GET['category']; ?>">
                             <?php endif; ?>
+                            <?php if(isset($_GET['branch'])): ?>
+                                <input type="hidden" name="branch" value="<?php echo $_GET['branch']; ?>">
+                            <?php endif; ?>
                         </div>
                         <div id="liveSearchResults"></div>
                     </form>
                 </div>
                 
                 <div class="filter-container">
+                    <!-- Branch Filter -->
+                    <form method="get" action="" class="filter-dropdown">
+                        <?php if(isset($_GET['page'])): ?>
+                            <input type="hidden" name="page" value="<?php echo $_GET['page']; ?>">
+                        <?php endif; ?>
+                        <?php if(isset($_GET['search'])): ?>
+                            <input type="hidden" name="search" value="<?php echo $_GET['search']; ?>">
+                        <?php endif; ?>
+                        <?php if(isset($_GET['sort'])): ?>
+                            <input type="hidden" name="sort" value="<?php echo $_GET['sort']; ?>">
+                        <?php endif; ?>
+                        <?php if(isset($_GET['shape'])): ?>
+                            <input type="hidden" name="shape" value="<?php echo $_GET['shape']; ?>">
+                        <?php endif; ?>
+                        <?php if(isset($_GET['category'])): ?>
+                            <input type="hidden" name="category" value="<?php echo $_GET['category']; ?>">
+                        <?php endif; ?>
+                        <div class="input-group">
+                            <label class="input-group-text" for="branchSelect">Branch:</label>
+                            <select class="form-select" id="branchSelect" name="branch" onchange="this.form.submit()">
+                                <option value="">All Branches</option>
+                                <?php
+                                    $conn = connect();
+                                    $branchQuery = "SELECT BranchCode, BranchName FROM BranchMaster";
+                                    $branchResult = mysqli_query($conn, $branchQuery);
+                                    while ($branch = mysqli_fetch_assoc($branchResult)) {
+                                        $selected = (isset($_GET['branch']) && $_GET['branch'] == $branch['BranchCode']) ? 'selected' : '';
+                                        echo "<option value='{$branch['BranchCode']}' $selected>{$branch['BranchName']}</option>";
+                                    }
+                                    $conn->close();
+                                ?>
+                            </select>
+                        </div>
+                    </form>
+                    
                     <!-- Frame Shape Filter -->
                     <form method="get" action="" class="filter-dropdown">
                         <?php if(isset($_GET['page'])): ?>
@@ -428,6 +502,9 @@
                         <?php endif; ?>
                         <?php if(isset($_GET['category'])): ?>
                             <input type="hidden" name="category" value="<?php echo $_GET['category']; ?>">
+                        <?php endif; ?>
+                        <?php if(isset($_GET['branch'])): ?>
+                            <input type="hidden" name="branch" value="<?php echo $_GET['branch']; ?>">
                         <?php endif; ?>
                         <div class="input-group">
                             <label class="input-group-text" for="shapeSelect">Frame Shape:</label>
@@ -457,6 +534,9 @@
                         <?php endif; ?>
                         <?php if(isset($_GET['shape'])): ?>
                             <input type="hidden" name="shape" value="<?php echo $_GET['shape']; ?>">
+                        <?php endif; ?>
+                        <?php if(isset($_GET['branch'])): ?>
+                            <input type="hidden" name="branch" value="<?php echo $_GET['branch']; ?>">
                         <?php endif; ?>
                         <div class="input-group">
                             <label class="input-group-text" for="categorySelect">Category:</label>
@@ -489,6 +569,9 @@
                         <?php endif; ?>
                         <?php if(isset($_GET['category'])): ?>
                             <input type="hidden" name="category" value="<?php echo $_GET['category']; ?>">
+                        <?php endif; ?>
+                        <?php if(isset($_GET['branch'])): ?>
+                            <input type="hidden" name="branch" value="<?php echo $_GET['branch']; ?>">
                         <?php endif; ?>
                         <div class="input-group">
                             <label class="input-group-text" for="sortSelect">Sort by:</label>
@@ -578,11 +661,11 @@
                         const stockBadge = document.getElementById('modalProductStock');
                         if (productStock > 0) {
                             stockBadge.textContent = productStock + ' in stock';
-                            stockBadge.className = 'badge ' + 
+                            stockBadge.className = 'badge rounded-pill fs-6 ' + 
                                 (productStock < 5 ? 'low-stock' : 'available');
                         } else {
                             stockBadge.textContent = 'Out of stock';
-                            stockBadge.className = 'badge not-available';
+                            stockBadge.className = 'badge rounded-pill fs-6 not-available';
                         }
                     });
                 }
