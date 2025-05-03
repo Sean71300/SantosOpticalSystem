@@ -1,5 +1,5 @@
 <?php
-  include_once 'setup.php'; // Include the setup.php file
+  include_once 'setup.php'; 
   include 'ActivityTracker.php';
 ?>
 
