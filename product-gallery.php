@@ -377,62 +377,40 @@
         <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
-                    <div class="modal-header bg-light">
-                        <h5 class="modal-title fw-bold" id="productModalLabel">Product Details</h5>
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="productModalLabel">Product Details</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="modal-body p-4">
-                        <div class="row g-4">
+                    <div class="modal-body">
+                        <div class="row">
                             <div class="col-md-6">
-                                <div class="product-image-container">
-                                    <img id="modalProductImage" src="" class="img-fluid mh-100" alt="Product Image" style="max-height: 300px; width: auto; object-fit: contain;">
-                                </div>
+                                <img id="modalProductImage" src="" class="img-fluid rounded" alt="Product Image" style="max-height: 400px; width: 100%; object-fit: contain;">
                             </div>
-                            
                             <div class="col-md-6">
-                                <div class="d-flex flex-column h-100">
-                                    <div class="mb-3 border-bottom pb-3">
-                                        <h3 id="modalProductName" class="fw-bold mb-2"></h3>
-                                        <div>
-                                            <span id="modalProductStock" class="badge rounded-pill fs-6"></span>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="flex-grow-1">
-                                        <ul class="list-group list-group-flush">
-                                            <li class="list-group-item px-0 py-2 d-flex justify-content-between">
-                                                <span class="fw-semibold text-muted">Category:</span>
-                                                <span id="modalProductCategory" class="text-end"></span>
-                                            </li>
-                                            <li class="list-group-item px-0 py-2 d-flex justify-content-between">
-                                                <span class="fw-semibold text-muted">Material:</span>
-                                                <span id="modalProductMaterial" class="text-end"></span>
-                                            </li>
-                                            <li class="list-group-item px-0 py-2 d-flex justify-content-between">
-                                                <span class="fw-semibold text-muted">Price:</span>
-                                                <span id="modalProductPrice" class="text-end fw-bold text-primary"></span>
-                                            </li>
-                                            <li class="list-group-item px-0 py-2 d-flex justify-content-between">
-                                                <span class="fw-semibold text-muted">Frame Shape:</span>
-                                                <span id="modalProductFaceShape" class="text-end"></span>
-                                            </li>
-                                            <li class="list-group-item px-0 py-2 d-flex justify-content-between">
-                                                <span class="fw-semibold text-muted">Branch:</span>
-                                                <span id="modalProductBranch" class="text-end"></span>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                    
-                                    <div class="mt-auto pt-3 border-top">
-                                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                                                <i class="fas fa-times me-2"></i>Close
-                                            </button>
-                                        </div>
-                                    </div>
+                                <h3 id="modalProductName" class="mb-3"></h3>
+                                <div class="mb-3">
+                                    <span id="modalProductStock" class="badge"></span>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Category:</strong> <span id="modalProductCategory"></span>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Material:</strong> <span id="modalProductMaterial"></span>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Price:</strong> <span id="modalProductPrice" class="text-primary fw-bold"></span>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Frame Shape:</strong> <span id="modalProductFaceShape"></span>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Available at:</strong> <span id="modalProductBranch"></span>
                                 </div>
                             </div>
                         </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     </div>
                 </div>
             </div>
@@ -671,18 +649,18 @@
                         document.getElementById('modalProductImage').src = productImage;
                         document.getElementById('modalProductImage').alt = productName;
                         document.getElementById('modalProductCategory').textContent = productCategory;
-                        document.getElementById('modalProductMaterial').text                        document.getElementById('modalProductPrice').textContent = productPrice;
+                        document.getElementById('modalProductMaterial').textContent = productMaterial;
+                        document.getElementById('modalProductPrice').textContent = productPrice;
                         document.getElementById('modalProductFaceShape').textContent = productFaceShape;
                         document.getElementById('modalProductBranch').textContent = productBranch;
                         
                         const stockBadge = document.getElementById('modalProductStock');
                         if (productStock > 0) {
                             stockBadge.textContent = productStock + ' in stock';
-                            stockBadge.className = 'badge rounded-pill fs-6 ' + 
-                                (productStock < 5 ? 'low-stock' : 'available');
+                            stockBadge.className = 'badge bg-success';
                         } else {
                             stockBadge.textContent = 'Out of stock';
-                            stockBadge.className = 'badge rounded-pill fs-6 not-available';
+                            stockBadge.className = 'badge bg-danger';
                         }
                     });
                 }
@@ -704,9 +682,7 @@
                                 results.slice(0, 5).forEach(result => {
                                     const resultItem = document.createElement('div');
                                     resultItem.className = 'live-search-item';
-                                    resultItem.textContent = result;
-                                    
-                                    resultItem.addEventListener('click', function() {
+                                    resultItem.text                                    resultItem.addEventListener('click', function() {
                                         searchInput.value = result;
                                         liveSearchResults.style.display = 'none';
                                         searchForm.submit();
