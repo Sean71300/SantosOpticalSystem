@@ -76,6 +76,17 @@ else {
             </a>
         <?php endif; ?>
 
+        <?php if ($isOptometrist): ?>
+            <a href="optometrist-records.php" class="sidebar-item <?php echo ($current_page == 'optometrist-records.php') ? 'active' : ''; ?>">
+                <i class="fas fa-user-md"></i> 
+                <span class="sidebar-item-text">Customer Info</span>
+            </a>
+            <a href="optometrist-medicalhistory.php" class="sidebar-item <?php echo ($current_page == 'optometrist-medicalhistory.php') ? 'active' : ''; ?>">
+                <i class="fas fa-notes-medical"></i> 
+                <span class="sidebar-item-text">Medical History</span>
+            </a>
+        <?php endif; ?>
+
         <?php if (!$isAdmin && !$isOptometrist): ?>
             <a href="Employee-inventory.php" class="sidebar-item <?php echo ($current_page == 'Employee-inventory.php') ? 'active' : ''; ?>">
                 <i class="fas fa-box"></i> 
