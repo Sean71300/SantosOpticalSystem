@@ -253,10 +253,8 @@ include 'loginChecker.php';
             <form method="post" enctype="multipart/form-data" id="addForm">
                 <div class="row mb-4">
                     <div class="col-12">
-                        <label class="form-label">Select Branches</label>
-                        <div class="border p-3 rounded" id="branchCheckboxContainer">
-                            <?php displayBranchesWithCheckboxes(); ?>
-                        </div>
+                        <label class="form-label h5 mb-3"><i class="fas fa-store me-2"></i>Select Branches & Quantities</label>
+                        <?php displayBranchesWithCheckboxes(); ?>
                     </div>
                 </div>
 
