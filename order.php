@@ -308,9 +308,10 @@ if (isset($_POST['cancel_order']) && isset($_POST['order_id'])) {
         
         // Log the cancellation
         $description = "Order #$orderId cancelled by employee";
-        $logQuery = "INSERT INTO Logs (EmployeeID, TargetID, TargetType, ActivityCode, Description) VALUES (?, ?, 'order', 5, ?)";
+        $LID=generate_LogsID()
+        $logQuery = "INSERT INTO Logs (LogsID,EmployeeID, TargetID, TargetType, ActivityCode, Description) VALUES (?, ?, 'order', 7, ?)";
         $stmt = $conn->prepare($logQuery);
-        $stmt->bind_param('iis', $_SESSION['id'], $orderId, $description);
+        $stmt->bind_param('iiis',$LID, $_SESSION['id'], $orderId, $description);
         $stmt->execute();
         $stmt->close();
         
