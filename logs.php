@@ -218,7 +218,7 @@ $conn->close();
                             <option value="4" <?php echo (isset($_GET['activity']) && $_GET['activity'] == '4') ? 'selected' : '' ?>>Edited</option>
                             <option value="5" <?php echo (isset($_GET['activity']) && $_GET['activity'] == '5') ? 'selected' : '' ?>>Deleted</option>
                             <option value="7" <?php echo (isset($_GET['activity']) && $_GET['activity'] == '7') ? 'selected' : '' ?>>Cancelled</option>                            
-                            <option value="1" <?php echo (isset($_GET['activity']) && $_GET['activity'] == '1') ? 'selected' : '' ?>>Delivered</option>                            
+                            <option value="1" <?php echo (isset($_GET['activity']) && $_GET['activity'] == '1') ? 'selected' : '' ?>>Completed</option>                            
                             <option value="9" <?php echo (isset($_GET['activity']) && $_GET['activity'] == '9') ? 'selected' : '' ?>>Claimed</option>
                             <option value="8" <?php echo (isset($_GET['activity']) && $_GET['activity'] == '8') ? 'selected' : '' ?>>Returned</option>                            
                         </select>
