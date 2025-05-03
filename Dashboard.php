@@ -170,7 +170,7 @@ $lowInventory = getLowInventoryProducts();
                 <div class="col-md-8">
                     <div class="dashboard-card">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Sales Overview</h5>
+                            <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Products Sold</h5>
                             <div class="btn-group">
                                 <button type="button" class="btn btn-sm btn-outline-secondary chart-period" data-period="7">7 Days</button>
                                 <button type="button" class="btn btn-sm btn-outline-secondary chart-period active" data-period="30">30 Days</button>
@@ -246,7 +246,7 @@ $lowInventory = getLowInventoryProducts();
         </div>
 
         <script>
-            // Sales Chart Implementation
+            // Sales Chart Implementation - Shows Product Counts
             function renderSalesChart(period = 30) {
                 const ctx = document.getElementById('salesChart');
                 const loadingElement = document.getElementById('chartLoading');
@@ -272,14 +272,14 @@ $lowInventory = getLowInventoryProducts();
                             data: {
                                 labels: data.labels,
                                 datasets: [{
-                                    label: 'Sales Amount',
+                                    label: 'Products Sold',
                                     data: data.values,
-                                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                                    borderColor: 'rgba(54, 162, 235, 1)',
+                                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                    borderColor: 'rgba(75, 192, 192, 1)',
                                     borderWidth: 2,
                                     tension: 0.4,
                                     fill: true,
-                                    pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                                    pointBackgroundColor: 'rgba(75, 192, 192, 1)',
                                     pointRadius: 4,
                                     pointHoverRadius: 6
                                 }]
@@ -296,7 +296,7 @@ $lowInventory = getLowInventoryProducts();
                                         intersect: false,
                                         callbacks: {
                                             label: function(context) {
-                                                return '₱' + context.parsed.y.toLocaleString();
+                                                return context.parsed.y.toLocaleString() + ' products';
                                             }
                                         }
                                     }
@@ -306,7 +306,7 @@ $lowInventory = getLowInventoryProducts();
                                         beginAtZero: true,
                                         ticks: {
                                             callback: function(value) {
-                                                return '₱' + value.toLocaleString();
+                                                return value.toLocaleString();
                                             }
                                         },
                                         grid: {
@@ -339,7 +339,7 @@ $lowInventory = getLowInventoryProducts();
                 const mobileToggle = document.getElementById('mobileMenuToggle');
                 const body = document.body;
                 
-                // Initialize sales chart
+                // Initialize sales chart with product counts
                 renderSalesChart(30);
                 
                 // Period selector buttons
