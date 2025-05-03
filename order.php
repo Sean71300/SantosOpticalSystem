@@ -321,7 +321,7 @@ if (isset($_POST['cancel_order']) && isset($_POST['order_id'])) {
         
         $conn = connect();
         $LID=generate_LogsID();
-        $CID=getCustomerID($conn, $OrderId);
+        $CID=getCustomerID($conn, $orderId);
         $CName=getCustomerName($conn, $CID);
         $description = "#$orderId for customer". $CName;
         $logQuery = "INSERT INTO Logs (LogsID,EmployeeID, TargetID, TargetType, ActivityCode, Description) VALUES (?, ?, 'order', 7, ?)";
