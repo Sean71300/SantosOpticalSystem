@@ -308,7 +308,7 @@ function addProduct(){ //Add function to add a new product to the database
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header bg-danger text-white">
-                        <h5 class="modal-title">Duplicate Entry</h5>
+                        <i class="fa-solid fa-triangle-exclamation me-2"></i><h5 class="modal-title">Duplicate Entry</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
@@ -326,7 +326,8 @@ function addProduct(){ //Add function to add a new product to the database
             });
         </script>';
         mysqli_close($link);
-        exit();
+        header("refresh:0");
+        exit;
     }
     mysqli_close($link);
     
