@@ -257,7 +257,7 @@ $conn->close();
                                         <?php 
                                             $activity = '';
                                             switch($log['ActivityCode']) {
-                                                case 1: $activity = 'delivered'; break;
+                                                case 1: $activity = 'completed'; break;
                                                 case 2: $activity = 'marked as pending'; break;
                                                 case 3: $activity = 'added'; break;
                                                 case 4: $activity = 'edited'; break;
@@ -265,7 +265,7 @@ $conn->close();
                                                 case 6: $activity = 'archived'; break;                                                
                                                 case 7: $activity = 'cancelled'; break;
                                                 case 8: $activity = 'returned'; break;
-                                                case 9: $activity = 'claimed'; break;
+                                                case 9: $activity = 'delivered'; break;
                                                 default: $activity = 'performed an action on';
                                             }                                            
                                             echo "<strong>" . $activity . "</strong> " . $log['TargetType'] .": ". $log['Description']; 
