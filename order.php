@@ -182,7 +182,6 @@ function getOrderDetails($conn, $orderId) {
     $details = [];
     
     while ($row = $result->fetch_assoc()) {
-        // Extract numeric value from price string (remove ₱ symbol)
         $price = str_replace('₱', '', $row['Price']);
         $row['Price'] = (float)$price;
         $row['Quantity'] = (int)$row['Quantity'];
@@ -277,6 +276,55 @@ function getAllBranches($conn) {
     $query = "SELECT BranchCode, BranchName FROM BranchMaster";
     $result = $conn->query($query);
     return $result;
+}
+
+// Handle order cancellation
+if (isset($_POST['cancel_order']) && isset($_POST['order_id'])) {
+    $orderId = $_POST['order_id'];
+    $conn = connect();
+    
+    // Get order details before cancellation
+    $orderDetails = getOrderDetails($conn, $orderId);
+    
+    // Start transaction
+    $conn->begin_transaction();
+    
+    try {
+        // Update order status to Cancelled
+        $updateQuery = "UPDATE orderDetails SET Status = 'Cancelled' WHERE OrderHdr_id = ?";
+        $stmt = $conn->prepare($updateQuery);
+        $stmt->bind_param('i', $orderId);
+        $stmt->execute();
+        $stmt->close();
+        
+        // Restore product quantities
+        foreach ($orderDetails as $detail) {
+            $restoreQuery = "UPDATE ProductBranchMaster SET Stocks = Stocks + ? WHERE ProductBranchID = ?";
+            $stmt = $conn->prepare($restoreQuery);
+            $stmt->bind_param('ii', $detail['Quantity'], $detail['ProductBranchID']);
+            $stmt->execute();
+            $stmt->close();
+        }
+        
+        // Log the cancellation
+        $description = "Order #$orderId cancelled by employee";
+        $logQuery = "INSERT INTO Logs (EmployeeID, TargetID, TargetType, ActivityCode, Description) VALUES (?, ?, 'order', 5, ?)";
+        $stmt = $conn->prepare($logQuery);
+        $stmt->bind_param('iis', $_SESSION['id'], $orderId, $description);
+        $stmt->execute();
+        $stmt->close();
+        
+        // Commit transaction
+        $conn->commit();
+        
+        // Redirect to refresh the page
+        header("Location: order.php");
+        exit();
+    } catch (Exception $e) {
+        // Rollback transaction on error
+        $conn->rollback();
+        die("Error cancelling order: " . $e->getMessage());
+    }
 }
 
 $ordersPerPage = 10;
@@ -463,7 +511,6 @@ $conn->close();
             color: #212529;
         }
         
-        /* New styles for order details modal */
         .order-details-container {
             padding-bottom: 20px;
         }
@@ -687,6 +734,11 @@ $conn->close();
     </div>
 </div>
 
+<form id="cancelOrderForm" method="post" style="display: none;">
+    <input type="hidden" name="cancel_order" value="1">
+    <input type="hidden" name="order_id" id="cancelOrderId">
+</form>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const sidebar = document.getElementById('sidebar');
@@ -825,6 +877,26 @@ $conn->close();
                     });
 
                     html += `
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Order Summary</h5>
+                                            <p><strong>Total Items:</strong> ${order.ItemCount}</p>
+                                            <p><strong>Total Amount:</strong> ₱${order.TotalAmount.toFixed(2)}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                    
+                    // Only show action buttons if order is pending
+                    if (order.Status === 'Pending') {
+                        html += `
                         <div class="order-details-footer d-flex justify-content-end">
                             <button type="button" class="btn btn-success me-2" id="completeOrderBtn">
                                 <i class="fas fa-check-circle me-1"></i> Complete Order
@@ -836,8 +908,27 @@ $conn->close();
                                 <i class="fas fa-times me-1"></i> Close
                             </button>
                         </div>`;
+                    } else {
+                        html += `
+                        <div class="order-details-footer d-flex justify-content-end">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <i class="fas fa-times me-1"></i> Close
+                            </button>
+                        </div>`;
+                    }
                     
                     modalBody.innerHTML = html;
+
+                    // Add event listener for cancel button if it exists
+                    const cancelBtn = document.getElementById('cancelOrderBtn');
+                    if (cancelBtn) {
+                        cancelBtn.addEventListener('click', function() {
+                            if (confirm('Are you sure you want to cancel this order? This action cannot be undone.')) {
+                                document.getElementById('cancelOrderId').value = order.Orderhdr_id;
+                                document.getElementById('cancelOrderForm').submit();
+                            }
+                        });
+                    }
                 } else {
                     document.getElementById('orderDetailsContent').innerHTML = `
                         <div class="alert alert-danger">Order details not found.</div>`;
