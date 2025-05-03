@@ -827,11 +827,7 @@ $conn->close();
                     html += `
                                     </tbody>
                                 </table>
-                            </div>
-                            
-                            <div class="text-end mt-3">
-                                <h4>Total: ₱${order.TotalAmount.toFixed(2)}</h4>
-                            </div>
+                            </div>                            
                         </div>
                         
                         <div class="order-details-footer d-flex justify-content-end">
