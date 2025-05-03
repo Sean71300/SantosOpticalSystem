@@ -264,7 +264,7 @@ $conn->close();
                                                 case 5: $activity = 'deleted'; break;
                                                 case 6: $activity = 'archived'; break;                                                
                                                 case 7: $activity = 'cancelled'; break;
-                                                case 8: $activity = 'returned'; break;
+                                                case 8: $activity = 'receives'; break;
                                                 case 9: $activity = 'delivered'; break;
                                                 default: $activity = 'performed an action on';
                                             }                                            
