@@ -456,9 +456,7 @@
                 <div class="filter-container">
                     <!-- Branch Filter -->
                     <form method="get" action="" class="filter-dropdown">
-                        <?php if(isset($_GET['page'])): ?>
-                            <input type="hidden" name="page" value="<?php echo $_GET['page']; ?>">
-                        <?php endif; ?>
+                        <input type="hidden" name="page" value="1"> <!-- Always reset to page 1 when applying a new filter -->
                         <?php if(isset($_GET['search'])): ?>
                             <input type="hidden" name="search" value="<?php echo $_GET['search']; ?>">
                         <?php endif; ?>
@@ -491,9 +489,7 @@
                     
                     <!-- Frame Shape Filter -->
                     <form method="get" action="" class="filter-dropdown">
-                        <?php if(isset($_GET['page'])): ?>
-                            <input type="hidden" name="page" value="<?php echo $_GET['page']; ?>">
-                        <?php endif; ?>
+                        <input type="hidden" name="page" value="1"> <!-- Always reset to page 1 when applying a new filter -->
                         <?php if(isset($_GET['search'])): ?>
                             <input type="hidden" name="search" value="<?php echo $_GET['search']; ?>">
                         <?php endif; ?>
@@ -523,9 +519,7 @@
                     
                     <!-- Category Filter -->
                     <form method="get" action="" class="filter-dropdown">
-                        <?php if(isset($_GET['page'])): ?>
-                            <input type="hidden" name="page" value="<?php echo $_GET['page']; ?>">
-                        <?php endif; ?>
+                        <input type="hidden" name="page" value="1"> <!-- Always reset to page 1 when applying a new filter -->
                         <?php if(isset($_GET['search'])): ?>
                             <input type="hidden" name="search" value="<?php echo $_GET['search']; ?>">
                         <?php endif; ?>
@@ -558,9 +552,7 @@
                     
                     <!-- Sort Filter -->
                     <form method="get" action="" class="filter-dropdown">
-                        <?php if(isset($_GET['page'])): ?>
-                            <input type="hidden" name="page" value="<?php echo $_GET['page']; ?>">
-                        <?php endif; ?>
+                        <input type="hidden" name="page" value="1"> <!-- Always reset to page 1 when applying a new filter -->
                         <?php if(isset($_GET['search'])): ?>
                             <input type="hidden" name="search" value="<?php echo $_GET['search']; ?>">
                         <?php endif; ?>
