@@ -414,6 +414,7 @@ function addProduct(){ //Add function to add a new product to the database
         }
 
         if ($uploadOk && file_exists($targetFile)) {
+            $link = connect();
             $anyAvailable = false;
             if (!empty($_POST['qtys'])) {
                 foreach ($_POST['qtys'] as $qty) {
@@ -424,7 +425,6 @@ function addProduct(){ //Add function to add a new product to the database
                 }
             }
             $avail_FL = $anyAvailable ? 'Available' : 'Not Available';
-
             // Insert product details into the product master database
             $sql = "INSERT INTO productMstr (ProductID, CategoryType, ShapeID, BrandID, Model, Material, Price, ProductImage, Avail_FL, Upd_by, Upd_dt) 
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
