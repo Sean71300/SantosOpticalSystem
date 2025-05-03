@@ -209,9 +209,7 @@ include 'loginChecker.php';
                 <div class="row mb-4">
                     <div class="col-md-6 mb-3 mb-md-0">
                         <label for="productBrand" class="form-label">Brand</label>
-                        <select name="productBrand" id="productBrand" class="form-select form-control-lg" required>
-                            <?php getBrands(); ?>
-                        </select>
+                        <input type="text" name="productBrand" id="productBrand" class="form-control form-control-lg" required>
                     </div>
                     <div class="col-md-6">
                         <label for="productQty" class="form-label">Quantity</label>
