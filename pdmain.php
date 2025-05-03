@@ -21,7 +21,6 @@
     #eyeglassCarousel {
         width: 100%;
         margin: 0 auto;
-        margin-bottom: -20px; /* Negative margin to reduce gap below carousel */
     }
     
     .carousel-inner {
@@ -30,9 +29,9 @@
     }
     
     .carousel-item {
-        height: 85vh; /* Increased height for larger carousel */
+        height: 85vh;
         min-height: 500px;
-        max-height: 800px; /* Added maximum height for very large screens */
+        max-height: 800px;
     }
     
     .carousel-item img {
@@ -40,16 +39,14 @@
         height: 100%;
         object-fit: contain;
         background-color: #f8f9fa;
-        padding: 0 5%; /* Added padding to prevent images from touching edges */
+        padding: 0 5%;
     }
     
-    /* Hide carousel controls (keeping your original setting) */
     .carousel-control-prev,
     .carousel-control-next {
         display: none !important;
     }
     
-    /* Product image styling (unchanged) */
     .product-img {
         max-width: 100%;
         height: auto;
@@ -60,14 +57,60 @@
         transform: scale(1.05);
     }
     
-    /* Added transition for smoother carousel slides */
     .carousel-item {
         transition: transform 0.6s ease-in-out;
     }
     
-    /* Adjust the container below carousel to reduce gap */
+    /* New Vision Statement Section */
+    .vision-statement {
+        background-color: #f8f9fa;
+        padding: 3rem 0;
+        text-align: center;
+        margin-top: -1px;
+    }
+    
+    .vision-text {
+        font-family: 'Georgia', serif;
+        font-size: 2.5rem;
+        font-weight: 300;
+        color: #2c3e50;
+        letter-spacing: 1px;
+        line-height: 1.3;
+        position: relative;
+        display: inline-block;
+        padding: 0 2rem;
+    }
+    
+    .vision-text:before, .vision-text:after {
+        content: "❝";
+        position: absolute;
+        font-size: 4rem;
+        color: rgba(44, 62, 80, 0.1);
+        line-height: 0;
+    }
+    
+    .vision-text:before {
+        left: -10px;
+        top: 30px;
+    }
+    
+    .vision-text:after {
+        right: -10px;
+        bottom: 20px;
+        transform: rotate(180deg);
+    }
+    
+    .vision-subtext {
+        font-family: 'Arial', sans-serif;
+        font-size: 1rem;
+        color: #7f8c8d;
+        margin-top: 1rem;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+    }
+    
     .container-fluid.py-5 {
-        padding-top: 2rem !important; /* Reduced top padding */
+        padding-top: 2rem !important;
     }
 </style>
 </head>
@@ -101,6 +144,14 @@
             </button>
         </div>
     </header>
+
+    <!-- New Vision Statement Section -->
+    <div class="vision-statement" data-aos="fade-up">
+        <div class="container">
+            <div class="vision-text">We value your sight. We care.</div>
+            <div class="vision-subtext">Quality Vision for Quality Life</div>
+        </div>
+    </div>
 
     <div class="container-fluid py-5" style="background-color: #fdfdfd;" data-aos="fade-up">
         <div class="container text-center my-4">
@@ -226,7 +277,6 @@
                 once: true
             });
             
-            // paulit ulit like the way I miss her
             var myCarousel = document.querySelector('#eyeglassCarousel');
             var carousel = new bootstrap.Carousel(myCarousel, {
                 interval: 3000,
@@ -241,15 +291,13 @@
             once: true
         });
         
-        
         var myCarousel = document.querySelector('#eyeglassCarousel');
         var carousel = new bootstrap.Carousel(myCarousel, {
-            interval: 3000,  // pang adjust sa time nang pag slide
-            wrap: true,     
-            ride: 'carousel', 
-            pause: false    
+            interval: 3000,
+            wrap: true,
+            ride: 'carousel',
+            pause: false
         });
-        
         
         myCarousel.addEventListener('slid.bs.carousel', function() {
             carousel.cycle();
