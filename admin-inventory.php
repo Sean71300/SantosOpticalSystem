@@ -618,9 +618,11 @@ $lowInventory = getLowInventoryProducts();
 
         <script>
             document.addEventListener('DOMContentLoaded', function() {
-                // Track form submissions to preserve sessionStorage flag
-                document.getElementById('branchForm')?.addEventListener('submit', () => {
-                    sessionStorage.setItem('isFormSubmit', 'true');
+                // Track all form submissions to preserve sessionStorage flag
+                document.querySelectorAll('form').forEach(form => {
+                    form.addEventListener('submit', () => {
+                        sessionStorage.setItem('isFormSubmit', 'true');
+                    });
                 });
 
                 // Show low inventory modal only once per visit
