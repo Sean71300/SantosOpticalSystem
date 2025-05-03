@@ -248,9 +248,10 @@ include 'loginChecker.php';
             </div>
             
             <form method="post" enctype="multipart/form-data" id="addForm">
-                <div class="row mb-4 mt-3 border border-black rounded p-3">
+                <div class="row mb-4 mt-3 border border-black opacity-50 rounded p-3">
                     <div class="col-12">
                         <label class="form-label h5 mb-3"><i class="fas fa-store me-2"></i>Select Branches & Quantities</label>
+                        <hr>
                         <?php displayBranchesWithCheckboxes(); ?>
                     </div>
                 </div>
@@ -260,11 +261,11 @@ include 'loginChecker.php';
                 </div>
              
                 <div class="row mb-4">
-                    <div class="col-md-6">
+                    <div class="col-md-6 mb-3 mb-md-0">
                         <label for="productName" class="form-label">Product Name</label>
                         <input type="text" name="productName" id="productName" class="form-control form-control-lg" required>
                     </div>
-                    <div class="col-md-6 mb-3 mb-md-0">
+                    <div class="col-md-6">
                         <label for="productBrand" class="form-label">Brand</label>
                         <select name="productBrand" id="productBrand" class="form-select form-control-lg" required>
                             <?php getBrands(); ?>
