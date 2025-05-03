@@ -54,7 +54,7 @@
         $whereConditions = [];
         
         if (!empty($search)) {
-            $whereConditions[] = "p.Model LIKE '%$search%'";
+            $whereConditions[] = "p.Model LIKE '" . $search . "%'"; // Changed to search for products starting with search term
         }
         
         if ($shape > 0) {
@@ -152,7 +152,7 @@
             echo "<div class='col-12 py-5 no-results' style='display: flex; justify-content: center; align-items: center; min-height: 300px;'>";
             if ($shape > 0) {
                 $shapeName = getFaceShapeName($shape);
-                echo "<h4 class='text-center'>No products found for face shape: $shapeName</h4>";
+                echo "<h4 class='text-center'>No products found for frame shape: $shapeName</h4>"; // Changed text from "face shape" to "frame shape"
             } else {
                 echo "<h4 class='text-center'>No products found matching your search.</h4>";
             }
@@ -358,7 +358,7 @@
                                                 <span id="modalProductPrice" class="text-end fw-bold text-primary"></span>
                                             </li>
                                             <li class="list-group-item px-0 py-2 d-flex justify-content-between">
-                                                <span class="fw-semibold text-muted">Face Shape:</span>
+                                                <span class="fw-semibold text-muted">Frame Shape:</span> <!-- Changed from "Face Shape" to "Frame Shape" -->
                                                 <span id="modalProductFaceShape" class="text-end"></span>
                                             </li>
                                         </ul>
@@ -409,7 +409,7 @@
                 </div>
                 
                 <div class="filter-container">
-                    <!-- Face Shape Filter -->
+                    <!-- Frame Shape Filter (changed from Face Shape) -->
                     <form method="get" action="" class="filter-dropdown">
                         <?php if(isset($_GET['page'])): ?>
                             <input type="hidden" name="page" value="<?php echo $_GET['page']; ?>">
@@ -424,14 +424,16 @@
                             <input type="hidden" name="category" value="<?php echo $_GET['category']; ?>">
                         <?php endif; ?>
                         <div class="input-group">
-                            <label class="input-group-text" for="shapeSelect">Face Shape:</label>
+                            <label class="input-group-text" for="shapeSelect">Frame Shape:</label> <!-- Changed label -->
                             <select class="form-select" id="shapeSelect" name="shape" onchange="this.form.submit()">
                                 <option value="">All Shapes</option>
-                                <option value="1" <?php echo (isset($_GET['shape']) && $_GET['shape'] == '1') ? 'selected' : ''; ?>>Oval</option>
-                                <option value="2" <?php echo (isset($_GET['shape']) && $_GET['shape'] == '2') ? 'selected' : ''; ?>>Triangle</option>
+                                <option value="1" <?php echo (isset($_GET['shape']) && $_GET['shape'] == '1') ? 'selected' : ''; ?>>Oblong</option>
+                                <option value="2" <?php echo (isset($_GET['shape']) && $_GET['shape'] == '2') ? 'selected' : ''; ?>>V-Triangle</option>
                                 <option value="3" <?php echo (isset($_GET['shape']) && $_GET['shape'] == '3') ? 'selected' : ''; ?>>Diamond</option>
                                 <option value="4" <?php echo (isset($_GET['shape']) && $_GET['shape'] == '4') ? 'selected' : ''; ?>>Round</option>
                                 <option value="5" <?php echo (isset($_GET['shape']) && $_GET['shape'] == '5') ? 'selected' : ''; ?>>Square</option>
+                                <option value="6" <?php echo (isset($_GET['shape']) && $_GET['shape'] == '6') ? 'selected' : ''; ?>>A-Triangle</option>
+                                <option value="7" <?php echo (isset($_GET['shape']) && $_GET['shape'] == '7') ? 'selected' : ''; ?>>Rectangle</option>
                             </select>
                         </div>
                     </form>
@@ -544,7 +546,6 @@
             document.addEventListener('DOMContentLoaded', function() {
                 const searchInput = document.getElementById('searchInput');
                 const liveSearchResults = document.getElementById('liveSearchResults');
-                const productCards = document.querySelectorAll('.product-card');
                 const searchForm = document.getElementById('searchForm');
                 
                 const productModal = document.getElementById('productModal');
@@ -581,82 +582,50 @@
                 }
                 
                 function performLiveSearch() {
-                    const searchTerm = searchInput.value.trim().toLowerCase();
+                    const searchTerm = searchInput.value.trim();
                     
-                    if (searchTerm.length === 0) {
+                    if (searchTerm.length < 1) { // Show results even for single character
                         liveSearchResults.style.display = 'none';
                         return;
                     }
                     
-                    const matches = [];
-                    
-                    productCards.forEach(card => {
-                        const cardTitle = card.querySelector('.card-title').textContent.toLowerCase();
-                        
-                        if (cardTitle.startsWith(searchTerm)) {
-                            matches.push({
-                                element: card,
-                                title: card.querySelector('.card-title').textContent
-                            });
-                        }
-                    });
-                    
-                    if (matches.length > 0) {
-                        liveSearchResults.innerHTML = '';
-                        matches.slice(0, 5).forEach(match => {
-                            const resultItem = document.createElement('div');
-                            resultItem.className = 'live-search-item';
-                            resultItem.textContent = match.title;
+                    fetch(`search_products.php?term=${encodeURIComponent(searchTerm)}`)
+                        .then(response => response.json())
+                        .then(results => {
+                            liveSearchResults.innerHTML = '';
                             
-                            resultItem.addEventListener('click', function() {
-                                searchInput.value = match.title;
-                                searchForm.submit();
-                            });
-                            
-                            liveSearchResults.appendChild(resultItem);
+                            if (results.length > 0) {
+                                results.slice(0, 5).forEach(result => {
+                                    const resultItem = document.createElement('div');
+                                    resultItem.className = 'live-search-item';
+                                    resultItem.textContent = result;
+                                    
+                                    resultItem.addEventListener('click', function() {
+                                        searchInput.value = result;
+                                        liveSearchResults.style.display = 'none';
+                                        searchForm.submit();
+                                    });
+                                    
+                                    liveSearchResults.appendChild(resultItem);
+                                });
+                                
+                                if (results.length > 5) {
+                                    const moreItem = document.createElement('div');
+                                    moreItem.className = 'live-search-item text-center text-muted small';
+                                    moreItem.textContent = `+${results.length - 5} more items...`;
+                                    liveSearchResults.appendChild(moreItem);
+                                }
+                                
+                                liveSearchResults.style.display = 'block';
+                            } else {
+                                liveSearchResults.innerHTML = '<div class="live-search-item text-muted">No matches found</div>';
+                                liveSearchResults.style.display = 'block';
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            liveSearchResults.style.display = 'none';
                         });
-                        
-                        if (matches.length > 5) {
-                            const moreItem = document.createElement('div');
-                            moreItem.className = 'live-search-item text-center text-muted small';
-                            moreItem.textContent = `+${matches.length - 5} more items...`;
-                            liveSearchResults.appendChild(moreItem);
-                        }
-                        
-                        liveSearchResults.style.display = 'block';
-                    } else {
-                        liveSearchResults.innerHTML = '<div class="live-search-item text-muted">No matches found</div>';
-                        liveSearchResults.style.display = 'block';
-                    }
-                }
-                
-                function filterProducts() {
-                    const searchTerm = searchInput.value.trim().toLowerCase();
-                    
-                    if (searchTerm.length === 0) {
-                        productCards.forEach(card => {
-                            card.classList.remove('hidden');
-                        });
-                        return;
-                    }
-                    
-                    let visibleCount = 0;
-                    
-                    productCards.forEach(card => {
-                        const cardTitle = card.querySelector('.card-title').textContent.toLowerCase();
-                        
-                        if (cardTitle.startsWith(searchTerm)) {
-                            card.classList.remove('hidden');
-                            visibleCount++;
-                        } else {
-                            card.classList.add('hidden');
-                        }
-                    });
-                    
-                    const noResultsElement = document.querySelector('.no-results');
-                    if (noResultsElement) {
-                        noResultsElement.style.display = visibleCount > 0 ? 'none' : 'block';
-                    }
                 }
                 
                 searchInput.addEventListener('input', function() {
@@ -664,7 +633,7 @@
                 });
                 
                 searchInput.addEventListener('focus', function() {
-                    if (searchInput.value.trim().length > 0) {
+                    if (searchInput.value.trim().length >= 1) {
                         performLiveSearch();
                     }
                 });
@@ -709,19 +678,19 @@
                     } else if (e.key === 'Enter' && currentHighlight) {
                         e.preventDefault();
                         searchInput.value = currentHighlight.textContent;
+                        liveSearchResults.style.display = 'none';
                         searchForm.submit();
                     }
                 });
                 
-                searchForm.addEventListener('submit', function(e) {
-                    return true;
+                // Submit the form when pressing Enter in the search input
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter' && !liveSearchResults.querySelector('.live-search-item.highlight')) {
+                        e.preventDefault();
+                        searchForm.submit();
+                    }
                 });
-                
-                if (searchInput.value) {
-                    filterProducts();
-                }
             });
         </script>
     </body>
 </html>
-
