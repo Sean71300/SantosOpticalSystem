@@ -455,7 +455,6 @@ $conn->close();
                                         <th>Category</th>
                                         <th>Quantity</th>
                                         <th>Unit Price</th>
-                                        <th>Total</th>
                                     </tr>
                                 </thead>
                                 <tbody>
