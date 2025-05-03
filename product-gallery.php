@@ -8,7 +8,7 @@
         
         if (isset($currentParams['sort'])) $params['sort'] = $currentParams['sort'];
         if (isset($currentParams['search'])) $params['search'] = $currentParams['search'];
-        if (isset($currentParams['availability'])) $params['availability'] = $currentParams['availability'];
+        if (isset($currentParams['shape'])) $params['shape'] = $currentParams['shape'];
         if (isset($currentParams['category'])) $params['category'] = $currentParams['category'];
         
         if ($page !== null) {
@@ -16,6 +16,21 @@
         }
         
         return '?' . http_build_query($params);
+    }
+
+    function getFaceShapeName($shapeID) {
+        $conn = connect();
+        $sql = "SELECT Description FROM shapeMaster WHERE ShapeID = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $shapeID);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            return $row['Description'];
+        }
+        return 'Not specified';
     }
 
     function pagination() {
@@ -28,7 +43,7 @@
         // Get parameters from URL
         $sort = isset($_GET['sort']) ? $_GET['sort'] : 'name_asc';
         $search = isset($_GET['search']) ? mysqli_real_escape_string($conn, $_GET['search']) : '';
-        $availability = isset($_GET['availability']) ? $_GET['availability'] : '';
+        $shape = isset($_GET['shape']) ? (int)$_GET['shape'] : 0;
         $category = isset($_GET['category']) ? $_GET['category'] : '';
         
         // Build the base SQL query with JOIN to ProductBranchMaster
@@ -36,22 +51,16 @@
                 FROM `productMstr` p
                 LEFT JOIN ProductBranchMaster pb ON p.ProductID = pb.ProductID";
         
-     
         $whereConditions = [];
         
         if (!empty($search)) {
             $whereConditions[] = "p.Model LIKE '%$search%'";
         }
         
-        if (!empty($availability)) {
-            if ($availability == 'Available') {
-                $whereConditions[] = "pb.Avail_FL = 'Available'";
-            } elseif ($availability == 'Not Available') {
-                $whereConditions[] = "pb.Avail_FL != 'Available'";
-            }
+        if ($shape > 0) {
+            $whereConditions[] = "p.ShapeID = $shape";
         }
         
-     
         if (!empty($category)) {
             $category = mysqli_real_escape_string($conn, $category);
             $whereConditions[] = "p.CategoryType = '$category'";
@@ -61,7 +70,6 @@
             $sql .= " WHERE " . implode(' AND ', $whereConditions);
         }
         
-      
         switch($sort) {
             case 'price_asc':
                 $sql .= " ORDER BY CAST(REPLACE(REPLACE(p.Price, '₱', ''), ',', '') AS DECIMAL(10,2)) ASC";
@@ -79,11 +87,9 @@
                 $sql .= " ORDER BY p.Model ASC";
         }
         
-    
         $sql .= " LIMIT $start, $perPage";
         
         $result = mysqli_query($conn, $sql);
-        
         
         $countSql = "SELECT COUNT(*) as total FROM `productMstr` p";
         if (!empty($whereConditions)) {
@@ -94,7 +100,6 @@
         $total = $totalData['total'];
         $totalPages = ceil($total / $perPage);
 
-       
         echo "<div class='row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4' id='productGrid'>";
         
         if ($total > 0) {
@@ -145,8 +150,9 @@
             }
         } else {
             echo "<div class='col-12 py-5 no-results' style='display: flex; justify-content: center; align-items: center; min-height: 300px;'>";
-            if ($availability == 'Not Available') {
-                echo "<h4 class='text-center'>No unavailable products found matching your search.</h4>";
+            if ($shape > 0) {
+                $shapeName = getFaceShapeName($shape);
+                echo "<h4 class='text-center'>No products found for face shape: $shapeName</h4>";
             } else {
                 echo "<h4 class='text-center'>No products found matching your search.</h4>";
             }
@@ -155,7 +161,6 @@
         
         echo "</div>"; 
 
-      
         if ($totalPages > 1) {
             echo "<div class='col-12 mt-5'>";
                 echo "<div class='d-flex justify-content-center'>";
@@ -183,22 +188,6 @@
                 echo "</div>";
             echo "</div>"; 
         }
-    }
-
-    
-    function getFaceShapeName($shapeID) {
-        $conn = connect();
-        $sql = "SELECT Description FROM shapeMaster WHERE ShapeID = ?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("i", $shapeID);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        
-        if ($result->num_rows > 0) {
-            $row = $result->fetch_assoc();
-            return $row['Description'];
-        }
-        return 'Not specified';
     }
 ?>
 
@@ -281,7 +270,6 @@
                 background-color: #e9ecef;
             }
             
-         
             .product-image-container {
                 height: 350px;
                 border: 1px solid #eee;
@@ -331,7 +319,6 @@
     </header>
 
     <body>
-  
         <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
@@ -341,14 +328,12 @@
                     </div>
                     <div class="modal-body p-4">
                         <div class="row g-4">
-                         
                             <div class="col-md-6">
                                 <div class="product-image-container">
                                     <img id="modalProductImage" src="" class="img-fluid mh-100" alt="Product Image" style="max-height: 300px; width: auto; object-fit: contain;">
                                 </div>
                             </div>
                             
-              
                             <div class="col-md-6">
                                 <div class="d-flex flex-column h-100">
                                     <div class="mb-3 border-bottom pb-3">
@@ -379,7 +364,6 @@
                                         </ul>
                                     </div>
                                     
-                         
                                     <div class="mt-auto pt-3 border-top">
                                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                                             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
@@ -413,8 +397,8 @@
                             <?php if(isset($_GET['sort'])): ?>
                                 <input type="hidden" name="sort" value="<?php echo $_GET['sort']; ?>">
                             <?php endif; ?>
-                            <?php if(isset($_GET['availability'])): ?>
-                                <input type="hidden" name="availability" value="<?php echo $_GET['availability']; ?>">
+                            <?php if(isset($_GET['shape'])): ?>
+                                <input type="hidden" name="shape" value="<?php echo $_GET['shape']; ?>">
                             <?php endif; ?>
                             <?php if(isset($_GET['category'])): ?>
                                 <input type="hidden" name="category" value="<?php echo $_GET['category']; ?>">
@@ -425,7 +409,7 @@
                 </div>
                 
                 <div class="filter-container">
-                  
+                    <!-- Face Shape Filter -->
                     <form method="get" action="" class="filter-dropdown">
                         <?php if(isset($_GET['page'])): ?>
                             <input type="hidden" name="page" value="<?php echo $_GET['page']; ?>">
@@ -436,8 +420,35 @@
                         <?php if(isset($_GET['sort'])): ?>
                             <input type="hidden" name="sort" value="<?php echo $_GET['sort']; ?>">
                         <?php endif; ?>
-                        <?php if(isset($_GET['availability'])): ?>
-                            <input type="hidden" name="availability" value="<?php echo $_GET['availability']; ?>">
+                        <?php if(isset($_GET['category'])): ?>
+                            <input type="hidden" name="category" value="<?php echo $_GET['category']; ?>">
+                        <?php endif; ?>
+                        <div class="input-group">
+                            <label class="input-group-text" for="shapeSelect">Face Shape:</label>
+                            <select class="form-select" id="shapeSelect" name="shape" onchange="this.form.submit()">
+                                <option value="">All Shapes</option>
+                                <option value="1" <?php echo (isset($_GET['shape']) && $_GET['shape'] == '1') ? 'selected' : ''; ?>>Oval</option>
+                                <option value="2" <?php echo (isset($_GET['shape']) && $_GET['shape'] == '2') ? 'selected' : ''; ?>>Triangle</option>
+                                <option value="3" <?php echo (isset($_GET['shape']) && $_GET['shape'] == '3') ? 'selected' : ''; ?>>Diamond</option>
+                                <option value="4" <?php echo (isset($_GET['shape']) && $_GET['shape'] == '4') ? 'selected' : ''; ?>>Round</option>
+                                <option value="5" <?php echo (isset($_GET['shape']) && $_GET['shape'] == '5') ? 'selected' : ''; ?>>Square</option>
+                            </select>
+                        </div>
+                    </form>
+                    
+                    <!-- Category Filter -->
+                    <form method="get" action="" class="filter-dropdown">
+                        <?php if(isset($_GET['page'])): ?>
+                            <input type="hidden" name="page" value="<?php echo $_GET['page']; ?>">
+                        <?php endif; ?>
+                        <?php if(isset($_GET['search'])): ?>
+                            <input type="hidden" name="search" value="<?php echo $_GET['search']; ?>">
+                        <?php endif; ?>
+                        <?php if(isset($_GET['sort'])): ?>
+                            <input type="hidden" name="sort" value="<?php echo $_GET['sort']; ?>">
+                        <?php endif; ?>
+                        <?php if(isset($_GET['shape'])): ?>
+                            <input type="hidden" name="shape" value="<?php echo $_GET['shape']; ?>">
                         <?php endif; ?>
                         <div class="input-group">
                             <label class="input-group-text" for="categorySelect">Category:</label>
@@ -456,31 +467,8 @@
                             </select>
                         </div>
                     </form>
-            
-                    <form method="get" action="" class="filter-dropdown">
-                        <?php if(isset($_GET['page'])): ?>
-                            <input type="hidden" name="page" value="<?php echo $_GET['page']; ?>">
-                        <?php endif; ?>
-                        <?php if(isset($_GET['search'])): ?>
-                            <input type="hidden" name="search" value="<?php echo $_GET['search']; ?>">
-                        <?php endif; ?>
-                        <?php if(isset($_GET['sort'])): ?>
-                            <input type="hidden" name="sort" value="<?php echo $_GET['sort']; ?>">
-                        <?php endif; ?>
-                        <?php if(isset($_GET['category'])): ?>
-                            <input type="hidden" name="category" value="<?php echo $_GET['category']; ?>">
-                        <?php endif; ?>
-                        <div class="input-group">
-                            <label class="input-group-text" for="availabilitySelect">Filter:</label>
-                            <select class="form-select" id="availabilitySelect" name="availability" onchange="this.form.submit()">
-                                <option value="">All Products</option>
-                                <option value="Available" <?php echo (isset($_GET['availability']) && $_GET['availability'] == 'Available') ? 'selected' : ''; ?>>Available Only</option>
-                                <option value="Not Available" <?php echo (isset($_GET['availability']) && $_GET['availability'] == 'Not Available') ? 'selected' : ''; ?>>Not Available</option>
-                            </select>
-                        </div>
-                    </form>
                     
-                
+                    <!-- Sort Filter -->
                     <form method="get" action="" class="filter-dropdown">
                         <?php if(isset($_GET['page'])): ?>
                             <input type="hidden" name="page" value="<?php echo $_GET['page']; ?>">
@@ -488,8 +476,8 @@
                         <?php if(isset($_GET['search'])): ?>
                             <input type="hidden" name="search" value="<?php echo $_GET['search']; ?>">
                         <?php endif; ?>
-                        <?php if(isset($_GET['availability'])): ?>
-                            <input type="hidden" name="availability" value="<?php echo $_GET['availability']; ?>">
+                        <?php if(isset($_GET['shape'])): ?>
+                            <input type="hidden" name="shape" value="<?php echo $_GET['shape']; ?>">
                         <?php endif; ?>
                         <?php if(isset($_GET['category'])): ?>
                             <input type="hidden" name="category" value="<?php echo $_GET['category']; ?>">
@@ -559,7 +547,6 @@
                 const productCards = document.querySelectorAll('.product-card');
                 const searchForm = document.getElementById('searchForm');
                 
-       
                 const productModal = document.getElementById('productModal');
                 if (productModal) {
                     productModal.addEventListener('show.bs.modal', function(event) {
@@ -573,7 +560,6 @@
                         const productStock = parseInt(button.getAttribute('data-product-stock'));
                         const productFaceShape = button.getAttribute('data-product-faceshape');
                         
-                      
                         document.getElementById('modalProductName').textContent = productName;
                         document.getElementById('modalProductImage').src = productImage;
                         document.getElementById('modalProductImage').alt = productName;
@@ -582,7 +568,6 @@
                         document.getElementById('modalProductPrice').textContent = productPrice;
                         document.getElementById('modalProductFaceShape').textContent = productFaceShape;
                         
-                        // Update stock badge
                         const stockBadge = document.getElementById('modalProductStock');
                         if (productStock > 0) {
                             stockBadge.textContent = productStock + ' in stock';
