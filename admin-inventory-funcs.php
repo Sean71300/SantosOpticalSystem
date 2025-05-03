@@ -262,7 +262,8 @@ function addProduct(){ //Add function to add a new product to the database
     $newProductMaterial = $_POST['productMaterial'];
     $newProductPrice = "₱". $_POST['productPrice'];
     $newProductImg = $_FILES['productImg'];
-    $upd_by = $_SESSION['full_name'];
+    $getname = $_SESSION['full_name'];
+    $upd_by = $getname;
     $date = new DateTime();
     $upd_dt = $date->format('Y-m-d H:i:s');
 
@@ -440,7 +441,6 @@ function addProduct(){ //Add function to add a new product to the database
             
             // Insert product-branch mapping into the product branch master database
             if (!empty($_POST['qtys'])) {
-                $upd_by = $_SESSION['full_name'];
                 foreach ($_POST['qtys'] as $branchCode => $qty) {
                     $branchAvailFL = ($qty > 0) ? 'Available' : 'Not Available';
                     $newProductBranchID = generate_ProductBrnchMstrID();
