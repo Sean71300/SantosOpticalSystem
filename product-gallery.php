@@ -32,7 +32,8 @@
         }
         return 'Not specified';
     }
-function pagination() {
+
+   function pagination() {
     $conn = connect();
 
     $perPage = 12; 
@@ -46,8 +47,9 @@ function pagination() {
     $category = isset($_GET['category']) ? $_GET['category'] : '';
     
     // Build the base SQL query with JOINs to check availability and archive status
-    $sql = "SELECT p.* 
+    $sql = "SELECT p.*, pb.Stocks 
         FROM `productMstr` p
+        JOIN ProductBranchMaster pb ON p.ProductID = pb.ProductID
         LEFT JOIN archives a ON (p.ProductID = a.TargetID AND a.TargetType = 'product')
         WHERE (p.Avail_FL = 'Available' OR p.Avail_FL IS NULL)
         AND a.ArchiveID IS NULL"; // Only show non-archived products
@@ -89,10 +91,7 @@ function pagination() {
     }
     
     // First get the total count without limits
-    $countSql = "SELECT COUNT(*) as total FROM `productMstr` p
-             LEFT JOIN archives a ON (p.ProductID = a.TargetID AND a.TargetType = 'product')
-             WHERE (p.Avail_FL = 'Available' OR p.Avail_FL IS NULL)
-             AND a.ArchiveID IS NULL";
+    $countSql = str_replace("p.*, pb.Stocks, pb.Avail_FL as BranchAvailability", "COUNT(*) as total", $sql);
     $countResult = mysqli_query($conn, $countSql);
     $totalData = mysqli_fetch_assoc($countResult);
     $total = $totalData['total'];
@@ -122,7 +121,7 @@ function pagination() {
                         $numeric_price = preg_replace('/[^0-9.]/', '', $price);
                         $formatted_price = is_numeric($numeric_price) ? '₱' . number_format((float)$numeric_price, 2) : '₱0.00';
                         echo "<div class='card-text mb-2'>".$formatted_price."</div>";
-                        $availability = $row['Avail_FL'];
+                        $availability = isset($row['BranchAvailability']) ? $row['BranchAvailability'] : $row['Avail_FL'];
                         if ($availability == "Available") {
                             echo "<div class='card-text mb-2 text-success'>".$availability."</div>";
                         echo "</div>";
@@ -586,9 +585,9 @@ function pagination() {
                         const productCategory = button.getAttribute('data-product-category');
                         const productMaterial = button.getAttribute('data-product-material');
                         const productPrice = button.getAttribute('data-product-price');
-                        const productStock = parseInt(button.getAttribute('data-product-stock'));
                         const productFaceShape = button.getAttribute('data-product-faceshape');
-                        
+                        const productStock = parseInt(button.getAttribute('data-product-stock'));
+
                         document.getElementById('modalProductName').textContent = productName;
                         document.getElementById('modalProductImage').src = productImage;
                         document.getElementById('modalProductImage').alt = productName;
@@ -597,14 +596,23 @@ function pagination() {
                         document.getElementById('modalProductPrice').textContent = productPrice;
                         document.getElementById('modalProductFaceShape').textContent = productFaceShape;
                         
-                        const stockBadge = document.getElementById('modalProductStock');
+                        const stockBadge = document.getElementById('modalProductStock');                     
                         if (productStock > 0) {
-                            stockBadge.textContent = productStock + ' in stock';
-                            stockBadge.className = 'badge rounded-pill fs-6 ' + 
-                                (productStock < 5 ? 'low-stock' : 'available');
+                        stockBadge.textContent = productStock + ' in stock';
+                        stockBadge.className = 'badge rounded-pill fs-6 ' + (productStock < 5 ? 'low-stock' : 'available');
                         } else {
-                            stockBadge.textContent = 'Out of stock';
-                            stockBadge.className = 'badge rounded-pill fs-6 not-available';
+                        stockBadge.textContent = 'Out of stock';
+                        stockBadge.className = 'badge rounded-pill fs-6 not-available';
+                        }
+
+                        // With this (handle potential NULL/undefined):
+                        const stockValue = isNaN(productStock) ? 0 : productStock; // Handle invalid values
+                        if (stockValue > 0) {
+                        stockBadge.textContent = stockValue + ' in stock';
+                        stockBadge.className = 'badge rounded-pill fs-6 ' + (stockValue < 5 ? 'low-stock' : 'available');
+                        } else {
+                        stockBadge.textContent = 'Out of stock';
+                        stockBadge.className = 'badge rounded-pill fs-6 not-available';
                         }
                     });
                 }
@@ -722,5 +730,3 @@ function pagination() {
         </script>
     </body>
 </html>
-
-
