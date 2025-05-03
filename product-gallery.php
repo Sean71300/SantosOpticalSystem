@@ -544,7 +544,6 @@
             document.addEventListener('DOMContentLoaded', function() {
                 const searchInput = document.getElementById('searchInput');
                 const liveSearchResults = document.getElementById('liveSearchResults');
-                const productCards = document.querySelectorAll('.product-card');
                 const searchForm = document.getElementById('searchForm');
                 
                 const productModal = document.getElementById('productModal');
@@ -581,82 +580,50 @@
                 }
                 
                 function performLiveSearch() {
-                    const searchTerm = searchInput.value.trim().toLowerCase();
+                    const searchTerm = searchInput.value.trim();
                     
-                    if (searchTerm.length === 0) {
+                    if (searchTerm.length < 2) {
                         liveSearchResults.style.display = 'none';
                         return;
                     }
                     
-                    const matches = [];
-                    
-                    productCards.forEach(card => {
-                        const cardTitle = card.querySelector('.card-title').textContent.toLowerCase();
-                        
-                        if (cardTitle.startsWith(searchTerm)) {
-                            matches.push({
-                                element: card,
-                                title: card.querySelector('.card-title').textContent
-                            });
-                        }
-                    });
-                    
-                    if (matches.length > 0) {
-                        liveSearchResults.innerHTML = '';
-                        matches.slice(0, 5).forEach(match => {
-                            const resultItem = document.createElement('div');
-                            resultItem.className = 'live-search-item';
-                            resultItem.textContent = match.title;
+                    fetch(`search_products.php?term=${encodeURIComponent(searchTerm)}`)
+                        .then(response => response.json())
+                        .then(results => {
+                            liveSearchResults.innerHTML = '';
                             
-                            resultItem.addEventListener('click', function() {
-                                searchInput.value = match.title;
-                                searchForm.submit();
-                            });
-                            
-                            liveSearchResults.appendChild(resultItem);
+                            if (results.length > 0) {
+                                results.slice(0, 5).forEach(result => {
+                                    const resultItem = document.createElement('div');
+                                    resultItem.className = 'live-search-item';
+                                    resultItem.textContent = result;
+                                    
+                                    resultItem.addEventListener('click', function() {
+                                        searchInput.value = result;
+                                        liveSearchResults.style.display = 'none';
+                                        searchForm.submit();
+                                    });
+                                    
+                                    liveSearchResults.appendChild(resultItem);
+                                });
+                                
+                                if (results.length > 5) {
+                                    const moreItem = document.createElement('div');
+                                    moreItem.className = 'live-search-item text-center text-muted small';
+                                    moreItem.textContent = `+${results.length - 5} more items...`;
+                                    liveSearchResults.appendChild(moreItem);
+                                }
+                                
+                                liveSearchResults.style.display = 'block';
+                            } else {
+                                liveSearchResults.innerHTML = '<div class="live-search-item text-muted">No matches found</div>';
+                                liveSearchResults.style.display = 'block';
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            liveSearchResults.style.display = 'none';
                         });
-                        
-                        if (matches.length > 5) {
-                            const moreItem = document.createElement('div');
-                            moreItem.className = 'live-search-item text-center text-muted small';
-                            moreItem.textContent = `+${matches.length - 5} more items...`;
-                            liveSearchResults.appendChild(moreItem);
-                        }
-                        
-                        liveSearchResults.style.display = 'block';
-                    } else {
-                        liveSearchResults.innerHTML = '<div class="live-search-item text-muted">No matches found</div>';
-                        liveSearchResults.style.display = 'block';
-                    }
-                }
-                
-                function filterProducts() {
-                    const searchTerm = searchInput.value.trim().toLowerCase();
-                    
-                    if (searchTerm.length === 0) {
-                        productCards.forEach(card => {
-                            card.classList.remove('hidden');
-                        });
-                        return;
-                    }
-                    
-                    let visibleCount = 0;
-                    
-                    productCards.forEach(card => {
-                        const cardTitle = card.querySelector('.card-title').textContent.toLowerCase();
-                        
-                        if (cardTitle.startsWith(searchTerm)) {
-                            card.classList.remove('hidden');
-                            visibleCount++;
-                        } else {
-                            card.classList.add('hidden');
-                        }
-                    });
-                    
-                    const noResultsElement = document.querySelector('.no-results');
-                    if (noResultsElement) {
-                        noResultsElement.style.display = visibleCount > 0 ? 'none' : 'block';
-                    }
                 }
                 
                 searchInput.addEventListener('input', function() {
@@ -664,7 +631,7 @@
                 });
                 
                 searchInput.addEventListener('focus', function() {
-                    if (searchInput.value.trim().length > 0) {
+                    if (searchInput.value.trim().length >= 2) {
                         performLiveSearch();
                     }
                 });
@@ -709,17 +676,18 @@
                     } else if (e.key === 'Enter' && currentHighlight) {
                         e.preventDefault();
                         searchInput.value = currentHighlight.textContent;
+                        liveSearchResults.style.display = 'none';
                         searchForm.submit();
                     }
                 });
                 
-                searchForm.addEventListener('submit', function(e) {
-                    return true;
+                // Submit the form when pressing Enter in the search input
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter' && !liveSearchResults.querySelector('.live-search-item.highlight')) {
+                        e.preventDefault();
+                        searchForm.submit();
+                    }
                 });
-                
-                if (searchInput.value) {
-                    filterProducts();
-                }
             });
         </script>
     </body>
