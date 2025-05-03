@@ -141,8 +141,7 @@ function getSalesOverviewData($days = 7) {
         }
         
         $currentDate->modify('+1 day');
-    }
-    echo "<pre>Sales Data: "; print_r($filledData); echo "</pre>";
+    }    
     return $filledData;
 }
 ?>
