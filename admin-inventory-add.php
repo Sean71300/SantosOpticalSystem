@@ -113,9 +113,6 @@ include 'loginChecker.php';
         
         /* Product image preview */
         .product-img-preview {
-            max-width: 100%;
-            height: auto;
-            max-height: 200px;
             object-fit: contain;
             border: 1px solid #ddd;
             border-radius: 4px;
