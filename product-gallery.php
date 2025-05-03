@@ -46,7 +46,7 @@ function pagination() {
     $category = isset($_GET['category']) ? $_GET['category'] : '';
     
     // Build the base SQL query with JOINs to check availability and archive status
-    $sql = "SELECT p.* 
+    $sql = "SELECT p.*, p.Stocks 
         FROM `productMstr` p
         LEFT JOIN archives a ON (p.ProductID = a.TargetID AND a.TargetType = 'product')
         WHERE (p.Avail_FL = 'Available' OR p.Avail_FL IS NULL)
@@ -107,7 +107,7 @@ function pagination() {
     if ($total > 0) {
         while($row = mysqli_fetch_assoc($result)) {
             $searchableText = strtolower($row['Model']);
-            $stock = 'N/A';
+            $stock = $row['Stocks'];
             $faceShape = isset($row['ShapeID']) ? getFaceShapeName($row['ShapeID']) : 'Not specified';
             
             echo "<div class='col d-flex product-card' data-search='".htmlspecialchars($searchableText, ENT_QUOTES)."'>";
@@ -586,9 +586,9 @@ function pagination() {
                         const productCategory = button.getAttribute('data-product-category');
                         const productMaterial = button.getAttribute('data-product-material');
                         const productPrice = button.getAttribute('data-product-price');
-                        const productStock = parseInt(button.getAttribute('data-product-stock'));
                         const productFaceShape = button.getAttribute('data-product-faceshape');
-                        
+                        const productStock = parseInt(button.getAttribute('data-product-stock'));
+
                         document.getElementById('modalProductName').textContent = productName;
                         document.getElementById('modalProductImage').src = productImage;
                         document.getElementById('modalProductImage').alt = productName;
@@ -597,14 +597,23 @@ function pagination() {
                         document.getElementById('modalProductPrice').textContent = productPrice;
                         document.getElementById('modalProductFaceShape').textContent = productFaceShape;
                         
-                        const stockBadge = document.getElementById('modalProductStock');
+                        const stockBadge = document.getElementById('modalProductStock');                     
                         if (productStock > 0) {
-                            stockBadge.textContent = productStock + ' in stock';
-                            stockBadge.className = 'badge rounded-pill fs-6 ' + 
-                                (productStock < 5 ? 'low-stock' : 'available');
+                        stockBadge.textContent = productStock + ' in stock';
+                        stockBadge.className = 'badge rounded-pill fs-6 ' + (productStock < 5 ? 'low-stock' : 'available');
                         } else {
-                            stockBadge.textContent = 'Out of stock';
-                            stockBadge.className = 'badge rounded-pill fs-6 not-available';
+                        stockBadge.textContent = 'Out of stock';
+                        stockBadge.className = 'badge rounded-pill fs-6 not-available';
+                        }
+
+                        // With this (handle potential NULL/undefined):
+                        const stockValue = isNaN(productStock) ? 0 : productStock; // Handle invalid values
+                        if (stockValue > 0) {
+                        stockBadge.textContent = stockValue + ' in stock';
+                        stockBadge.className = 'badge rounded-pill fs-6 ' + (stockValue < 5 ? 'low-stock' : 'available');
+                        } else {
+                        stockBadge.textContent = 'Out of stock';
+                        stockBadge.className = 'badge rounded-pill fs-6 not-available';
                         }
                     });
                 }
