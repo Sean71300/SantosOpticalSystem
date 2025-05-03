@@ -267,7 +267,7 @@ function addProduct(){ //Add function to add a new product to the database
     $upd_dt = $date->format('Y-m-d H:i:s');
 
     //VALIDATION FOR DUPLICATION
-
+    $selectedBranches = !empty($_POST['qtys']) ? array_keys($_POST['qtys']) : [];
     $sql = "SELECT ProductID FROM productMstr 
             WHERE Model = ? AND BrandID = ? AND ShapeID = ? AND CategoryType = ?";
     $stmt = mysqli_prepare($link, $sql);
@@ -292,6 +292,27 @@ function addProduct(){ //Add function to add a new product to the database
         $stmt = mysqli_prepare($link, $sql);
         $types = str_repeat('s', count($existingProductIDs) + count($selectedBranches));
         $params = array_merge($existingProductIDs, $selectedBranches);
+        mysqli_stmt_bind_param($stmt, $types, ...$params);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        while ($row = mysqli_fetch_assoc($result)) {
+            $conflictingBranches[] = $row['BranchName'];
+        }
+        mysqli_stmt_close($stmt);
+    }
+
+    // Check if model already exists in selected branches
+    if (!empty($selectedBranches)) {
+        $branchPlaceholders = implode(',', array_fill(0, count($selectedBranches), '?'));
+        $sql = "SELECT DISTINCT b.BranchName 
+                FROM productMstr pm
+                JOIN ProductBranchMaster pbm ON pm.ProductID = pbm.ProductID
+                JOIN BranchMaster b ON pbm.BranchCode = b.BranchCode
+                WHERE pm.Model = ? 
+                AND pbm.BranchCode IN ($branchPlaceholders)";
+        $stmt = mysqli_prepare($link, $sql);
+        $types = 's' . str_repeat('s', count($selectedBranches));
+        $params = array_merge([$newProductName], $selectedBranches);
         mysqli_stmt_bind_param($stmt, $types, ...$params);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
