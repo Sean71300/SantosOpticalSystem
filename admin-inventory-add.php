@@ -171,18 +171,62 @@ include 'loginChecker.php';
                 margin-bottom: 20px;
             }
 
-            .branch-checkbox {
-                transform: scale(1.2);
-                margin-right: 10px;
+            .branch-selection-container {
+                max-height: 400px;
+                overflow-y: auto;
+                padding-right: 10px;
             }
 
-            .quantity-input {
-                margin-left: 28px;
-                max-width: 200px;
+            .branch-item {
+                background: #f8f9fa;
+                border-radius: 8px;
+                padding: 12px;
+                transition: all 0.2s ease;
+            }
+
+            .branch-item:hover {
+                background: #e9ecef;
+            }
+
+            .form-check-input {
+                transform: scale(1.2);
+                margin-right: 12px;
             }
 
             .form-check-label {
                 font-size: 1.1rem;
+                color: #2c3e50;
+            }
+
+            .quantity-input {
+                height: 45px;
+                border-radius: 6px;
+                border: 2px solid #dee2e6;
+                transition: border-color 0.2s ease;
+            }
+
+            .quantity-input:focus {
+                border-color: #86b7fe;
+                box-shadow: none;
+            }
+
+            /* Custom scrollbar */
+            .branch-selection-container::-webkit-scrollbar {
+                width: 8px;
+            }
+
+            .branch-selection-container::-webkit-scrollbar-track {
+                background: #f1f1f1;
+                border-radius: 4px;
+            }
+
+            .branch-selection-container::-webkit-scrollbar-thumb {
+                background: #888;
+                border-radius: 4px;
+            }
+
+            .branch-selection-container::-webkit-scrollbar-thumb:hover {
+                background: #555;
             }
         }
     </style>
@@ -343,27 +387,21 @@ include 'loginChecker.php';
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const container = document.getElementById('branchCheckboxContainer');
-        
-        container.addEventListener('change', function(e) {
-            if (e.target.classList.contains('branch-checkbox')) {
-                const checkbox = e.target;
-                const quantityDiv = checkbox.parentElement.querySelector('.quantity-input');
-                
-                if (checkbox.checked && !quantityDiv) {
-                    const wrapper = document.createElement('div');
-                    wrapper.className = 'quantity-input mt-2';
-                    wrapper.innerHTML = `
-                        <input type="number" name="qtys[${checkbox.value}]" 
-                            class="form-control form-control-sm" 
-                            placeholder="Quantity for ${checkbox.nextElementSibling.textContent}"
-                            min="0" required>
-                    `;
-                    checkbox.parentElement.appendChild(wrapper);
-                } else if (!checkbox.checked && quantityDiv) {
-                    quantityDiv.remove();
+        document.querySelectorAll('.branch-checkbox').forEach(checkbox => {
+            const quantityInput = checkbox.closest('.branch-item').querySelector('.quantity-input');
+            
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    quantityInput.style.display = 'block';
+                    quantityInput.removeAttribute('disabled');
+                    quantityInput.setAttribute('required', 'true');
+                } else {
+                    quantityInput.style.display = 'none';
+                    quantityInput.setAttribute('disabled', 'true');
+                    quantityInput.removeAttribute('required');
+                    quantityInput.value = '';
                 }
-            }
+            });
         });
     });
     </script>

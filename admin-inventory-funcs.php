@@ -20,15 +20,26 @@ function displayBranchesWithCheckboxes() {
     $sql = "SELECT BranchCode, BranchName FROM BranchMaster";
     $result = mysqli_query($link, $sql);
     
+    echo '<div class="branch-selection-container">';
     while($row = mysqli_fetch_array($result)) {
-        echo '<div class="form-check mb-2">';
-        echo '<input class="form-check-input branch-checkbox" type="checkbox" 
-               id="branch_'.$row['BranchCode'].'" value="'.$row['BranchCode'].'">';
-        echo '<label class="form-check-label" for="branch_'.$row['BranchCode'].'">';
-        echo htmlspecialchars($row['BranchName']);
-        echo '</label>';
+        echo '<div class="branch-item row align-items-center mb-3">';
+        echo '  <div class="col-8">';
+        echo '    <div class="form-check">';
+        echo '      <input class="form-check-input branch-checkbox" type="checkbox" ';
+        echo '             id="branch_'.$row['BranchCode'].'" value="'.$row['BranchCode'].'">';
+        echo '      <label class="form-check-label" for="branch_'.$row['BranchCode'].'">';
+        echo          htmlspecialchars($row['BranchName']);
+        echo '      </label>';
+        echo '    </div>';
+        echo '  </div>';
+        echo '  <div class="col-4">';
+        echo '    <input type="number" name="qtys['.$row['BranchCode'].']" ';
+        echo '           class="form-control quantity-input" placeholder="Qty" ';
+        echo '           min="0" disabled style="display: none;">';
+        echo '  </div>';
         echo '</div>';
     }
+    echo '</div>';
     mysqli_close($link);
 }
 
