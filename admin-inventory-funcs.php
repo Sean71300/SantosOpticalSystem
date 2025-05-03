@@ -322,12 +322,17 @@ function addProduct(){ //Add function to add a new product to the database
         </div>
         <script>
             document.addEventListener("DOMContentLoaded", function() {
-                new bootstrap.Modal(document.getElementById("errorModal")).show();
+                const modal = new bootstrap.Modal(document.getElementById("errorModal"));
+                modal.show();
+                
+                // Refresh the page when modal is closed
+                document.getElementById("errorModal").addEventListener("hidden.bs.modal", function() {
+                    window.location.reload();
+                });
             });
         </script>';
         mysqli_close($link);
-        header("refresh:0");
-        exit;
+        return;
     }
     mysqli_close($link);
     
@@ -920,9 +925,13 @@ function deleteProduct()
                 document.addEventListener("DOMContentLoaded", function() {
                     var myModal = new bootstrap.Modal(document.getElementById("deleteErrorModal"));
                     myModal.show();
+
+                    document.getElementById("deleteErrorModal").addEventListener("hidden.bs.modal", function() {
+                        window.location.reload();
+                    });
                 });
             </script>';
-        exit();         
+            return;     
             }
         
         Archive($productID);
