@@ -258,24 +258,18 @@ function addProduct(){ //Add function to add a new product to the database
     getEmployeeName();
 
     $newProductID = generate_ProductMstrID();
-    $newProductBranchCode = $_POST['productBranch'];
     $newProductName = $_POST['productName'];
-    $newProductQty = $_POST['productQty'];
+    $newProductBrand = $_POST['productBrand'];
     $newProductShape = $_POST['productShape'];
     $newProductCategory = $_POST['productCategory'];
     $newProductMaterial = $_POST['productMaterial'];
     $newProductPrice = "₱". $_POST['productPrice'];
     $newProductImg = $_FILES['productImg'];
-    if ($newProductQty > 0) {
-        $avail_FL = 'Available';
-    } else {
-        $avail_FL = 'Not Available';
-    }
     $upd_by = $employeeName;
     $date = new DateTime();
     $upd_dt = $date->format('Y-m-d H:i:s');
-    $newProductBrand = $_POST['productBrand'];
-    $newProductBranchID = generate_ProductBrnchMstrID();
+    $upd_by = $employeeName;
+    $date = new DateTime();
     
     if (isset($_POST['addProduct'])) {
         // Validate and upload the product image
@@ -369,18 +363,22 @@ function addProduct(){ //Add function to add a new product to the database
             mysqli_stmt_close($stmt);
             
             // Insert product-branch mapping into the product branch master database
-            $sql = "INSERT INTO ProductBranchMaster (ProductBranchID, ProductID, BranchCode, Stocks, Avail_FL, Upd_by, Upd_dt)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)"; 
-            $stmt = mysqli_prepare($link, $sql);
-            mysqli_stmt_bind_param($stmt, "sssisds", $newProductBranchID, $newProductID, $newProductBranchCode, $newProductQty, $avail_FL, $upd_by, $upd_dt);
-            mysqli_stmt_execute($stmt);
-            mysqli_stmt_close($stmt);
+            if (!empty($_POST['qtys'])) {
+                foreach ($_POST['qtys'] as $branchCode => $qty) {
+                    $avail_FL = ($qty > 0) ? 'Available' : 'Not Available';
+                    $newProductBranchID = generate_ProductBrnchMstrID();
+                    $sql = "INSERT INTO ProductBranchMaster (ProductBranchID, ProductID, BranchCode, Stocks, Avail_FL, Upd_by, Upd_dt)
+                            VALUES (?, ?, ?, ?, ?, ?, ?)"; 
+                            $stmt = mysqli_prepare($link, $sql);
+                            mysqli_stmt_bind_param($stmt, "sssisds", $newProductBranchID, $newProductID, $newProductBranchCode, $qty, $avail_FL, $upd_by, $upd_dt);
+                            mysqli_stmt_execute($stmt);
+                            mysqli_stmt_close($stmt);
+                }
+            }
 
             //Insert Logs into logs database
-
             $code = '3';
             GenerateLogs($newProductID,$newProductName,$code);
-
             echo 
                 '<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered">
