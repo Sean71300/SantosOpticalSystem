@@ -440,6 +440,18 @@ $conn->close();
             max-height: 300px;
             overflow-y: auto;
         }
+        .order-details-table {
+            width: 100%;
+        }
+        .order-details-table th {
+            background-color: #f8f9fa;
+            padding: 8px;
+            text-align: left;
+        }
+        .order-details-table td {
+            padding: 8px;
+            border-bottom: 1px solid #dee2e6;
+        }
     </style>
 </head>
 <body>
@@ -511,7 +523,8 @@ $conn->close();
                                     <td><?= htmlspecialchars($order['Orderhdr_id']) ?></td>
                                     <td><?= htmlspecialchars($order['CustomerName']) ?></td>
                                     <td><?= htmlspecialchars($order['BranchName']) ?></td>
-                                    <td><?= date('M j, Y', strtotime($order['Created_dt'])) ?></td>                                    <td>
+                                    <td><?= date('M j, Y', strtotime($order['Created_dt'])) ?></td>
+                                    <td>
                                         <span class="badge 
                                             <?= match($order['Status']) {
                                                 'Completed' => 'badge-complete',
@@ -522,10 +535,12 @@ $conn->close();
                                         </span>
                                     </td>
                                     <td>
-                                        <a href="orderDetails.php?id=<?= $order['Orderhdr_id'] ?>" 
-                                           class="btn btn-sm btn-outline-primary">
+                                        <button class="btn btn-sm btn-outline-primary view-order-btn" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#orderDetailsModal"
+                                                data-order-id="<?= $order['Orderhdr_id'] ?>">
                                             <i class="fas fa-eye"></i> View
-                                        </a>
+                                        </button>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -632,6 +647,28 @@ $conn->close();
         </div>
     </div>
 
+    <div class="modal fade" id="orderDetailsModal" tabindex="-1" aria-labelledby="orderDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="orderDetailsModalLabel">Order Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="orderDetailsContent">
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p>Loading order details...</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const sidebar = document.getElementById('sidebar');
@@ -702,6 +739,50 @@ $conn->close();
                     window.location.href = `orderCreate.php?customer_id=${customerId}`;
                 });
             });
+
+            const orderDetailsModal = document.getElementById('orderDetailsModal');
+            if (orderDetailsModal) {
+                orderDetailsModal.addEventListener('show.bs.modal', function(event) {
+                    const button = event.relatedTarget;
+                    const orderId = button.getAttribute('data-order-id');
+                    const modalBody = orderDetailsModal.querySelector('.modal-body');
+                    
+                    modalBody.innerHTML = `
+                        <div class="text-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p>Loading order details...</p>
+                        </div>
+                    `;
+                    
+                    fetch(`orderDetails.php?id=${orderId}`)
+                        .then(response => response.text())
+                        .then(data => {
+                            modalBody.innerHTML = data;
+                        })
+                        .catch(error => {
+                            modalBody.innerHTML = `
+                                <div class="alert alert-danger">
+                                    Failed to load order details. Please try again.
+                                </div>
+                            `;
+                            console.error('Error loading order details:', error);
+                        });
+                });
+                
+                orderDetailsModal.addEventListener('hidden.bs.modal', function() {
+                    const modalBody = orderDetailsModal.querySelector('.modal-body');
+                    modalBody.innerHTML = `
+                        <div class="text-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p>Loading order details...</p>
+                        </div>
+                    `;
+                });
+            }
         });
     </script>
 </body>
