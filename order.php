@@ -299,6 +299,46 @@ function getAllBranches($conn) {
     return $result;
 }
 
+// Handle order completion
+if (isset($_POST['complete_order'])) {
+    $orderId = $_POST['order_id'];
+    $conn = connect();
+    
+    try {
+        // Start transaction
+        $conn->begin_transaction();
+        
+        // Update order status to Completed and activity code
+        $updateQuery = "UPDATE orderDetails SET Status = 'Completed', ActivityCode = 1 WHERE OrderHdr_id = ?";
+        $stmt = $conn->prepare($updateQuery);
+        $stmt->bind_param('i', $orderId);
+        $stmt->execute();
+        $stmt->close();
+        
+        // Log the completion
+        $LID = generate_LogsID();
+        $CID = getCustomerID($conn, $orderId);
+        $CName = getCustomerName($conn, $CID);
+        $description = "#$orderId for customer ". $CName;
+        $logQuery = "INSERT INTO Logs (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description) VALUES (?, ?, ?, 'order', 1, ?)";
+        $stmt = $conn->prepare($logQuery);
+        $stmt->bind_param('iiis', $LID, $_SESSION['id'], $orderId, $description);
+        $stmt->execute();
+        $stmt->close();
+        
+        // Commit transaction
+        $conn->commit();
+        
+        // Redirect to refresh the page
+        header("Location: order.php");
+        exit();
+    } catch (Exception $e) {
+        // Rollback transaction on error
+        $conn->rollback();
+        die("Error completing order: " . $e->getMessage());
+    }
+}
+
 // Handle order cancellation
 if (isset($_POST['cancel_order']) && isset($_POST['order_id'])) {
     $orderId = $_POST['order_id'];
@@ -773,6 +813,10 @@ $conn->close();
     <input type="hidden" name="cancel_order" value="1">
     <input type="hidden" name="order_id" id="cancelOrderId">
 </form>
+<form id="completeOrderForm" method="post" style="display: none;">
+    <input type="hidden" name="complete_order" value="1">
+    <input type="hidden" name="order_id" id="completeOrderId">
+</form>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -967,6 +1011,15 @@ $conn->close();
                     
                     modalBody.innerHTML = html;
 
+                    const completeBtn = document.getElementById('completeOrderBtn');
+                    if (completeBtn) {
+                        completeBtn.addEventListener('click', function() {
+                            if (confirm('Are you sure you want to mark this order as completed?')) {
+                                document.getElementById('completeOrderId').value = order.Orderhdr_id;
+                                document.getElementById('completeOrderForm').submit();
+                            }
+                        });
+                    }
                     // Add event listener for cancel button if it exists
                     const cancelBtn = document.getElementById('cancelOrderBtn');
                     if (cancelBtn) {
