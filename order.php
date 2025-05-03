@@ -849,7 +849,7 @@ $conn->close();
     </div>
 </div>
 
-<form id="claimlOrderForm" method="post" style="display: none;">
+<form id="claimOrderForm" method="post" style="display: none;">
     <input type="hidden" name="claim_order" value="1">
     <input type="hidden" name="order_id" id="claimOrderId">
 </form>
