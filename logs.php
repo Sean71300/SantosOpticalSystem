@@ -220,7 +220,7 @@ $conn->close();
                             <option value="7" <?php echo (isset($_GET['activity']) && $_GET['activity'] == '7') ? 'selected' : '' ?>>Cancelled</option>                            
                             <option value="1" <?php echo (isset($_GET['activity']) && $_GET['activity'] == '1') ? 'selected' : '' ?>>Completed</option>                            
                             <option value="9" <?php echo (isset($_GET['activity']) && $_GET['activity'] == '9') ? 'selected' : '' ?>>Claimed</option>
-                            <option value="8" <?php echo (isset($_GET['activity']) && $_GET['activity'] == '8') ? 'selected' : '' ?>>Returned</option>                            
+                            <option value="8" <?php echo (isset($_GET['activity']) && $_GET['activity'] == '8') ? 'selected' : '' ?>>Returns</option>                            
                         </select>
                     </div>
                     <div class="col-md-2 d-flex align-items-end">
