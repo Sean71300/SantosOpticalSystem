@@ -808,14 +808,14 @@ $conn->close();
 
                     order.Details.forEach(detail => {
                         const statusClass = detail.Status === 'Completed' ? 'badge-complete' : 
-                                        detail.Status === 'Cancelled' ? 'badge-cancelled' : 'badge-pending';
+                                            detail.Status === 'Cancelled' ? 'badge-cancelled' : 'badge-pending';
                         
                         html += `
                             <tr>
                                 <td>${detail.Model || 'N/A'}</td>
                                 <td>${detail.BrandName || 'N/A'}</td>
                                 <td>${detail.CategoryType || 'N/A'}</td>
-                                <td>₱${detail.Price.toFixed(2)}</td>
+                                <td>₱${detail.Price.toFixed(2) || 'N/A'}</td>
                                 <td>${detail.Quantity}</td>
                                 <td><span class="badge ${statusClass}">${detail.Status}</span></td>
                             </tr>`;
