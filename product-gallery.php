@@ -36,7 +36,7 @@
    function pagination() {
     $conn = connect();
 
-    $perPage = 12; // Number of items per page
+    $perPage = 12; 
     $page = (isset($_GET['page'])) ? (int)$_GET['page'] : 1;
     $start = ($page - 1) * $perPage;
     
@@ -96,14 +96,6 @@
     $totalData = mysqli_fetch_assoc($countResult);
     $total = $totalData['total'];
     $totalPages = ceil($total / $perPage);
-
-    // Ensure the current page is within valid range
-    if ($page > $totalPages && $totalPages > 0) {
-        // Redirect to last page if current page exceeds total pages
-        $redirectUrl = buildQueryString($totalPages, $_GET);
-        header("Location: $redirectUrl");
-        exit();
-    }
 
     // Now add the limit for pagination
     $sql .= " LIMIT $start, $perPage";
@@ -174,12 +166,10 @@
         echo "<div class='col-12 mt-5'>";
             echo "<div class='d-flex justify-content-center'>";
                 echo "<ul class='pagination'>";
-                
-                // Previous button
                 if ($page > 1) {
-                    echo "<li class='page-item'><a class='page-link' href='" . buildQueryString($page - 1, $_GET) . "' aria-label='Previous'><span aria-hidden='true'>&laquo;</span></a></li>";
+                    echo "<li class='page-item'><a class='page-link' href='" . buildQueryString($page - 1, $_GET) . "'>Previous</a></li>";
                 } else {
-                    echo "<li class='page-item disabled'><a class='page-link' aria-label='Previous'><span aria-hidden='true'>&laquo;</span></a></li>";
+                    echo "<li class='page-item disabled'><a class='page-link'>Previous</a></li>";
                 }
 
                 // Show page numbers
@@ -202,7 +192,7 @@
                 
                 for ($i = $startPage; $i <= $endPage; $i++) {                       
                     if ($i == $page) {
-                        echo "<li class='page-item active' aria-current='page'><a class='page-link'>$i</a></li>"; 
+                        echo "<li class='page-item active' aria-current='page'><a class='page-link disabled'>$i</a></li>"; 
                     } else {
                         echo "<li class='page-item'><a class='page-link' href='" . buildQueryString($i, $_GET) . "'>$i</a></li>";
                     }
@@ -216,18 +206,12 @@
                     echo "<li class='page-item'><a class='page-link' href='" . buildQueryString($totalPages, $_GET) . "'>$totalPages</a></li>";
                 }
 
-                // Next button
                 if ($page < $totalPages) {
-                    echo "<li class='page-item'><a class='page-link' href='" . buildQueryString($page + 1, $_GET) . "' aria-label='Next'><span aria-hidden='true'>&raquo;</span></a></li>";
+                    echo "<li class='page-item'><a class='page-link' href='" . buildQueryString($page + 1, $_GET) . "'>Next</a></li>";
                 } else {
-                    echo "<li class='page-item disabled'><a class='page-link' aria-label='Next'><span aria-hidden='true'>&raquo;</span></a></li>";
+                    echo "<li class='page-item disabled'><a class='page-link'>Next</a></li>";
                 }
                 echo "</ul>";
-            echo "</div>";
-            
-            // Show current page info
-            echo "<div class='text-center text-muted mt-2'>";
-            echo "Page $page of $totalPages | Showing " . (($page - 1) * $perPage + 1) . " to " . min($page * $perPage, $total) . " of $total products";
             echo "</div>";
         echo "</div>"; 
     }
@@ -365,58 +349,37 @@
         <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
-                    <div class="modal-header bg-light">
-                        <h5 class="modal-title fw-bold" id="productModalLabel">Product Details</h5>
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="productModalLabel">Product Details</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="modal-body p-4">
-                        <div class="row g-4">
+                    <div class="modal-body">
+                        <div class="row">
                             <div class="col-md-6">
-                                <div class="product-image-container">
-                                    <img id="modalProductImage" src="" class="img-fluid mh-100" alt="Product Image" style="max-height: 300px; width: auto; object-fit: contain;">
-                                </div>
+                                <img id="modalProductImage" src="" class="img-fluid rounded" alt="Product Image" style="max-height: 400px; width: 100%; object-fit: contain;">
                             </div>
-                            
                             <div class="col-md-6">
-                                <div class="d-flex flex-column h-100">
-                                    <div class="mb-3 border-bottom pb-3">
-                                        <h3 id="modalProductName" class="fw-bold mb-2"></h3>
-                                        <div>
-                                            <span id="modalProductStock" class="badge rounded-pill fs-6"></span>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="flex-grow-1">
-                                        <ul class="list-group list-group-flush">
-                                            <li class="list-group-item px-0 py-2 d-flex justify-content-between">
-                                                <span class="fw-semibold text-muted">Category:</span>
-                                                <span id="modalProductCategory" class="text-end"></span>
-                                            </li>
-                                            <li class="list-group-item px-0 py-2 d-flex justify-content-between">
-                                                <span class="fw-semibold text-muted">Material:</span>
-                                                <span id="modalProductMaterial" class="text-end"></span>
-                                            </li>
-                                            <li class="list-group-item px-0 py-2 d-flex justify-content-between">
-                                                <span class="fw-semibold text-muted">Price:</span>
-                                                <span id="modalProductPrice" class="text-end fw-bold text-primary"></span>
-                                            </li>
-                                            <li class="list-group-item px-0 py-2 d-flex justify-content-between">
-                                                <span class="fw-semibold text-muted">Frame Shape:</span>
-                                                <span id="modalProductFaceShape" class="text-end"></span>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                    
-                                    <div class="mt-auto pt-3 border-top">
-                                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                                                <i class="fas fa-times me-2"></i>Close
-                                            </button>
-                                        </div>
-                                    </div>
+                                <h3 id="modalProductName" class="mb-3"></h3>
+                                <div class="mb-3">
+                                    <span id="modalProductStock" class="badge"></span>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Category:</strong> <span id="modalProductCategory"></span>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Material:</strong> <span id="modalProductMaterial"></span>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Price:</strong> <span id="modalProductPrice" class="text-primary fw-bold"></span>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Frame Shape:</strong> <span id="modalProductFaceShape"></span>
                                 </div>
                             </div>
                         </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     </div>
                 </div>
             </div>
@@ -446,50 +409,12 @@
                             <?php if(isset($_GET['category'])): ?>
                                 <input type="hidden" name="category" value="<?php echo $_GET['category']; ?>">
                             <?php endif; ?>
-                            <?php if(isset($_GET['branch'])): ?>
-                                <input type="hidden" name="branch" value="<?php echo $_GET['branch']; ?>">
-                            <?php endif; ?>
                         </div>
                         <div id="liveSearchResults"></div>
                     </form>
                 </div>
                 
                 <div class="filter-container">
-                    <!-- Branch Filter -->
-                    <form method="get" action="" class="filter-dropdown">
-                        <?php if(isset($_GET['page'])): ?>
-                            <input type="hidden" name="page" value="<?php echo $_GET['page']; ?>">
-                        <?php endif; ?>
-                        <?php if(isset($_GET['search'])): ?>
-                            <input type="hidden" name="search" value="<?php echo $_GET['search']; ?>">
-                        <?php endif; ?>
-                        <?php if(isset($_GET['sort'])): ?>
-                            <input type="hidden" name="sort" value="<?php echo $_GET['sort']; ?>">
-                        <?php endif; ?>
-                        <?php if(isset($_GET['shape'])): ?>
-                            <input type="hidden" name="shape" value="<?php echo $_GET['shape']; ?>">
-                        <?php endif; ?>
-                        <?php if(isset($_GET['category'])): ?>
-                            <input type="hidden" name="category" value="<?php echo $_GET['category']; ?>">
-                        <?php endif; ?>
-                        <div class="input-group">
-                            <label class="input-group-text" for="branchSelect">Branch:</label>
-                            <select class="form-select" id="branchSelect" name="branch" onchange="this.form.submit()">
-                                <option value="">All Branches</option>
-                                <?php
-                                    $conn = connect();
-                                    $branchQuery = "SELECT BranchCode, BranchName FROM BranchMaster";
-                                    $branchResult = mysqli_query($conn, $branchQuery);
-                                    while ($branch = mysqli_fetch_assoc($branchResult)) {
-                                        $selected = (isset($_GET['branch']) && $_GET['branch'] == $branch['BranchCode']) ? 'selected' : '';
-                                        echo "<option value='{$branch['BranchCode']}' $selected>{$branch['BranchName']}</option>";
-                                    }
-                                    $conn->close();
-                                ?>
-                            </select>
-                        </div>
-                    </form>
-                    
                     <!-- Frame Shape Filter -->
                     <form method="get" action="" class="filter-dropdown">
                         <?php if(isset($_GET['page'])): ?>
@@ -503,9 +428,6 @@
                         <?php endif; ?>
                         <?php if(isset($_GET['category'])): ?>
                             <input type="hidden" name="category" value="<?php echo $_GET['category']; ?>">
-                        <?php endif; ?>
-                        <?php if(isset($_GET['branch'])): ?>
-                            <input type="hidden" name="branch" value="<?php echo $_GET['branch']; ?>">
                         <?php endif; ?>
                         <div class="input-group">
                             <label class="input-group-text" for="shapeSelect">Frame Shape:</label>
@@ -535,9 +457,6 @@
                         <?php endif; ?>
                         <?php if(isset($_GET['shape'])): ?>
                             <input type="hidden" name="shape" value="<?php echo $_GET['shape']; ?>">
-                        <?php endif; ?>
-                        <?php if(isset($_GET['branch'])): ?>
-                            <input type="hidden" name="branch" value="<?php echo $_GET['branch']; ?>">
                         <?php endif; ?>
                         <div class="input-group">
                             <label class="input-group-text" for="categorySelect">Category:</label>
@@ -570,9 +489,6 @@
                         <?php endif; ?>
                         <?php if(isset($_GET['category'])): ?>
                             <input type="hidden" name="category" value="<?php echo $_GET['category']; ?>">
-                        <?php endif; ?>
-                        <?php if(isset($_GET['branch'])): ?>
-                            <input type="hidden" name="branch" value="<?php echo $_GET['branch']; ?>">
                         <?php endif; ?>
                         <div class="input-group">
                             <label class="input-group-text" for="sortSelect">Sort by:</label>
@@ -662,11 +578,11 @@
                         const stockBadge = document.getElementById('modalProductStock');
                         if (productStock > 0) {
                             stockBadge.textContent = productStock + ' in stock';
-                            stockBadge.className = 'badge rounded-pill fs-6 ' + 
+                            stockBadge.className = 'badge ' + 
                                 (productStock < 5 ? 'low-stock' : 'available');
                         } else {
                             stockBadge.textContent = 'Out of stock';
-                            stockBadge.className = 'badge rounded-pill fs-6 not-available';
+                            stockBadge.className = 'badge not-available';
                         }
                     });
                 }
@@ -784,3 +700,4 @@
         </script>
     </body>
 </html>
+
