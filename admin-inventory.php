@@ -618,20 +618,19 @@ $lowInventory = getLowInventoryProducts();
 
         <script>
             document.addEventListener('DOMContentLoaded', function() {
-                // Show low inventory modal only once per browser session
                 const lowInventoryModalEl = document.getElementById('lowInventoryModal');
-                if (lowInventoryModalEl && !sessionStorage.getItem('lowInventoryShown')) {
-                    new bootstrap.Modal(lowInventoryModalEl).show();
-                    sessionStorage.setItem('lowInventoryShown', 'true');
-                }
-
-                // Clear flag ONLY when leaving the domain or closing browser
-                window.addEventListener('beforeunload', function() {
-                    // Keep the flag for page reloads/navigation within the app
-                    if (!window.location.href.includes('admin-inventory.php')) {
-                        sessionStorage.removeItem('lowInventoryShown');
+                
+                // Always show modal on page load if low inventory exists
+                if (lowInventoryModalEl) {
+                    // Reset the flag on every page load
+                    sessionStorage.removeItem('lowInventoryShown');
+                    
+                    // Show modal only if not already shown during this page session
+                    if (!sessionStorage.getItem('lowInventoryShown')) {
+                        new bootstrap.Modal(lowInventoryModalEl).show();
+                        sessionStorage.setItem('lowInventoryShown', 'true');
                     }
-                });
+                }
             });
         </script>
     </body>
