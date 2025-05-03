@@ -300,6 +300,60 @@ function getAllBranches($conn) {
 }
 
 // Handle order claiming
+
+if (isset($_POST['cancel_order']) && isset($_POST['order_id'])) {
+    $orderId = $_POST['order_id'];
+    $conn = connect();
+    
+    // Get order details before cancellation
+    $orderDetails = getOrderDetails($conn, $orderId);
+    
+    // Start transaction
+    $conn->begin_transaction();
+    
+    try {
+        // Update order status to Cancelled and activity code
+        $updateQuery = "UPDATE orderDetails SET Status = 'Returned', ActivityCode = 8 WHERE OrderHdr_id = ?";
+        $stmt = $conn->prepare($updateQuery);
+        $stmt->bind_param('i', $orderId); // Assuming activityCode is a string
+        $stmt->execute();
+        $stmt->close();
+        
+        // Restore product quantities
+        foreach ($orderDetails as $detail) {
+            $restoreQuery = "UPDATE ProductBranchMaster SET Stocks = Stocks + ? WHERE ProductBranchID = ?";
+            $stmt = $conn->prepare($restoreQuery);
+            $stmt->bind_param('ii', $detail['Quantity'], $detail['ProductBranchID']);
+            $stmt->execute();
+            $stmt->close();
+        }
+        
+        // Log the cancellation
+        
+        $LID=generate_LogsID();
+        $CID=getCustomerID($conn, $orderId);
+        $CName=getCustomerName($conn, $CID);
+        $description = "#$orderId from customer ". $CName;
+        $logQuery = "INSERT INTO Logs (LogsID,EmployeeID, TargetID, TargetType, ActivityCode, Description) VALUES (?,?, ?, 'order', 8, ?)";
+        $stmt = $conn->prepare($logQuery);
+        $stmt->bind_param('iiis',$LID, $_SESSION['id'], $orderId, $description);
+        $stmt->execute();
+        $stmt->close();
+        
+        // Commit transaction
+        $conn->commit();
+        
+        // Redirect to refresh the page
+        header("Location: order.php");
+        exit();
+    } catch (Exception $e) {
+        // Rollback transaction on error
+        $conn->rollback();
+        die("Error cancelling order: " . $e->getMessage());
+    }
+}
+
+// Handle order claiming
 if (isset($_POST['claim_order'])) {
     $orderId = $_POST['order_id'];
     $conn = connect();
@@ -862,6 +916,10 @@ $conn->close();
     <input type="hidden" name="complete_order" value="1">
     <input type="hidden" name="order_id" id="completeOrderId">
 </form>
+<form id="returnOrderForm" method="post" style="display: none;">
+    <input type="hidden" name="return_order" value="1">
+    <input type="hidden" name="order_id" id="returnOrderId">
+</form>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -1082,6 +1140,15 @@ $conn->close();
                             if (confirm('Are you sure you want to cancel this order? This action cannot be undone.')) {
                                 document.getElementById('cancelOrderId').value = order.Orderhdr_id;
                                 document.getElementById('cancelOrderForm').submit();
+                            }
+                        });
+                    }
+                    const returnBtn = document.getElementById('returnOrderBtn');
+                    if (returnBtn) {
+                        returnBtn.addEventListener('click', function() {
+                            if (confirm('The Product will now be returned by the customer.')) {
+                                document.getElementById('returnOrderId').value = order.Orderhdr_id;
+                                document.getElementById('returnOrderForm').submit();
                             }
                         });
                     }
