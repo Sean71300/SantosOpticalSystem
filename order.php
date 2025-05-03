@@ -307,7 +307,7 @@ if (isset($_POST['cancel_order']) && isset($_POST['order_id'])) {
         }
         
         // Log the cancellation
-        $description = "Order #$orderId cancelled by employee";
+        $description = "#$orderId for customer" . $customerData['CustomerName'];
         $LID=generate_LogsID()
         $logQuery = "INSERT INTO Logs (LogsID,EmployeeID, TargetID, TargetType, ActivityCode, Description) VALUES (?, ?, 'order', 7, ?)";
         $stmt = $conn->prepare($logQuery);
