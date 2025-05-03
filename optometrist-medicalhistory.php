@@ -226,7 +226,7 @@ function getAllMedicalRecords() {
 
     <div class="main-content">
         <div class="form-container">
-
+            <?php getAllMedicalRecords(); ?>
         </div>
     </div>
 
