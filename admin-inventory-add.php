@@ -301,7 +301,7 @@ include 'loginChecker.php';
 
                 <div class="row">
                     <div class="col-md-6 text-center mb-4 mb-md-0 product-img-container">
-                        <img src="Images/default-product.png" alt="Product Image" id="imagePreview" class="product-img-preview" style="height: 600px; width: 600px;">
+                        <img src="Images/default-product.png" alt="Product Image" id="imagePreview" class="product-img-preview" style="height: 300px; width: 300px;">
                         <div>
                             <label for="productImg" class="btn btn-success">
                                 <input type="file" name="productImg" id="productImg" accept="image/png, image/jpeg" onchange="productImagePreview(this)" style="display:none;" required>
