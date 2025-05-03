@@ -13,6 +13,69 @@ $inventoryCount = getInventoryCount();
 $orderCount = getOrderCount();
 $recentActivities = getRecentActivities();
 $lowInventory = getLowInventoryProducts();
+
+// Add this new function to fetch order statistics
+function getOrderStatistics($conn, $period = 30) {
+    $endDate = date('Y-m-d');
+    $startDate = date('Y-m-d', strtotime("-$period days"));
+
+    // Query to get completed orders count by date
+    $query = "SELECT DATE(o.Created_dt) as order_date, COUNT(od.OrderDtlID) as completed_count
+              FROM Order_hdr o
+              JOIN orderDetails od ON o.Orderhdr_id = od.OrderHdr_id
+              WHERE od.ActivityCode = 1 AND od.Status = 'Completed'
+                AND DATE(o.Created_dt) BETWEEN ? AND ?
+              GROUP BY DATE(o.Created_dt)
+              ORDER BY order_date";
+
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("ss", $startDate, $endDate);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $data = ['labels' => [], 'values' => []];
+    
+    // Generate all dates in the period
+    $periodDates = [];
+    $currentDate = new DateTime($startDate);
+    $endDateObj = new DateTime($endDate);
+    
+    while ($currentDate <= $endDateObj) {
+        $periodDates[$currentDate->format('Y-m-d')] = 0;
+        $currentDate->modify('+1 day');
+    }
+    
+    // Fill in actual data
+    while ($row = $result->fetch_assoc()) {
+        $periodDates[$row['order_date']] = (int)$row['completed_count'];
+    }
+    
+    // Prepare final response
+    foreach ($periodDates as $date => $count) {
+        $data['labels'][] = date('M j', strtotime($date));
+        $data['values'][] = $count;
+    }
+
+    return $data;
+}
+
+// Handle AJAX request for order statistics
+if (isset($_GET['action']) && $_GET['action'] == 'get_order_stats') {
+    try {
+        $conn = connect();
+        $period = isset($_GET['period']) ? (int)$_GET['period'] : 30;
+        $data = getOrderStatistics($conn, $period);
+        $conn->close();
+        
+        header('Content-Type: application/json');
+        echo json_encode($data);
+        exit();
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['error' => $e->getMessage()]);
+        exit();
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -162,7 +225,7 @@ $lowInventory = getLowInventoryProducts();
                 <div class="col-md-8">
                     <div class="dashboard-card">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="mb-0"><i class="fas fa-box-open me-2"></i>Completed Products Sold</h5>
+                            <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Completed Orders</h5>
                             <div class="btn-group">
                                 <button type="button" class="btn btn-sm btn-outline-secondary chart-period" data-period="7">7 Days</button>
                                 <button type="button" class="btn btn-sm btn-outline-secondary chart-period active" data-period="30">30 Days</button>
@@ -170,12 +233,12 @@ $lowInventory = getLowInventoryProducts();
                             </div>
                         </div>
                         <div class="mt-3" style="height: 300px;">
-                            <canvas id="productsSoldChart"></canvas>
+                            <canvas id="ordersChart"></canvas>
                             <div id="chartLoading" class="text-center py-5">
                                 <div class="spinner-border text-success" role="status">
                                     <span class="visually-hidden">Loading...</span>
                                 </div>
-                                <p class="mt-2">Loading completed products data...</p>
+                                <p class="mt-2">Loading orders data...</p>
                             </div>
                         </div>
                     </div>
@@ -238,34 +301,35 @@ $lowInventory = getLowInventoryProducts();
         </div>
 
         <script>
-            function renderProductsSoldChart(period = 30) {
-                const ctx = document.getElementById('productsSoldChart');
+            function renderOrdersChart(period = 30) {
+                const ctx = document.getElementById('ordersChart');
                 const loadingElement = document.getElementById('chartLoading');
                 
                 ctx.style.display = 'none';
                 loadingElement.style.display = 'flex';
                 
-                fetch(`getCompletedProductsData.php?period=${period}`)
+                fetch(`Dashboard.php?action=get_order_stats&period=${period}`)
                     .then(response => response.json())
                     .then(data => {
                         loadingElement.style.display = 'none';
                         ctx.style.display = 'block';
                         
-                        if (window.productsSoldChart instanceof Chart) {
-                            window.productsSoldChart.destroy();
+                        if (window.ordersChart instanceof Chart) {
+                            window.ordersChart.destroy();
                         }
                         
-                        window.productsSoldChart = new Chart(ctx, {
-                            type: 'bar',
+                        window.ordersChart = new Chart(ctx, {
+                            type: 'line',
                             data: {
                                 labels: data.labels,
                                 datasets: [{
-                                    label: 'Completed Products Sold',
+                                    label: 'Completed Orders',
                                     data: data.values,
-                                    backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                                    backgroundColor: 'rgba(40, 167, 69, 0.2)',
                                     borderColor: 'rgba(40, 167, 69, 1)',
-                                    borderWidth: 1,
-                                    borderRadius: 4
+                                    borderWidth: 2,
+                                    tension: 0.1,
+                                    fill: true
                                 }]
                             },
                             options: {
@@ -278,7 +342,7 @@ $lowInventory = getLowInventoryProducts();
                                     tooltip: {
                                         callbacks: {
                                             label: function(context) {
-                                                return `${context.parsed.y} product${context.parsed.y !== 1 ? 's' : ''} completed`;
+                                                return `${context.parsed.y} order${context.parsed.y !== 1 ? 's' : ''} completed`;
                                             }
                                         }
                                     }
@@ -296,7 +360,7 @@ $lowInventory = getLowInventoryProducts();
                                         },
                                         title: {
                                             display: true,
-                                            text: 'Number of Products'
+                                            text: 'Number of Orders'
                                         }
                                     },
                                     x: {
@@ -313,9 +377,9 @@ $lowInventory = getLowInventoryProducts();
                         });
                     })
                     .catch(error => {
-                        console.error('Error loading completed products data:', error);
+                        console.error('Error loading orders data:', error);
                         loadingElement.innerHTML = 
-                            '<div class="text-danger p-4"><i class="fas fa-exclamation-triangle me-2"></i>Failed to load completed products data</div>';
+                            '<div class="text-danger p-4"><i class="fas fa-exclamation-triangle me-2"></i>Failed to load orders data</div>';
                     });
             }
 
@@ -324,7 +388,7 @@ $lowInventory = getLowInventoryProducts();
                 const mobileToggle = document.getElementById('mobileMenuToggle');
                 const body = document.body;
                 
-                renderProductsSoldChart(30);
+                renderOrdersChart(30);
                 
                 document.querySelectorAll('.chart-period').forEach(button => {
                     button.addEventListener('click', function() {
@@ -332,7 +396,7 @@ $lowInventory = getLowInventoryProducts();
                             btn.classList.remove('active');
                         });
                         this.classList.add('active');
-                        renderProductsSoldChart(this.dataset.period);
+                        renderOrdersChart(this.dataset.period);
                     });
                 });
                 
