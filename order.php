@@ -182,7 +182,9 @@ function getOrderDetails($conn, $orderId) {
     $details = [];
     
     while ($row = $result->fetch_assoc()) {
-        $row['Price'] = (float)$row['Price'];
+        // Extract numeric value from price string (remove ₱ symbol)
+        $price = str_replace('₱', '', $row['Price']);
+        $row['Price'] = (float)$price;
         $row['Quantity'] = (int)$row['Quantity'];
         $details[] = $row;
     }
@@ -459,6 +461,17 @@ $conn->close();
             background-color: #ffc107;
             border-color: #ffc107;
             color: #212529;
+        }
+        
+        /* New styles for order details modal */
+        .order-details-container {
+            padding-bottom: 20px;
+        }
+        .order-details-footer {
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -744,16 +757,6 @@ $conn->close();
                 window.location.href = `orderCreate.php?customer_id=${customerId}`;
             });
         });
-        // Add event listeners for the new buttons
-        document.getElementById('completeOrderBtn')?.addEventListener('click', function() {
-            // Handle complete order action
-            alert('Complete order functionality will be implemented here');
-        });
-
-        document.getElementById('editOrderBtn')?.addEventListener('click', function() {
-            // Handle edit order action
-            alert('Edit order functionality will be implemented here');
-        });
 
         const ordersData = <?php echo json_encode($orders); ?>;
         
@@ -808,38 +811,39 @@ $conn->close();
 
                     order.Details.forEach(detail => {
                         const statusClass = detail.Status === 'Completed' ? 'badge-complete' : 
-                                            detail.Status === 'Cancelled' ? 'badge-cancelled' : 'badge-pending';
+                                        detail.Status === 'Cancelled' ? 'badge-cancelled' : 'badge-pending';
                         
                         html += `
                             <tr>
                                 <td>${detail.Model || 'N/A'}</td>
                                 <td>${detail.BrandName || 'N/A'}</td>
                                 <td>${detail.CategoryType || 'N/A'}</td>
-                                <td>₱${detail.Price.toFixed(2) || 'N/A'}</td>
+                                <td>₱${detail.Price.toFixed(2)}</td>
                                 <td>${detail.Quantity}</td>
                                 <td><span class="badge ${statusClass}">${detail.Status}</span></td>
                             </tr>`;
                     });
 
-                    // Replace the modal footer section with this:
                     html += `
+                                    </tbody>
+                                </table>
                             </div>
                             
                             <div class="text-end mt-3">
                                 <h4>Total: ₱${order.TotalAmount.toFixed(2)}</h4>
                             </div>
-                            
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-success" id="completeOrderBtn">
-                                    <i class="fas fa-check-circle me-1"></i> Complete Order
-                                </button>
-                                <button type="button" class="btn btn-warning" id="editOrderBtn">
-                                    <i class="fas fa-edit me-1"></i> Edit Order
-                                </button>
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                    <i class="fas fa-times me-1"></i> Close
-                                </button>
-                            </div>
+                        </div>
+                        
+                        <div class="order-details-footer d-flex justify-content-end">
+                            <button type="button" class="btn btn-success me-2" id="completeOrderBtn">
+                                <i class="fas fa-check-circle me-1"></i> Complete Order
+                            </button>
+                            <button type="button" class="btn btn-warning me-2" id="editOrderBtn">
+                                <i class="fas fa-edit me-1"></i> Edit Order
+                            </button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <i class="fas fa-times me-1"></i> Close
+                            </button>
                         </div>`;
                     
                     modalBody.innerHTML = html;
