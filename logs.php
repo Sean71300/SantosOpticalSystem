@@ -214,12 +214,13 @@ $conn->close();
                         <label for="activity" class="form-label">Filter by Activity</label>
                         <select class="form-select" id="activity" name="activity">
                             <option value="">All Activities</option>
-                            <option value="1" <?php echo (isset($_GET['activity']) && $_GET['activity'] == '1') ? 'selected' : '' ?>>Ordered</option>
-                            <option value="2" <?php echo (isset($_GET['activity']) && $_GET['activity'] == '2') ? 'selected' : '' ?>>Pending</option>
                             <option value="3" <?php echo (isset($_GET['activity']) && $_GET['activity'] == '3') ? 'selected' : '' ?>>Added</option>
                             <option value="4" <?php echo (isset($_GET['activity']) && $_GET['activity'] == '4') ? 'selected' : '' ?>>Edited</option>
                             <option value="5" <?php echo (isset($_GET['activity']) && $_GET['activity'] == '5') ? 'selected' : '' ?>>Deleted</option>
-                            <option value="6" <?php echo (isset($_GET['activity']) && $_GET['activity'] == '6') ? 'selected' : '' ?>>Archived</option>
+                            <option value="7" <?php echo (isset($_GET['activity']) && $_GET['activity'] == '7') ? 'selected' : '' ?>>Cancelled</option>                            
+                            <option value="1" <?php echo (isset($_GET['activity']) && $_GET['activity'] == '1') ? 'selected' : '' ?>>Delivered</option>                            
+                            <option value="9" <?php echo (isset($_GET['activity']) && $_GET['activity'] == '9') ? 'selected' : '' ?>>Claimed</option>
+                            <option value="8" <?php echo (isset($_GET['activity']) && $_GET['activity'] == '8') ? 'selected' : '' ?>>Returned</option>                            
                         </select>
                     </div>
                     <div class="col-md-2 d-flex align-items-end">
