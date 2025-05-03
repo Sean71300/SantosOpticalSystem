@@ -26,13 +26,13 @@
         $start = ($page - 1) * $perPage;
         
         // Get parameters from URL
-        $sort = isset($_GET['sort']) ? $_GET['sort'] : 'name_asc';
-        $search = isset($_GET['search']) ? mysqli_real_escape_string($conn, $_GET['search']) : '';
-        $availability = isset($_GET['availability']) ? $_GET['availability'] : '';
-        $category = isset($_GET['category']) ? $_GET['category'] : '';
+        $sort = isset($_GET['sort'])) ? $_GET['sort'] : 'name_asc';
+        $search = isset($_GET['search'])) ? mysqli_real_escape_string($conn, $_GET['search']) : '';
+        $availability = isset($_GET['availability'])) ? $_GET['availability'] : '';
+        $category = isset($_GET['category'])) ? $_GET['category'] : '';
         
         // Build the base SQL query with JOIN to ProductBranchMaster
-        $sql = "SELECT p.*, pb.Stocks, pb.Avail_FL as BranchAvailability 
+        $sql = "SELECT p.*, SUM(pb.Stocks) as TotalStocks, pb.Avail_FL as BranchAvailability 
                 FROM `productMstr` p
                 LEFT JOIN ProductBranchMaster pb ON p.ProductID = pb.ProductID";
         
@@ -61,6 +61,7 @@
             $sql .= " WHERE " . implode(' AND ', $whereConditions);
         }
         
+        $sql .= " GROUP BY p.ProductID";
       
         switch($sort) {
             case 'price_asc':
@@ -85,7 +86,7 @@
         $result = mysqli_query($conn, $sql);
         
         
-        $countSql = "SELECT COUNT(*) as total FROM `productMstr` p";
+        $countSql = "SELECT COUNT(DISTINCT p.ProductID) as total FROM `productMstr` p";
         if (!empty($whereConditions)) {
             $countSql .= " WHERE " . implode(' AND ', $whereConditions);
         }
@@ -100,7 +101,7 @@
         if ($total > 0) {
             while($row = mysqli_fetch_assoc($result)) {
                 $searchableText = strtolower($row['Model']);
-                $stock = isset($row['Stocks']) ? $row['Stocks'] : 0;
+                $stock = isset($row['TotalStocks']) ? $row['TotalStocks'] : 0;
                 $faceShape = isset($row['ShapeID']) ? getFaceShapeName($row['ShapeID']) : 'Not specified';
                 
                 echo "<div class='col d-flex product-card' data-search='".htmlspecialchars($searchableText, ENT_QUOTES)."'>";
@@ -117,7 +118,7 @@
                             echo "<div class='card-text mb-2'>".$formatted_price."</div>";
                             $availability = isset($row['BranchAvailability']) ? $row['BranchAvailability'] : $row['Avail_FL'];
                             if ($availability == "Available") {
-                                echo "<div class='card-text mb-2 text-success'>".$availability."</div>";
+                                echo "<div class='card-text mb-2 text-success'>Available ($stock in stock)</div>";
                             echo "</div>";
                                 echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
                                     echo "<button type='button' class='btn btn-primary w-100 py-2 view-details' data-bs-toggle='modal' data-bs-target='#productModal' 
@@ -134,7 +135,7 @@
                                       </button>";
                                 echo "</div>";
                             } else {
-                                echo "<div class='card-text mb-2 text-danger'>".$availability."</div>";
+                                echo "<div class='card-text mb-2 text-danger'>Not Available</div>";
                             echo "</div>";
                             echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
                                 echo "<a href='#' class='btn btn-secondary w-100 py-2 disabled'>Not Available</a>";
@@ -281,7 +282,6 @@
                 background-color: #e9ecef;
             }
             
-         
             .product-image-container {
                 height: 350px;
                 border: 1px solid #eee;
@@ -353,6 +353,7 @@
                                         <h3 id="modalProductName" class="fw-bold mb-2"></h3>
                                         <div>
                                             <span id="modalProductAvailability" class="badge rounded-pill fs-6"></span>
+                                            <span id="modalProductStock" class="badge rounded-pill ms-2 fs-6 bg-secondary"></span>
                                         </div>
                                     </div>
                                     
@@ -375,14 +376,6 @@
                                                 <span id="modalProductFaceShape" class="text-end"></span>
                                             </li>
                                         </ul>
-                                        
-                                        <!-- Branch availability section -->
-                                        <div class="mt-3">
-                                            <h6 class="fw-semibold text-muted mb-2">Available at:</h6>
-                                            <div id="branchAvailability" class="small">
-                                                <!-- Branches will be populated here -->
-                                            </div>
-                                        </div>
                                     </div>
                                     
                                     <div class="mt-auto pt-3 border-top">
@@ -556,106 +549,46 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
         <script>
-           document.addEventListener('DOMContentLoaded', function() {
-        const searchInput = document.getElementById('searchInput');
-        const liveSearchResults = document.getElementById('liveSearchResults');
-        const productCards = document.querySelectorAll('.product-card');
-        const searchForm = document.getElementById('searchForm');
-        
-        // Modal functionality with branch availability
-        const productModal = document.getElementById('productModal');
-        if (productModal) {
-            productModal.addEventListener('show.bs.modal', function(event) {
-                const button = event.relatedTarget;
-                const productId = button.getAttribute('data-product-id');
-                const productName = button.getAttribute('data-product-name');
-                const productImage = button.getAttribute('data-product-image');
-                const productCategory = button.getAttribute('data-product-category');
-                const productMaterial = button.getAttribute('data-product-material');
-                const productPrice = button.getAttribute('data-product-price');
-                const productAvailability = button.getAttribute('data-product-availability');
-                const productFaceShape = button.getAttribute('data-product-faceshape');
+            document.addEventListener('DOMContentLoaded', function() {
+                const searchInput = document.getElementById('searchInput');
+                const liveSearchResults = document.getElementById('liveSearchResults');
+                const productCards = document.querySelectorAll('.product-card');
+                const searchForm = document.getElementById('searchForm');
                 
-                // Set basic product info
-                document.getElementById('modalProductName').textContent = productName;
-                document.getElementById('modalProductImage').src = productImage;
-                document.getElementById('modalProductImage').alt = productName;
-                document.getElementById('modalProductCategory').textContent = productCategory;
-                document.getElementById('modalProductMaterial').textContent = productMaterial;
-                document.getElementById('modalProductPrice').textContent = productPrice;
-                document.getElementById('modalProductFaceShape').textContent = productFaceShape;
-                
-                // Set availability
-                const availabilityBadge = document.getElementById('modalProductAvailability');
-                availabilityBadge.textContent = productAvailability;
-                availabilityBadge.className = 'badge rounded-pill fs-6 ' + 
-                    (productAvailability === 'Available' ? 'available' : 'not-available');
-                
-                // Fetch branch availability via AJAX
-                fetchBranchAvailability(productId);
-            });
-        }
-        
-        function fetchBranchAvailability(productId) {
-            const branchAvailabilityDiv = document.getElementById('branchAvailability');
-            branchAvailabilityDiv.innerHTML = '<div class="text-center py-2"><i class="fas fa-spinner fa-spin"></i> Loading availability...</div>';
-            
-            fetch('get_branches.php?product_id=' + productId)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.error) {
-                        throw new Error(data.error);
-                    }
-                    
-                    if (data.length > 0) {
-                        let html = '<ul class="list-unstyled mb-0">';
-                        data.forEach(branch => {
-                            html += `<li class="d-flex justify-content-between py-1">
-                                        <span>${branch.BranchName}</span>
-                                        <span class="text-muted">${branch.Stocks} in stock</span>
-                                    </li>`;
-                        });
-                        html += '</ul>';
-                        branchAvailabilityDiv.innerHTML = html;
-                    } else {
-                        branchAvailabilityDiv.innerHTML = '<div class="text-muted">Not currently available at any branch</div>';
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching branch availability:', error);
-                    branchAvailabilityDiv.innerHTML = '<div class="text-danger">Error loading availability information</div>';
-                });
-        }
-                function fetchBranchAvailability(productId) {
-                    const branchAvailabilityDiv = document.getElementById('branchAvailability');
-                    branchAvailabilityDiv.innerHTML = '<div class="text-center py-2"><i class="fas fa-spinner fa-spin"></i> Loading availability...</div>';
-                    
-                    fetch(`get_branches.php?product_id=${productId}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.length > 0) {
-                                let html = '<ul class="list-unstyled mb-0">';
-                                data.forEach(branch => {
-                                    html += `<li class="d-flex justify-content-between py-1">
-                                                <span>${branch.BranchName}</span>
-                                                <span class="text-muted">${branch.Stocks} in stock</span>
-                                            </li>`;
-                                });
-                                html += '</ul>';
-                                branchAvailabilityDiv.innerHTML = html;
-                            } else {
-                                branchAvailabilityDiv.innerHTML = '<div class="text-muted">Not currently available at any branch</div>';
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error fetching branch availability:', error);
-                            branchAvailabilityDiv.innerHTML = '<div class="text-danger">Error loading availability information</div>';
-                        });
+                // Modal functionality
+                const productModal = document.getElementById('productModal');
+                if (productModal) {
+                    productModal.addEventListener('show.bs.modal', function(event) {
+                        const button = event.relatedTarget;
+                        const productId = button.getAttribute('data-product-id');
+                        const productName = button.getAttribute('data-product-name');
+                        const productImage = button.getAttribute('data-product-image');
+                        const productCategory = button.getAttribute('data-product-category');
+                        const productMaterial = button.getAttribute('data-product-material');
+                        const productPrice = button.getAttribute('data-product-price');
+                        const productAvailability = button.getAttribute('data-product-availability');
+                        const productStock = button.getAttribute('data-product-stock');
+                        const productFaceShape = button.getAttribute('data-product-faceshape');
+                        
+                        // Set product info
+                        document.getElementById('modalProductName').textContent = productName;
+                        document.getElementById('modalProductImage').src = productImage;
+                        document.getElementById('modalProductImage').alt = productName;
+                        document.getElementById('modalProductCategory').textContent = productCategory;
+                        document.getElementById('modalProductMaterial').textContent = productMaterial;
+                        document.getElementById('modalProductPrice').textContent = productPrice;
+                        document.getElementById('modalProductFaceShape').textContent = productFaceShape;
+                        
+                        // Set availability and stock
+                        const availabilityBadge = document.getElementById('modalProductAvailability');
+                        availabilityBadge.textContent = productAvailability;
+                        availabilityBadge.className = 'badge rounded-pill fs-6 ' + 
+                            (productAvailability === 'Available' ? 'available' : 'not-available');
+                        
+                        const stockBadge = document.getElementById('modalProductStock');
+                        stockBadge.textContent = productStock + ' in stock';
+                        stockBadge.style.display = productAvailability === 'Available' ? 'inline-block' : 'none';
+                    });
                 }
                 
                 function performLiveSearch() {
