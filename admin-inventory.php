@@ -351,7 +351,7 @@ $lowInventory = getLowInventoryProducts();
                 <strong>Instructions:</strong>
                 <ul style="margin-bottom: 0; padding-left: 20px;">
                     <li>To add a product, click the button at the top right.</li>
-                    <li>To edit or delete products, first select a branch from the dropdown.</li>
+                    <li>To edit or delete products, first select a branch and click the search button, then click the button at the 'Actions' column.</li>
 					<li>Click any column header to sort the table in ascending/descending order.</li>
                 </ul>
             </div>
@@ -491,7 +491,7 @@ $lowInventory = getLowInventoryProducts();
                                                 <i class="fas fa-sort-'.($sort == 'Count' ? (strtolower($order) == 'asc' ? 'up' : 'down') : 'up').'"></i>
                                             </span>
                                         </th>
-                                        <th>Actions</th>
+                                        <th colspan="2">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>';
