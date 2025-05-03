@@ -2,10 +2,14 @@
 // Set panel title based on role
 $panel = " Panel"; 
 $isAdmin = isset($_SESSION['roleid']) && $_SESSION['roleid'] === 1;
+$isOptometrist = isset($_SESSION['roleid']) && $_SESSION['roleid'] === 3;
 
 if ($isAdmin === true) {
     $panel = "Admin". $panel;
-} else {
+} elseif ($isOptometrist == true) {
+    $panel = "Optometrist". $panel;
+}
+else {
     $panel = "Employee". $panel;
 }
 ?>
@@ -26,7 +30,7 @@ if ($isAdmin === true) {
     </div>
     
     <!-- Sidebar Header -->
-    <div class="sidebar-header text-center">
+    <div class="sidebar-header text-center mt-4">
         <h4><i class="fas fa-cog"></i> <?php echo $panel ?></h4>
     </div>
     
@@ -57,21 +61,11 @@ if ($isAdmin === true) {
                 <i class="fas fa-boxes"></i> 
                 <span class="sidebar-item-text">Manage Inventory</span>
             </a>
-        <?php endif; ?>
 
-        <?php if (!$isAdmin): ?>
-            <a href="Employee-inventory.php" class="sidebar-item <?php echo ($current_page == 'Employee-inventory.php') ? 'active' : ''; ?>">
-                <i class="fas fa-box"></i> 
-                <span class="sidebar-item-text">Manage Inventory</span>
+            <a href="order.php" class="sidebar-item <?php echo ($current_page == 'order.php') ? 'active' : ''; ?>">
+                <i class="fas fa-shopping-cart"></i> 
+                <span class="sidebar-item-text">Manage Orders</span>
             </a>
-        <?php endif; ?>
-        
-        <a href="order.php" class="sidebar-item <?php echo ($current_page == 'order.php') ? 'active' : ''; ?>">
-            <i class="fas fa-shopping-cart"></i> 
-            <span class="sidebar-item-text">Manage Orders</span>
-        </a>
-
-        <?php if ($isAdmin): ?>
             <a href="logs.php" class="sidebar-item <?php echo ($current_page == 'logs.php') ? 'active' : ''; ?>">
                 <i class="fas fa-clipboard-list"></i> 
                 <span class="sidebar-item-text">System Logs</span>
@@ -79,6 +73,25 @@ if ($isAdmin === true) {
             <a href="archives.php" class="sidebar-item <?php echo ($current_page == 'archives.php') ? 'active' : ''; ?>">
                 <i class="fas fa-box-archive"></i> 
                 <span class="sidebar-item-text">Archives</span>
+            </a>
+        <?php endif; ?>
+
+        <?php if ($isOptometrist): ?>
+            <a href="optometrist-medicalhistory.php" class="sidebar-item <?php echo ($current_page == 'optometrist-medicalhistory.php') ? 'active' : ''; ?>">
+                <i class="fas fa-notes-medical"></i> 
+                <span class="sidebar-item-text">Medical History</span>
+            </a>
+        <?php endif; ?>
+
+        <?php if (!$isAdmin && !$isOptometrist): ?>
+            <a href="Employee-inventory.php" class="sidebar-item <?php echo ($current_page == 'Employee-inventory.php') ? 'active' : ''; ?>">
+                <i class="fas fa-box"></i> 
+                <span class="sidebar-item-text">Manage Inventory</span>
+            </a>
+
+            <a href="order.php" class="sidebar-item <?php echo ($current_page == 'order.php') ? 'active' : ''; ?>">
+                <i class="fas fa-shopping-cart"></i> 
+                <span class="sidebar-item-text">Manage Orders</span>
             </a>
         <?php endif; ?>
     </div>
