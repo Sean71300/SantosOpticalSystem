@@ -161,22 +161,7 @@ if (isset($_POST['branch_code'])) {
     $selectedBranch = $_POST['branch_code'];
 }
 
-// Fetch products based on selected branch and ensure stocks are greater than 0
 $products = [];
-if ($selectedBranch) {
-        $productQuery = "SELECT p.*, pb.Stocks 
-                        FROM productMstr p
-                        JOIN ProductBranchMaster pb ON p.ProductID = pb.ProductID
-                        WHERE pb.BranchCode = ? AND p.Avail_FL = 'Available' AND pb.Stocks > 0"; // Added condition for stocks
-        $stmt = $conn->prepare($productQuery);
-        $stmt->bind_param('s', $selectedBranch);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        while ($row = $result->fetch_assoc()) {
-            $products[] = $row;
-        }
-        $stmt->close();
-    }
     if ($selectedBranch) {
         $productQuery = "SELECT p.*, pb.Stocks 
                         FROM productMstr p
@@ -375,13 +360,7 @@ $conn->close();
                                     <p class="mb-0"><strong>Stocks:</strong> <?= $product['Stocks'] ?></p>
                                 </div>
                             </div>
-                            <?php endforeach; ?>
-                        </div>
-                    <?php else: ?>
-                        <div class="alert alert-warning">
-                            No products available in this branch. Please check inventory.
-                        </div>
-                    <?php endif; ?>
+                        <?php endforeach; ?>
                     </div>
 
                     <form id="orderForm">
