@@ -641,11 +641,23 @@ $lowInventory = getLowInventoryProducts();
                     sessionStorage.removeItem('isFormAction');
                 }
 
-                // Clear inventory flag when navigating away
+                // Handle modal closure reloads
+                document.querySelectorAll('.modal').forEach(modal => {
+                    modal.addEventListener('hidden.bs.modal', e => {
+                        if (e.target.id === 'editProductModal' || e.target.id === 'deleteProductModal') {
+                            // Set temporary flag for modal-triggered reload
+                            sessionStorage.setItem('isModalRefresh', 'true');
+                        }
+                    });
+                });
+
+                // Clear inventory flag only for non-modal navigations
                 window.addEventListener('beforeunload', function() {
-                    if (!document.activeElement.closest('form')) { // Only if not form submission
+                    const isModalRefresh = sessionStorage.getItem('isModalRefresh');
+                    if (!isModalRefresh && !document.activeElement.closest('form')) {
                         sessionStorage.removeItem('lowInventoryShown');
                     }
+                    sessionStorage.removeItem('isModalRefresh');
                 });
             });
         </script>
