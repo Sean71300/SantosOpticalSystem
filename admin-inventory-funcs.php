@@ -23,7 +23,7 @@ function displayBranchesWithCheckboxes() {
     echo '<div class="branch-selection-container">';
     while($row = mysqli_fetch_array($result)) {
         echo '<div class="branch-item row align-items-center mb-3">';
-        echo '  <div class="col-8">';
+        echo '  <div class="col-4">';
         echo '    <div class="form-check">';
         echo '      <input class="form-check-input branch-checkbox" type="checkbox" ';
         echo '             id="branch_'.$row['BranchCode'].'" value="'.$row['BranchCode'].'">';

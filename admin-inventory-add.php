@@ -185,11 +185,6 @@ include 'loginChecker.php';
                 background: #e9ecef;
             }
 
-            .form-check {
-                width: auto;
-                max-width: 50%;
-            }
-
             .form-check-input {
                 transform: scale(1.2);
                 margin-right: 12px;
