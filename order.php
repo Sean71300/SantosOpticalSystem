@@ -303,7 +303,10 @@ foreach ($orderHeaders as $header) {
     $customer = $stmt->get_result()->fetch_assoc();
     $stmt->close();
     
-    
+    $totalAmount = 0;
+    foreach ($details as $detail) {
+        $totalAmount += $detail['Price'] * $detail['Quantity'];
+    }
     
     $orders[] = [
         'Orderhdr_id' => $orderId,
@@ -316,6 +319,7 @@ foreach ($orderHeaders as $header) {
         'BranchLocation' => getBranchLocation($conn, $header['BranchCode']),
         'BranchContact' => getBranchContact($conn, $header['BranchCode']),
         'ItemCount' => count($details),
+        'TotalAmount' => $totalAmount,
         'Status' => getOrderStatus($conn, $orderId),
         'Details' => $details
     ];
