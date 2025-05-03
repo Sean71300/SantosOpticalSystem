@@ -311,10 +311,10 @@ if (isset($_POST['cancel_order']) && isset($_POST['order_id'])) {
     $conn->begin_transaction();
     
     try {
-        // Update order status to Cancelled
-        $updateQuery = "UPDATE orderDetails SET Status = 'Cancelled' WHERE OrderHdr_id = ?";
+        // Update order status to Cancelled and activity code
+        $updateQuery = "UPDATE orderDetails SET Status = 'Cancelled', ActivityCode = 7 WHERE OrderHdr_id = ?";
         $stmt = $conn->prepare($updateQuery);
-        $stmt->bind_param('i', $orderId);
+        $stmt->bind_param('i', $orderId); // Assuming activityCode is a string
         $stmt->execute();
         $stmt->close();
         
