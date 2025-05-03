@@ -7,20 +7,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BVP Optical Clinic</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <title>Santos Optical - Premium Eyewear</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
     <link rel="stylesheet" href="customCodes/custom.css">
-    <link rel="stylesheet" href="customCodes/s1.css">
-    <link rel="stylesheet" href="customCodes/s2.css">
-    <link rel="shortcut icon" type="image/x-icon" href="Images/logo.png">
+    <link rel="shortcut icon" type="image/x-icon" href="Images/logo.png"/>
     
     <style>
-    /* Optimized Carousel styling */
+    /* Improved Carousel styling */
     #eyeglassCarousel {
         width: 100%;
         margin: 0 auto;
-        margin-bottom: 0; /* Remove bottom margin */
     }
     
     .carousel-inner {
@@ -29,49 +26,38 @@
     }
     
     .carousel-item {
-        height: 55vh;
+        height: 60vh;
         min-height: 350px;
-        background-color: #f5f5f5;
     }
     
     .carousel-item img {
         width: 100%;
         height: 100%;
         object-fit: contain;
-        padding: 20px;
+        background-color: #f8f9fa;
     }
     
-    /* Product section - tight spacing */
+    /* Product section improvements */
     .product-section {
-        padding: 2rem 0 1rem; /* Reduced padding */
-        background-color: #fdfdfd;
+        padding: 3rem 0;
+    }
+    
+    .category-buttons {
+        margin-bottom: 2rem;
     }
     
     .category-btn {
-        padding: 8px 20px;
-        margin: 0 5px 15px;
-        border: none;
-        border-radius: 30px;
+        padding: 0.75rem 2rem;
         font-weight: 600;
-        transition: all 0.3s ease;
-    }
-    
-    /* Restored original button colors */
-    .best-sellers {
-        background-color: #6c757d; /* Original gray color */
-        color: white;
-    }
-    
-    .new-arrivals {
-        background-color: #dc3545; /* Original red color */
-        color: white;
+        border-radius: 0;
+        margin: 0 0.5rem;
     }
     
     .product-img {
-        max-width: 90%;
+        max-width: 100%;
         height: auto;
         transition: transform 0.3s ease;
-        margin-bottom: 15px;
+        margin-bottom: 1.5rem;
     }
     
     .product-img:hover {
@@ -80,128 +66,94 @@
     
     .see-more-btn {
         display: inline-block;
-        padding: 8px 25px;
-        background-color: #007bff; /* Original blue color */
-        color: white;
+        padding: 0.75rem 2rem;
+        background-color: #000;
+        color: #fff;
         text-decoration: none;
-        border-radius: 30px;
         font-weight: 600;
-        transition: background-color 0.3s;
-        margin-top: 10px;
+        transition: all 0.3s ease;
     }
     
     .see-more-btn:hover {
-        background-color: #0069d9;
-        color: white;
+        background-color: #333;
+        color: #fff;
     }
     
-    /* Services section - tight spacing */
+    /* Services section improvements */
     .service-section {
-        padding: 2.5rem 0;
-        background-color: #e0e0e0; /* Original color */
+        padding: 4rem 0;
     }
     
     .service-img {
-        width: 100%;
-        border-radius: 8px;
+        max-width: 100%;
+        height: auto;
+        border-radius: 4px;
     }
     
     .service-title {
-        font-size: 1.8rem;
-        color: #343a40;
-        margin-bottom: 1rem;
+        font-size: 2rem;
         font-weight: 700;
+        margin-bottom: 1.5rem;
     }
     
     .service-text {
-        font-size: 1rem;
+        margin-bottom: 2rem;
         line-height: 1.6;
-        color: #555;
-        margin-bottom: 1.5rem;
     }
     
     .nav-button {
-        padding: 8px 20px;
-        background-color: #343a40; /* Original dark color */
-        color: white;
+        padding: 0.75rem 2rem;
+        background-color: #000;
+        color: #fff;
         text-decoration: none;
-        border-radius: 30px;
         font-weight: 600;
-        transition: background-color 0.3s;
+        transition: all 0.3s ease;
+        display: inline-block;
     }
     
     .nav-button:hover {
-        background-color: #23272b;
-        color: white;
+        background-color: #333;
+        color: #fff;
     }
     
-    /* About section - tight spacing */
+    /* About section improvements */
     .about-section {
-        padding: 2.5rem 0;
-        background-color: white;
-    }
-    
-    .about-section h2 {
-        color: #343a40;
-        font-size: 1.8rem;
-        margin-bottom: 1rem;
+        padding: 4rem 0;
     }
     
     .about-text {
-        font-size: 1rem;
+        margin: 1.5rem 0;
         line-height: 1.6;
-        color: #555;
-        margin-bottom: 1.5rem;
     }
     
     .btn-see-all {
         display: inline-block;
-        padding: 8px 20px;
-        background-color: #007bff; /* Matching blue */
-        color: white;
+        padding: 0.5rem 1.5rem;
+        background-color: #000;
+        color: #fff;
         text-decoration: none;
-        border-radius: 30px;
         font-weight: 600;
-        transition: background-color 0.3s;
+        transition: all 0.3s ease;
     }
     
     .btn-see-all:hover {
-        background-color: #0069d9;
-        color: white;
+        background-color: #333;
+        color: #fff;
     }
     
-    .btn-see-all span {
-        margin-left: 5px;
-    }
-    
-    /* Location section - tight spacing */
+    /* Location section improvements */
     .location-section {
-        padding: 2.5rem 0;
+        padding: 4rem 0;
         background-color: #f8f5f2;
     }
     
-    .location-section h2 {
-        color: #343a40;
-        font-size: 1.8rem;
-        margin-bottom: 1.5rem;
-    }
-    
-    .map-container {
-        width: 90%;
-        margin: 0 auto;
-        border-radius: 8px;
-        overflow: hidden;
-    }
-    
-    /* Footer - tight spacing */
+    /* Footer improvements */
     footer {
-        padding: 2rem 0 0;
-        background-color: #ffffff;
+        padding: 3rem 0 0;
     }
     
     footer h6 {
-        font-size: 1.1rem;
-        color: #343a40;
+        font-weight: 700;
         margin-bottom: 1rem;
     }
     
@@ -209,52 +161,35 @@
         margin-bottom: 0.5rem;
     }
     
-    footer a {
-        transition: color 0.3s;
-    }
-    
-    footer a:hover {
-        color: #007bff !important;
-    }
-    
     .copyright {
         padding: 1rem 0;
-        background-color: white;
-        margin-top: 1.5rem;
+        margin-top: 2rem;
     }
     
     /* Responsive adjustments */
     @media (max-width: 992px) {
         .carousel-item {
-            height: 45vh;
+            height: 50vh;
         }
     }
     
     @media (max-width: 768px) {
         .carousel-item {
-            height: 35vh;
-            min-height: 250px;
+            height: 40vh;
+            min-height: 300px;
         }
         
-        .service-section, 
-        .about-section,
-        .location-section {
-            padding: 2rem 0;
-        }
-    }
-    
-    @media (max-width: 576px) {
-        .carousel-item {
-            height: 30vh;
+        .text-content {
+            text-align: center;
+            margin-top: 2rem;
         }
         
-        .product-img {
-            max-width: 80%;
+        .d-flex.justify-content-end {
+            justify-content: center !important;
         }
         
-        .category-btn {
-            padding: 6px 15px;
-            font-size: 0.9rem;
+        .about-section .col-lg-6:first-child {
+            margin-bottom: 2rem;
         }
     }
 </style>
@@ -266,24 +201,24 @@
         <div id="eyeglassCarousel" class="carousel slide" data-bs-ride="carousel">
             <div class="carousel-inner">
                 <div class="carousel-item active">
-                    <img src="Images/cp3.png" class="d-block w-100" alt="Eyeglass Sale 1">
+                    <img src="Images/cp3.png" class="d-block w-100" alt="Eyeglass Collection">
                 </div>
                 <div class="carousel-item">
-                    <img src="Images/cp2.png" class="d-block w-100" alt="Eyeglass Sale 2">
+                    <img src="Images/cp2.png" class="d-block w-100" alt="Premium Frames">
                 </div>
                 <div class="carousel-item">
-                    <img src="Images/cp1.png" class="d-block w-100" alt="Eyeglass Sale 3">
+                    <img src="Images/cp1.png" class="d-block w-100" alt="New Arrivals">
                 </div>
                 <div class="carousel-item">
-                    <img src="Images/cp4.png" class="d-block w-100" alt="Eyeglass Sale 4">
+                    <img src="Images/cp4.png" class="d-block w-100" alt="Special Offers">
                 </div>
             </div>
         </div>
     </header>
 
-    <section class="product-section" data-aos="fade-up">
+    <section class="product-section" style="background-color: #fdfdfd;" data-aos="fade-up">
         <div class="container">
-            <div class="row justify-content-center mb-3">
+            <div class="row justify-content-center category-buttons">
                 <div class="col-auto">
                     <button class="category-btn best-sellers">BEST SELLER</button>
                 </div>
@@ -296,31 +231,31 @@
                     <img src="Images/imgm1.png" alt="Minima M608" class="product-img" data-aos="fade-up">
                 </div>
                 <div class="col-md-4 col-sm-6 text-center">
-                    <img src="Images/imgm2.png" alt="Paul Hueman" class="product-img" data-aos="fade-up" data-aos-delay="200">
+                    <img src="Images/imgm2.png" alt="Paul Hueman" class="product-img" data-aos="fade-up" data-aos-delay="100">
                 </div>
                 <div class="col-md-4 col-sm-6 text-center">
-                    <img src="Images/imgm3.png" alt="Paul Hueman PHF" class="product-img" data-aos="fade-up" data-aos-delay="400">
+                    <img src="Images/imgm3.png" alt="Paul Hueman PHF" class="product-img" data-aos="fade-up" data-aos-delay="200">
                 </div>
             </div>
-            <div class="text-center mt-2" data-aos="fade-up">
+            <div class="text-center mt-3" data-aos="fade-up">
                 <a href="product-gallery.php" class="see-more-btn">SEE MORE</a>
             </div>
         </div>
     </section>
 
-    <section class="service-section" data-aos="fade-up">
+    <section class="service-section" style="background-color: #e0e0e0;" data-aos="fade-up">
         <div class="container">
             <div class="row align-items-center">
-                <div class="col-lg-6 mb-4 mb-lg-0" data-aos="fade-right">
+                <div class="col-lg-6" data-aos="fade-right">
                     <img src="Images/imgs.jpg" alt="Our Services" class="service-img">
                 </div>
-                <div class="col-lg-6" data-aos="fade-left">
+                <div class="col-lg-6 text-content" data-aos="fade-left">
                     <h2 class="service-title">OUR SERVICES</h2>
                     <p class="service-text">
                         We provide high-quality eyewear with expert consultations, premium lenses, 
                         and stylish frames to match your personality. Explore our wide range of services today!
                     </p>
-                    <div class="text-lg-start text-center">
+                    <div class="d-flex justify-content-end">
                         <a href="ourservices.php" class="nav-button">KNOW MORE</a>
                     </div>
                 </div>
@@ -328,10 +263,10 @@
         </div>
     </section>
 
-    <section class="about-section" data-aos="fade-up">
+    <section class="about-section" style="background-color: white;" data-aos="fade-up">
         <div class="container">
             <div class="row align-items-center">
-                <div class="col-lg-6 mb-4 mb-lg-0">
+                <div class="col-lg-6">
                     <h2 class="fw-bold">ABOUT US</h2>
                     <p class="about-text">
                         Know and learn more about PBV Santos Optical!
@@ -346,11 +281,12 @@
     </section>
 
     <section class="location-section" data-aos="fade-up">
-        <div class="container text-center">
-            <h2 class="fw-bold mb-4">OUR LOCATION</h2>
-            <div class="ratio ratio-16x9 map-container">
+        <div class="container">
+            <h2 class="fw-bold text-center mb-4">OUR LOCATION</h2>
+            <div class="ratio ratio-16x9">
                 <iframe 
                     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d768.9767236191218!2d120.95072416949931!3d14.6581210991147!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397b452e915147b%3A0x910e6ce82d8b5bd7!2sSantos%20Optical!5e1!3m2!1sen!2sph!4v1741535090106!5m2!1sen!2sph" 
+                    class="border-0" 
                     allowfullscreen="" 
                     loading="lazy" 
                     referrerpolicy="no-referrer-when-downgrade">
@@ -359,11 +295,11 @@
         </div>
     </section>
 
-    <footer>
+    <footer class="border-top" style="border-color: #ffffff !important;">
         <div class="container">
             <div class="row text-center text-md-start">
                 <div class="col-md-3 mb-4 mb-md-0 text-center">
-                    <img src="Images/logo.png" alt="Logo" width="160" class="mb-2">
+                    <img src="Images/logo.png" alt="Santos Optical Logo" width="200">
                 </div>
 
                 <div class="col-md-3 mb-4 mb-md-0">
@@ -384,13 +320,13 @@
 
                 <div class="col-md-3">
                     <h6 class="fw-bold">CONTACT US</h6>
-                    <p class="mb-1">Address: #6 Rizal Avenue Extension, Brgy. San Agustin, Malabon City</p>
+                    <p class="mb-1">#6 Rizal Avenue Extension, Brgy. San Agustin, Malabon City</p>
                     <p class="mb-1">Phone: 027-508-4792</p>
                     <p class="mb-1">Cell: 0932-844-7068</p>
-                    <p class="mb-0">Email: <a href="mailto:Santosoptical@gmail.com" class="text-dark">Santosoptical@gmail.com</a></p>
+                    <p>Email: <a href="mailto:Santosoptical@gmail.com" class="text-dark">Santosoptical@gmail.com</a></p>
                 </div>
             </div>
-            <div class="copyright">
+            <div class="copyright text-center">
                 <p class="m-0">COPYRIGHT &copy; SANTOS OPTICAL co., ltd. ALL RIGHTS RESERVED.</p>
             </div>
         </div>
@@ -406,12 +342,16 @@
                 once: true
             });
             
-            // Auto-rotating carousel
             var myCarousel = document.querySelector('#eyeglassCarousel');
             var carousel = new bootstrap.Carousel(myCarousel, {
                 interval: 3000,
                 wrap: true,
+                ride: 'carousel',
                 pause: false
+            });
+            
+            myCarousel.addEventListener('slid.bs.carousel', function() {
+                carousel.cycle();
             });
         });
     </script>
