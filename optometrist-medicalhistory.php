@@ -4,11 +4,6 @@ include 'customerFunctions.php';
 include 'loginChecker.php';
 include_once 'setup.php';
 
-$id = isset($_GET['CustomerID']) ? (int)$_GET['CustomerID'] : 0;
-if ($id === 0) {
-    die("Invalid customer ID");
-}
-
 function getAllMedicalRecords() {
     $connection = connect();
 
