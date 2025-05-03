@@ -17,10 +17,18 @@
     <link rel="stylesheet" href="customCodes/s2.css">
 
     <style>
-    /* Enhanced Carousel styling */
+    /* Carousel container - full width */
+    .carousel-container {
+        position: relative;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+    
+    /* Carousel styling */
     #eyeglassCarousel {
         width: 100%;
-        margin: 0 auto;
+        margin: 0;
     }
     
     .carousel-inner {
@@ -38,15 +46,37 @@
         width: 100%;
         height: 100%;
         object-fit: contain;
-        background-color: #f8f9fa;
-        padding: 0 5%;
     }
     
-    .carousel-control-prev,
-    .carousel-control-next {
-        display: none !important;
+    /* Vision Statement - Positioned over carousel */
+    .vision-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(248, 249, 250, 0.9);
+        padding: 1.5rem 0;
+        text-align: center;
+        z-index: 10;
     }
     
+    .vision-text {
+        font-family: 'Georgia', serif;
+        font-size: 2.5rem;
+        font-weight: 300;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+    
+    .vision-subtext {
+        font-family: 'Arial', sans-serif;
+        font-size: 1rem;
+        color: #7f8c8d;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+    }
+    
+    /* Product image styling */
     .product-img {
         max-width: 100%;
         height: auto;
@@ -57,58 +87,7 @@
         transform: scale(1.05);
     }
     
-    .carousel-item {
-        transition: transform 0.6s ease-in-out;
-    }
-    
-    /* New Vision Statement Section */
-    .vision-statement {
-        background-color: #f8f9fa;
-        padding: 3rem 0;
-        text-align: center;
-        margin-top: -1px;
-    }
-    
-    .vision-text {
-        font-family: 'Georgia', serif;
-        font-size: 2.5rem;
-        font-weight: 300;
-        color: #2c3e50;
-        letter-spacing: 1px;
-        line-height: 1.3;
-        position: relative;
-        display: inline-block;
-        padding: 0 2rem;
-    }
-    
-    .vision-text:before, .vision-text:after {
-        content: "❝";
-        position: absolute;
-        font-size: 4rem;
-        color: rgba(44, 62, 80, 0.1);
-        line-height: 0;
-    }
-    
-    .vision-text:before {
-        left: -10px;
-        top: 30px;
-    }
-    
-    .vision-text:after {
-        right: -10px;
-        bottom: 20px;
-        transform: rotate(180deg);
-    }
-    
-    .vision-subtext {
-        font-family: 'Arial', sans-serif;
-        font-size: 1rem;
-        color: #7f8c8d;
-        margin-top: 1rem;
-        letter-spacing: 2px;
-        text-transform: uppercase;
-    }
-    
+    /* Adjust the container below */
     .container-fluid.py-5 {
         padding-top: 2rem !important;
     }
@@ -118,40 +97,33 @@
     <header>
     <?php include "Navigation.php"?>
 
-        <div id="eyeglassCarousel" class="carousel slide" data-bs-ride="carousel">
-            <div class="carousel-inner">
-                <div class="carousel-item active">
-                    <img src="Images/cp3.png" class="d-block w-100" alt="Eyeglass Sale 1">
-                </div>
-                <div class="carousel-item">
-                    <img src="Images/cp2.png" class="d-block w-100" alt="Eyeglass Sale 2">
-                </div>
-                <div class="carousel-item">
-                    <img src="Images/cp1.png" class="d-block w-100" alt="Eyeglass Sale 3">
-                </div>
-                <div class="carousel-item">
-                    <img src="Images/cp4.png" class="d-block w-100" alt="Eyeglass Sale 4">
+        <div class="carousel-container">
+            <div id="eyeglassCarousel" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    <div class="carousel-item active">
+                        <img src="Images/cp3.png" class="d-block w-100" alt="Eyeglass Sale 1">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="Images/cp2.png" class="d-block w-100" alt="Eyeglass Sale 2">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="Images/cp1.png" class="d-block w-100" alt="Eyeglass Sale 3">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="Images/cp4.png" class="d-block w-100" alt="Eyeglass Sale 4">
+                    </div>
                 </div>
             </div>
-
-            <button class="carousel-control-prev" type="button" data-bs-target="#eyeglassCarousel" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Previous</span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#eyeglassCarousel" data-bs-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Next</span>
-            </button>
+            
+            <!-- Vision Statement - Positioned over carousel at bottom -->
+            <div class="vision-overlay" data-aos="fade-up">
+                <div class="container">
+                    <div class="vision-text">We value your sight. We care.</div>
+                    <div class="vision-subtext">QUALITY VISION FOR QUALITY LIFE</div>
+                </div>
+            </div>
         </div>
     </header>
-
-    <!-- New Vision Statement Section -->
-    <div class="vision-statement" data-aos="fade-up">
-        <div class="container">
-            <div class="vision-text">We value your sight. We care.</div>
-            <div class="vision-subtext">Quality Vision for Quality Life</div>
-        </div>
-    </div>
 
     <div class="container-fluid py-5" style="background-color: #fdfdfd;" data-aos="fade-up">
         <div class="container text-center my-4">
@@ -285,24 +257,24 @@
         });
 
         document.addEventListener('DOMContentLoaded', function() {
-        AOS.init({
-            duration: 800,
-            easing: 'ease-in-out',
-            once: true
+            AOS.init({
+                duration: 800,
+                easing: 'ease-in-out',
+                once: true
+            });
+            
+            var myCarousel = document.querySelector('#eyeglassCarousel');
+            var carousel = new bootstrap.Carousel(myCarousel, {
+                interval: 3000,
+                wrap: true,
+                ride: 'carousel',
+                pause: false
+            });
+            
+            myCarousel.addEventListener('slid.bs.carousel', function() {
+                carousel.cycle();
+            });
         });
-        
-        var myCarousel = document.querySelector('#eyeglassCarousel');
-        var carousel = new bootstrap.Carousel(myCarousel, {
-            interval: 3000,
-            wrap: true,
-            ride: 'carousel',
-            pause: false
-        });
-        
-        myCarousel.addEventListener('slid.bs.carousel', function() {
-            carousel.cycle();
-        });
-    });
     </script>
 </body>
 </html>
