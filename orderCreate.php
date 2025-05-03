@@ -161,21 +161,24 @@ if (isset($_POST['branch_code'])) {
     $selectedBranch = $_POST['branch_code'];
 }
 
+// Fetch products with stocks > 0, including brand and shape info
 $products = [];
-    if ($selectedBranch) {
-        $productQuery = "SELECT p.*, pb.Stocks 
-                        FROM productMstr p
-                        JOIN ProductBranchMaster pb ON p.ProductID = pb.ProductID
-                        WHERE pb.BranchCode = ? AND p.Avail_FL = 'Available'";
-        $stmt = $conn->prepare($productQuery);
-        $stmt->bind_param('s', $selectedBranch);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        while ($row = $result->fetch_assoc()) {
-            $products[] = $row;
-        }
-        $stmt->close();
+if ($selectedBranch) {
+    $productQuery = "SELECT p.*, pb.Stocks, b.BrandName, s.Description as ShapeDescription
+                     FROM productMstr p
+                     JOIN ProductBranchMaster pb ON p.ProductID = pb.ProductID
+                     LEFT JOIN brandMaster b ON p.BrandID = b.BrandID
+                     LEFT JOIN shapeMaster s ON p.ShapeID = s.ShapeID
+                     WHERE pb.BranchCode = ? AND p.Avail_FL = 'Available' AND pb.Stocks > 0";
+    $stmt = $conn->prepare($productQuery);
+    $stmt->bind_param('s', $selectedBranch);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    while ($row = $result->fetch_assoc()) {
+        $products[] = $row;
     }
+    $stmt->close();
+}
 
 $conn->close();
 ?>
