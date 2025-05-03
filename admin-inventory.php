@@ -640,6 +640,13 @@ $lowInventory = getLowInventoryProducts();
                     // Clear form action flag after initial check
                     sessionStorage.removeItem('isFormAction');
                 }
+
+                // Clear inventory flag when navigating away
+                window.addEventListener('beforeunload', function() {
+                    if (!document.activeElement.closest('form')) { // Only if not form submission
+                        sessionStorage.removeItem('lowInventoryShown');
+                    }
+                });
             });
         </script>
     </body>
