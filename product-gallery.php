@@ -34,21 +34,6 @@
         return 'Not specified';
     }
 
-    function getBranchName($branchCode) {
-        $conn = connect();
-        $sql = "SELECT BranchName FROM BranchMaster WHERE BranchCode = ?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("i", $branchCode);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        
-        if ($result->num_rows > 0) {
-            $row = $result->fetch_assoc();
-            return $row['BranchName'];
-        }
-        return 'Unknown Branch';
-    }
-
    function pagination() {
     $conn = connect();
 
@@ -113,18 +98,11 @@
     }
     
     // First get the total count without limits
-    $countSql = str_replace("p.*, pb.Stocks, pb.Avail_FL as BranchAvailability, b.BranchName", "COUNT(DISTINCT p.ProductID) as total", $sql);
+    $countSql = str_replace("p.*, pb.Stocks, pb.Avail_FL as BranchAvailability, b.BranchName", "COUNT(*) as total", $sql);
     $countResult = mysqli_query($conn, $countSql);
     $totalData = mysqli_fetch_assoc($countResult);
     $total = $totalData['total'];
     $totalPages = ceil($total / $perPage);
-
-    // Ensure current page is within valid range
-    if ($page > $totalPages && $totalPages > 0) {
-        $redirectUrl = buildQueryString($totalPages, $_GET);
-        header("Location: $redirectUrl");
-        exit();
-    }
 
     // Now add the limit for pagination
     $sql .= " LIMIT $start, $perPage";
@@ -181,12 +159,16 @@
         }
     } else {
         echo "<div class='col-12 py-5 no-results' style='display: flex; justify-content: center; align-items: center; min-height: 300px;'>";
-        if ($branch > 0) {
-            $branchName = getBranchName($branch);
-            echo "<h4 class='text-center'>No products found for branch: $branchName</h4>";
-        } elseif ($shape > 0) {
+        if ($shape > 0) {
             $shapeName = getFaceShapeName($shape);
             echo "<h4 class='text-center'>No products found for frame shape: $shapeName</h4>";
+        } else if ($branch > 0) {
+            $conn = connect();
+            $branchQuery = "SELECT BranchName FROM BranchMaster WHERE BranchCode = $branch";
+            $branchResult = mysqli_query($conn, $branchQuery);
+            $branchName = mysqli_fetch_assoc($branchResult)['BranchName'];
+            $conn->close();
+            echo "<h4 class='text-center'>No products found at branch: $branchName</h4>";
         } else {
             echo "<h4 class='text-center'>No products found matching your search.</h4>";
         }
@@ -199,12 +181,10 @@
         echo "<div class='col-12 mt-5'>";
             echo "<div class='d-flex justify-content-center'>";
                 echo "<ul class='pagination'>";
-                
-                // Previous button
                 if ($page > 1) {
-                    echo "<li class='page-item'><a class='page-link' href='" . buildQueryString($page - 1, $_GET) . "' aria-label='Previous'><span aria-hidden='true'>&laquo;</span></a></li>";
+                    echo "<li class='page-item'><a class='page-link' href='" . buildQueryString($page - 1, $_GET) . "'>Previous</a></li>";
                 } else {
-                    echo "<li class='page-item disabled'><a class='page-link' aria-label='Previous'><span aria-hidden='true'>&laquo;</span></a></li>";
+                    echo "<li class='page-item disabled'><a class='page-link'>Previous</a></li>";
                 }
 
                 // Show page numbers
@@ -227,7 +207,7 @@
                 
                 for ($i = $startPage; $i <= $endPage; $i++) {                       
                     if ($i == $page) {
-                        echo "<li class='page-item active' aria-current='page'><a class='page-link'>$i</a></li>"; 
+                        echo "<li class='page-item active' aria-current='page'><a class='page-link disabled'>$i</a></li>"; 
                     } else {
                         echo "<li class='page-item'><a class='page-link' href='" . buildQueryString($i, $_GET) . "'>$i</a></li>";
                     }
@@ -241,29 +221,18 @@
                     echo "<li class='page-item'><a class='page-link' href='" . buildQueryString($totalPages, $_GET) . "'>$totalPages</a></li>";
                 }
 
-                // Next button
                 if ($page < $totalPages) {
-                    echo "<li class='page-item'><a class='page-link' href='" . buildQueryString($page + 1, $_GET) . "' aria-label='Next'><span aria-hidden='true'>&raquo;</span></a></li>";
+                    echo "<li class='page-item'><a class='page-link' href='" . buildQueryString($page + 1, $_GET) . "'>Next</a></li>";
                 } else {
-                    echo "<li class='page-item disabled'><a class='page-link' aria-label='Next'><span aria-hidden='true'>&raquo;</span></a></li>";
+                    echo "<li class='page-item disabled'><a class='page-link'>Next</a></li>";
                 }
                 echo "</ul>";
-            echo "</div>";
-            
-            // Show current page info
-            echo "<div class='text-center text-muted mt-2'>";
-            $startItem = (($page - 1) * $perPage) + 1;
-            $endItem = min($page * $perPage, $total);
-            echo "Page $page of $totalPages | Showing $startItem to $endItem of $total products";
-            if ($branch > 0) {
-                $branchName = getBranchName($branch);
-                echo " | Branch: $branchName";
-            }
             echo "</div>";
         echo "</div>"; 
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html>
     <head>
