@@ -135,28 +135,6 @@ function getBranchName($conn, $branchCode) {
     return $row ? $row['BranchName'] : 'Unknown';
 }
 
-function getBranchLocation($conn, $branchCode) {
-    $query = "SELECT BranchLocation FROM BranchMaster WHERE BranchCode = ?";
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param('s', $branchCode);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $row = $result->fetch_assoc();
-    $stmt->close();
-    return $row ? $row['BranchLocation'] : 'Unknown';
-}
-
-function getBranchContact($conn, $branchCode) {
-    $query = "SELECT ContactNo FROM BranchMaster WHERE BranchCode = ?";
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param('s', $branchCode);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $row = $result->fetch_assoc();
-    $stmt->close();
-    return $row ? $row['ContactNo'] : 'Unknown';
-}
-
 function getEmployeeName($conn, $loginName) {
     $query = "SELECT EmployeeName FROM employee WHERE LoginName = ?";
     $stmt = $conn->prepare($query);
@@ -169,12 +147,7 @@ function getEmployeeName($conn, $loginName) {
 }
 
 function getOrderDetails($conn, $orderId) {
-    $query = "SELECT od.Quantity, od.Status, od.ProductBranchID, p.ProductID, p.Model, p.Price, p.CategoryType, b.BrandName 
-              FROM orderDetails od
-              JOIN ProductBranchMaster pb ON od.ProductBranchID = pb.ProductBranchID
-              JOIN productMstr p ON pb.ProductID = p.ProductID
-              JOIN brandMaster b ON p.BrandID = b.BrandID
-              WHERE od.OrderHdr_id = ?";
+    $query = "SELECT od.Quantity, od.Status, od.ProductBranchID FROM orderDetails od WHERE od.OrderHdr_id = ?";
     $stmt = $conn->prepare($query);
     $stmt->bind_param('i', $orderId);
     $stmt->execute();
@@ -182,13 +155,48 @@ function getOrderDetails($conn, $orderId) {
     $details = [];
     
     while ($row = $result->fetch_assoc()) {
-        $row['Price'] = (float)$row['Price'];
+        $price = getProductPrice($conn, $row['ProductBranchID']);
+        $row['Price'] = (float)$price;
         $row['Quantity'] = (int)$row['Quantity'];
         $details[] = $row;
     }
     
     $stmt->close();
     return $details;
+}
+
+function getProductPrice($conn, $productBranchId) {
+    $query = "SELECT ProductID FROM ProductBranchMaster WHERE ProductBranchID = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param('i', $productBranchId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    $stmt->close();
+    
+    if (!$row) return 0;
+    
+    $productId = $row['ProductID'];
+    $priceQuery = "SELECT Price FROM productMstr WHERE ProductID = ?";
+    $priceStmt = $conn->prepare($priceQuery);
+    $priceStmt->bind_param('i', $productId);
+    $priceStmt->execute();
+    $priceResult = $priceStmt->get_result();
+    $priceRow = $priceResult->fetch_assoc();
+    $priceStmt->close();
+    
+    return $priceRow ? (float)$priceRow['Price'] : 0;
+}
+
+function getOrderTotal($conn, $orderId) {
+    $details = getOrderDetails($conn, $orderId);
+    $total = 0;
+    
+    foreach ($details as $detail) {
+        $total += $detail['Price'] * $detail['Quantity'];
+    }
+    
+    return $total;
 }
 
 function countOrderHeaders($conn, $search = '', $branch = '', $status = '') {
@@ -296,32 +304,19 @@ foreach ($orderHeaders as $header) {
     $orderId = $header['Orderhdr_id'];
     $details = getOrderDetails($conn, $orderId);
     
-    $customerQuery = "SELECT CustomerName, CustomerContact, CustomerAddress FROM customer WHERE CustomerID = ?";
-    $stmt = $conn->prepare($customerQuery);
-    $stmt->bind_param('i', $header['CustomerID']);
-    $stmt->execute();
-    $customer = $stmt->get_result()->fetch_assoc();
-    $stmt->close();
-    
-    $totalAmount = 0;
-    foreach ($details as $detail) {
-        $totalAmount += $detail['Price'] * $detail['Quantity'];
-    }
+    $itemCount = count($details);
+    $totalAmount = getOrderTotal($conn, $orderId);
+    $orderStatus = getOrderStatus($conn, $orderId);
     
     $orders[] = [
         'Orderhdr_id' => $orderId,
         'Created_dt' => $header['Created_dt'],
         'CustomerName' => $header['CustomerName'],
-        'CustomerContact' => $customer['CustomerContact'] ?? '',
-        'CustomerAddress' => $customer['CustomerAddress'] ?? '',
         'CreatedBy' => getEmployeeName($conn, $header['Created_by']),
         'BranchName' => getBranchName($conn, $header['BranchCode']),
-        'BranchLocation' => getBranchLocation($conn, $header['BranchCode']),
-        'BranchContact' => getBranchContact($conn, $header['BranchCode']),
-        'ItemCount' => count($details),
+        'ItemCount' => $itemCount,
         'TotalAmount' => $totalAmount,
-        'Status' => getOrderStatus($conn, $orderId),
-        'Details' => $details
+        'Status' => $orderStatus
     ];
 }
 
@@ -733,92 +728,49 @@ $conn->close();
             });
         });
 
-        const ordersData = <?php echo json_encode($orders); ?>;
-        
-        document.querySelectorAll('.view-order-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const orderId = this.getAttribute('data-order-id');
-                const order = ordersData.find(o => o.Orderhdr_id == orderId);
+        const orderDetailsModal = document.getElementById('orderDetailsModal');
+        if (orderDetailsModal) {
+            orderDetailsModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const orderId = button.getAttribute('data-order-id');
+                const modalBody = orderDetailsModal.querySelector('.modal-body');
                 
-                if (order) {
-                    const modalBody = document.getElementById('orderDetailsContent');
-                    
-                    let html = `
-                        <div class="order-details-container">
-                            <div class="row mb-4">
-                                <div class="col-md-6">
-                                    <h5>Order Information</h5>
-                                    <p><strong>Order ID:</strong> ${order.Orderhdr_id}</p>
-                                    <p><strong>Date Created:</strong> ${new Date(order.Created_dt).toLocaleString()}</p>
-                                    <p><strong>Created By:</strong> ${order.CreatedBy}</p>
-                                </div>
-                                <div class="col-md-6">
-                                    <h5>Branch Information</h5>
-                                    <p><strong>Branch:</strong> ${order.BranchName}</p>
-                                    <p><strong>Location:</strong> ${order.BranchLocation}</p>
-                                    <p><strong>Contact:</strong> ${order.BranchContact}</p>
-                                </div>
+                modalBody.innerHTML = `
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p>Loading order details...</p>
+                    </div>
+                `;
+                
+                fetch(`orderDetails.php?id=${orderId}`)
+                    .then(response => response.text())
+                    .then(data => {
+                        modalBody.innerHTML = data;
+                    })
+                    .catch(error => {
+                        modalBody.innerHTML = `
+                            <div class="alert alert-danger">
+                                Failed to load order details. Please try again.
                             </div>
-                            
-                            <div class="row mb-4">
-                                <div class="col-md-6">
-                                    <h5>Customer Information</h5>
-                                    <p><strong>Name:</strong> ${order.CustomerName}</p>
-                                    <p><strong>Contact:</strong> ${order.CustomerContact}</p>
-                                    <p><strong>Address:</strong> ${order.CustomerAddress}</p>
-                                </div>
-                            </div>
-                            
-                            <h5 class="mb-3">Order Items</h5>
-                            <div class="table-responsive">
-                                <table class="table table-bordered order-details-table">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>Product</th>
-                                            <th>Brand</th>
-                                            <th>Category</th>
-                                            <th>Price</th>
-                                            <th>Qty</th>
-                                            <th>Subtotal</th>
-                                            <th>Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>`;
-                    
-                    order.Details.forEach(detail => {
-                        const subtotal = detail.Price * detail.Quantity;
-                        const statusClass = detail.Status === 'Completed' ? 'badge-complete' : 
-                                          detail.Status === 'Cancelled' ? 'badge-cancelled' : 'badge-pending';
-                        
-                        html += `
-                            <tr>
-                                <td>${detail.Model || 'N/A'}</td>
-                                <td>${detail.BrandName || 'N/A'}</td>
-                                <td>${detail.CategoryType || 'N/A'}</td>
-                                <td>₱${detail.Price.toFixed(2)}</td>
-                                <td>${detail.Quantity}</td>
-                                <td>₱${subtotal.toFixed(2)}</td>
-                                <td><span class="badge ${statusClass}">${detail.Status}</span></td>
-                            </tr>`;
+                        `;
+                        console.error('Error loading order details:', error);
                     });
-                    
-                    html += `
-                                    </tbody>
-                                </table>
-                            </div>
-                            
-                            <div class="text-end mt-3">
-                                <h4>Total: ₱${order.TotalAmount.toFixed(2)}</h4>
-                            </div>
-                        </div>`;
-                    
-                    modalBody.innerHTML = html;
-                } else {
-                    document.getElementById('orderDetailsContent').innerHTML = `
-                        <div class="alert alert-danger">Order details not found.</div>`;
-                }
             });
-        });
+            
+            orderDetailsModal.addEventListener('hidden.bs.modal', function() {
+                const modalBody = orderDetailsModal.querySelector('.modal-body');
+                modalBody.innerHTML = `
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p>Loading order details...</p>
+                    </div>
+                `;
+            });
+        }
     });
 </script>
 </body>
