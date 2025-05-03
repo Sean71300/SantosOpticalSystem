@@ -195,8 +195,8 @@ include 'loginChecker.php';
             <form method="post" enctype="multipart/form-data" id="addForm">
                 <div class="row mb-4">
                     <div class="col-md-6 mb-3 mb-md-0">
-                        <label for="productBranch" class="form-label">Branch</label>
-                        <select name="productBranch" id="productBranch" class="form-select form-control-lg" required>
+                        <label for="productBranches" class="form-label">Branches</label>
+                        <select name="productBranches[]" id="productBranches" class="form-select form-control-lg" multiple required>
                             <?php getBranch(); ?>
                         </select>
                     </div>
@@ -204,6 +204,10 @@ include 'loginChecker.php';
                         <label for="productName" class="form-label">Product Name</label>
                         <input type="text" name="productName" id="productName" class="form-control form-control-lg" required>
                     </div>
+                </div>
+
+                <div class="row mb-4" id="branchQuantitiesContainer">
+                    <!-- Dynamic quantity fields will be added here by JavaScript -->
                 </div>
                 
                 <div class="row mb-4">
@@ -245,7 +249,7 @@ include 'loginChecker.php';
 
                 <div class="row">
                     <div class="col-md-6 text-center mb-4 mb-md-0 product-img-container">
-                        <img src="Images/default-product.png" alt="Product Image" id="imagePreview" class="product-img-preview">
+                        <img src="Images/default-product.png" alt="Product Image" id="imagePreview" class="product-img-preview" style="height: 600px; width: 600px;">
                         <div>
                             <label for="productImg" class="btn btn-success">
                                 <input type="file" name="productImg" id="productImg" accept="image/png, image/jpeg" onchange="productImagePreview(this)" style="display:none;" required>
@@ -322,6 +326,34 @@ include 'loginChecker.php';
                 const myModal = new bootstrap.Modal(successModal);
                 myModal.show();
             }
+        });
+    </script>
+
+    <script>
+        document.getElementById('productBranches').addEventListener('change', function() {
+            const selectedBranches = Array.from(this.selectedOptions);
+            const container = document.getElementById('branchQuantitiesContainer');
+            container.innerHTML = ''; // Clear previous inputs
+
+            selectedBranches.forEach((option, index) => {
+                const branchName = option.text;
+                const branchCode = option.value;
+
+                const row = document.createElement('div');
+                row.className = 'row mb-3';
+
+                row.innerHTML = `
+                    <div class="col-md-6">
+                        <label class="form-label">${branchName}</label>
+                        <input type="hidden" name="productBranches[]" value="${branchCode}">
+                    </div>
+                    <div class="col-md-6">
+                        <input type="number" name="productQtys[]" class="form-control form-control-lg" 
+                            min="0" placeholder="Quantity" required>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
         });
     </script>
 </body>
