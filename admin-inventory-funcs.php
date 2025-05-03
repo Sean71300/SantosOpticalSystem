@@ -440,6 +440,7 @@ function addProduct(){ //Add function to add a new product to the database
             
             // Insert product-branch mapping into the product branch master database
             if (!empty($_POST['qtys'])) {
+                $upd_by = $_SESSION['full_name'];
                 foreach ($_POST['qtys'] as $branchCode => $qty) {
                     $branchAvailFL = ($qty > 0) ? 'Available' : 'Not Available';
                     $newProductBranchID = generate_ProductBrnchMstrID();
