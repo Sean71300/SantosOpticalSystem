@@ -1021,4 +1021,53 @@ function deleteProduct()
         mysqli_close($link);
         return $lowInventory;
     }
+
+function addBrand($brandName) {
+    $link = connect();
+    $brandID = generate_BrandID();
+    
+    $sql = "INSERT INTO brandMaster (BrandID, BrandName) VALUES (?, ?)";
+    $stmt = mysqli_prepare($link, $sql);
+    mysqli_stmt_bind_param($stmt, "ss", $brandID, $brandName);
+    
+    if (mysqli_stmt_execute($stmt)) {
+        $_SESSION['success'] = "Brand added successfully!";
+    } else {
+        $_SESSION['error'] = "Error adding brand: " . mysqli_error($link);
+    }
+    mysqli_stmt_close($stmt);
+    mysqli_close($link);
+}
+
+function updateBrand($brandID, $newName) {
+    $link = connect();
+    
+    $sql = "UPDATE brandMaster SET BrandName = ? WHERE BrandID = ?";
+    $stmt = mysqli_prepare($link, $sql);
+    mysqli_stmt_bind_param($stmt, "ss", $newName, $brandID);
+    
+    if (mysqli_stmt_execute($stmt)) {
+        $_SESSION['success'] = "Brand updated successfully!";
+    } else {
+        $_SESSION['error'] = "Error updating brand: " . mysqli_error($link);
+    }
+    mysqli_stmt_close($stmt);
+    mysqli_close($link);
+}
+
+function deleteBrand($brandID) {
+    $link = connect();
+    
+    $sql = "DELETE FROM brandMaster WHERE BrandID = ?";
+    $stmt = mysqli_prepare($link, $sql);
+    mysqli_stmt_bind_param($stmt, "s", $brandID);
+    
+    if (mysqli_stmt_execute($stmt)) {
+        $_SESSION['success'] = "Brand deleted successfully!";
+    } else {
+        $_SESSION['error'] = "Error deleting brand: " . mysqli_error($link);
+    }
+    mysqli_stmt_close($stmt);
+    mysqli_close($link);
+}
 ?>          

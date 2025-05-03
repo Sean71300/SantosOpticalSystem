@@ -41,17 +41,15 @@ else {
         $isAdmin = isset($_SESSION['roleid']) && $_SESSION['roleid'] === 1;
         ?>
         
-        <a href="Dashboard.php" class="sidebar-item <?php echo ($current_page == 'Dashboard.php') ? 'active' : ''; ?>">
-            <i class="fas fa-tachometer-alt"></i> 
-            <span class="sidebar-item-text">Dashboard</span>
-        </a>
-        
-        <a href="customerRecords.php" class="sidebar-item <?php echo ($current_page == 'customerRecords.php') ? 'active' : ''; ?>">
-            <i class="fas fa-users"></i> 
-            <span class="sidebar-item-text">Customer Information</span>
-        </a>
-        
         <?php if ($isAdmin): ?>
+            <a href="Dashboard.php" class="sidebar-item <?php echo ($current_page == 'Dashboard.php') ? 'active' : ''; ?>">
+                <i class="fas fa-tachometer-alt"></i> 
+                <span class="sidebar-item-text">Dashboard</span>
+            </a>
+            <a href="customerRecords.php" class="sidebar-item <?php echo ($current_page == 'customerRecords.php') ? 'active' : ''; ?>">
+                <i class="fas fa-users"></i> 
+                <span class="sidebar-item-text">Customer Information</span>
+            </a>
             <a href="employeeRecords.php" class="sidebar-item <?php echo ($current_page == 'employeeRecords.php') ? 'active' : ''; ?>">
                 <i class="fas fa-user-tie"></i> 
                 <span class="sidebar-item-text">Manage Employees</span>
@@ -79,6 +77,10 @@ else {
         <?php endif; ?>
 
         <?php if ($isOptometrist): ?>
+            <a href="customerRecords.php" class="sidebar-item <?php echo ($current_page == 'customerRecords.php') ? 'active' : ''; ?>">
+                <i class="fas fa-users"></i> 
+                <span class="sidebar-item-text">Customer Information</span>
+            </a>
             <a href="optometrist-medicalhistory.php" class="sidebar-item <?php echo ($current_page == 'optometrist-medicalhistory.php') ? 'active' : ''; ?>">
                 <i class="fas fa-notes-medical"></i> 
                 <span class="sidebar-item-text">Medical History</span>
@@ -86,6 +88,14 @@ else {
         <?php endif; ?>
 
         <?php if (!$isAdmin && !$isOptometrist): ?>
+            <a href="Dashboard.php" class="sidebar-item <?php echo ($current_page == 'Dashboard.php') ? 'active' : ''; ?>">
+                <i class="fas fa-tachometer-alt"></i> 
+                <span class="sidebar-item-text">Dashboard</span>
+            </a>
+            <a href="customerRecords.php" class="sidebar-item <?php echo ($current_page == 'customerRecords.php') ? 'active' : ''; ?>">
+                <i class="fas fa-users"></i> 
+                <span class="sidebar-item-text">Customer Information</span>
+            </a>
             <a href="Employee-inventory.php" class="sidebar-item <?php echo ($current_page == 'Employee-inventory.php') ? 'active' : ''; ?>">
                 <i class="fas fa-box"></i> 
                 <span class="sidebar-item-text">Manage Inventory</span>
