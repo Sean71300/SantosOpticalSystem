@@ -254,9 +254,6 @@ function getInventory($sort = 'ProductID', $order = 'ASC')
 
 function addProduct(){ //Add function to add a new product to the database
     $link = connect();
-    global $employeeName;
-    getEmployeeName();
-
     $newProductID = generate_ProductMstrID();
     $newProductName = $_POST['productName'];
     $newProductBrand = $_POST['productBrand'];
@@ -265,11 +262,9 @@ function addProduct(){ //Add function to add a new product to the database
     $newProductMaterial = $_POST['productMaterial'];
     $newProductPrice = "₱". $_POST['productPrice'];
     $newProductImg = $_FILES['productImg'];
-    $upd_by = $employeeName;
+    $upd_by = $_SESSION['full_name'];
     $date = new DateTime();
     $upd_dt = $date->format('Y-m-d H:i:s');
-    $upd_by = $employeeName;
-    $date = new DateTime();
     
     if (isset($_POST['addProduct'])) {
         // Validate and upload the product image
