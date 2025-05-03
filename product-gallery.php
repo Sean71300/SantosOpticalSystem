@@ -54,7 +54,7 @@
         $whereConditions = [];
         
         if (!empty($search)) {
-            $whereConditions[] = "p.Model LIKE '%$search%'";
+            $whereConditions[] = "p.Model LIKE '" . $search . "%'"; // Changed to search for products starting with search term
         }
         
         if ($shape > 0) {
@@ -582,7 +582,7 @@
                 function performLiveSearch() {
                     const searchTerm = searchInput.value.trim();
                     
-                    if (searchTerm.length < 2) {
+                    if (searchTerm.length < 1) { // Show results even for single character
                         liveSearchResults.style.display = 'none';
                         return;
                     }
@@ -631,7 +631,7 @@
                 });
                 
                 searchInput.addEventListener('focus', function() {
-                    if (searchInput.value.trim().length >= 2) {
+                    if (searchInput.value.trim().length >= 1) {
                         performLiveSearch();
                     }
                 });
