@@ -1058,10 +1058,10 @@ $conn->close();
                     const claimBtn = document.getElementById('claimOrderBtn');
                     if (completeBtn) {
                         completeBtn.addEventListener('click', function() {
-                            
+                            if (confirm('Are you sure you want to mark this order as completed?')) {
                                 document.getElementById('claimOrderBtn').value = order.Orderhdr_id;
-                                document.getElementById('claimOrderBtn').submit();
-                            
+                                document.getElementById('claimOrderForm').submit();
+                            }
                         });
                     }
 
