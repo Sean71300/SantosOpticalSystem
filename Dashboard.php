@@ -173,34 +173,39 @@ $salesData = getSalesOverviewData();
                 <canvas id="salesChart"></canvas>
             </div>
             
-            <?php if ($isAdmin): ?>
-            <div class="mt-4">
-                <h6>Monthly Summary (Last 6 Months)</h6>
-                <div class="table-responsive">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>Month</th>
-                                <th>Total Claimed</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($salesData['monthly'] as $month): ?>
-                            <tr>
-                                <td><?php echo date('F Y', strtotime($month['month'].'-01')); ?></td>
-                                <td><?php echo number_format($month['total_claimed']); ?></td>
-                            </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <?php endif; ?>
+            <!-- In the monthly summary section -->
+<?php if ($isAdmin && !empty($salesData['monthly'])): ?>
+<div class="mt-4">
+    <h6>Monthly Summary (Last 6 Months)</h6>
+    <div class="table-responsive">
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>Month</th>
+                    <th>Total Claimed</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($salesData['monthly'] as $month): ?>
+                <tr>
+                    <td><?php echo date('F Y', strtotime($month['month'].'-01')); ?></td>
+                    <td><?php echo number_format($month['total_claimed']); ?></td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+<?php elseif ($isAdmin): ?>
+<div class="mt-4">
+    <p class="text-muted">No monthly sales data available</p>
+</div>
+<?php endif; ?>
         </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function()) {
             const sidebar = document.getElementById('sidebar');
             const mobileToggle = document.getElementById('mobileMenuToggle');
             const body = document.body;
@@ -237,7 +242,7 @@ $salesData = getSalesOverviewData();
                     body.classList.remove('sidebar-open');
                 }
             });
-
+        }
             const salesData = {
         labels: <?php echo json_encode(array_column($salesData['daily'], 'date')); ?>,
         datasets: [{
