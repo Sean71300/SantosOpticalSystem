@@ -440,18 +440,6 @@ $conn->close();
             max-height: 300px;
             overflow-y: auto;
         }
-        .order-details-table {
-            width: 100%;
-        }
-        .order-details-table th {
-            background-color: #f8f9fa;
-            padding: 8px;
-            text-align: left;
-        }
-        .order-details-table td {
-            padding: 8px;
-            border-bottom: 1px solid #dee2e6;
-        }
     </style>
 </head>
 <body>
@@ -523,8 +511,7 @@ $conn->close();
                                     <td><?= htmlspecialchars($order['Orderhdr_id']) ?></td>
                                     <td><?= htmlspecialchars($order['CustomerName']) ?></td>
                                     <td><?= htmlspecialchars($order['BranchName']) ?></td>
-                                    <td><?= date('M j, Y', strtotime($order['Created_dt'])) ?></td>
-                                    <td>
+                                    <td><?= date('M j, Y', strtotime($order['Created_dt'])) ?></td>                                    <td>
                                         <span class="badge 
                                             <?= match($order['Status']) {
                                                 'Completed' => 'badge-complete',
@@ -535,12 +522,10 @@ $conn->close();
                                         </span>
                                     </td>
                                     <td>
-                                        <button class="btn btn-sm btn-outline-primary view-order-btn" 
-                                                data-bs-toggle="modal" 
-                                                data-bs-target="#orderDetailsModal"
-                                                data-order-id="<?= $order['Orderhdr_id'] ?>">
+                                        <a href="orderDetails.php?id=<?= $order['Orderhdr_id'] ?>" 
+                                           class="btn btn-sm btn-outline-primary">
                                             <i class="fas fa-eye"></i> View
-                                        </button>
+                                        </a>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -647,81 +632,77 @@ $conn->close();
         </div>
     </div>
 
-    <div class="modal fade" id="orderDetailsModal" tabindex="-1" aria-labelledby="orderDetailsModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="orderDetailsModalLabel">Order Details</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body" id="orderDetailsContent">
-                    <div class="text-center">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                        <p>Loading order details...</p>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Order details modal
-            const orderDetailsModal = document.getElementById('orderDetailsModal');
-            if (orderDetailsModal) {
-                orderDetailsModal.addEventListener('show.bs.modal', function(event) {
-                    const button = event.relatedTarget;
-                    const orderId = button.getAttribute('data-order-id');
-                    const modalBody = orderDetailsModal.querySelector('.modal-body');
-                    
-                    // Load order details via AJAX
-                    fetch(`orderDetails.php?id=${orderId}`)
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('Network response was not ok');
-                            }
-                            return response.text();
-                        })
-                        .then(data => {
-                            modalBody.innerHTML = data;
-                        })
-                        .catch(error => {
-                            console.error('Error loading order details:', error);
-                            modalBody.innerHTML = `
-                                <div class="alert alert-danger">
-                                    Failed to load order details. Please try again.
-                                    <p class="text-muted">${error.message}</p>
-                                </div>
-                            `;
-                        });
+            const sidebar = document.getElementById('sidebar');
+            const mobileToggle = document.getElementById('mobileMenuToggle');
+            const body = document.body;
+            
+            if (mobileToggle) {
+                mobileToggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    sidebar.classList.toggle('active');
+                    body.classList.toggle('sidebar-open');
                 });
-                
-                orderDetailsModal.addEventListener('hidden.bs.modal', function() {
-                    const modalBody = orderDetailsModal.querySelector('.modal-body');
-                    modalBody.innerHTML = `
-                        <div class="text-center">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                            <p>Loading order details...</p>
-                        </div>
-                    `;
+            }
+            
+            document.addEventListener('click', function(e) {
+                if (window.innerWidth <= 992 && 
+                    !sidebar.contains(e.target) && 
+                    (!mobileToggle || e.target !== mobileToggle)) {
+                    sidebar.classList.remove('active');
+                    body.classList.remove('sidebar-open');
+                }
+            });
+            
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    if (window.innerWidth <= 992) {
+                        sidebar.classList.remove('active');
+                        body.classList.remove('sidebar-open');
+                    }
+                });
+            });
+            
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 992) {
+                    sidebar.classList.remove('active');
+                    body.classList.remove('sidebar-open');
+                }
+            });
+
+            const customerSearch = document.getElementById('customerSearch');
+            if (customerSearch) {
+                customerSearch.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    const rows = document.querySelectorAll('.customer-select-table tbody tr');
+                    
+                    rows.forEach(row => {
+                        const name = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                        const contact = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+                        const id = row.querySelector('td:nth-child(1)').textContent.toLowerCase();
+                        
+                        if (name.includes(searchTerm) || contact.includes(searchTerm) || id.includes(searchTerm)) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
                 });
             }
 
-            // Initialize all view buttons
-            document.querySelectorAll('.view-order-btn').forEach(button => {
+            document.querySelectorAll('.select-customer').forEach(button => {
                 button.addEventListener('click', function() {
-                    const orderId = this.getAttribute('data-order-id');
-                    // The modal will handle the rest via the show.bs.modal event
+                    const customerId = this.getAttribute('data-customer-id');
+                    const customerName = this.getAttribute('data-customer-name');
+                    
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('addOrderModal'));
+                    modal.hide();
+                    
+                    window.location.href = `orderCreate.php?customer_id=${customerId}`;
                 });
             });
         });
-        </script>
+    </script>
 </body>
 </html>
