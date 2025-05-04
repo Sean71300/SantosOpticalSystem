@@ -67,7 +67,7 @@
                 <td class='align-middle'>$branch</td>
                 <td class='align-middle'>
                     <a class='btn btn-primary btn-sm' href='employeeEdit.php?EmployeeID={$row['EmployeeID']}'>Edit</a>
-                    <a class='btn btn-danger btn-sm' href='employeeDelete.php?EmployeeID={$row['EmployeeID']}'>Delete</a>
+                    <a class='btn btn-danger btn-sm' href='employeeDelete.php?EmployeeID={$row['EmployeeID']}'></a>
                 </td>
               </tr>";
     }
