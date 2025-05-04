@@ -35,7 +35,7 @@
         return 'Not specified';
     }
 
-  function pagination() {
+ function pagination() {
     $conn = connect();
 
     $perPage = 12; 
@@ -49,10 +49,10 @@
     $category = isset($_GET['category']) ? $_GET['category'] : '';
     $branch = isset($_GET['branch']) ? (int)$_GET['branch'] : 0;
     
-    // Build the base SQL query differently based on whether a branch is selected
+    // Build different queries for All Branches vs Specific Branch
     if ($branch > 0) {
-        // When a specific branch is selected
-        $sql = "SELECT DISTINCT p.*, pb.Stocks, pb.Avail_FL as BranchAvailability, b.BranchName
+        // Specific Branch View - show only products available at this branch
+        $sql = "SELECT DISTINCT p.*, pb.Stocks, b.BranchName
                 FROM `productMstr` p
                 JOIN ProductBranchMaster pb ON p.ProductID = pb.ProductID
                 JOIN BranchMaster b ON pb.BranchCode = b.BranchCode
@@ -61,7 +61,7 @@
                 AND a.ArchiveID IS NULL
                 AND pb.BranchCode = $branch";
     } else {
-        // When showing all branches
+        // All Branches View - show each product once with all available branches
         $sql = "SELECT p.*, 
                 (SELECT GROUP_CONCAT(DISTINCT b.BranchName SEPARATOR ', ') 
                  FROM ProductBranchMaster pb 
@@ -110,9 +110,9 @@
             $sql .= " ORDER BY p.Model ASC";
     }
     
-    // First get the total count without limits
+    // Get total count
     $countSql = ($branch > 0) 
-        ? str_replace("DISTINCT p.*, pb.Stocks, pb.Avail_FL as BranchAvailability, b.BranchName", "COUNT(DISTINCT p.ProductID) as total", $sql)
+        ? str_replace("DISTINCT p.*, pb.Stocks, b.BranchName", "COUNT(DISTINCT p.ProductID) as total", $sql)
         : str_replace("p.*,", "COUNT(DISTINCT p.ProductID) as total", $sql);
     
     $countResult = mysqli_query($conn, $countSql);
@@ -120,7 +120,7 @@
     $total = $totalData['total'];
     $totalPages = ceil($total / $perPage);
 
-    // Now add the limit for pagination
+    // Add pagination limits
     $sql .= " LIMIT $start, $perPage";
     $result = mysqli_query($conn, $sql);
     
@@ -129,7 +129,6 @@
     if ($total > 0) {
         while($row = mysqli_fetch_assoc($result)) {
             $searchableText = strtolower($row['Model']);
-            $stock = isset($row['Stocks']) ? $row['Stocks'] : (isset($row['MinStocks']) ? $row['MinStocks'] : 0);
             $faceShape = isset($row['ShapeID']) ? getFaceShapeName($row['ShapeID']) : 'Not specified';
             
             echo "<div class='col d-flex product-card' data-search='".htmlspecialchars($searchableText, ENT_QUOTES)."'>";
@@ -146,12 +145,13 @@
                         echo "<div class='card-text mb-2'>".$formatted_price."</div>";
                         
                         if ($branch > 0) {
-                            // Show specific branch availability
-                            $availability = isset($row['BranchAvailability']) ? $row['BranchAvailability'] : 'Not Available';
-                            $branchName = isset($row['BranchName']) ? " at " . $row['BranchName'] : '';
+                            // Specific branch view
+                            $stock = $row['Stocks'];
+                            $branchName = $row['BranchName'];
+                            $availability = ($stock > 0) ? "Available at $branchName" : "Out of stock at $branchName";
                             
-                            if ($availability == "Available") {
-                                echo "<div class='card-text mb-2 text-success'>".$availability.$branchName."</div>";
+                            if ($stock > 0) {
+                                echo "<div class='card-text mb-2 text-success'>$availability</div>";
                                 echo "</div>";
                                 echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
                                     echo "<button type='button' class='btn btn-primary w-100 py-2 view-details' data-bs-toggle='modal' data-bs-target='#productModal' 
@@ -168,18 +168,19 @@
                                       </button>";
                                 echo "</div>";
                             } else {
-                                echo "<div class='card-text mb-2 text-danger'>".$availability.$branchName."</div>";
+                                echo "<div class='card-text mb-2 text-danger'>$availability</div>";
                                 echo "</div>";
                                 echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
                                     echo "<a href='#' class='btn btn-secondary w-100 py-2 disabled'>Not Available</a>";
                                 echo "</div>";
                             }
                         } else {
-                            // Show all available branches
-                            $availableBranches = isset($row['AvailableBranches']) ? $row['AvailableBranches'] : '';
+                            // All branches view
+                            $availableBranches = $row['AvailableBranches'];
+                            $minStock = $row['MinStocks'];
                             
                             if (!empty($availableBranches)) {
-                                echo "<div class='card-text mb-2 text-success'>Available at: ".$availableBranches."</div>";
+                                echo "<div class='card-text mb-2 text-success'>Available at: $availableBranches</div>";
                                 echo "</div>";
                                 echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
                                     echo "<button type='button' class='btn btn-primary w-100 py-2 view-details' data-bs-toggle='modal' data-bs-target='#productModal' 
@@ -190,7 +191,7 @@
                                           data-product-material='".htmlspecialchars($row['Material'], ENT_QUOTES)."'
                                           data-product-price='".htmlspecialchars($formatted_price, ENT_QUOTES)."'
                                           data-product-availability='".htmlspecialchars($availableBranches, ENT_QUOTES)."'
-                                          data-product-stock='".htmlspecialchars($stock, ENT_QUOTES)."'
+                                          data-product-stock='".htmlspecialchars($minStock, ENT_QUOTES)."'
                                           data-product-faceshape='".htmlspecialchars($faceShape, ENT_QUOTES)."'>
                                           More details
                                       </button>";
@@ -227,6 +228,7 @@
     
     echo "</div>"; 
 
+    // Pagination links
     if ($totalPages > 1) {
         echo "<div class='col-12 mt-5'>";
             echo "<div class='d-flex justify-content-center'>";
@@ -237,17 +239,14 @@
                     echo "<li class='page-item disabled'><a class='page-link'>Previous</a></li>";
                 }
 
-                // Show page numbers
-                $maxPagesToShow = 5; // Maximum number of page links to show
+                $maxPagesToShow = 5;
                 $startPage = max(1, $page - floor($maxPagesToShow / 2));
                 $endPage = min($totalPages, $startPage + $maxPagesToShow - 1);
                 
-                // Adjust if we're at the start or end
                 if ($endPage - $startPage < $maxPagesToShow - 1) {
                     $startPage = max(1, $endPage - $maxPagesToShow + 1);
                 }
                 
-                // Always show first page
                 if ($startPage > 1) {
                     echo "<li class='page-item'><a class='page-link' href='" . buildQueryString(1, $_GET) . "'>1</a></li>";
                     if ($startPage > 2) {
@@ -263,7 +262,6 @@
                     }
                 }
                 
-                // Always show last page
                 if ($endPage < $totalPages) {
                     if ($endPage < $totalPages - 1) {
                         echo "<li class='page-item disabled'><span class='page-link'>...</span></li>";
