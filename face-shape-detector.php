@@ -714,7 +714,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         
                         foreach ($frames as $frame) {
                             echo '<div class="frame-item">';
-                            echo '<img src="Images/'.htmlspecialchars($frame).'" alt="Recommended frame">';
+                            echo '<img src="Images/frames/'.htmlspecialchars($frame).'" alt="Recommended frame">';
                             echo '</div>';
                         }
                         ?>
