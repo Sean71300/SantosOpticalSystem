@@ -54,7 +54,7 @@
         $role = match((int)$row['RoleID']) {
             0 => 'Super Admin',
             1 => 'Admin',
-            3 => 'Optometrist',
+            1 => 'Optometrist',
             default => 'Staff'
         };
         
