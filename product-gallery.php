@@ -425,7 +425,7 @@
 
        <div class="container" style="margin-top: 2rem;">
             <div class="container mb-4">
-                <h1 style='text-align: center;'>Gallery</h1>
+                <h1 style='text-align: center;'>Products</h1>
                 <div class="search-container">
                     <form method="get" action="" class="search-box position-relative" id="searchForm">
                         <div class="input-group mb-3">
