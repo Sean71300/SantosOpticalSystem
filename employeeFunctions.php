@@ -51,13 +51,7 @@
 
     while ($row = $result->fetch_assoc()) {
         // Determine role display text based on RoleID
-        $role = match((int)$row['RoleID']) {
-            0 => 'Super Admin',
-            1 => 'Admin',
-            3 => 'Optometrist',
-            default => 'Staff'
-        };
-        
+        $role = $row['RoleDisplay'];        
         $branch = $row['BranchName'] ?? '';
 
         echo "<tr>
