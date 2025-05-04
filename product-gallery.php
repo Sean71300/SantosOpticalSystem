@@ -53,7 +53,7 @@
         return $branches;
     }
 
- function pagination() {
+function pagination() {
     $conn = connect();
 
     $perPage = 12; 
@@ -70,7 +70,7 @@
     // Build the base SQL query differently based on branch filter
     if ($branch > 0) {
         // Specific branch selected - show only products available at that branch
-        $sql = "SELECT DISTINCT p.*, pb.Stocks, b.BranchName
+        $sql = "SELECT p.*, pb.Stocks, b.BranchName
                 FROM productMstr p
                 JOIN ProductBranchMaster pb ON p.ProductID = pb.ProductID
                 JOIN BranchMaster b ON pb.BranchCode = b.BranchCode
@@ -80,19 +80,23 @@
                 AND a.ArchiveID IS NULL";
     } else {
         // All branches selected - show each product only once with branch availability info
-        $sql = "SELECT p.*, 
-                (SELECT GROUP_CONCAT(DISTINCT b.BranchName SEPARATOR ', ') 
-                 FROM ProductBranchMaster pb 
-                 JOIN BranchMaster b ON pb.BranchCode = b.BranchCode
-                 WHERE pb.ProductID = p.ProductID AND pb.Avail_FL = 'Available') as AvailableBranches,
-                (SELECT SUM(pb.Stocks) FROM ProductBranchMaster pb WHERE pb.ProductID = p.ProductID AND pb.Avail_FL = 'Available') as TotalStocks
-                FROM productMstr p
-                LEFT JOIN archives a ON (p.ProductID = a.TargetID AND a.TargetType = 'product')
-                WHERE EXISTS (
-                    SELECT 1 FROM ProductBranchMaster pb 
-                    WHERE pb.ProductID = p.ProductID AND pb.Avail_FL = 'Available'
-                )
-                AND a.ArchiveID IS NULL";
+        $sql = "SELECT 
+                    p.*,
+                    GROUP_CONCAT(DISTINCT b.BranchName SEPARATOR ', ') AS AvailableBranches,
+                    SUM(pb.Stocks) AS TotalStocks
+                FROM 
+                    productMstr p
+                JOIN 
+                    ProductBranchMaster pb ON p.ProductID = pb.ProductID
+                JOIN 
+                    BranchMaster b ON pb.BranchCode = b.BranchCode
+                LEFT JOIN 
+                    archives a ON (p.ProductID = a.TargetID AND a.TargetType = 'product')
+                WHERE 
+                    pb.Avail_FL = 'Available'
+                    AND a.ArchiveID IS NULL
+                GROUP BY 
+                    p.ProductID";
     }
     
     // Add search/filter conditions
@@ -109,7 +113,16 @@
     }
     
     if (!empty($whereConditions)) {
-        $sql .= " AND " . implode(' AND ', $whereConditions);
+        if ($branch > 0) {
+            $sql .= " AND " . implode(' AND ', $whereConditions);
+        } else {
+            // For the GROUP BY query, we need to add conditions differently
+            $sql = str_replace(
+                "WHERE \n                    pb.Avail_FL = 'Available'",
+                "WHERE \n                    pb.Avail_FL = 'Available' AND " . implode(' AND ', $whereConditions),
+                $sql
+            );
+        }
     }
     
     // Add sorting
@@ -132,7 +145,11 @@
     
     // Get total count
     $countSql = str_replace("p.*, pb.Stocks, b.BranchName", "COUNT(DISTINCT p.ProductID) as total", $sql);
-    $countSql = str_replace("p.*, (SELECT GROUP_CONCAT(DISTINCT b.BranchName SEPARATOR ', ')", "COUNT(DISTINCT p.ProductID) as total", $countSql);
+    $countSql = preg_replace("/SELECT.*FROM/s", "SELECT COUNT(DISTINCT p.ProductID) as total FROM", $countSql);
+    $countSql = preg_replace("/GROUP BY.*/", "", $countSql);
+    $countSql = preg_replace("/ORDER BY.*/", "", $countSql);
+    $countSql = preg_replace("/LIMIT.*/", "", $countSql);
+    
     $countResult = mysqli_query($conn, $countSql);
     $totalData = mysqli_fetch_assoc($countResult);
     $total = $totalData['total'];
@@ -205,6 +222,7 @@
     
     echo "</div>"; 
 
+    // Pagination code remains the same...
     if ($totalPages > 1) {
         echo "<div class='col-12 mt-5'>";
             echo "<div class='d-flex justify-content-center'>";
