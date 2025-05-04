@@ -53,7 +53,7 @@
         return $branches;
     }
 
-   function pagination() {
+  function pagination() {
     $conn = connect();
 
     $perPage = 12; 
@@ -189,6 +189,11 @@
         echo "<h4 class='text-center'>No products found matching your search.</h4>";
         echo "</div>";
     }
+    
+    echo "</div>"; 
+
+
+}
     
     echo "</div>"; 
         echo "</div>"; 
