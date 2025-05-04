@@ -53,7 +53,7 @@
         return $branches;
     }
 
-  function pagination() {
+ function pagination() {
     $conn = connect();
 
     $perPage = 12; 
@@ -70,7 +70,7 @@
     // Build the base SQL query differently based on branch filter
     if ($branch > 0) {
         // Specific branch selected - show only products available at that branch
-        $sql = "SELECT p.*, pb.Stocks, b.BranchName
+        $sql = "SELECT DISTINCT p.*, pb.Stocks, b.BranchName
                 FROM productMstr p
                 JOIN ProductBranchMaster pb ON p.ProductID = pb.ProductID
                 JOIN BranchMaster b ON pb.BranchCode = b.BranchCode
@@ -84,7 +84,8 @@
                 (SELECT GROUP_CONCAT(DISTINCT b.BranchName SEPARATOR ', ') 
                  FROM ProductBranchMaster pb 
                  JOIN BranchMaster b ON pb.BranchCode = b.BranchCode
-                 WHERE pb.ProductID = p.ProductID AND pb.Avail_FL = 'Available') as AvailableBranches
+                 WHERE pb.ProductID = p.ProductID AND pb.Avail_FL = 'Available') as AvailableBranches,
+                (SELECT SUM(pb.Stocks) FROM ProductBranchMaster pb WHERE pb.ProductID = p.ProductID AND pb.Avail_FL = 'Available') as TotalStocks
                 FROM productMstr p
                 LEFT JOIN archives a ON (p.ProductID = a.TargetID AND a.TargetType = 'product')
                 WHERE EXISTS (
@@ -103,8 +104,10 @@
         $whereConditions[] = "p.ShapeID = $shape";
     }
     if (!empty($category)) {
+        $category = mysqli_real_escape_string($conn, $category);
         $whereConditions[] = "p.CategoryType = '$category'";
     }
+    
     if (!empty($whereConditions)) {
         $sql .= " AND " . implode(' AND ', $whereConditions);
     }
@@ -139,7 +142,6 @@
     $sql .= " LIMIT $start, $perPage";
     $result = mysqli_query($conn, $sql);
     
-    // Display products
     echo "<div class='row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4' id='productGrid'>";
     
     if ($total > 0) {
@@ -162,10 +164,13 @@
                         // Display branch availability differently based on filter
                         if ($branch > 0) {
                             // Specific branch - show only this branch
-                            echo "<div class='card-text mb-2 text-success'>Available at ".$row['BranchName']."</div>";
+                            $stock = isset($row['Stocks']) ? $row['Stocks'] : 0;
+                            echo "<div class='card-text mb-2 text-success'>Available at ".$row['BranchName']." (Stock: $stock)</div>";
                         } else {
                             // All branches - show all available branches
+                            $totalStock = isset($row['TotalStocks']) ? $row['TotalStocks'] : 0;
                             echo "<div class='card-text mb-2 text-success'>Available at: ".$row['AvailableBranches']."</div>";
+                            echo "<div class='card-text mb-2'>Total Stock: $totalStock</div>";
                         }
                         
                     echo "</div>";
@@ -186,72 +191,71 @@
         }
     } else {
         echo "<div class='col-12 py-5 no-results'>";
-        echo "<h4 class='text-center'>No products found matching your search.</h4>";
+        if ($shape > 0) {
+            $shapeName = getFaceShapeName($shape);
+            echo "<h4 class='text-center'>No products found for frame shape: $shapeName</h4>";
+        } else if ($branch > 0) {
+            $branchName = mysqli_fetch_assoc(mysqli_query($conn, "SELECT BranchName FROM BranchMaster WHERE BranchCode = $branch"))['BranchName'];
+            echo "<h4 class='text-center'>No products found at branch: $branchName</h4>";
+        } else {
+            echo "<h4 class='text-center'>No products found matching your search.</h4>";
+        }
         echo "</div>";
     }
     
     echo "</div>"; 
 
+    if ($totalPages > 1) {
+        echo "<div class='col-12 mt-5'>";
+            echo "<div class='d-flex justify-content-center'>";
+                echo "<ul class='pagination'>";
+                if ($page > 1) {
+                    echo "<li class='page-item'><a class='page-link' href='" . buildQueryString($page - 1, $_GET) . "'>Previous</a></li>";
+                } else {
+                    echo "<li class='page-item disabled'><a class='page-link'>Previous</a></li>";
+                }
 
-}
-    
-    echo "</div>"; 
+                // Show page numbers
+                $maxPagesToShow = 5;
+                $startPage = max(1, $page - floor($maxPagesToShow / 2));
+                $endPage = min($totalPages, $startPage + $maxPagesToShow - 1);
+                
+                if ($endPage - $startPage < $maxPagesToShow - 1) {
+                    $startPage = max(1, $endPage - $maxPagesToShow + 1);
+                }
+                
+                if ($startPage > 1) {
+                    echo "<li class='page-item'><a class='page-link' href='" . buildQueryString(1, $_GET) . "'>1</a></li>";
+                    if ($startPage > 2) {
+                        echo "<li class='page-item disabled'><span class='page-link'>...</span></li>";
+                    }
+                }
+                
+                for ($i = $startPage; $i <= $endPage; $i++) {                       
+                    if ($i == $page) {
+                        echo "<li class='page-item active' aria-current='page'><a class='page-link disabled'>$i</a></li>"; 
+                    } else {
+                        echo "<li class='page-item'><a class='page-link' href='" . buildQueryString($i, $_GET) . "'>$i</a></li>";
+                    }
+                }
+                
+                if ($endPage < $totalPages) {
+                    if ($endPage < $totalPages - 1) {
+                        echo "<li class='page-item disabled'><span class='page-link'>...</span></li>";
+                    }
+                    echo "<li class='page-item'><a class='page-link' href='" . buildQueryString($totalPages, $_GET) . "'>$totalPages</a></li>";
+                }
+
+                if ($page < $totalPages) {
+                    echo "<li class='page-item'><a class='page-link' href='" . buildQueryString($page + 1, $_GET) . "'>Next</a></li>";
+                } else {
+                    echo "<li class='page-item disabled'><a class='page-link'>Next</a></li>";
+                }
+                echo "</ul>";
+            echo "</div>";
         echo "</div>"; 
-
-        if ($totalPages > 1) {
-            echo "<div class='col-12 mt-5'>";
-                echo "<div class='d-flex justify-content-center'>";
-                    echo "<ul class='pagination'>";
-                    if ($page > 1) {
-                        echo "<li class='page-item'><a class='page-link' href='" . buildQueryString($page - 1, $_GET) . "'>Previous</a></li>";
-                    } else {
-                        echo "<li class='page-item disabled'><a class='page-link'>Previous</a></li>";
-                    }
-
-                    // Show page numbers
-                    $maxPagesToShow = 5; // Maximum number of page links to show
-                    $startPage = max(1, $page - floor($maxPagesToShow / 2));
-                    $endPage = min($totalPages, $startPage + $maxPagesToShow - 1);
-                    
-                    // Adjust if we're at the start or end
-                    if ($endPage - $startPage < $maxPagesToShow - 1) {
-                        $startPage = max(1, $endPage - $maxPagesToShow + 1);
-                    }
-                    
-                    // Always show first page
-                    if ($startPage > 1) {
-                        echo "<li class='page-item'><a class='page-link' href='" . buildQueryString(1, $_GET) . "'>1</a></li>";
-                        if ($startPage > 2) {
-                            echo "<li class='page-item disabled'><span class='page-link'>...</span></li>";
-                        }
-                    }
-                    
-                    for ($i = $startPage; $i <= $endPage; $i++) {                       
-                        if ($i == $page) {
-                            echo "<li class='page-item active' aria-current='page'><a class='page-link disabled'>$i</a></li>"; 
-                        } else {
-                            echo "<li class='page-item'><a class='page-link' href='" . buildQueryString($i, $_GET) . "'>$i</a></li>";
-                        }
-                    }
-                    
-                    // Always show last page
-                    if ($endPage < $totalPages) {
-                        if ($endPage < $totalPages - 1) {
-                            echo "<li class='page-item disabled'><span class='page-link'>...</span></li>";
-                        }
-                        echo "<li class='page-item'><a class='page-link' href='" . buildQueryString($totalPages, $_GET) . "'>$totalPages</a></li>";
-                    }
-
-                    if ($page < $totalPages) {
-                        echo "<li class='page-item'><a class='page-link' href='" . buildQueryString($page + 1, $_GET) . "'>Next</a></li>";
-                    } else {
-                        echo "<li class='page-item disabled'><a class='page-link'>Next</a></li>";
-                    }
-                    echo "</ul>";
-                echo "</div>";
-            echo "</div>"; 
-        }
     }
+}
 ?>
 
 <!DOCTYPE html>
