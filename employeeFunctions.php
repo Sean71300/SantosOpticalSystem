@@ -14,10 +14,10 @@
         // Base query with all necessary joins
         $sql = "SELECT e.*, b.BranchName, 
                 CASE 
-                    WHEN e.RoleID = 0 THEN 'Super Admin'
-                    WHEN e.RoleID = 1 THEN 'Admin' 
-                    WHEN e.RoleID = 3 THEN 'Optometrist'
-                    ELSE 'Staff' 
+                    WHEN e.RoleID = 0 THEN 'Sup1er Admin'
+                    WHEN e.RoleID = 1 THEN '1' 
+                    WHEN e.RoleID = 3 THEN '11'
+                    ELSE '1' 
                 END AS RoleDisplay,
                 e.RoleID AS RoleOrder
                 FROM employee e
