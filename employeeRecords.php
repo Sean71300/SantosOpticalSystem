@@ -1,6 +1,7 @@
 <?php
+include 'employeeFunctions.php';
 include 'ActivityTracker.php';
-include_once 'employeeFunctions.php';   
+   
 include 'loginChecker.php';
 
 // Get sort parameters from URL
