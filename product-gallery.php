@@ -6,6 +6,7 @@
     function buildQueryString($page = null, $currentParams = []) {
         $params = [];
         
+        // Preserve all existing query parameters
         if (isset($currentParams['sort'])) $params['sort'] = $currentParams['sort'];
         if (isset($currentParams['search'])) $params['search'] = $currentParams['search'];
         if (isset($currentParams['shape'])) $params['shape'] = $currentParams['shape'];
@@ -34,7 +35,7 @@
         return 'Not specified';
     }
 
-   function pagination() {
+ function pagination() {
     $conn = connect();
 
     $perPage = 12; 
@@ -48,14 +49,30 @@
     $category = isset($_GET['category']) ? $_GET['category'] : '';
     $branch = isset($_GET['branch']) ? (int)$_GET['branch'] : 0;
     
-    // Build the base SQL query with JOINs to check availability and archive status
-    $sql = "SELECT p.*, pb.Stocks, pb.Avail_FL as BranchAvailability, b.BranchName
-            FROM `productMstr` p
-            LEFT JOIN ProductBranchMaster pb ON p.ProductID = pb.ProductID
-            LEFT JOIN BranchMaster b ON pb.BranchCode = b.BranchCode
-            LEFT JOIN archives a ON (p.ProductID = a.TargetID AND a.TargetType = 'product')
-            WHERE (p.Avail_FL = 'Available' OR p.Avail_FL IS NULL)
-            AND a.ArchiveID IS NULL"; // Only show non-archived products
+    // Build different queries for All Branches vs Specific Branch
+    if ($branch > 0) {
+        // Specific Branch View - show only products available at this branch
+        $sql = "SELECT DISTINCT p.*, pb.Stocks, b.BranchName
+                FROM `productMstr` p
+                JOIN ProductBranchMaster pb ON p.ProductID = pb.ProductID
+                JOIN BranchMaster b ON pb.BranchCode = b.BranchCode
+                LEFT JOIN archives a ON (p.ProductID = a.TargetID AND a.TargetType = 'product')
+                WHERE (pb.Avail_FL = 'Available' OR pb.Avail_FL IS NULL)
+                AND a.ArchiveID IS NULL
+                AND pb.BranchCode = $branch";
+    } else {
+        // All Branches View - show each product once with all available branches
+        $sql = "SELECT p.*, 
+                (SELECT GROUP_CONCAT(DISTINCT b.BranchName SEPARATOR ', ') 
+                 FROM ProductBranchMaster pb 
+                 JOIN BranchMaster b ON pb.BranchCode = b.BranchCode 
+                 WHERE pb.ProductID = p.ProductID AND (pb.Avail_FL = 'Available' OR pb.Avail_FL IS NULL)) as AvailableBranches,
+                (SELECT MIN(pb.Stocks) FROM ProductBranchMaster pb WHERE pb.ProductID = p.ProductID) as MinStocks
+                FROM `productMstr` p
+                LEFT JOIN archives a ON (p.ProductID = a.TargetID AND a.TargetType = 'product')
+                WHERE (p.Avail_FL = 'Available' OR p.Avail_FL IS NULL)
+                AND a.ArchiveID IS NULL";
+    }
     
     $whereConditions = [];
     
@@ -70,10 +87,6 @@
     if (!empty($category)) {
         $category = mysqli_real_escape_string($conn, $category);
         $whereConditions[] = "p.CategoryType = '$category'";
-    }
-    
-    if ($branch > 0) {
-        $whereConditions[] = "pb.BranchCode = $branch";
     }
     
     if (!empty($whereConditions)) {
@@ -97,14 +110,17 @@
             $sql .= " ORDER BY p.Model ASC";
     }
     
-    // First get the total count without limits
-    $countSql = str_replace("p.*, pb.Stocks, pb.Avail_FL as BranchAvailability, b.BranchName", "COUNT(*) as total", $sql);
+    // Get total count
+    $countSql = ($branch > 0) 
+        ? str_replace("DISTINCT p.*, pb.Stocks, b.BranchName", "COUNT(DISTINCT p.ProductID) as total", $sql)
+        : str_replace("p.*,", "COUNT(DISTINCT p.ProductID) as total", $sql);
+    
     $countResult = mysqli_query($conn, $countSql);
     $totalData = mysqli_fetch_assoc($countResult);
     $total = $totalData['total'];
     $totalPages = ceil($total / $perPage);
 
-    // Now add the limit for pagination
+    // Add pagination limits
     $sql .= " LIMIT $start, $perPage";
     $result = mysqli_query($conn, $sql);
     
@@ -113,9 +129,7 @@
     if ($total > 0) {
         while($row = mysqli_fetch_assoc($result)) {
             $searchableText = strtolower($row['Model']);
-            $stock = isset($row['Stocks']) ? $row['Stocks'] : 0;
             $faceShape = isset($row['ShapeID']) ? getFaceShapeName($row['ShapeID']) : 'Not specified';
-            $branchName = isset($row['BranchName']) ? " at " . $row['BranchName'] : '';
             
             echo "<div class='col d-flex product-card' data-search='".htmlspecialchars($searchableText, ENT_QUOTES)."'>";
                 echo "<div class='card w-100' style='max-width: 380px;'>";
@@ -129,31 +143,68 @@
                         $numeric_price = preg_replace('/[^0-9.]/', '', $price);
                         $formatted_price = is_numeric($numeric_price) ? '₱' . number_format((float)$numeric_price, 2) : '₱0.00';
                         echo "<div class='card-text mb-2'>".$formatted_price."</div>";
-                        $availability = isset($row['BranchAvailability']) ? $row['BranchAvailability'] : $row['Avail_FL'];
-                        if ($availability == "Available") {
-                            echo "<div class='card-text mb-2 text-success'>".$availability.$branchName."</div>";
-                        echo "</div>";
-                            echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
-                                echo "<button type='button' class='btn btn-primary w-100 py-2 view-details' data-bs-toggle='modal' data-bs-target='#productModal' 
-                                      data-product-id='".$row['ProductID']."'
-                                      data-product-name='".htmlspecialchars($row['Model'], ENT_QUOTES)."'
-                                      data-product-image='".htmlspecialchars($row['ProductImage'], ENT_QUOTES)."'
-                                      data-product-category='".htmlspecialchars($row['CategoryType'], ENT_QUOTES)."'
-                                      data-product-material='".htmlspecialchars($row['Material'], ENT_QUOTES)."'
-                                      data-product-price='".htmlspecialchars($formatted_price, ENT_QUOTES)."'
-                                      data-product-availability='".htmlspecialchars($availability, ENT_QUOTES)."'
-                                      data-product-stock='".htmlspecialchars($stock, ENT_QUOTES)."'
-                                      data-product-faceshape='".htmlspecialchars($faceShape, ENT_QUOTES)."'>
-                                      More details
-                                  </button>";
-                            echo "</div>";
+                        
+                        if ($branch > 0) {
+                            // Specific branch view
+                            $stock = $row['Stocks'];
+                            $branchName = $row['BranchName'];
+                            $availability = ($stock > 0) ? "Available at $branchName" : "Out of stock at $branchName";
+                            
+                            if ($stock > 0) {
+                                echo "<div class='card-text mb-2 text-success'>$availability</div>";
+                                echo "</div>";
+                                echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
+                                    echo "<button type='button' class='btn btn-primary w-100 py-2 view-details' data-bs-toggle='modal' data-bs-target='#productModal' 
+                                          data-product-id='".$row['ProductID']."'
+                                          data-product-name='".htmlspecialchars($row['Model'], ENT_QUOTES)."'
+                                          data-product-image='".htmlspecialchars($row['ProductImage'], ENT_QUOTES)."'
+                                          data-product-category='".htmlspecialchars($row['CategoryType'], ENT_QUOTES)."'
+                                          data-product-material='".htmlspecialchars($row['Material'], ENT_QUOTES)."'
+                                          data-product-price='".htmlspecialchars($formatted_price, ENT_QUOTES)."'
+                                          data-product-availability='".htmlspecialchars($availability, ENT_QUOTES)."'
+                                          data-product-stock='".htmlspecialchars($stock, ENT_QUOTES)."'
+                                          data-product-faceshape='".htmlspecialchars($faceShape, ENT_QUOTES)."'>
+                                          More details
+                                      </button>";
+                                echo "</div>";
+                            } else {
+                                echo "<div class='card-text mb-2 text-danger'>$availability</div>";
+                                echo "</div>";
+                                echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
+                                    echo "<a href='#' class='btn btn-secondary w-100 py-2 disabled'>Not Available</a>";
+                                echo "</div>";
+                            }
                         } else {
-                            echo "<div class='card-text mb-2 text-danger'>".$availability.$branchName."</div>";
-                        echo "</div>";
-                        echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
-                            echo "<a href='#' class='btn btn-secondary w-100 py-2 disabled'>Not Available</a>";
-                        echo "</div>";
-                        }                               
+                            // All branches view
+                            $availableBranches = $row['AvailableBranches'];
+                            $minStock = $row['MinStocks'];
+                            
+                            if (!empty($availableBranches)) {
+                                echo "<div class='card-text mb-2 text-success'>Available at: $availableBranches</div>";
+                                echo "</div>";
+                                echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
+                                    echo "<button type='button' class='btn btn-primary w-100 py-2 view-details' data-bs-toggle='modal' data-bs-target='#productModal' 
+                                          data-product-id='".$row['ProductID']."'
+                                          data-product-name='".htmlspecialchars($row['Model'], ENT_QUOTES)."'
+                                          data-product-image='".htmlspecialchars($row['ProductImage'], ENT_QUOTES)."'
+                                          data-product-category='".htmlspecialchars($row['CategoryType'], ENT_QUOTES)."'
+                                          data-product-material='".htmlspecialchars($row['Material'], ENT_QUOTES)."'
+                                          data-product-price='".htmlspecialchars($formatted_price, ENT_QUOTES)."'
+                                          data-product-availability='".htmlspecialchars($availableBranches, ENT_QUOTES)."'
+                                          data-product-stock='".htmlspecialchars($minStock, ENT_QUOTES)."'
+                                          data-product-faceshape='".htmlspecialchars($faceShape, ENT_QUOTES)."'>
+                                          More details
+                                      </button>";
+                                echo "</div>";
+                            } else {
+                                echo "<div class='card-text mb-2 text-danger'>Not available at any branch</div>";
+                                echo "</div>";
+                                echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
+                                    echo "<a href='#' class='btn btn-secondary w-100 py-2 disabled'>Not Available</a>";
+                                echo "</div>";
+                            }
+                        }
+                    echo "</div>";
                 echo "</div>";
             echo "</div>";
         }
@@ -177,6 +228,7 @@
     
     echo "</div>"; 
 
+    // Pagination links
     if ($totalPages > 1) {
         echo "<div class='col-12 mt-5'>";
             echo "<div class='d-flex justify-content-center'>";
@@ -187,17 +239,14 @@
                     echo "<li class='page-item disabled'><a class='page-link'>Previous</a></li>";
                 }
 
-                // Show page numbers
-                $maxPagesToShow = 5; // Maximum number of page links to show
+                $maxPagesToShow = 5;
                 $startPage = max(1, $page - floor($maxPagesToShow / 2));
                 $endPage = min($totalPages, $startPage + $maxPagesToShow - 1);
                 
-                // Adjust if we're at the start or end
                 if ($endPage - $startPage < $maxPagesToShow - 1) {
                     $startPage = max(1, $endPage - $maxPagesToShow + 1);
                 }
                 
-                // Always show first page
                 if ($startPage > 1) {
                     echo "<li class='page-item'><a class='page-link' href='" . buildQueryString(1, $_GET) . "'>1</a></li>";
                     if ($startPage > 2) {
@@ -213,7 +262,6 @@
                     }
                 }
                 
-                // Always show last page
                 if ($endPage < $totalPages) {
                     if ($endPage < $totalPages - 1) {
                         echo "<li class='page-item disabled'><span class='page-link'>...</span></li>";
@@ -232,6 +280,7 @@
     }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html>
@@ -421,9 +470,9 @@
             </div>
         </div>
 
-        <div class="container" style="margin-top: 2rem;">
+       <div class="container" style="margin-top: 2rem;">
             <div class="container mb-4">
-                <h1 style='text-align: center;'>Gallery</h1>
+                <h1 style='text-align: center;'>Products</h1>
                 <div class="search-container">
                     <form method="get" action="" class="search-box position-relative" id="searchForm">
                         <div class="input-group mb-3">
@@ -456,9 +505,42 @@
                 <div class="filter-container">
                     <!-- Branch Filter -->
                     <form method="get" action="" class="filter-dropdown">
-                        <?php if(isset($_GET['page'])): ?>
-                            <input type="hidden" name="page" value="<?php echo $_GET['page']; ?>">
+                        <input type="hidden" name="page" value="1"> <!-- Reset to page 1 when changing filters -->
+                        <?php if(isset($_GET['search'])): ?>
+                            <input type="hidden" name="search" value="<?php echo $_GET['search']; ?>">
                         <?php endif; ?>
+                        <?php if(isset($_GET['sort'])): ?>
+                            <input type="hidden" name="sort" value="<?php echo $_GET['sort']; ?>">
+                        <?php endif; ?>
+                        <?php if(isset($_GET['shape'])): ?>
+                            <input type="hidden" name="shape" value="<?php echo $_GET['shape']; ?>">
+                        <?php endif; ?>
+                        <?php if(isset($_GET['category'])): ?>
+                            <input type="hidden" name="category" value="<?php echo $_GET['category']; ?>">
+                        <?php endif; ?>
+                        <div class="input-group">
+                            <label class="input-group-text" for="branchSelect">Branch:</label>
+                            <select class="form-select" id="branchSelect" name="branch" onchange="this.form.submit()">
+                                <option value="">All Branches</option>
+                                <?php
+                                    $conn = connect();
+                                    $branchQuery = "SELECT BranchCode, BranchName FROM BranchMaster";
+                                    $branchResult = mysqli_query($conn, $branchQuery);
+                                    while ($branch = mysqli_fetch_assoc($branchResult)) {
+                                        $selected = (isset($_GET['branch']) && $_GET['branch'] == $branch['BranchCode']) ? 'selected' : '';
+                                        echo "<option value='{$branch['BranchCode']}' $selected>{$branch['BranchName']}</option>";
+                                    }
+                                    $conn->close();
+                                ?>
+                            </select>
+                        </div>
+                    </form>
+                    
+                
+                <div class="filter-container">
+                    <!-- Branch Filter -->
+                    <form method="get" action="" class="filter-dropdown">
+                        <input type="hidden" name="page" value="1"> <!-- Always reset to page 1 when applying a new filter -->
                         <?php if(isset($_GET['search'])): ?>
                             <input type="hidden" name="search" value="<?php echo $_GET['search']; ?>">
                         <?php endif; ?>
@@ -491,9 +573,7 @@
                     
                     <!-- Frame Shape Filter -->
                     <form method="get" action="" class="filter-dropdown">
-                        <?php if(isset($_GET['page'])): ?>
-                            <input type="hidden" name="page" value="<?php echo $_GET['page']; ?>">
-                        <?php endif; ?>
+                        <input type="hidden" name="page" value="1"> <!-- Always reset to page 1 when applying a new filter -->
                         <?php if(isset($_GET['search'])): ?>
                             <input type="hidden" name="search" value="<?php echo $_GET['search']; ?>">
                         <?php endif; ?>
@@ -523,9 +603,7 @@
                     
                     <!-- Category Filter -->
                     <form method="get" action="" class="filter-dropdown">
-                        <?php if(isset($_GET['page'])): ?>
-                            <input type="hidden" name="page" value="<?php echo $_GET['page']; ?>">
-                        <?php endif; ?>
+                        <input type="hidden" name="page" value="1"> <!-- Always reset to page 1 when applying a new filter -->
                         <?php if(isset($_GET['search'])): ?>
                             <input type="hidden" name="search" value="<?php echo $_GET['search']; ?>">
                         <?php endif; ?>
@@ -558,9 +636,7 @@
                     
                     <!-- Sort Filter -->
                     <form method="get" action="" class="filter-dropdown">
-                        <?php if(isset($_GET['page'])): ?>
-                            <input type="hidden" name="page" value="<?php echo $_GET['page']; ?>">
-                        <?php endif; ?>
+                        <input type="hidden" name="page" value="1"> <!-- Always reset to page 1 when applying a new filter -->
                         <?php if(isset($_GET['search'])): ?>
                             <input type="hidden" name="search" value="<?php echo $_GET['search']; ?>">
                         <?php endif; ?>
@@ -783,3 +859,4 @@
         </script>
     </body>
 </html>
+

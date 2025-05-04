@@ -1,17 +1,25 @@
 <?php
 require_once 'connect.php';
 
-$searchTerm = isset($_GET['term']) ? $_GET['term'] : '';
-$searchTerm = mysqli_real_escape_string($link, $searchTerm);
+$term = isset($_GET['term']) ? $_GET['term'] : '';
 
-// Search for products that start with the search term
-$sql = "SELECT Model FROM productMstr WHERE Model LIKE '$searchTerm%' LIMIT 5";
-$result = mysqli_query($link, $sql);
+$conn = connect();
+$sql = "SELECT DISTINCT Model 
+        FROM productMstr 
+        WHERE Model LIKE ? 
+        AND (Avail_FL = 'Available' OR Avail_FL IS NULL)
+        LIMIT 5";
+$stmt = $conn->prepare($sql);
+$searchTerm = $term . '%'; // Your "starts with" behavior
+$stmt->bind_param("s", $searchTerm);
+$stmt->execute();
+$result = $stmt->get_result();
 
-$results = [];
-while ($row = mysqli_fetch_assoc($result)) {
-    $results[] = $row['Model'];
+$products = [];
+while ($row = $result->fetch_assoc()) {
+    $products[] = $row['Model'];
 }
 
-echo json_encode($results);
+header('Content-Type: application/json');
+echo json_encode($products);
 ?>
