@@ -137,7 +137,7 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
                 <div class="table-responsive">
                     <table class="table table-hover text-center">
                         <thead class="table-light">
-                            <tr>test
+                            <tr>
                             <th class="sortable <?php echo $sort == 'EmployeeID' ? 'active' : ''; ?>" onclick="sortTable('EmployeeID')">
                                 ID
                                 <span class="sort-icon">
