@@ -35,25 +35,7 @@
         return 'Not specified';
     }
 
-    function getAvailableBranchesForProduct($productID) {
-        $conn = connect();
-        $sql = "SELECT b.BranchName 
-                FROM ProductBranchMaster pb
-                JOIN BranchMaster b ON pb.BranchCode = b.BranchCode
-                WHERE pb.ProductID = ? AND pb.Avail_FL = 'Available'";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("i", $productID);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        
-        $branches = [];
-        while ($row = $result->fetch_assoc()) {
-            $branches[] = $row['BranchName'];
-        }
-        return $branches;
-    }
-
-function pagination() {
+  function pagination() {
     $conn = connect();
 
     $perPage = 12; 
@@ -67,65 +49,50 @@ function pagination() {
     $category = isset($_GET['category']) ? $_GET['category'] : '';
     $branch = isset($_GET['branch']) ? (int)$_GET['branch'] : 0;
     
-    // Build the base SQL query differently based on branch filter
+    // Build the base SQL query differently based on whether a branch is selected
     if ($branch > 0) {
-        // Specific branch selected - show only products available at that branch
-        $sql = "SELECT p.*, pb.Stocks, b.BranchName
-                FROM productMstr p
+        // When a specific branch is selected
+        $sql = "SELECT DISTINCT p.*, pb.Stocks, pb.Avail_FL as BranchAvailability, b.BranchName
+                FROM `productMstr` p
                 JOIN ProductBranchMaster pb ON p.ProductID = pb.ProductID
                 JOIN BranchMaster b ON pb.BranchCode = b.BranchCode
                 LEFT JOIN archives a ON (p.ProductID = a.TargetID AND a.TargetType = 'product')
-                WHERE pb.Avail_FL = 'Available'
-                AND pb.BranchCode = $branch
-                AND a.ArchiveID IS NULL";
+                WHERE (pb.Avail_FL = 'Available' OR pb.Avail_FL IS NULL)
+                AND a.ArchiveID IS NULL
+                AND pb.BranchCode = $branch";
     } else {
-        // All branches selected - show each product only once with branch availability info
-        $sql = "SELECT 
-                    p.*,
-                    GROUP_CONCAT(DISTINCT b.BranchName SEPARATOR ', ') AS AvailableBranches,
-                    SUM(pb.Stocks) AS TotalStocks
-                FROM 
-                    productMstr p
-                JOIN 
-                    ProductBranchMaster pb ON p.ProductID = pb.ProductID
-                JOIN 
-                    BranchMaster b ON pb.BranchCode = b.BranchCode
-                LEFT JOIN 
-                    archives a ON (p.ProductID = a.TargetID AND a.TargetType = 'product')
-                WHERE 
-                    pb.Avail_FL = 'Available'
-                    AND a.ArchiveID IS NULL
-                GROUP BY 
-                    p.ProductID";
+        // When showing all branches
+        $sql = "SELECT p.*, 
+                (SELECT GROUP_CONCAT(DISTINCT b.BranchName SEPARATOR ', ') 
+                 FROM ProductBranchMaster pb 
+                 JOIN BranchMaster b ON pb.BranchCode = b.BranchCode 
+                 WHERE pb.ProductID = p.ProductID AND (pb.Avail_FL = 'Available' OR pb.Avail_FL IS NULL)) as AvailableBranches,
+                (SELECT MIN(pb.Stocks) FROM ProductBranchMaster pb WHERE pb.ProductID = p.ProductID) as MinStocks
+                FROM `productMstr` p
+                LEFT JOIN archives a ON (p.ProductID = a.TargetID AND a.TargetType = 'product')
+                WHERE (p.Avail_FL = 'Available' OR p.Avail_FL IS NULL)
+                AND a.ArchiveID IS NULL";
     }
     
-    // Add search/filter conditions
     $whereConditions = [];
+    
     if (!empty($search)) {
-        $whereConditions[] = "p.Model LIKE '%$search%'";
+        $whereConditions[] = "p.Model LIKE '%" . $search . "%'";
     }
+    
     if ($shape > 0) {
         $whereConditions[] = "p.ShapeID = $shape";
     }
+    
     if (!empty($category)) {
         $category = mysqli_real_escape_string($conn, $category);
         $whereConditions[] = "p.CategoryType = '$category'";
     }
     
     if (!empty($whereConditions)) {
-        if ($branch > 0) {
-            $sql .= " AND " . implode(' AND ', $whereConditions);
-        } else {
-            // For the GROUP BY query, we need to add conditions differently
-            $sql = str_replace(
-                "WHERE \n                    pb.Avail_FL = 'Available'",
-                "WHERE \n                    pb.Avail_FL = 'Available' AND " . implode(' AND ', $whereConditions),
-                $sql
-            );
-        }
+        $sql .= " AND " . implode(' AND ', $whereConditions);
     }
     
-    // Add sorting
     switch($sort) {
         case 'price_asc':
             $sql .= " ORDER BY CAST(REPLACE(REPLACE(p.Price, '₱', ''), ',', '') AS DECIMAL(10,2)) ASC";
@@ -143,19 +110,17 @@ function pagination() {
             $sql .= " ORDER BY p.Model ASC";
     }
     
-    // Get total count
-    $countSql = str_replace("p.*, pb.Stocks, b.BranchName", "COUNT(DISTINCT p.ProductID) as total", $sql);
-    $countSql = preg_replace("/SELECT.*FROM/s", "SELECT COUNT(DISTINCT p.ProductID) as total FROM", $countSql);
-    $countSql = preg_replace("/GROUP BY.*/", "", $countSql);
-    $countSql = preg_replace("/ORDER BY.*/", "", $countSql);
-    $countSql = preg_replace("/LIMIT.*/", "", $countSql);
+    // First get the total count without limits
+    $countSql = ($branch > 0) 
+        ? str_replace("DISTINCT p.*, pb.Stocks, pb.Avail_FL as BranchAvailability, b.BranchName", "COUNT(DISTINCT p.ProductID) as total", $sql)
+        : str_replace("p.*,", "COUNT(DISTINCT p.ProductID) as total", $sql);
     
     $countResult = mysqli_query($conn, $countSql);
     $totalData = mysqli_fetch_assoc($countResult);
     $total = $totalData['total'];
     $totalPages = ceil($total / $perPage);
 
-    // Add pagination limit
+    // Now add the limit for pagination
     $sql .= " LIMIT $start, $perPage";
     $result = mysqli_query($conn, $sql);
     
@@ -163,12 +128,11 @@ function pagination() {
     
     if ($total > 0) {
         while($row = mysqli_fetch_assoc($result)) {
+            $searchableText = strtolower($row['Model']);
+            $stock = isset($row['Stocks']) ? $row['Stocks'] : (isset($row['MinStocks']) ? $row['MinStocks'] : 0);
             $faceShape = isset($row['ShapeID']) ? getFaceShapeName($row['ShapeID']) : 'Not specified';
-            $price = $row['Price'];
-            $numeric_price = preg_replace('/[^0-9.]/', '', $price);
-            $formatted_price = is_numeric($numeric_price) ? '₱' . number_format((float)$numeric_price, 2) : '₱0.00';
             
-            echo "<div class='col d-flex product-card'>";
+            echo "<div class='col d-flex product-card' data-search='".htmlspecialchars($searchableText, ENT_QUOTES)."'>";
                 echo "<div class='card w-100' style='max-width: 380px;'>";
                     echo '<img src="' . $row['ProductImage']. '" class="card-img-top img-fluid" style="height: 280px;" alt="'. $row['Model'] .'">';
                     echo "<div class='card-body d-flex flex-column'>";
@@ -176,43 +140,84 @@ function pagination() {
                         echo "<hr>";
                         echo "<div class='card-text mb-2'>".$row['CategoryType']."</div>";
                         echo "<div class='card-text mb-2'>".$row['Material']."</div>";
+                        $price = $row['Price'];
+                        $numeric_price = preg_replace('/[^0-9.]/', '', $price);
+                        $formatted_price = is_numeric($numeric_price) ? '₱' . number_format((float)$numeric_price, 2) : '₱0.00';
                         echo "<div class='card-text mb-2'>".$formatted_price."</div>";
                         
-                        // Display branch availability differently based on filter
                         if ($branch > 0) {
-                            // Specific branch - show only this branch
-                            $stock = isset($row['Stocks']) ? $row['Stocks'] : 0;
-                            echo "<div class='card-text mb-2 text-success'>Available at ".$row['BranchName']." (Stock: $stock)</div>";
+                            // Show specific branch availability
+                            $availability = isset($row['BranchAvailability']) ? $row['BranchAvailability'] : 'Not Available';
+                            $branchName = isset($row['BranchName']) ? " at " . $row['BranchName'] : '';
+                            
+                            if ($availability == "Available") {
+                                echo "<div class='card-text mb-2 text-success'>".$availability.$branchName."</div>";
+                                echo "</div>";
+                                echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
+                                    echo "<button type='button' class='btn btn-primary w-100 py-2 view-details' data-bs-toggle='modal' data-bs-target='#productModal' 
+                                          data-product-id='".$row['ProductID']."'
+                                          data-product-name='".htmlspecialchars($row['Model'], ENT_QUOTES)."'
+                                          data-product-image='".htmlspecialchars($row['ProductImage'], ENT_QUOTES)."'
+                                          data-product-category='".htmlspecialchars($row['CategoryType'], ENT_QUOTES)."'
+                                          data-product-material='".htmlspecialchars($row['Material'], ENT_QUOTES)."'
+                                          data-product-price='".htmlspecialchars($formatted_price, ENT_QUOTES)."'
+                                          data-product-availability='".htmlspecialchars($availability, ENT_QUOTES)."'
+                                          data-product-stock='".htmlspecialchars($stock, ENT_QUOTES)."'
+                                          data-product-faceshape='".htmlspecialchars($faceShape, ENT_QUOTES)."'>
+                                          More details
+                                      </button>";
+                                echo "</div>";
+                            } else {
+                                echo "<div class='card-text mb-2 text-danger'>".$availability.$branchName."</div>";
+                                echo "</div>";
+                                echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
+                                    echo "<a href='#' class='btn btn-secondary w-100 py-2 disabled'>Not Available</a>";
+                                echo "</div>";
+                            }
                         } else {
-                            // All branches - show all available branches
-                            $totalStock = isset($row['TotalStocks']) ? $row['TotalStocks'] : 0;
-                            echo "<div class='card-text mb-2 text-success'>Available at: ".$row['AvailableBranches']."</div>";
-                            echo "<div class='card-text mb-2'>Total Stock: $totalStock</div>";
+                            // Show all available branches
+                            $availableBranches = isset($row['AvailableBranches']) ? $row['AvailableBranches'] : '';
+                            
+                            if (!empty($availableBranches)) {
+                                echo "<div class='card-text mb-2 text-success'>Available at: ".$availableBranches."</div>";
+                                echo "</div>";
+                                echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
+                                    echo "<button type='button' class='btn btn-primary w-100 py-2 view-details' data-bs-toggle='modal' data-bs-target='#productModal' 
+                                          data-product-id='".$row['ProductID']."'
+                                          data-product-name='".htmlspecialchars($row['Model'], ENT_QUOTES)."'
+                                          data-product-image='".htmlspecialchars($row['ProductImage'], ENT_QUOTES)."'
+                                          data-product-category='".htmlspecialchars($row['CategoryType'], ENT_QUOTES)."'
+                                          data-product-material='".htmlspecialchars($row['Material'], ENT_QUOTES)."'
+                                          data-product-price='".htmlspecialchars($formatted_price, ENT_QUOTES)."'
+                                          data-product-availability='".htmlspecialchars($availableBranches, ENT_QUOTES)."'
+                                          data-product-stock='".htmlspecialchars($stock, ENT_QUOTES)."'
+                                          data-product-faceshape='".htmlspecialchars($faceShape, ENT_QUOTES)."'>
+                                          More details
+                                      </button>";
+                                echo "</div>";
+                            } else {
+                                echo "<div class='card-text mb-2 text-danger'>Not available at any branch</div>";
+                                echo "</div>";
+                                echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
+                                    echo "<a href='#' class='btn btn-secondary w-100 py-2 disabled'>Not Available</a>";
+                                echo "</div>";
+                            }
                         }
-                        
-                    echo "</div>";
-                    echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
-                        echo "<button type='button' class='btn btn-primary w-100 py-2 view-details' data-bs-toggle='modal' data-bs-target='#productModal' 
-                              data-product-id='".$row['ProductID']."'
-                              data-product-name='".htmlspecialchars($row['Model'], ENT_QUOTES)."'
-                              data-product-image='".htmlspecialchars($row['ProductImage'], ENT_QUOTES)."'
-                              data-product-category='".htmlspecialchars($row['CategoryType'], ENT_QUOTES)."'
-                              data-product-material='".htmlspecialchars($row['Material'], ENT_QUOTES)."'
-                              data-product-price='".htmlspecialchars($formatted_price, ENT_QUOTES)."'
-                              data-product-faceshape='".htmlspecialchars($faceShape, ENT_QUOTES)."'>
-                              More details
-                          </button>";
                     echo "</div>";
                 echo "</div>";
             echo "</div>";
         }
     } else {
-        echo "<div class='col-12 py-5 no-results'>";
+        echo "<div class='col-12 py-5 no-results' style='display: flex; justify-content: center; align-items: center; min-height: 300px;'>";
         if ($shape > 0) {
             $shapeName = getFaceShapeName($shape);
             echo "<h4 class='text-center'>No products found for frame shape: $shapeName</h4>";
         } else if ($branch > 0) {
-            $branchName = mysqli_fetch_assoc(mysqli_query($conn, "SELECT BranchName FROM BranchMaster WHERE BranchCode = $branch"))['BranchName'];
+            $conn = connect();
+            $branchQuery = "SELECT BranchName FROM BranchMaster WHERE BranchCode = $branch";
+            $branchResult = mysqli_query($conn, $branchQuery);
+            $branchName = mysqli_fetch_assoc($branchResult)['BranchName'];
+            $conn->close();
             echo "<h4 class='text-center'>No products found at branch: $branchName</h4>";
         } else {
             echo "<h4 class='text-center'>No products found matching your search.</h4>";
@@ -222,7 +227,6 @@ function pagination() {
     
     echo "</div>"; 
 
-    // Pagination code remains the same...
     if ($totalPages > 1) {
         echo "<div class='col-12 mt-5'>";
             echo "<div class='d-flex justify-content-center'>";
@@ -234,14 +238,16 @@ function pagination() {
                 }
 
                 // Show page numbers
-                $maxPagesToShow = 5;
+                $maxPagesToShow = 5; // Maximum number of page links to show
                 $startPage = max(1, $page - floor($maxPagesToShow / 2));
                 $endPage = min($totalPages, $startPage + $maxPagesToShow - 1);
                 
+                // Adjust if we're at the start or end
                 if ($endPage - $startPage < $maxPagesToShow - 1) {
                     $startPage = max(1, $endPage - $maxPagesToShow + 1);
                 }
                 
+                // Always show first page
                 if ($startPage > 1) {
                     echo "<li class='page-item'><a class='page-link' href='" . buildQueryString(1, $_GET) . "'>1</a></li>";
                     if ($startPage > 2) {
@@ -257,6 +263,7 @@ function pagination() {
                     }
                 }
                 
+                // Always show last page
                 if ($endPage < $totalPages) {
                     if ($endPage < $totalPages - 1) {
                         echo "<li class='page-item disabled'><span class='page-link'>...</span></li>";
@@ -275,6 +282,7 @@ function pagination() {
     }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html>
@@ -394,12 +402,6 @@ function pagination() {
                 background-color: transparent;
                 border-color: rgba(0,0,0,0.05);
             }
-            
-            .branch-availability {
-                font-size: 0.85rem;
-                color: #6c757d;
-                margin-top: 0.25rem;
-            }
         </style>
     </head>
 
@@ -431,7 +433,6 @@ function pagination() {
                                         <h3 id="modalProductName" class="fw-bold mb-2"></h3>
                                         <div>
                                             <span id="modalProductStock" class="badge rounded-pill fs-6"></span>
-                                            <div id="modalProductBranches" class="branch-availability mt-2"></div>
                                         </div>
                                     </div>
                                     
@@ -507,6 +508,41 @@ function pagination() {
                     <!-- Branch Filter -->
                     <form method="get" action="" class="filter-dropdown">
                         <input type="hidden" name="page" value="1"> <!-- Reset to page 1 when changing filters -->
+                        <?php if(isset($_GET['search'])): ?>
+                            <input type="hidden" name="search" value="<?php echo $_GET['search']; ?>">
+                        <?php endif; ?>
+                        <?php if(isset($_GET['sort'])): ?>
+                            <input type="hidden" name="sort" value="<?php echo $_GET['sort']; ?>">
+                        <?php endif; ?>
+                        <?php if(isset($_GET['shape'])): ?>
+                            <input type="hidden" name="shape" value="<?php echo $_GET['shape']; ?>">
+                        <?php endif; ?>
+                        <?php if(isset($_GET['category'])): ?>
+                            <input type="hidden" name="category" value="<?php echo $_GET['category']; ?>">
+                        <?php endif; ?>
+                        <div class="input-group">
+                            <label class="input-group-text" for="branchSelect">Branch:</label>
+                            <select class="form-select" id="branchSelect" name="branch" onchange="this.form.submit()">
+                                <option value="">All Branches</option>
+                                <?php
+                                    $conn = connect();
+                                    $branchQuery = "SELECT BranchCode, BranchName FROM BranchMaster";
+                                    $branchResult = mysqli_query($conn, $branchQuery);
+                                    while ($branch = mysqli_fetch_assoc($branchResult)) {
+                                        $selected = (isset($_GET['branch']) && $_GET['branch'] == $branch['BranchCode']) ? 'selected' : '';
+                                        echo "<option value='{$branch['BranchCode']}' $selected>{$branch['BranchName']}</option>";
+                                    }
+                                    $conn->close();
+                                ?>
+                            </select>
+                        </div>
+                    </form>
+                    
+                
+                <div class="filter-container">
+                    <!-- Branch Filter -->
+                    <form method="get" action="" class="filter-dropdown">
+                        <input type="hidden" name="page" value="1"> <!-- Always reset to page 1 when applying a new filter -->
                         <?php if(isset($_GET['search'])): ?>
                             <input type="hidden" name="search" value="<?php echo $_GET['search']; ?>">
                         <?php endif; ?>
@@ -709,21 +745,6 @@ function pagination() {
                             stockBadge.textContent = 'Out of stock';
                             stockBadge.className = 'badge rounded-pill fs-6 not-available';
                         }
-                        
-                        // Fetch and display available branches for this product
-                        fetch(`get_product_branches.php?product_id=${productId}`)
-                            .then(response => response.json())
-                            .then(branches => {
-                                const branchesElement = document.getElementById('modalProductBranches');
-                                if (branches.length > 0) {
-                                    branchesElement.innerHTML = '<strong>Available at:</strong> ' + branches.join(', ');
-                                } else {
-                                    branchesElement.innerHTML = '<strong>Not currently available at any branch</strong>';
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Error fetching branches:', error);
-                            });
                     });
                 }
                 
@@ -840,3 +861,4 @@ function pagination() {
         </script>
     </body>
 </html>
+
