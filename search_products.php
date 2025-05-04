@@ -7,10 +7,10 @@ $conn = connect();
 $sql = "SELECT DISTINCT Model 
         FROM productMstr 
         WHERE Model LIKE ? 
-        AND Avail_FL = 'Available'
-        LIMIT 10";
+        AND (Avail_FL = 'Available' OR Avail_FL IS NULL)
+        LIMIT 5";
 $stmt = $conn->prepare($sql);
-$searchTerm = '%' . $term . '%';
+$searchTerm = $term . '%'; // Your "starts with" behavior
 $stmt->bind_param("s", $searchTerm);
 $stmt->execute();
 $result = $stmt->get_result();
