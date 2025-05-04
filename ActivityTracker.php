@@ -36,7 +36,7 @@ $_SESSION['LAST_ACTIVITY'] = time();
     // Function to reset the inactivity timer
     function resetTimer() {
         clearTimeout(timeout);
-        timeout = setTimeout(logout, 300000); // 300000 ms = 5 minutes
+        timeout = setTimeout(logout, 900000); // 300000 ms = 5 minutes
     }
 
     // Event listeners for user activity
