@@ -141,7 +141,7 @@ if ($groupBy === 'day') {
 		$qty = (int)$r['qty'];
 		$status = strtolower($r['status']);
 		if (!isset($claimed[$wk])) continue;
-		if ($status === 'claimed') $claimed[$wk] += $qty;
+		if ($status === 'sold') $claimed[$wk] += $qty;
 		elseif ($status === 'cancelled') $cancelled[$wk] += $qty;
 		elseif ($status === 'returned') $returned[$wk] += $qty;
 	}
