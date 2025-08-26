@@ -175,7 +175,6 @@ $salesData = getSalesOverviewData();
                                     <div class="btn-group" role="group" aria-label="Sales view">
                                         <button type="button" class="btn btn-sm btn-outline-secondary sales-view-btn active" data-view="week">Week</button>
                                         <button type="button" class="btn btn-sm btn-outline-secondary sales-view-btn" data-view="month">Month</button>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary sales-view-btn" data-view="month_weeks">Month (weeks)</button>
                                         <button type="button" class="btn btn-sm btn-outline-secondary sales-view-btn" data-view="year">Year</button>
                                     </div>
                                     <select id="sales-year-select" class="form-select form-select-sm d-inline-block ms-2" style="width:auto;">
@@ -183,6 +182,10 @@ $salesData = getSalesOverviewData();
                                     </select>
                                     <select id="sales-month-select" class="form-select form-select-sm d-inline-block ms-2" style="width:auto; display:none;">
                                         <option value="">Month</option>
+                                    </select>
+                                    <select id="sales-mode-select" class="form-select form-select-sm d-inline-block ms-2" style="width:auto;">
+                                        <option value="">Mode</option>
+                                        <option value="month_weeks">Month (weeks)</option>
                                     </select>
                                     <div id="sales-range-controls" class="d-inline-block ms-2">
                                         <!-- simplified: no range buttons to avoid errors -->
@@ -418,7 +421,8 @@ $salesData = getSalesOverviewData();
                     params.set('start', se.start);
                     params.set('end', se.end);
 
-                    if (currentView === 'month_weeks') params.set('mode','month_weeks');
+                    const modeSelect = document.getElementById('sales-mode-select');
+                    if (modeSelect && modeSelect.value) params.set('mode', modeSelect.value);
                     const resp = await fetch('salesData.php?' + params.toString());
                     const text = await resp.text();
                     let json;
@@ -448,10 +452,17 @@ $salesData = getSalesOverviewData();
             document.querySelectorAll('.sales-view-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     currentView = this.dataset.view;
+                    // clear mode dropdown when switching view
+                    const modeSelect = document.getElementById('sales-mode-select');
+                    if (modeSelect) modeSelect.value = '';
                     setActiveViewButton(this);
                     loadSalesRange();
                 });
             });
+
+            // mode dropdown handler
+            const modeSelect = document.getElementById('sales-mode-select');
+            if (modeSelect) modeSelect.addEventListener('change', loadSalesRange);
 
             // initialize year/month selects and load
             const yearSelectInit = document.getElementById('sales-year-select');
