@@ -225,9 +225,9 @@ $salesData = getSalesOverviewData();
                                 } else {
                                     $cands = [];
                                     $cands[] = __DIR__ . '/' . ltrim($img, '/\\');
-                                    $cands[] = __DIR__ . '/uploads/' . basename($img);
-                                    $cands[] = __DIR__ . '/Uploads/' . basename($img);
-                                    $cands[] = __DIR__ . '/Images/' . basename($img);
+                                    $cands[] = __DIR__ . 'uploads/' . basename($img);
+                                    $cands[] = __DIR__ . 'Uploads/' . basename($img);
+                                    $cands[] = __DIR__ . 'Images/' . basename($img);
                                     foreach ($cands as $c) { if (is_readable($c) && file_exists($c)) { $imgToUse = str_replace('\\','/', ltrim(substr($c, strlen(__DIR__) + 1), '/\\')); break; } }
                                 }
                             }
