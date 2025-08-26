@@ -37,9 +37,13 @@ try {
 	$diffDays = (int)$startDate->diff($endDate)->days + 1;
 
 	// choose aggregation
-	if ($diffDays > 365) $agg = 'month';
-	elseif ($diffDays > 90) $agg = 'week';
-	else $agg = 'day';
+	if (isset($_GET['mode']) && $_GET['mode'] === 'month_weeks') {
+		$agg = 'month_weeks';
+	} else {
+		if ($diffDays > 365) $agg = 'month';
+		elseif ($diffDays > 90) $agg = 'week';
+		else $agg = 'day';
+	}
 
 	$startStr = $startDate->format('Y-m-d');
 	$endStr = $endDate->format('Y-m-d');
@@ -103,6 +107,50 @@ try {
 			elseif ($status === 'cancelled') $cancelled[$key] += $qty;
 			elseif ($status === 'returned') $returned[$key] += $qty;
 		}
+		$outLabels = array_values($labels);
+		$outClaimed = array_values($claimed);
+		$outCancelled = array_values($cancelled);
+		$outReturned = array_values($returned);
+    
+	} elseif ($agg === 'month_weeks') {
+		// split the month into Week 1..4 and Whole Month
+		// use startDate's month
+		$monthStart = new DateTime($startDate->format('Y-m-01'));
+		$monthEnd = new DateTime($startDate->format('Y-m-t'));
+		$daysInMonth = (int)$monthEnd->format('d');
+
+		// define week ranges (1-based): week1 = days 1-7, week2 = 8-14, week3 = 15-21, week4 = 22-end
+		$buckets = [
+			['label' => 'Week 1', 'start' => (clone $monthStart)->format('Y-m-d'), 'end' => (clone $monthStart)->modify('+6 days')->format('Y-m-d')],
+			['label' => 'Week 2', 'start' => (clone $monthStart)->modify('+7 days')->format('Y-m-d'), 'end' => (clone $monthStart)->modify('+13 days')->format('Y-m-d')],
+			['label' => 'Week 3', 'start' => (clone $monthStart)->modify('+14 days')->format('Y-m-d'), 'end' => (clone $monthStart)->modify('+20 days')->format('Y-m-d')],
+			['label' => 'Week 4', 'start' => (clone $monthStart)->modify('+21 days')->format('Y-m-d'), 'end' => $monthEnd->format('Y-m-d')],
+			['label' => 'Whole Month', 'start' => $monthStart->format('Y-m-d'), 'end' => $monthEnd->format('Y-m-d')]
+		];
+
+		// init counters
+		foreach ($buckets as $b) {
+			$labels[] = $b['label'];
+			$claimed[$b['label']] = 0;
+			$cancelled[$b['label']] = 0;
+			$returned[$b['label']] = 0;
+		}
+
+		foreach ($rows as $r) {
+			$d = $r['date'];
+			$qty = (int)$r['qty'];
+			$status = strtolower($r['status']);
+			foreach ($buckets as $b) {
+				if ($d >= $b['start'] && $d <= $b['end']) {
+					if (in_array($status, ['sold','claimed','completed'])) $claimed[$b['label']] += $qty;
+					elseif ($status === 'cancelled') $cancelled[$b['label']] += $qty;
+					elseif ($status === 'returned') $returned[$b['label']] += $qty;
+				}
+			}
+			// also add to Whole Month bucket
+			// (already covered by loop)
+		}
+
 		$outLabels = array_values($labels);
 		$outClaimed = array_values($claimed);
 		$outCancelled = array_values($cancelled);

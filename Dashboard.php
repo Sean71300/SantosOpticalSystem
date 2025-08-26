@@ -175,6 +175,7 @@ $salesData = getSalesOverviewData();
                                     <div class="btn-group" role="group" aria-label="Sales view">
                                         <button type="button" class="btn btn-sm btn-outline-secondary sales-view-btn active" data-view="week">Week</button>
                                         <button type="button" class="btn btn-sm btn-outline-secondary sales-view-btn" data-view="month">Month</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary sales-view-btn" data-view="month_weeks">Month (weeks)</button>
                                         <button type="button" class="btn btn-sm btn-outline-secondary sales-view-btn" data-view="year">Year</button>
                                     </div>
                                     <select id="sales-year-select" class="form-select form-select-sm d-inline-block ms-2" style="width:auto;">
@@ -417,6 +418,7 @@ $salesData = getSalesOverviewData();
                     params.set('start', se.start);
                     params.set('end', se.end);
 
+                    if (currentView === 'month_weeks') params.set('mode','month_weeks');
                     const resp = await fetch('salesData.php?' + params.toString());
                     const text = await resp.text();
                     let json;
