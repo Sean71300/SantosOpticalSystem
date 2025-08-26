@@ -10,33 +10,73 @@ if (session_status() == PHP_SESSION_NONE) session_start();
 // weekStart, weekEnd = 1..5 (week-of-month, optional)
 // dayStart, dayEnd = 1..31 (optional)
 
-$now = new DateTime();
-$year = isset($_GET['year']) ? (int)$_GET['year'] : (int)$now->format('Y');
-$monthStart = isset($_GET['monthStart']) ? (int)$_GET['monthStart'] : null;
-$monthEnd = isset($_GET['monthEnd']) ? (int)$_GET['monthEnd'] : null;
-$weekStart = isset($_GET['weekStart']) ? (int)$_GET['weekStart'] : null;
-$weekEnd = isset($_GET['weekEnd']) ? (int)$_GET['weekEnd'] : null;
-$dayStart = isset($_GET['dayStart']) ? (int)$_GET['dayStart'] : null;
-$dayEnd = isset($_GET['dayEnd']) ? (int)$_GET['dayEnd'] : null;
+try {
+	$now = new DateTime();
+	$year = isset($_GET['year']) ? (int)$_GET['year'] : (int)$now->format('Y');
+	$monthStart = isset($_GET['monthStart']) ? (int)$_GET['monthStart'] : null;
+	$monthEnd = isset($_GET['monthEnd']) ? (int)$_GET['monthEnd'] : null;
+	$weekStart = isset($_GET['weekStart']) ? (int)$_GET['weekStart'] : null;
+	$weekEnd = isset($_GET['weekEnd']) ? (int)$_GET['weekEnd'] : null;
+	$dayStart = isset($_GET['dayStart']) ? (int)$_GET['dayStart'] : null;
+	$dayEnd = isset($_GET['dayEnd']) ? (int)$_GET['dayEnd'] : null;
+	// accept explicit start/end in Y-m-d format
+	$explicitStart = isset($_GET['start']) ? $_GET['start'] : null;
+	$explicitEnd = isset($_GET['end']) ? $_GET['end'] : null;
 
 // Normalize ranges
-if ($monthStart !== null && $monthEnd === null) $monthEnd = $monthStart;
-if ($weekStart !== null && $weekEnd === null) $weekEnd = $weekStart;
-if ($dayStart !== null && $dayEnd === null) $dayEnd = $dayStart;
+	if ($monthStart !== null && $monthEnd === null) $monthEnd = $monthStart;
+	if ($weekStart !== null && $weekEnd === null) $weekEnd = $weekStart;
+	if ($dayStart !== null && $dayEnd === null) $dayEnd = $dayStart;
 
-// Compute startDate and endDate based on provided parameters (narrowest selection wins)
-$startDate = new DateTime(sprintf('%04d-01-01', $year));
-$endDate = new DateTime(sprintf('%04d-12-31', $year));
+	// Compute startDate and endDate based on provided parameters (narrowest selection wins)
+	$startDate = new DateTime(sprintf('%04d-01-01', $year));
+	$endDate = new DateTime(sprintf('%04d-12-31', $year));
 
-if ($monthStart !== null) {
-    $monthStart = max(1, min(12, $monthStart));
-    $startDate = new DateTime(sprintf('%04d-%02d-01', $year, $monthStart));
-}
-if ($monthEnd !== null) {
-    $monthEnd = max(1, min(12, $monthEnd));
-    $endDate = new DateTime(sprintf('%04d-%02d-01', $year, $monthEnd));
-    $endDate->modify('last day of this month');
-}
+	if ($explicitStart && $explicitEnd) {
+		$startDate = new DateTime($explicitStart);
+		$endDate = new DateTime($explicitEnd);
+	} else {
+		if ($monthStart !== null) {
+			$monthStart = max(1, min(12, $monthStart));
+			$startDate = new DateTime(sprintf('%04d-%02d-01', $year, $monthStart));
+		}
+		if ($monthEnd !== null) {
+			$monthEnd = max(1, min(12, $monthEnd));
+			$endDate = new DateTime(sprintf('%04d-%02d-01', $year, $monthEnd));
+			$endDate->modify('last day of this month');
+		}
+
+		// If week filtering is present, narrow to week-of-month ranges within monthStart..monthEnd
+		if ($weekStart !== null || $weekEnd !== null) {
+			$mStart = $monthStart ?? 1;
+			$m = $mStart;
+			$yearStr = $year;
+			$firstOfMonth = new DateTime(sprintf('%04d-%02d-01', $yearStr, $m));
+			$lastDayOfMonth = (int)$firstOfMonth->format('t');
+
+			$ws = $weekStart ?? 1;
+			$we = $weekEnd ?? $ws;
+			$ws = max(1, min(5, $ws));
+			$we = max(1, min(5, $we));
+			if ($we < $ws) { $tmp = $ws; $ws = $we; $we = $tmp; }
+
+			$startDay = ($ws - 1) * 7 + 1;
+			$endDay = min($lastDayOfMonth, $we * 7);
+
+			$startDate = new DateTime(sprintf('%04d-%02d-%02d', $yearStr, $m, $startDay));
+			$endDate = new DateTime(sprintf('%04d-%02d-%02d', $yearStr, $m, $endDay));
+		}
+
+		// If dayStart/dayEnd provided, override
+		if ($dayStart !== null || $dayEnd !== null) {
+			$ds = $dayStart ?? 1;
+			$de = $dayEnd ?? 31;
+			if ($de < $ds) { $tmp = $ds; $ds = $de; $de = $tmp; }
+			$m = $monthStart ?? 1;
+			$startDate = new DateTime(sprintf('%04d-%02d-%02d', $year, $m, max(1, min(31, $ds))));
+			$endDate = new DateTime(sprintf('%04d-%02d-%02d', $year, $m, max(1, min(31, $de))));
+		}
+	}
 
 // If week filtering is present, narrow to week-of-month ranges within monthStart..monthEnd
 if ($weekStart !== null || $weekEnd !== null) {
@@ -123,15 +163,19 @@ $outClaimed = array_values($claimed);
 $outCancelled = array_values($cancelled);
 $outReturned = array_values($returned);
 
-echo json_encode([
-    'success' => true,
-    'labels' => $outLabels,
-    'claimed' => $outClaimed,
-    'cancelled' => $outCancelled,
-    'returned' => $outReturned,
-    'start' => $startStr,
-    'end' => $endStr,
-]);
+	echo json_encode([
+		'success' => true,
+		'labels' => $outLabels,
+		'claimed' => $outClaimed,
+		'cancelled' => $outCancelled,
+		'returned' => $outReturned,
+		'start' => $startStr,
+		'end' => $endStr,
+	]);
+} catch (Throwable $e) {
+	http_response_code(500);
+	echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+}
 <?php
 include 'setup.php';
 include 'adminFunctions.php';

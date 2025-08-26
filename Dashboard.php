@@ -184,7 +184,7 @@ $salesData = getSalesOverviewData();
                                         <option value="">Month</option>
                                     </select>
                                     <div id="sales-range-controls" class="d-inline-block ms-2">
-                                        <!-- Range controls injected by JS -->
+                                        <!-- simplified: no range buttons to avoid errors -->
                                     </div>
                                 </div>
                             </div>
@@ -339,175 +339,55 @@ $salesData = getSalesOverviewData();
                 }
             });
 
-            // Sales view and range controls
+            // Simplified: only view and year/month selectors remain. Chart will request explicit start/end dates.
             let currentView = 'week';
-            let currentRangeStart = null;
-            let currentRangeEnd = null;
 
             function setActiveViewButton(btn) {
                 document.querySelectorAll('.sales-view-btn').forEach(b => b.classList.remove('active'));
                 if (btn) btn.classList.add('active');
             }
 
-            function renderRangeControls(view) {
-                const container = document.getElementById('sales-range-controls');
-                container.innerHTML = '';
+            function computeStartEndForView(view) {
+                const now = new Date();
+                const yearSel = document.getElementById('sales-year-select');
                 const monthSel = document.getElementById('sales-month-select');
-                if (monthSel) {
-                    if (view === 'week' || view === 'month') {
-                        monthSel.style.display = '';
-                        if (!monthSel.options || monthSel.options.length <= 1) populateMonths();
-                    } else {
-                        monthSel.style.display = 'none';
-                    }
-                }
-                if (view === 'week') {
-                    // day buttons 1..7
-                    for (let d = 1; d <= 7; d++) {
-                        const b = document.createElement('button');
-                        b.className = 'btn btn-sm btn-outline-secondary me-1 sales-range-btn-day';
-                        b.textContent = d;
-                        b.dataset.day = d;
-                        container.appendChild(b);
-                    }
-                    container.insertAdjacentHTML('beforeend', '<small class="ms-2">Select day range: click start then end</small>');
+                const year = yearSel ? parseInt(yearSel.value, 10) : now.getFullYear();
+                const month = monthSel && monthSel.value ? parseInt(monthSel.value, 10) : null;
+                let start = null; let end = null;
+                if (view === 'year') {
+                    start = new Date(year, 0, 1);
+                    end = new Date(year, 11, 31);
                 } else if (view === 'month') {
-                    // weeks 1..5
-                    for (let w = 1; w <= 5; w++) {
-                        const b = document.createElement('button');
-                        b.className = 'btn btn-sm btn-outline-secondary me-1 sales-range-btn-week';
-                        b.textContent = 'W' + w;
-                        b.dataset.week = w;
-                        container.appendChild(b);
-                    }
-                    container.insertAdjacentHTML('beforeend', '<small class="ms-2">Select week range: click start then end</small>');
-                } else {
-                    // year months 1..12
-                    for (let m = 1; m <= 12; m++) {
-                        const b = document.createElement('button');
-                        b.className = 'btn btn-sm btn-outline-secondary me-1 sales-range-btn-month';
-                        b.textContent = m;
-                        b.dataset.month = m;
-                        container.appendChild(b);
-                    }
-                    container.insertAdjacentHTML('beforeend', '<small class="ms-2">Select month range: click start then end</small>');
+                    const m = month !== null ? month - 1 : now.getMonth();
+                    start = new Date(year, m, 1);
+                    end = new Date(year, m + 1, 0);
+                } else { // week
+                    const m = month !== null ? month - 1 : now.getMonth();
+                    // default to current week within the chosen month: use first day of month to find week
+                    const first = new Date(year, m, 1);
+                    const day = first.getDay();
+                    // start at first day
+                    start = first;
+                    end = new Date(start);
+                    end.setDate(start.getDate() + 6);
                 }
-                attachRangeSelectionHandlers(view);
-            }
-
-            function attachRangeSelectionHandlers(view) {
-                let start = null;
-                let end = null;
-                function clearSelection() {
-                    start = null; end = null; currentRangeStart = null; currentRangeEnd = null;
-                    document.querySelectorAll('#sales-range-controls .active').forEach(n=>n.classList.remove('active'));
-                }
-
-                const yearSelect = document.getElementById('sales-year-select');
-                if (!yearSelect.dataset.initialized) {
-                    // populate last 8 years
-                    const thisYear = new Date().getFullYear();
-                    for (let y = thisYear; y >= thisYear - 7; y--) {
-                        const opt = document.createElement('option'); opt.value = y; opt.textContent = y;
-                        yearSelect.appendChild(opt);
-                    }
-                    yearSelect.value = thisYear;
-                    yearSelect.dataset.initialized = '1';
-                    yearSelect.addEventListener('change', function() { 
-                        // when year changes, repopulate months and reload
-                        populateMonths();
-                        loadSalesRange(); 
-                    });
-                }
-
-                function populateMonths() {
-                    const monthSel = document.getElementById('sales-month-select');
-                    monthSel.innerHTML = '<option value="">Month</option>';
-                    for (let m = 1; m <= 12; m++) {
-                        const o = document.createElement('option'); o.value = m; o.textContent = m;
-                        monthSel.appendChild(o);
-                    }
-                    monthSel.style.display = '';
-                    monthSel.addEventListener('change', function() { loadSalesRange(); });
-                }
-
-                if (view === 'week') {
-                    document.querySelectorAll('.sales-range-btn-day').forEach(btn => {
-                        btn.addEventListener('click', function() {
-                            const v = parseInt(this.dataset.day, 10);
-                            if (start === null) { start = v; this.classList.add('active'); }
-                            else if (end === null) { end = v; this.classList.add('active'); }
-                            else { clearSelection(); start = v; this.classList.add('active'); }
-                            if (start !== null && end !== null) {
-                                if (end < start) [start, end] = [end, start];
-                                currentRangeStart = start; currentRangeEnd = end;
-                                loadSalesRange();
-                            }
-                        });
-                    });
-                } else if (view === 'month') {
-                    document.querySelectorAll('.sales-range-btn-week').forEach(btn => {
-                        btn.addEventListener('click', function() {
-                            const v = parseInt(this.dataset.week, 10);
-                            if (start === null) { start = v; this.classList.add('active'); }
-                            else if (end === null) { end = v; this.classList.add('active'); }
-                            else { clearSelection(); start = v; this.classList.add('active'); }
-                            if (start !== null && end !== null) {
-                                if (end < start) [start, end] = [end, start];
-                                currentRangeStart = start; currentRangeEnd = end;
-                                loadSalesRange();
-                            }
-                        });
-                    });
-                } else {
-                    document.querySelectorAll('.sales-range-btn-month').forEach(btn => {
-                        btn.addEventListener('click', function() {
-                            const v = parseInt(this.dataset.month, 10);
-                            if (start === null) { start = v; this.classList.add('active'); }
-                            else if (end === null) { end = v; this.classList.add('active'); }
-                            else { clearSelection(); start = v; this.classList.add('active'); }
-                            if (start !== null && end !== null) {
-                                if (end < start) [start, end] = [end, start];
-                                currentRangeStart = start; currentRangeEnd = end;
-                                loadSalesRange();
-                            }
-                        });
-                    });
-                }
-
-                // double-click or outside click clears selection
-                document.addEventListener('dblclick', clearSelection);
+                return { start: start.toISOString().slice(0,10), end: end.toISOString().slice(0,10) };
             }
 
             async function loadSalesRange() {
                 try {
                     const params = new URLSearchParams();
-                    const yearSelect = document.getElementById('sales-year-select');
-                    params.set('year', yearSelect ? yearSelect.value : new Date().getFullYear());
-
-                    // depending on view, map currentRangeStart/End to month/week/day params
-                    if (currentView === 'year') {
-                        if (currentRangeStart !== null) params.set('monthStart', currentRangeStart);
-                        if (currentRangeEnd !== null) params.set('monthEnd', currentRangeEnd);
-                    } else if (currentView === 'month') {
-                        // month should come from year selector + maybe previously chosen month (if user clicked a month range)
-                        // if months are selected via currentRangeStart/End use them
-                        if (currentRangeStart !== null) params.set('weekStart', currentRangeStart);
-                        if (currentRangeEnd !== null) params.set('weekEnd', currentRangeEnd);
-                        // allow month selection via sales-month selection if present
-                        const monthSel = document.getElementById('sales-month-select');
-                        if (monthSel && monthSel.value) params.set('monthStart', monthSel.value);
-                    } else { // week view
-                        if (currentRangeStart !== null) params.set('dayStart', currentRangeStart);
-                        if (currentRangeEnd !== null) params.set('dayEnd', currentRangeEnd);
-                        // allow month context for week/day via month select
-                        const monthSel = document.getElementById('sales-month-select');
-                        if (monthSel && monthSel.value) params.set('monthStart', monthSel.value);
-                    }
+                    const yearSel = document.getElementById('sales-year-select');
+                    params.set('year', yearSel ? yearSel.value : new Date().getFullYear());
+                    const se = computeStartEndForView(currentView);
+                    params.set('start', se.start);
+                    params.set('end', se.end);
 
                     const resp = await fetch('salesData.php?' + params.toString());
-                    const json = await resp.json();
-                    if (!json.success) throw new Error('Failed to load sales data');
+                    const text = await resp.text();
+                    let json;
+                    try { json = JSON.parse(text); } catch (e) { throw new Error('Invalid JSON: ' + text); }
+                    if (!json.success) throw new Error(json.error || 'Failed to load sales data');
 
                     salesChart.data.labels = json.labels;
                     salesChart.data.datasets[0].data = json.claimed.map(v=>parseInt(v||0,10));
@@ -516,7 +396,6 @@ $salesData = getSalesOverviewData();
                     salesChart.update();
                 } catch (err) {
                     console.error('Error loading sales range:', err);
-                    alert('Could not load sales data. Check console for details.');
                 }
             }
 
@@ -525,15 +404,28 @@ $salesData = getSalesOverviewData();
                 btn.addEventListener('click', function() {
                     currentView = this.dataset.view;
                     setActiveViewButton(this);
-                    renderRangeControls(currentView);
-                    // reset selection
-                    currentRangeStart = null; currentRangeEnd = null;
                     loadSalesRange();
                 });
             });
 
-            // initialize
-            renderRangeControls(currentView);
+            // initialize year/month selects and load
+            const yearSelectInit = document.getElementById('sales-year-select');
+            if (yearSelectInit && !yearSelectInit.dataset.initialized) {
+                const thisYear = new Date().getFullYear();
+                for (let y = thisYear; y >= thisYear - 7; y--) {
+                    const opt = document.createElement('option'); opt.value = y; opt.textContent = y;
+                    yearSelectInit.appendChild(opt);
+                }
+                yearSelectInit.value = new Date().getFullYear();
+                yearSelectInit.dataset.initialized = '1';
+                yearSelectInit.addEventListener('change', loadSalesRange);
+            }
+            const monthInit = document.getElementById('sales-month-select');
+            if (monthInit && monthInit.options.length <= 1) {
+                for (let m = 1; m <= 12; m++) { const o = document.createElement('option'); o.value = m; o.textContent = m; monthInit.appendChild(o); }
+                monthInit.addEventListener('change', loadSalesRange);
+                monthInit.style.display = '';
+            }
             loadSalesRange();
         });
     </script>
