@@ -195,6 +195,28 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
                 });
             });
 
+            // Intercept edit clicks to show modal confirmation
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const url = this.getAttribute('href');
+                    const name = this.getAttribute('data-name') || 'this employee';
+                    const modal = document.getElementById('editConfirmModal');
+                    modal.querySelector('.modal-body .emp-name').textContent = name;
+                    modal.querySelector('.confirm-edit').setAttribute('data-href', url);
+                    var bsModal = new bootstrap.Modal(modal);
+                    bsModal.show();
+                });
+            });
+
+            // Handle confirm button inside modal
+            document.addEventListener('click', function(e) {
+                if (e.target && e.target.classList.contains('confirm-edit')) {
+                    const url = e.target.getAttribute('data-href');
+                    if (url) window.location.href = url;
+                }
+            });
+
             // Function to handle table sorting
             function sortTable(column) {
                 const urlParams = new URLSearchParams(window.location.search);
@@ -216,3 +238,22 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
         </script>
     </body>
 </html>
+
+<!-- Edit confirmation modal -->
+<div class="modal fade" id="editConfirmModal" tabindex="-1" aria-labelledby="editConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editConfirmModalLabel">Confirm Edit</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                You are about to edit <strong class="emp-name"></strong>. Continue?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary confirm-edit">Edit</button>
+            </div>
+        </div>
+    </div>
+</div>
