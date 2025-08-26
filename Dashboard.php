@@ -177,6 +177,12 @@ $salesData = getSalesOverviewData();
                                         <button type="button" class="btn btn-sm btn-outline-secondary sales-view-btn" data-view="month">Month</button>
                                         <button type="button" class="btn btn-sm btn-outline-secondary sales-view-btn" data-view="year">Year</button>
                                     </div>
+                                    <select id="sales-year-select" class="form-select form-select-sm d-inline-block ms-2" style="width:auto;">
+                                        <!-- years injected by JS -->
+                                    </select>
+                                    <select id="sales-month-select" class="form-select form-select-sm d-inline-block ms-2" style="width:auto; display:none;">
+                                        <option value="">Month</option>
+                                    </select>
                                     <div id="sales-range-controls" class="d-inline-block ms-2">
                                         <!-- Range controls injected by JS -->
                                     </div>
@@ -346,6 +352,15 @@ $salesData = getSalesOverviewData();
             function renderRangeControls(view) {
                 const container = document.getElementById('sales-range-controls');
                 container.innerHTML = '';
+                const monthSel = document.getElementById('sales-month-select');
+                if (monthSel) {
+                    if (view === 'week' || view === 'month') {
+                        monthSel.style.display = '';
+                        if (!monthSel.options || monthSel.options.length <= 1) populateMonths();
+                    } else {
+                        monthSel.style.display = 'none';
+                    }
+                }
                 if (view === 'week') {
                     // day buttons 1..7
                     for (let d = 1; d <= 7; d++) {
@@ -386,6 +401,34 @@ $salesData = getSalesOverviewData();
                 function clearSelection() {
                     start = null; end = null; currentRangeStart = null; currentRangeEnd = null;
                     document.querySelectorAll('#sales-range-controls .active').forEach(n=>n.classList.remove('active'));
+                }
+
+                const yearSelect = document.getElementById('sales-year-select');
+                if (!yearSelect.dataset.initialized) {
+                    // populate last 8 years
+                    const thisYear = new Date().getFullYear();
+                    for (let y = thisYear; y >= thisYear - 7; y--) {
+                        const opt = document.createElement('option'); opt.value = y; opt.textContent = y;
+                        yearSelect.appendChild(opt);
+                    }
+                    yearSelect.value = thisYear;
+                    yearSelect.dataset.initialized = '1';
+                    yearSelect.addEventListener('change', function() { 
+                        // when year changes, repopulate months and reload
+                        populateMonths();
+                        loadSalesRange(); 
+                    });
+                }
+
+                function populateMonths() {
+                    const monthSel = document.getElementById('sales-month-select');
+                    monthSel.innerHTML = '<option value="">Month</option>';
+                    for (let m = 1; m <= 12; m++) {
+                        const o = document.createElement('option'); o.value = m; o.textContent = m;
+                        monthSel.appendChild(o);
+                    }
+                    monthSel.style.display = '';
+                    monthSel.addEventListener('change', function() { loadSalesRange(); });
                 }
 
                 if (view === 'week') {
@@ -439,9 +482,28 @@ $salesData = getSalesOverviewData();
             async function loadSalesRange() {
                 try {
                     const params = new URLSearchParams();
-                    params.set('view', currentView);
-                    if (currentRangeStart !== null) params.set('rangeStart', currentRangeStart);
-                    if (currentRangeEnd !== null) params.set('rangeEnd', currentRangeEnd);
+                    const yearSelect = document.getElementById('sales-year-select');
+                    params.set('year', yearSelect ? yearSelect.value : new Date().getFullYear());
+
+                    // depending on view, map currentRangeStart/End to month/week/day params
+                    if (currentView === 'year') {
+                        if (currentRangeStart !== null) params.set('monthStart', currentRangeStart);
+                        if (currentRangeEnd !== null) params.set('monthEnd', currentRangeEnd);
+                    } else if (currentView === 'month') {
+                        // month should come from year selector + maybe previously chosen month (if user clicked a month range)
+                        // if months are selected via currentRangeStart/End use them
+                        if (currentRangeStart !== null) params.set('weekStart', currentRangeStart);
+                        if (currentRangeEnd !== null) params.set('weekEnd', currentRangeEnd);
+                        // allow month selection via sales-month selection if present
+                        const monthSel = document.getElementById('sales-month-select');
+                        if (monthSel && monthSel.value) params.set('monthStart', monthSel.value);
+                    } else { // week view
+                        if (currentRangeStart !== null) params.set('dayStart', currentRangeStart);
+                        if (currentRangeEnd !== null) params.set('dayEnd', currentRangeEnd);
+                        // allow month context for week/day via month select
+                        const monthSel = document.getElementById('sales-month-select');
+                        if (monthSel && monthSel.value) params.set('monthStart', monthSel.value);
+                    }
 
                     const resp = await fetch('salesData.php?' + params.toString());
                     const json = await resp.json();
