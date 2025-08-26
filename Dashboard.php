@@ -185,7 +185,11 @@ $salesData = getSalesOverviewData();
                                     </select>
                                     <select id="sales-mode-select" class="form-select form-select-sm d-inline-block ms-2" style="width:auto;">
                                         <option value="">Mode</option>
-                                        <option value="month_weeks">Month (weeks)</option>
+                                        <option value="week1">Week 1</option>
+                                        <option value="week2">Week 2</option>
+                                        <option value="week3">Week 3</option>
+                                        <option value="week4">Week 4</option>
+                                        <option value="whole">Whole Month</option>
                                     </select>
                                     <div id="sales-range-controls" class="d-inline-block ms-2">
                                         <!-- simplified: no range buttons to avoid errors -->
@@ -422,7 +426,16 @@ $salesData = getSalesOverviewData();
                     params.set('end', se.end);
 
                     const modeSelect = document.getElementById('sales-mode-select');
-                    if (modeSelect && modeSelect.value) params.set('mode', modeSelect.value);
+                    if (modeSelect && modeSelect.value) {
+                        // if user picked a week option, request month_weeks mode with bucket
+                        const val = modeSelect.value;
+                        if (val === 'week1' || val === 'week2' || val === 'week3' || val === 'week4' || val === 'whole') {
+                            params.set('mode','month_weeks');
+                            params.set('bucket', val);
+                        } else {
+                            params.set('mode', val);
+                        }
+                    }
                     const resp = await fetch('salesData.php?' + params.toString());
                     const text = await resp.text();
                     let json;
