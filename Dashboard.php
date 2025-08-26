@@ -211,8 +211,9 @@ $salesData = getSalesOverviewData();
                                     foreach ($lowInventory as $product) {
                                         echo '<div class="container d-flex align-items-center">';
                                         $img = htmlspecialchars($product['ProductImage']);
-                                        // simple safe fallback to avoid JS syntax errors and 404 spam
-                                        echo '<img src="' . $img . '" alt="Product Image" style="height:100px; width:100px;" class="img-thumbnail" onerror="this.onerror=null;this.src=\'Images/logo.png\';">';
+                                        // safe-escape the image URL to avoid injecting unescaped characters into HTML/JS
+                                        $imgEsc = htmlspecialchars($img, ENT_QUOTES, 'UTF-8');
+                                        echo "<img src=\"{$imgEsc}\" alt=\"Product Image\" style=\"height:100px; width:100px;\" class=\"img-thumbnail\" onerror=\"this.onerror=null;this.src='Images/logo.png';\">";
                                             echo '<div class="fw-bold ms-3">';
                                                 echo htmlspecialchars($product['Model']);
                                                 echo "<br> Available Stocks: ".htmlspecialchars($product['Stocks']);
