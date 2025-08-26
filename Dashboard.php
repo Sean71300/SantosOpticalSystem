@@ -170,13 +170,18 @@ $salesData = getSalesOverviewData();
                     <h5><i class="fas fa-chart-line me-2"></i>Sales Overview (Last 7 Days)</h5>
                     <hr class="border-1 border-black opacity-25">
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h6 class="mb-0">View</h6>
-                            <div class="btn-group" role="group" aria-label="Sales range">
-                                <button type="button" class="btn btn-sm btn-outline-secondary sales-range-btn active" data-days="7">Week</button>
-                                <button type="button" class="btn btn-sm btn-outline-secondary sales-range-btn" data-days="30">Month</button>
-                                <button type="button" class="btn btn-sm btn-outline-secondary sales-range-btn" data-days="365">Year</button>
+                                <h6 class="mb-0">View</h6>
+                                <div>
+                                    <div class="btn-group" role="group" aria-label="Sales view">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary sales-view-btn active" data-view="week">Week</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary sales-view-btn" data-view="month">Month</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary sales-view-btn" data-view="year">Year</button>
+                                    </div>
+                                    <div id="sales-range-controls" class="d-inline-block ms-2">
+                                        <!-- Range controls injected by JS -->
+                                    </div>
+                                </div>
                             </div>
-                        </div>
                         <div class="chart-container">
                             <canvas id="salesChart"></canvas>
                         </div>
@@ -278,17 +283,14 @@ $salesData = getSalesOverviewData();
                 }
             });
 
+            // initial placeholder data (will be overwritten by API)
             const salesData = {
-                labels: <?php echo json_encode(array_column($salesData, 'date')); ?>,
-                datasets: [{
-                    label: 'Products Sold',
-                    data: <?php echo json_encode(array_column($salesData, 'total_sold')); ?>,
-                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 2,
-                    tension: 0.1,
-                    fill: true
-                }]
+                labels: [],
+                datasets: [
+                    { label: 'Claimed', data: [], backgroundColor: 'rgba(40,167,69,0.15)', borderColor: 'rgba(40,167,69,1)', tension: 0.1, fill: true },
+                    { label: 'Cancelled', data: [], backgroundColor: 'rgba(220,53,69,0.15)', borderColor: 'rgba(220,53,69,1)', tension: 0.1, fill: true },
+                    { label: 'Returned', data: [], backgroundColor: 'rgba(255,193,7,0.15)', borderColor: 'rgba(255,193,7,1)', tension: 0.1, fill: true }
+                ]
             };
 
             const salesCtx = document.getElementById('salesChart').getContext('2d');
@@ -328,38 +330,146 @@ $salesData = getSalesOverviewData();
                 }
             });
 
-            // Sales range toggle behavior
-            function setActiveButton(btn) {
-                document.querySelectorAll('.sales-range-btn').forEach(b => b.classList.remove('active'));
+            // Sales view and range controls
+            let currentView = 'week';
+            let currentRangeStart = null;
+            let currentRangeEnd = null;
+
+            function setActiveViewButton(btn) {
+                document.querySelectorAll('.sales-view-btn').forEach(b => b.classList.remove('active'));
                 if (btn) btn.classList.add('active');
             }
 
-            async function loadSalesRange(days, clickedButton) {
+            function renderRangeControls(view) {
+                const container = document.getElementById('sales-range-controls');
+                container.innerHTML = '';
+                if (view === 'week') {
+                    // day buttons 1..7
+                    for (let d = 1; d <= 7; d++) {
+                        const b = document.createElement('button');
+                        b.className = 'btn btn-sm btn-outline-secondary me-1 sales-range-btn-day';
+                        b.textContent = d;
+                        b.dataset.day = d;
+                        container.appendChild(b);
+                    }
+                    container.insertAdjacentHTML('beforeend', '<small class="ms-2">Select day range: click start then end</small>');
+                } else if (view === 'month') {
+                    // weeks 1..5
+                    for (let w = 1; w <= 5; w++) {
+                        const b = document.createElement('button');
+                        b.className = 'btn btn-sm btn-outline-secondary me-1 sales-range-btn-week';
+                        b.textContent = 'W' + w;
+                        b.dataset.week = w;
+                        container.appendChild(b);
+                    }
+                    container.insertAdjacentHTML('beforeend', '<small class="ms-2">Select week range: click start then end</small>');
+                } else {
+                    // year months 1..12
+                    for (let m = 1; m <= 12; m++) {
+                        const b = document.createElement('button');
+                        b.className = 'btn btn-sm btn-outline-secondary me-1 sales-range-btn-month';
+                        b.textContent = m;
+                        b.dataset.month = m;
+                        container.appendChild(b);
+                    }
+                    container.insertAdjacentHTML('beforeend', '<small class="ms-2">Select month range: click start then end</small>');
+                }
+                attachRangeSelectionHandlers(view);
+            }
+
+            function attachRangeSelectionHandlers(view) {
+                let start = null;
+                let end = null;
+                function clearSelection() {
+                    start = null; end = null; currentRangeStart = null; currentRangeEnd = null;
+                    document.querySelectorAll('#sales-range-controls .active').forEach(n=>n.classList.remove('active'));
+                }
+
+                if (view === 'week') {
+                    document.querySelectorAll('.sales-range-btn-day').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const v = parseInt(this.dataset.day, 10);
+                            if (start === null) { start = v; this.classList.add('active'); }
+                            else if (end === null) { end = v; this.classList.add('active'); }
+                            else { clearSelection(); start = v; this.classList.add('active'); }
+                            if (start !== null && end !== null) {
+                                if (end < start) [start, end] = [end, start];
+                                currentRangeStart = start; currentRangeEnd = end;
+                                loadSalesRange();
+                            }
+                        });
+                    });
+                } else if (view === 'month') {
+                    document.querySelectorAll('.sales-range-btn-week').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const v = parseInt(this.dataset.week, 10);
+                            if (start === null) { start = v; this.classList.add('active'); }
+                            else if (end === null) { end = v; this.classList.add('active'); }
+                            else { clearSelection(); start = v; this.classList.add('active'); }
+                            if (start !== null && end !== null) {
+                                if (end < start) [start, end] = [end, start];
+                                currentRangeStart = start; currentRangeEnd = end;
+                                loadSalesRange();
+                            }
+                        });
+                    });
+                } else {
+                    document.querySelectorAll('.sales-range-btn-month').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const v = parseInt(this.dataset.month, 10);
+                            if (start === null) { start = v; this.classList.add('active'); }
+                            else if (end === null) { end = v; this.classList.add('active'); }
+                            else { clearSelection(); start = v; this.classList.add('active'); }
+                            if (start !== null && end !== null) {
+                                if (end < start) [start, end] = [end, start];
+                                currentRangeStart = start; currentRangeEnd = end;
+                                loadSalesRange();
+                            }
+                        });
+                    });
+                }
+
+                // double-click or outside click clears selection
+                document.addEventListener('dblclick', clearSelection);
+            }
+
+            async function loadSalesRange() {
                 try {
-                    const resp = await fetch('salesData.php?days=' + encodeURIComponent(days));
+                    const params = new URLSearchParams();
+                    params.set('view', currentView);
+                    if (currentRangeStart !== null) params.set('rangeStart', currentRangeStart);
+                    if (currentRangeEnd !== null) params.set('rangeEnd', currentRangeEnd);
+
+                    const resp = await fetch('salesData.php?' + params.toString());
                     const json = await resp.json();
                     if (!json.success) throw new Error('Failed to load sales data');
 
-                    const labels = json.data.map(d => d.date);
-                    const values = json.data.map(d => parseInt(d.total_sold || 0, 10));
-
-                    salesChart.data.labels = labels;
-                    salesChart.data.datasets[0].data = values;
+                    salesChart.data.labels = json.labels;
+                    salesChart.data.datasets[0].data = json.claimed.map(v=>parseInt(v||0,10));
+                    salesChart.data.datasets[1].data = json.cancelled.map(v=>parseInt(v||0,10));
+                    salesChart.data.datasets[2].data = json.returned.map(v=>parseInt(v||0,10));
                     salesChart.update();
-
-                    setActiveButton(clickedButton);
                 } catch (err) {
                     console.error('Error loading sales range:', err);
                     alert('Could not load sales data. Check console for details.');
                 }
             }
 
-            document.querySelectorAll('.sales-range-btn').forEach(btn => {
+            // View button handlers
+            document.querySelectorAll('.sales-view-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
-                    const days = this.getAttribute('data-days');
-                    loadSalesRange(days, this);
+                    currentView = this.dataset.view;
+                    setActiveViewButton(this);
+                    renderRangeControls(currentView);
+                    // reset selection
+                    currentRangeStart = null; currentRangeEnd = null;
+                    loadSalesRange();
                 });
             });
+
+            // initialize
+            renderRangeControls(currentView);
+            loadSalesRange();
         });
     </script>
 </body>
