@@ -75,24 +75,43 @@ function getRecentActivities($limit = 20) {
 }
 
 function getClaimedOrderCount() {
-    global $conn;
+    $conn = connect();
+    $claimed = 0;
     $query = "SELECT SUM(od.Quantity) as claimed_count 
               FROM orderDetails od
               JOIN Order_hdr oh ON od.OrderHdr_id = oh.Orderhdr_id
               WHERE od.Status = 'Claimed'";
-    $result = $conn->query($query);
-    return ($result && $result->num_rows > 0) ? $result->fetch_assoc()['claimed_count'] : 0;
+    if ($stmt = $conn->prepare($query)) {
+        $stmt->execute();
+        $res = $stmt->get_result();
+        if ($res) {
+            $row = $res->fetch_assoc();
+            $claimed = isset($row['claimed_count']) ? (int)$row['claimed_count'] : 0;
+        }
+        $stmt->close();
+    }
+    mysqli_close($conn);
+    return $claimed;
 }
 
 function getLowInventoryProducts() {
-    global $conn;
+    $conn = connect();
+    $products = [];
     $query = "SELECT p.ProductID, p.Model, p.ProductImage, pb.Stocks
               FROM productMstr p
               JOIN ProductBranchMaster pb ON p.ProductID = pb.ProductID
               WHERE pb.Stocks < 10 AND p.Avail_FL = 'Available'
               ORDER BY pb.Stocks ASC LIMIT 5";
-    $result = $conn->query($query);
-    return $result->fetch_all(MYSQLI_ASSOC);
+    if ($stmt = $conn->prepare($query)) {
+        $stmt->execute();
+        $res = $stmt->get_result();
+        if ($res) {
+            $products = $res->fetch_all(MYSQLI_ASSOC);
+        }
+        $stmt->close();
+    }
+    mysqli_close($conn);
+    return $products;
 }
 
 function getSalesOverviewData($days = 7) {
