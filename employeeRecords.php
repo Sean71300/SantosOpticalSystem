@@ -195,15 +195,35 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
                 });
             });
 
-            // Intercept edit clicks to show modal confirmation
+            // Intercept edit clicks to show modal confirmation and populate details
             document.querySelectorAll('.edit-btn').forEach(btn => {
                 btn.addEventListener('click', function(e) {
                     e.preventDefault();
                     const url = this.getAttribute('href');
                     const name = this.getAttribute('data-name') || 'this employee';
+                    const image = this.getAttribute('data-image') || '';
+                    const role = this.getAttribute('data-role') || '';
+                    const branch = this.getAttribute('data-branch') || '';
+
                     const modal = document.getElementById('editConfirmModal');
+
+                    // Populate text fields
                     modal.querySelector('.modal-body .emp-name').textContent = name;
+                    modal.querySelector('.modal-body .emp-role').textContent = role;
+                    modal.querySelector('.modal-body .emp-branch').textContent = branch;
+
+                    // Populate image (show/hide depending on availability)
+                    const imgEl = modal.querySelector('.modal-body .emp-img');
+                    if (image) {
+                        imgEl.src = image;
+                        imgEl.style.display = 'inline-block';
+                    } else {
+                        imgEl.style.display = 'none';
+                    }
+
+                    // Store target URL
                     modal.querySelector('.confirm-edit').setAttribute('data-href', url);
+
                     var bsModal = new bootstrap.Modal(modal);
                     bsModal.show();
                 });
@@ -236,24 +256,28 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
                 window.location.href = window.location.pathname + '?' + urlParams.toString();
             }
         </script>
-    </body>
-</html>
 
-<!-- Edit confirmation modal -->
-<div class="modal fade" id="editConfirmModal" tabindex="-1" aria-labelledby="editConfirmModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editConfirmModalLabel">Confirm Edit</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                You are about to edit <strong class="emp-name"></strong>. Continue?
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary confirm-edit">Edit</button>
+    <!-- Edit confirmation modal (moved inside body so Bootstrap can manage it) -->
+    <div class="modal fade" id="editConfirmModal" tabindex="-1" aria-labelledby="editConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editConfirmModalLabel">Confirm Edit</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img class="emp-img mb-3" src="" alt="Employee Image" style="width:96px;height:96px;object-fit:cover;border-radius:8px;display:none;" />
+                    <p class="mb-1">You are about to edit <strong class="emp-name"></strong>.</p>
+                    <p class="mb-0"><small class="text-muted">Role: <span class="emp-role"></span></small></p>
+                    <p class="mb-0"><small class="text-muted">Branch: <span class="emp-branch"></span></small></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary confirm-edit">Edit</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
+
+    </body>
+</html>
