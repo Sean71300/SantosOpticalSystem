@@ -10,7 +10,8 @@ ob_start();
 // Returns JSON: { success:true, labels:[], claimed:[], cancelled:[], returned:[], start:'', end:'' }
 
 try {
-	require_once __DIR__ . '/connect.php';
+	// setup.php defines connect() and other helpers used across the app
+	require_once __DIR__ . '/setup.php';
 	$extraOutput = trim(ob_get_clean());
 	if (!empty($extraOutput)) {
 		@file_put_contents(__DIR__ . '/logs/salesData_errors.log', date('c') . " - Unexpected output during include: \n" . $extraOutput . "\n\n", FILE_APPEND);
