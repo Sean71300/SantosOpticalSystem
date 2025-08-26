@@ -1,250 +1,139 @@
-$rows = [];
-while ($r = $res->fetch_assoc()) {
-	$rows[] = $r;
-}
+<?php
+header('Content-Type: application/json; charset=utf-8');
+// Minimal, robust sales data endpoint.
+// Accepts GET params: start=YYYY-MM-DD, end=YYYY-MM-DD
+// Returns JSON: { success:true, labels:[], claimed:[], cancelled:[], returned:[], start:'', end:'' }
 
-// Decide aggregation level based on range length
-$sd = new DateTime($startStr);
-$ed = new DateTime($endStr);
-$diffDays = (int)$sd->diff($ed)->days + 1;
+try {
+	require_once __DIR__ . '/connect.php';
 
-if ($diffDays > 365) {
-	$aggregate = 'month';
-} elseif ($diffDays > 90) {
-	$aggregate = 'week';
-} else {
-	$aggregate = 'day';
-}
+	// input validation
+	$start = isset($_GET['start']) ? $_GET['start'] : null;
+	$end = isset($_GET['end']) ? $_GET['end'] : null;
 
-$labels = [];
-$claimed = [];
-$cancelled = [];
-$returned = [];
-
-if ($aggregate === 'day') {
-	$period = new DatePeriod(new DateTime($startStr), new DateInterval('P1D'), (new DateTime($endStr))->modify('+1 day'));
-	foreach ($period as $d) {
-		$key = $d->format('Y-m-d');
-		$labels[] = $d->format('M j');
-		$claimed[$key] = 0;
-		$cancelled[$key] = 0;
-		$returned[$key] = 0;
+	if (!$start || !$end) {
+		throw new Exception('Missing required start or end parameters. Use ?start=YYYY-MM-DD&end=YYYY-MM-DD');
 	}
-	foreach ($rows as $r) {
-		$date = $r['date'];
-		$qty = (int)$r['qty'];
-		$status = strtolower($r['status']);
-		if (!isset($claimed[$date])) continue;
-		if (in_array($status, ['sold','claimed','completed'])) $claimed[$date] += $qty;
-		elseif ($status === 'cancelled') $cancelled[$date] += $qty;
-		elseif ($status === 'returned') $returned[$date] += $qty;
-	}
-	$outLabels = array_values($labels);
-	$outClaimed = array_values($claimed);
-	$outCancelled = array_values($cancelled);
-	$outReturned = array_values($returned);
 
-} elseif ($aggregate === 'week') {
-	// bucket by week starting Monday
-	$weekStartDt = clone $sd;
-	// move to Monday of that week
-	$weekStartDt->modify('monday this week');
-	$period = new DatePeriod($weekStartDt, new DateInterval('P7D'), (new DateTime($endStr))->modify('+1 day'));
-	$weekKeys = [];
-	foreach ($period as $w) {
-		$key = $w->format('Y-m-d'); // week start
-		$weekKeys[] = $key;
-		$labels[] = $w->format('M j');
-		$claimed[$key] = 0;
-		$cancelled[$key] = 0;
-		$returned[$key] = 0;
+	$startDate = DateTime::createFromFormat('Y-m-d', $start);
+	$endDate = DateTime::createFromFormat('Y-m-d', $end);
+	if (!$startDate || !$endDate) throw new Exception('Invalid date format. Use YYYY-MM-DD');
+	if ($startDate > $endDate) {
+		// swap
+		$tmp = $startDate; $startDate = $endDate; $endDate = $tmp;
 	}
-	foreach ($rows as $r) {
-		$d = new DateTime($r['date']);
-		$wk = clone $d; $wk->modify('monday this week');
-		$key = $wk->format('Y-m-d');
-		if (!isset($claimed[$key])) continue;
-		$qty = (int)$r['qty'];
-		$status = strtolower($r['status']);
-		if (in_array($status, ['sold','claimed','completed'])) $claimed[$key] += $qty;
-		elseif ($status === 'cancelled') $cancelled[$key] += $qty;
-		elseif ($status === 'returned') $returned[$key] += $qty;
-	}
-	$outLabels = array_values($labels);
-	$outClaimed = array_values($claimed);
-	$outCancelled = array_values($cancelled);
-	$outReturned = array_values($returned);
 
-} else { // month
-	$mStart = new DateTime($sd->format('Y-m-01'));
-	$mEnd = new DateTime($ed->format('Y-m-01'));
-	$period = new DatePeriod($mStart, new DateInterval('P1M'), (clone $mEnd)->modify('+1 month'));
-	$monthKeys = [];
-	foreach ($period as $m) {
-		$key = $m->format('Y-m');
-		$monthKeys[] = $key;
-		$labels[] = $m->format('M Y');
-		$claimed[$key] = 0;
-		$cancelled[$key] = 0;
-		$returned[$key] = 0;
-	}
-	foreach ($rows as $r) {
-		$dKey = (new DateTime($r['date']))->format('Y-m');
-		if (!isset($claimed[$dKey])) continue;
-		$qty = (int)$r['qty'];
-		$status = strtolower($r['status']);
-		if (in_array($status, ['sold','claimed','completed'])) $claimed[$dKey] += $qty;
-		elseif ($status === 'cancelled') $cancelled[$dKey] += $qty;
-		elseif ($status === 'returned') $returned[$dKey] += $qty;
-	}
-	$outLabels = array_values($labels);
-	$outClaimed = array_values($claimed);
-	$outCancelled = array_values($cancelled);
-	$outReturned = array_values($returned);
-}
-		$endDay = min($lastDay, $rangeEnd * 7);
-		$startDate = new DateTime($now->format('Y-m-') . str_pad($startDay, 2, '0', STR_PAD_LEFT));
-		$endDate = new DateTime($now->format('Y-m-') . str_pad($endDay, 2, '0', STR_PAD_LEFT));
-	} else {
-		$startDate = $baseStart;
-		$endDate = $baseEnd;
-	}
-	$groupBy = 'week-of-month';
-} else { // year
-	$year = (int)$now->format('Y');
-	$baseStart = new DateTime($year . '-01-01');
-	$baseEnd = new DateTime($year . '-12-31');
+	// sanitize range size
+	$diffDays = (int)$startDate->diff($endDate)->days + 1;
 
-	if ($rangeStart !== null && $rangeEnd !== null) {
-		$startMonth = max(1, min(12, $rangeStart));
-		$endMonth = max(1, min(12, $rangeEnd));
-		$startDate = new DateTime(sprintf('%04d-%02d-01', $year, $startMonth));
-		// last day of endMonth
-		$endDate = new DateTime(sprintf('%04d-%02d-01', $year, $endMonth));
-		$endDate->modify('last day of this month');
-	} else {
-		$startDate = $baseStart;
-		$endDate = $baseEnd;
-	}
-	$groupBy = 'month';
-}
+	// choose aggregation
+	if ($diffDays > 365) $agg = 'month';
+	elseif ($diffDays > 90) $agg = 'week';
+	else $agg = 'day';
 
-$startStr = $startDate->format('Y-m-d');
-$endStr = $endDate->format('Y-m-d');
+	$startStr = $startDate->format('Y-m-d');
+	$endStr = $endDate->format('Y-m-d');
 
-// Fetch aggregated quantities per date and status
-$conn = connect();
-$sql = "SELECT DATE(oh.Created_dt) as date, od.Status as status, SUM(od.Quantity) as qty 
-		FROM orderDetails od
-		JOIN Order_hdr oh ON od.OrderHdr_id = oh.Orderhdr_id
-		WHERE DATE(oh.Created_dt) BETWEEN ? AND ?
-		GROUP BY DATE(oh.Created_dt), od.Status
-		ORDER BY date ASC";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param('ss', $startStr, $endStr);
-$stmt->execute();
-$res = $stmt->get_result();
+	// query DB: grouped by date and status
+	$conn = connect();
+	$sql = "SELECT DATE(oh.Created_dt) AS date, od.Status AS status, SUM(od.Quantity) AS qty
+			FROM orderDetails od
+			JOIN Order_hdr oh ON od.OrderHdr_id = oh.Orderhdr_id
+			WHERE DATE(oh.Created_dt) BETWEEN ? AND ?
+			GROUP BY DATE(oh.Created_dt), od.Status
+			ORDER BY date ASC";
+	$stmt = $conn->prepare($sql);
+	if (!$stmt) throw new Exception('DB prepare failed: ' . $conn->error);
+	$stmt->bind_param('ss', $startStr, $endStr);
+	$stmt->execute();
+	$res = $stmt->get_result();
 
-$rows = [];
-while ($r = $res->fetch_assoc()) {
-	$rows[] = $r;
-}
+	$rows = [];
+	while ($r = $res->fetch_assoc()) $rows[] = $r;
 
-// Build buckets
-$labels = [];
-$claimed = [];
-$cancelled = [];
-$returned = [];
+	// build buckets
+	$labels = [];
+	$claimed = [];
+	$cancelled = [];
+	$returned = [];
 
-if ($groupBy === 'day') {
-	$period = new DatePeriod(new DateTime($startStr), new DateInterval('P1D'), (new DateTime($endStr))->modify('+1 day'));
-	foreach ($period as $d) {
-		$lbl = $d->format('Y-m-d');
-		$labels[] = $lbl;
-		$claimed[$lbl] = 0;
-		$cancelled[$lbl] = 0;
-		$returned[$lbl] = 0;
-	}
-	foreach ($rows as $r) {
-		$date = $r['date'];
-		$qty = (int)$r['qty'];
-		$status = strtolower($r['status']);
-		if (isset($claimed[$date])) {
-			if ($status === 'sold') $claimed[$date] += $qty;
+	if ($agg === 'day') {
+		$period = new DatePeriod(new DateTime($startStr), new DateInterval('P1D'), (new DateTime($endStr))->modify('+1 day'));
+		foreach ($period as $d) {
+			$key = $d->format('Y-m-d');
+			$labels[] = $d->format('M j');
+			$claimed[$key] = 0; $cancelled[$key] = 0; $returned[$key] = 0;
+		}
+		foreach ($rows as $r) {
+			$date = $r['date']; $qty = (int)$r['qty']; $status = strtolower($r['status']);
+			if (!isset($claimed[$date])) continue;
+			if (in_array($status, ['sold','claimed','completed'])) $claimed[$date] += $qty;
 			elseif ($status === 'cancelled') $cancelled[$date] += $qty;
 			elseif ($status === 'returned') $returned[$date] += $qty;
 		}
+		$outLabels = array_values($labels);
+		$outClaimed = array_values($claimed);
+		$outCancelled = array_values($cancelled);
+		$outReturned = array_values($returned);
+
+	} elseif ($agg === 'week') {
+		// week buckets starting Monday
+		$sd = clone $startDate; $sd->modify('monday this week');
+		$period = new DatePeriod($sd, new DateInterval('P7D'), (new DateTime($endStr))->modify('+1 day'));
+		$weekKeys = [];
+		foreach ($period as $w) {
+			$key = $w->format('Y-m-d'); $weekKeys[] = $key; $labels[] = $w->format('M j');
+			$claimed[$key]=0; $cancelled[$key]=0; $returned[$key]=0;
+		}
+		foreach ($rows as $r) {
+			$d = new DateTime($r['date']); $wk = clone $d; $wk->modify('monday this week'); $key = $wk->format('Y-m-d');
+			if (!isset($claimed[$key])) continue;
+			$qty = (int)$r['qty']; $status = strtolower($r['status']);
+			if (in_array($status, ['sold','claimed','completed'])) $claimed[$key] += $qty;
+			elseif ($status === 'cancelled') $cancelled[$key] += $qty;
+			elseif ($status === 'returned') $returned[$key] += $qty;
+		}
+		$outLabels = array_values($labels);
+		$outClaimed = array_values($claimed);
+		$outCancelled = array_values($cancelled);
+		$outReturned = array_values($returned);
+
+	} else { // month
+		$mStart = new DateTime($startDate->format('Y-m-01'));
+		$mEnd = new DateTime($endDate->format('Y-m-01'));
+		$period = new DatePeriod($mStart, new DateInterval('P1M'), (clone $mEnd)->modify('+1 month'));
+		foreach ($period as $m) {
+			$key = $m->format('Y-m'); $labels[] = $m->format('M Y');
+			$claimed[$key]=0; $cancelled[$key]=0; $returned[$key]=0;
+		}
+		foreach ($rows as $r) {
+			$dKey = (new DateTime($r['date']))->format('Y-m');
+			if (!isset($claimed[$dKey])) continue;
+			$qty = (int)$r['qty']; $status = strtolower($r['status']);
+			if (in_array($status, ['sold','claimed','completed'])) $claimed[$dKey] += $qty;
+			elseif ($status === 'cancelled') $cancelled[$dKey] += $qty;
+			elseif ($status === 'returned') $returned[$dKey] += $qty;
+		}
+		$outLabels = array_values($labels);
+		$outClaimed = array_values($claimed);
+		$outCancelled = array_values($cancelled);
+		$outReturned = array_values($returned);
 	}
-	$outLabels = array_values(array_map(function($d){ $dt = new DateTime($d); return $dt->format('M j'); }, $labels));
-	$outClaimed = array_values($claimed);
-	$outCancelled = array_values($cancelled);
-	$outReturned = array_values($returned);
-} elseif ($groupBy === 'week-of-month') {
-	// Determine week buckets within the start/end month
-	$startMonth = (int)$startDate->format('m');
-	$startYear = (int)$startDate->format('Y');
-	$lastDay = (int)$endDate->format('d');
-	// compute weeks covering startDate..endDate in that month
-	$weeks = [];
-	$weekIndexStart = (int)ceil((int)$startDate->format('d') / 7);
-	$weekIndexEnd = (int)ceil((int)$endDate->format('d') / 7);
-	for ($w = $weekIndexStart; $w <= $weekIndexEnd; $w++) {
-		$labels[] = 'Week ' . $w;
-		$claimed[$w] = 0;
-		$cancelled[$w] = 0;
-		$returned[$w] = 0;
-	}
-	foreach ($rows as $r) {
-		$d = new DateTime($r['date']);
-		if ($d->format('Y-m') !== $startDate->format('Y-m')) continue;
-		$day = (int)$d->format('d');
-		$wk = (int)ceil($day / 7);
-		$qty = (int)$r['qty'];
-		$status = strtolower($r['status']);
-		if (!isset($claimed[$wk])) continue;
-		if ($status === 'sold') $claimed[$wk] += $qty;
-		elseif ($status === 'cancelled') $cancelled[$wk] += $qty;
-		elseif ($status === 'returned') $returned[$wk] += $qty;
-	}
-	$outLabels = array_values($labels);
-	$outClaimed = array_values($claimed);
-	$outCancelled = array_values($cancelled);
-	$outReturned = array_values($returned);
-} else { // month grouping
-	$startMonth = new DateTime($startDate->format('Y-m-01'));
-	$endMonth = new DateTime($endDate->format('Y-m-01'));
-	$period = new DatePeriod($startMonth, new DateInterval('P1M'), (clone $endMonth)->modify('+1 month'));
-	$months = [];
-	foreach ($period as $m) {
-		$key = $m->format('Y-m');
-		$labels[] = $m->format('M');
-		$claimed[$key] = 0;
-		$cancelled[$key] = 0;
-		$returned[$key] = 0;
-		$months[] = $key;
-	}
-	foreach ($rows as $r) {
-		$dateKey = (new DateTime($r['date']))->format('Y-m');
-		$qty = (int)$r['qty'];
-		$status = strtolower($r['status']);
-		if (!isset($claimed[$dateKey])) continue;
-		if ($status === 'claimed') $claimed[$dateKey] += $qty;
-		elseif ($status === 'cancelled') $cancelled[$dateKey] += $qty;
-		elseif ($status === 'returned') $returned[$dateKey] += $qty;
-	}
-	$outLabels = array_values($labels);
-	$outClaimed = array_values($claimed);
-	$outCancelled = array_values($cancelled);
-	$outReturned = array_values($returned);
+
+	echo json_encode([
+		'success' => true,
+		'labels' => $outLabels,
+		'claimed' => $outClaimed,
+		'cancelled' => $outCancelled,
+		'returned' => $outReturned,
+		'start' => $startStr,
+		'end' => $endStr,
+		'aggregation' => $agg
+	]);
+
+} catch (Exception $ex) {
+	http_response_code(500);
+	echo json_encode(['success'=>false,'error'=>$ex->getMessage()]);
 }
 
-echo json_encode([
-	'success' => true,
-	'labels' => $outLabels,
-	'claimed' => $outClaimed,
-	'cancelled' => $outCancelled,
-	'returned' => $outReturned,
-	'start' => $startStr,
-	'end' => $endStr,
-]);
 

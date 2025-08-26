@@ -210,7 +210,8 @@ $salesData = getSalesOverviewData();
                                 if (count($lowInventory) > 0) {
                                     foreach ($lowInventory as $product) {
                                         echo '<div class="container d-flex align-items-center">';
-                                        echo '<img src="' . htmlspecialchars($product['ProductImage']) . '" alt="Product Image" style="height:100px; width:100px;" class="img-thumbnail">';
+                                        $img = htmlspecialchars($product['ProductImage']);
+                                        echo '<img src="' . $img . '" alt="Product Image" style="height:100px; width:100px;" class="img-thumbnail" onerror="this.onerror=null;this.src=\'Images/default-product.png\';">';
                                             echo '<div class="fw-bold ms-3">';
                                                 echo htmlspecialchars($product['Model']);
                                                 echo "<br> Available Stocks: ".htmlspecialchars($product['Stocks']);
