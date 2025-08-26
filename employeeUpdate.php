@@ -73,8 +73,8 @@ if (!empty($missing)) {
     exit;
 }
 
-// Handle image upload
-list($err, $imagePath) = handleImage($id);
+// Handle image upload; new handleImage returns [$err, $imagePathOrNull, $isUploaded]
+list($err, $imagePathOrNull, $isUploaded) = handleImage($id);
 if ($err) {
     echo json_encode(['success' => false, 'message' => $err]);
     exit;
@@ -84,8 +84,15 @@ $conn = connect();
 $upd_by = $_SESSION['full_name'] ?? '';
 $employee_id = $_SESSION['id'] ?? '';
 
-$stmt = $conn->prepare("UPDATE employee SET EmployeeName = ?, EmployeePicture = ?, EmployeeEmail = ?, EmployeeNumber = ?, RoleID = ?, LoginName = ?, Upd_by = ?, BranchCode = ? WHERE EmployeeID = ?");
-$stmt->bind_param('sssssssss', $name, $imagePath, $email, $phone, $role, $username, $upd_by, $branch, $id);
+// Build UPDATE dynamically: only set EmployeePicture if a new file was uploaded
+if ($isUploaded) {
+    $stmt = $conn->prepare("UPDATE employee SET EmployeeName = ?, EmployeePicture = ?, EmployeeEmail = ?, EmployeeNumber = ?, RoleID = ?, LoginName = ?, Upd_by = ?, BranchCode = ? WHERE EmployeeID = ?");
+    $stmt->bind_param('sssssssss', $name, $imagePathOrNull, $email, $phone, $role, $username, $upd_by, $branch, $id);
+} else {
+    // Do not modify EmployeePicture
+    $stmt = $conn->prepare("UPDATE employee SET EmployeeName = ?, EmployeeEmail = ?, EmployeeNumber = ?, RoleID = ?, LoginName = ?, Upd_by = ?, BranchCode = ? WHERE EmployeeID = ?");
+    $stmt->bind_param('ssssssss', $name, $email, $phone, $role, $username, $upd_by, $branch, $id);
+}
 if (!$stmt->execute()) {
     $errno = $stmt->errno;
     $errMsg = $stmt->error;
@@ -123,6 +130,24 @@ if ($bstmt) {
     $bstmt->close();
 }
 
+// Determine image URL for response: use uploaded path if present, otherwise load existing picture
+if ($isUploaded && !empty($imagePathOrNull)) {
+    $responseImage = $imagePathOrNull;
+} else {
+    // fetch existing EmployeePicture
+    $q = $conn->prepare("SELECT EmployeePicture FROM employee WHERE EmployeeID = ? LIMIT 1");
+    $responseImage = '';
+    if ($q) {
+        $q->bind_param('s', $id);
+        $q->execute();
+        $q->bind_result($existingPic);
+        if ($q->fetch()) {
+            $responseImage = $existingPic;
+        }
+        $q->close();
+    }
+}
+
 $resp = [
     'success' => true,
     'data' => [
@@ -134,7 +159,7 @@ $resp = [
         'role_name' => htmlspecialchars($role_name ?: $role, ENT_QUOTES, 'UTF-8'),
         'branch' => htmlspecialchars($branch, ENT_QUOTES, 'UTF-8'),
         'branch_name' => htmlspecialchars($branch_name ?: $branch, ENT_QUOTES, 'UTF-8'),
-    'image' => htmlspecialchars($imagePath, ENT_QUOTES, 'UTF-8'),
+    'image' => htmlspecialchars($responseImage, ENT_QUOTES, 'UTF-8'),
     'username' => htmlspecialchars($username, ENT_QUOTES, 'UTF-8')
     ]
 ];

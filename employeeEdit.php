@@ -55,17 +55,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
             break;
         }
 
-        // Handle image upload
-        [$errorMessage, $imagePath] = handleImage($id);
+        // Handle image upload; new handleImage returns [$errorMessage, $imagePathOrNull, $isUploaded]
+        list($errorMessage, $imagePathOrNull, $isUploaded) = handleImage($id);
 
-        // Update employee record
+        // Update employee record; only update EmployeePicture if a new file was uploaded
         $upd_by = $_SESSION["full_name"];        
         $employee_id = $_SESSION["id"];
-        $sql = "UPDATE employee 
-                SET EmployeeName = '$name', EmployeePicture = '$imagePath', 
+        if ($isUploaded && !empty($imagePathOrNull)) {
+            $sql = "UPDATE employee 
+                SET EmployeeName = '$name', EmployeePicture = '$imagePathOrNull', 
                 EmployeeEmail = '$email', EmployeeNumber = '$phone',
                 RoleID = '$role', LoginName = '$username', Upd_by = '$upd_by', BranchCode = '$branch' 
                 WHERE EmployeeID = {$id}";
+        } else {
+            $sql = "UPDATE employee 
+                SET EmployeeName = '$name', 
+                EmployeeEmail = '$email', EmployeeNumber = '$phone',
+                RoleID = '$role', LoginName = '$username', Upd_by = '$upd_by', BranchCode = '$branch' 
+                WHERE EmployeeID = {$id}";
+        }
 
         $conn = connect();
         $result = $conn->query($sql);

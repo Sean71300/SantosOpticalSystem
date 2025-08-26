@@ -175,45 +175,48 @@
             }                         
     }       
 
-    function handleImage($id) 
-        {
-            $errorMessage = "";        
-            $conn = connect();
-            $sql = "SELECT EmployeePicture FROM employee where EmployeeID=$id";
-            $result = $conn->query($sql);
-            $row = $result->fetch_assoc();
-            $imagePath = $row["EmployeePicture"]; 
-            // If no file field was provided, return existing image path
-            if (!isset($_FILES["IMAGE"]) || $_FILES["IMAGE"]["error"] == UPLOAD_ERR_NO_FILE) {
-                return [$errorMessage, $imagePath];
-            }
+    function handleImage($id)
+    {
+        $errorMessage = "";
+        $isUploaded = false;
 
-            if ($_FILES["IMAGE"]["size"] < 100000000 && $_FILES["IMAGE"]["error"] == UPLOAD_ERR_OK) {                    
-                if (!empty($_FILES["IMAGE"]["name"])) {
-                    // Create uploads directory if it doesn't exist
-                    $uploadDir = 'uploads/';
-                    if (!file_exists($uploadDir)) {
-                        mkdir($uploadDir, 0755, true);
-                    }
-                    
-                    // Generate unique filename to prevent conflicts
-                    $fileExtension = pathinfo($_FILES['IMAGE']['name'], PATHINFO_EXTENSION);
-                    $newFilename = uniqid() . '.' . $fileExtension;
-                    $imagePath = $uploadDir . $newFilename;
-                    
-                    if (!move_uploaded_file($_FILES['IMAGE']['tmp_name'], $imagePath)) {
-                        $errorMessage = "Failed to upload image. Please check directory permissions.";
-                        // Fall back to default image if upload fails
-                        $imagePath = "Images/default.jpg";
-                    }
-                }   
-            } else {
-                if ($_FILES["IMAGE"]["error"] != UPLOAD_ERR_NO_FILE) {
-                    $errorMessage = 'Image file size is too big or upload error occurred.';
+        // If no file field was provided, indicate nothing was uploaded
+        if (!isset($_FILES["IMAGE"]) || $_FILES["IMAGE"]["error"] == UPLOAD_ERR_NO_FILE) {
+            return [$errorMessage, null, $isUploaded];
+        }
+
+        // Validate upload
+        if ($_FILES["IMAGE"]["size"] < 100000000 && $_FILES["IMAGE"]["error"] == UPLOAD_ERR_OK) {
+            if (!empty($_FILES["IMAGE"]["name"])) {
+                // Create uploads directory if it doesn't exist
+                $uploadDir = __DIR__ . '/uploads/';
+                if (!file_exists($uploadDir)) {
+                    mkdir($uploadDir, 0755, true);
+                }
+
+                // Generate unique filename to prevent conflicts
+                $fileExtension = pathinfo($_FILES['IMAGE']['name'], PATHINFO_EXTENSION);
+                $newFilename = uniqid() . '.' . $fileExtension;
+                $imagePathRel = 'uploads/' . $newFilename;
+                $imagePath = $uploadDir . $newFilename;
+
+                if (move_uploaded_file($_FILES['IMAGE']['tmp_name'], $imagePath)) {
+                    $isUploaded = true;
+                    return [$errorMessage, $imagePathRel, $isUploaded];
+                } else {
+                    $errorMessage = "Failed to upload image. Please check directory permissions.";
+                    // Do not mark as uploaded so we won't overwrite existing picture
+                    return [$errorMessage, null, false];
                 }
             }
-            return [$errorMessage, $imagePath];
+        } else {
+            if ($_FILES["IMAGE"]["error"] != UPLOAD_ERR_NO_FILE) {
+                $errorMessage = 'Image file size is too big or upload error occurred.';
+            }
         }
+
+        return [$errorMessage, null, $isUploaded];
+    }
 
     function insertData($name, $username, $password, $email, $phone, $role, $branch, $imagePath)
         {
