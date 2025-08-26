@@ -233,7 +233,31 @@ $salesData = getSalesOverviewData();
                             <i class="fas fa-list me-1"></i> Show All Logs
                         </a>
                     </div>
-                    <ul class="list-group list-group-flush">
+                        <div class="list-group list-group-flush recent-activity-list" style="max-height:360px; overflow:auto; padding-right:6px;">
+                            <?php if (empty($recentActivities)): ?>
+                                <div class="text-center text-muted py-3">No recent activity.</div>
+                            <?php else: ?>
+                                <?php foreach ($recentActivities as $activity):
+                                    $ts = strtotime($activity['Upd_dt']);
+                                    $isNew = ($ts !== false) && (time() - $ts) <= 86400; // within 24 hours
+                                    $timeLabel = $ts ? date('M j, g:i A', $ts) : htmlspecialchars($activity['Upd_dt']);
+                                    $desc = htmlspecialchars($activity['Description']);
+                                    $targetType = htmlspecialchars($activity['TargetType'] ?? '');
+                                    $targetId = htmlspecialchars($activity['TargetID'] ?? '');
+                                    $message = trim($desc . ' ' . $targetType . ($targetId !== '' ? ' # ' . $targetId : ''));
+                                ?>
+                                <a href="logs.php" class="list-group-item list-group-item-action py-3 border-bottom d-flex justify-content-between align-items-center">
+                                    <div class="flex-grow-1 pe-2">
+                                        <div class="small text-muted mb-1"><?php echo $timeLabel; ?></div>
+                                        <div class="text-truncate" style="max-width:240px"><?php echo $message; ?></div>
+                                    </div>
+                                    <?php if ($isNew): ?>
+                                        <span class="badge bg-primary rounded-pill ms-2">New</span>
+                                    <?php endif; ?>
+                                </a>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </div>
                         <?php foreach ($recentActivities as $activity): ?>
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             <div>
