@@ -211,8 +211,24 @@ $salesData = getSalesOverviewData();
                                     foreach ($lowInventory as $product) {
                                         echo '<div class="container d-flex align-items-center">';
                                         $img = htmlspecialchars($product['ProductImage']);
-                                        // safe-escape the image URL to avoid injecting unescaped characters into HTML/JS
-                                        $imgEsc = htmlspecialchars($img, ENT_QUOTES, 'UTF-8');
+                                        // choose a server-side fallback so browser doesn't request missing files
+                                        $imgRaw = trim($img);
+                                        $fallback = 'Images/logo.png';
+                                        $imgToUse = $fallback;
+                                        if (!empty($imgRaw)) {
+                                            // absolute URL -> trust it
+                                            if (stripos($imgRaw, 'http://') === 0 || stripos($imgRaw, 'https://') === 0) {
+                                                $imgToUse = $imgRaw;
+                                            } else {
+                                                // check relative path on server
+                                                $candidate1 = __DIR__ . '/' . ltrim($imgRaw, '/');
+                                                if (file_exists($candidate1)) {
+                                                    $imgToUse = ltrim($imgRaw, '/');
+                                                }
+                                                // else keep fallback
+                                            }
+                                        }
+                                        $imgEsc = htmlspecialchars($imgToUse, ENT_QUOTES, 'UTF-8');
                                         echo "<img src=\"{$imgEsc}\" alt=\"Product Image\" style=\"height:100px; width:100px;\" class=\"img-thumbnail\" onerror=\"this.onerror=null;this.src='Images/logo.png';\">";
                                             echo '<div class="fw-bold ms-3">';
                                                 echo htmlspecialchars($product['Model']);
