@@ -186,115 +186,139 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
         
 
         <script>
-            // Add confirmation for delete actions
-            document.querySelectorAll('.delete-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    if(!confirm('Are you sure you want to delete this employee?')) {
-                        e.preventDefault();
-                    }
-                });
-            });
-
-            // Intercept edit clicks to show modal confirmation and populate details
-            document.querySelectorAll('.edit-btn').forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    // Read data attributes
-                    const id = this.getAttribute('data-id');
-                    const name = this.getAttribute('data-name') || '';
-                    const image = this.getAttribute('data-image') || '';
-                    const role = this.getAttribute('data-role') || '';
-                    const roleId = this.getAttribute('data-roleid') || '';
-                    const branch = this.getAttribute('data-branch') || '';
-                    const branchCode = this.getAttribute('data-branchcode') || '';
-                    const username = this.getAttribute('data-username') || '';
-                    const email = this.getAttribute('data-email') || '';
-                    const phone = this.getAttribute('data-phone') || '';
-
-                    const modal = document.getElementById('editConfirmModal');
-
-                    // Populate form fields
-                    modal.querySelector('.modal-emp-id').value = id;
-                    modal.querySelector('.modal-name').value = name;
-                    modal.querySelector('.modal-username').value = username;
-                    modal.querySelector('.modal-email').value = email;
-                    modal.querySelector('.modal-phone').value = phone;
-                    modal.querySelector('.modal-role').value = roleId;
-                    modal.querySelector('.modal-branch').value = branchCode;
-
-                    // Populate image display
-                    const imgEl = modal.querySelector('.emp-img');
-                    if (image) {
-                        imgEl.src = image;
-                        imgEl.style.display = 'inline-block';
-                    } else {
-                        imgEl.style.display = 'none';
-                    }
-
-                    var bsModal = new bootstrap.Modal(modal);
-                    bsModal.show();
-                });
-            });
-
-            // Handle modal form submission via AJAX
-            const modalForm = document.getElementById('modalEditForm');
-            modalForm.addEventListener('submit', function(evt) {
-                evt.preventDefault();
-                const submitBtn = modalForm.querySelector('.modal-save');
-                submitBtn.disabled = true;
-                submitBtn.textContent = 'Saving...';
-
-                const formData = new FormData(modalForm);
-
-                fetch('employeeUpdate.php', {
-                    method: 'POST',
-                    body: formData
-                }).then(r => r.json())
-                .then(resp => {
-                    if (!resp.success) {
-                        alert('Update failed: ' + resp.message);
-                        return;
-                    }
-
-                    // Update the table row inline
-                    const data = resp.data;
-                    const rows = document.querySelectorAll('table tbody tr');
-                    rows.forEach(row => {
-                        const idCell = row.querySelector('td:first-child');
-                        if (idCell && idCell.textContent.trim() === data.id.toString()) {
-                            row.querySelector('td:nth-child(2)').textContent = data.name;
-                            row.querySelector('td:nth-child(3)').textContent = data.email;
-                            row.querySelector('td:nth-child(4)').textContent = data.phone;
-                            row.querySelector('td:nth-child(5)').textContent = data.role;
-                            row.querySelector('td:nth-child(6) img').src = data.image;
-                            row.querySelector('td:nth-child(7)').textContent = data.branch;
-
-                            // Also update data-* attributes on Edit button so modal stays in sync
-                            const editBtn = row.querySelector('.edit-btn');
-                            if (editBtn) {
-                                editBtn.setAttribute('data-name', data.name);
-                                editBtn.setAttribute('data-image', data.image);
-                                editBtn.setAttribute('data-email', data.email);
-                                editBtn.setAttribute('data-phone', data.phone);
-                                editBtn.setAttribute('data-role', data.role);
-                                editBtn.setAttribute('data-branch', data.branch);
-                            }
+            document.addEventListener('DOMContentLoaded', function() {
+                // Add confirmation for delete actions
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        if(!confirm('Are you sure you want to delete this employee?')) {
+                            e.preventDefault();
                         }
                     });
-
-                    // Close modal
-                    var bsModalInstance = bootstrap.Modal.getInstance(document.getElementById('editConfirmModal'));
-                    if (bsModalInstance) bsModalInstance.hide();
-                })
-                .catch(err => {
-                    console.error(err);
-                    alert('An error occurred while updating.');
-                })
-                .finally(() => {
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Save changes';
                 });
+
+                // Intercept edit clicks to show modal confirmation and populate details
+                document.querySelectorAll('.edit-btn').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        // Read data attributes
+                        const id = this.getAttribute('data-id');
+                        const name = this.getAttribute('data-name') || '';
+                        const image = this.getAttribute('data-image') || '';
+                        const role = this.getAttribute('data-role') || '';
+                        const roleId = this.getAttribute('data-roleid') || '';
+                        const branch = this.getAttribute('data-branch') || '';
+                        const branchCode = this.getAttribute('data-branchcode') || '';
+                        const username = this.getAttribute('data-username') || '';
+                        const email = this.getAttribute('data-email') || '';
+                        const phone = this.getAttribute('data-phone') || '';
+
+                        const modal = document.getElementById('editConfirmModal');
+
+                        // Populate form fields
+                        modal.querySelector('.modal-emp-id').value = id;
+                        modal.querySelector('.modal-name').value = name;
+                        modal.querySelector('.modal-username').value = username;
+                        modal.querySelector('.modal-email').value = email;
+                        modal.querySelector('.modal-phone').value = phone;
+                        modal.querySelector('.modal-role').value = roleId;
+                        modal.querySelector('.modal-branch').value = branchCode;
+
+                        // Populate image display
+                        const imgEl = modal.querySelector('.emp-img');
+                        if (image) {
+                            imgEl.src = image;
+                            imgEl.style.display = 'inline-block';
+                        } else {
+                            imgEl.style.display = 'none';
+                        }
+
+                        var bsModal = new bootstrap.Modal(modal);
+                        bsModal.show();
+                    });
+                });
+
+                // Modal image preview when a new file is chosen
+                const modalImageInput = document.getElementById('modalImage');
+                if (modalImageInput) {
+                    modalImageInput.addEventListener('change', function() {
+                        const file = this.files && this.files[0];
+                        const imgEl = document.querySelector('#editConfirmModal .emp-img');
+                        if (file && imgEl) {
+                            const reader = new FileReader();
+                            reader.onload = function(e) {
+                                imgEl.src = e.target.result;
+                                imgEl.style.display = 'inline-block';
+                            };
+                            reader.readAsDataURL(file);
+                        }
+                    });
+                }
+
+                // Handle modal form submission via AJAX
+                const modalForm = document.getElementById('modalEditForm');
+                if (modalForm) {
+                    modalForm.addEventListener('submit', function(evt) {
+                        evt.preventDefault();
+                        const submitBtn = modalForm.querySelector('.modal-save');
+                        submitBtn.disabled = true;
+                        submitBtn.textContent = 'Saving...';
+
+                        const formData = new FormData(modalForm);
+
+                        fetch('employeeUpdate.php', {
+                            method: 'POST',
+                            body: formData
+                        }).then(r => r.json())
+                        .then(resp => {
+                            if (!resp.success) {
+                                alert('Update failed: ' + resp.message);
+                                return;
+                            }
+
+                            // Update the table row inline
+                            const data = resp.data;
+                            const rows = document.querySelectorAll('table tbody tr');
+                            rows.forEach(row => {
+                                const idCell = row.querySelector('td:first-child');
+                                if (idCell && idCell.textContent.trim() === data.id.toString()) {
+                                    row.querySelector('td:nth-child(2)').textContent = data.name;
+                                    row.querySelector('td:nth-child(3)').textContent = data.email;
+                                    row.querySelector('td:nth-child(4)').textContent = data.phone;
+                                    row.querySelector('td:nth-child(5)').textContent = data.role_name || data.role;
+                                    row.querySelector('td:nth-child(6) img').src = data.image;
+                                    row.querySelector('td:nth-child(7)').textContent = data.branch_name || data.branch;
+
+                                    // Also update data-* attributes on Edit button so modal stays in sync
+                                    const editBtn = row.querySelector('.edit-btn');
+                                    if (editBtn) {
+                                        editBtn.setAttribute('data-name', data.name);
+                                        editBtn.setAttribute('data-image', data.image);
+                                        editBtn.setAttribute('data-email', data.email);
+                                        editBtn.setAttribute('data-phone', data.phone);
+                                        editBtn.setAttribute('data-role', data.role_name || data.role);
+                                        editBtn.setAttribute('data-roleid', data.role);
+                                        editBtn.setAttribute('data-branch', data.branch_name || data.branch);
+                                        editBtn.setAttribute('data-branchcode', data.branch);
+                                    }
+                                }
+                            });
+
+                            // Close modal
+                            var bsModalInstance = bootstrap.Modal.getInstance(document.getElementById('editConfirmModal'));
+                            if (bsModalInstance) bsModalInstance.hide();
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            alert('An error occurred while updating.');
+                        })
+                        .finally(() => {
+                            submitBtn.disabled = false;
+                            submitBtn.textContent = 'Save changes';
+                        });
+                    });
+                }
             });
+        </script>
 
             // Function to handle table sorting
             function sortTable(column) {

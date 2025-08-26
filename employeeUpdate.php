@@ -47,6 +47,27 @@ $stmt->close();
 EGenerateLogs($employee_id, $id, $name);
 
 // Return updated values to update table row on client
+// Fetch display names for role and branch
+$role_name = '';
+$branch_name = '';
+$rstmt = $conn->prepare("SELECT Description FROM roleMaster WHERE RoleID = ?");
+if ($rstmt) {
+    $rstmt->bind_param('s', $role);
+    $rstmt->execute();
+    $rstmt->bind_result($role_name);
+    $rstmt->fetch();
+    $rstmt->close();
+}
+
+$bstmt = $conn->prepare("SELECT BranchName FROM BranchMaster WHERE BranchCode = ?");
+if ($bstmt) {
+    $bstmt->bind_param('s', $branch);
+    $bstmt->execute();
+    $bstmt->bind_result($branch_name);
+    $bstmt->fetch();
+    $bstmt->close();
+}
+
 $resp = [
     'success' => true,
     'data' => [
@@ -55,7 +76,9 @@ $resp = [
         'email' => htmlspecialchars($email, ENT_QUOTES, 'UTF-8'),
         'phone' => htmlspecialchars($phone, ENT_QUOTES, 'UTF-8'),
         'role' => htmlspecialchars($role, ENT_QUOTES, 'UTF-8'),
+        'role_name' => htmlspecialchars($role_name ?: $role, ENT_QUOTES, 'UTF-8'),
         'branch' => htmlspecialchars($branch, ENT_QUOTES, 'UTF-8'),
+        'branch_name' => htmlspecialchars($branch_name ?: $branch, ENT_QUOTES, 'UTF-8'),
         'image' => htmlspecialchars($imagePath, ENT_QUOTES, 'UTF-8')
     ]
 ];
