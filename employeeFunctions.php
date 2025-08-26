@@ -13,12 +13,11 @@
     
         // Base query with all necessary joins
         $sql = "SELECT e.*, b.BranchName, 
-                CASE 
-                    WHEN e.RoleID = 0 THEN 'Sup1er Admin'
-                    WHEN e.RoleID = 1 THEN '1' 
-                    WHEN e.RoleID = 3 THEN '11'
-                    ELSE '1' 
-                END AS RoleDisplay,
+                        CASE 
+                            WHEN e.RoleID = 1 THEN 'Admin'
+                            WHEN e.RoleID = 2 THEN 'Employee'
+                            ELSE 'Other' 
+                        END AS RoleDisplay,
                 e.RoleID AS RoleOrder
                 FROM employee e
                 LEFT JOIN BranchMaster b ON e.BranchCode = b.BranchCode 
@@ -51,23 +50,30 @@
 
     while ($row = $result->fetch_assoc()) {
         // Determine role display text based on RoleID
-        $role = $row['RoleDisplay']; 
-        break;       
-        $branch = $row['BranchName'] ?? '';
+        $role = $row['RoleDisplay'];
+        $branch = htmlspecialchars($row['BranchName'] ?? '', ENT_QUOTES, 'UTF-8');
+
+        // Escape outputs to prevent XSS
+        $empId = htmlspecialchars($row['EmployeeID'], ENT_QUOTES, 'UTF-8');
+        $empName = htmlspecialchars($row['EmployeeName'], ENT_QUOTES, 'UTF-8');
+        $empEmail = htmlspecialchars($row['EmployeeEmail'], ENT_QUOTES, 'UTF-8');
+        $empNumber = htmlspecialchars($row['EmployeeNumber'], ENT_QUOTES, 'UTF-8');
+        $roleEsc = htmlspecialchars($role, ENT_QUOTES, 'UTF-8');
+        $empPic = htmlspecialchars($row['EmployeePicture'] ?: 'Images/default.jpg', ENT_QUOTES, 'UTF-8');
 
         echo "<tr>
-                <td class='align-middle'>{$row['EmployeeID']}</td>
-                <td class='align-middle'>{$row['EmployeeName']}</td>
-                <td class='align-middle'>{$row['EmployeeEmail']}</td>
-                <td class='align-middle'>{$row['EmployeeNumber']}</td>
-                <td class='align-middle'>$role</td>
+                <td class='align-middle'>{$empId}</td>
+                <td class='align-middle'>{$empName}</td>
+                <td class='align-middle'>{$empEmail}</td>
+                <td class='align-middle'>{$empNumber}</td>
+                <td class='align-middle'>{$roleEsc}</td>
                 <td class='align-middle'>
-                    <img src='{$row['EmployeePicture']}' alt='Employee Image' style='max-width: 50px; border-radius: 50%;'>
-                </td>                    
-                <td class='align-middle'>$branch</td>
+                    <img src='{$empPic}' alt='Employee Image' style='max-width: 50px; border-radius: 50%;'>
+                </td>
+                <td class='align-middle'>{$branch}</td>
                 <td class='align-middle'>
-                    <a class='btn btn-primary btn-sm' href='employeeEdit.php?EmployeeID={$row['EmployeeID']}'>Edit</a>
-                    <a class='btn btn-danger btn-sm' href='employeeDelete.php?EmployeeID={$row['EmployeeID']}'></a>
+                    <a class='btn btn-primary btn-sm' href='employeeEdit.php?EmployeeID={$empId}'>Edit</a>
+                    <a class='btn btn-danger btn-sm delete-btn' href='employeeDelete.php?EmployeeID={$empId}'>Delete</a>
                 </td>
               </tr>";
     }
