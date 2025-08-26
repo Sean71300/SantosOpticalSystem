@@ -84,6 +84,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         }                        
         $successMessage = "Employee successfully updated";    
         EGenerateLogs($employee_id,$id,$name);    
+        // If the updated employee is the current session user, refresh session data
+        if (!empty($_SESSION['id']) && $_SESSION['id'] == $id) {
+            $q = $conn->prepare("SELECT EmployeeID, EmployeeName, EmployeePicture, EmployeeEmail, EmployeeNumber, RoleID, LoginName, BranchCode, Status, Upd_by, Upd_dt FROM employee WHERE EmployeeID = ? LIMIT 1");
+            if ($q) {
+                $q->bind_param('s', $id);
+                $q->execute();
+                $q->bind_result($s_id, $s_name, $s_img, $s_email, $s_number, $s_roleid, $s_loginname, $s_branchcode, $s_status, $s_upd_by, $s_upd_dt);
+                if ($q->fetch()) {
+                    $_SESSION['id'] = $s_id;
+                    $_SESSION['full_name'] = $s_name;
+                    $_SESSION['img'] = $s_img;
+                    $_SESSION['email'] = $s_email;
+                    $_SESSION['number'] = $s_number;
+                    $_SESSION['roleid'] = $s_roleid;
+                    $_SESSION['username'] = $s_loginname;
+                    $_SESSION['branchcode'] = $s_branchcode;
+                    $_SESSION['status'] = $s_status;
+                    $_SESSION['upd_by'] = $s_upd_by;
+                    $_SESSION['upd_dt'] = $s_upd_dt;
+                    $_SESSION['last_activity'] = time();
+                }
+                $q->close();
+            }
+        }
         header('Refresh: 2, url=employeeRecords.php');   
 
     } while (false);    
