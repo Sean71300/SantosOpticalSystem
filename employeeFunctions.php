@@ -14,7 +14,8 @@
         // Base query with all necessary joins
         $sql = "SELECT e.*, b.BranchName, 
                         CASE 
-                            WHEN e.RoleID = 1 THEN 'Admin'
+                            WHEN e.RoleID = 1 THEN 'Admin'                            
+                            WHEN e.RoleID = 4 THEN 'Admin'
                             WHEN e.RoleID = 2 THEN 'Employee'
                             ELSE 'Other' 
                         END AS RoleDisplay,
@@ -180,9 +181,23 @@
         $errorMessage = "";
         $isUploaded = false;
 
-        // If no file field was provided, indicate nothing was uploaded
+        // Fetch existing picture for this account so we can return it when no new file is uploaded
+        $conn = connect();
+        $existingPic = '';
+        if (!empty($id)) {
+            $q = $conn->prepare("SELECT EmployeePicture FROM employee WHERE EmployeeID = ? LIMIT 1");
+            if ($q) {
+                $q->bind_param('s', $id);
+                $q->execute();
+                $q->bind_result($existingPic);
+                $q->fetch();
+                $q->close();
+            }
+        }
+
+        // If no file field was provided, return existing image path with isUploaded=false
         if (!isset($_FILES["IMAGE"]) || $_FILES["IMAGE"]["error"] == UPLOAD_ERR_NO_FILE) {
-            return [$errorMessage, null, $isUploaded];
+            return [$errorMessage, $existingPic ?: 'Images/default.jpg', $isUploaded];
         }
 
         // Validate upload

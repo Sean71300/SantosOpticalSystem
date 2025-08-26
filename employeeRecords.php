@@ -232,6 +232,12 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
 
                         // Populate image display
                         const imgEl = modal.querySelector('.emp-img');
+                        // Ensure file input is cleared so previous selections aren't preserved
+                        const fileInput = document.getElementById('modalImage');
+                        if (fileInput) {
+                            try { fileInput.value = ''; } catch(e) { /* ignore */ }
+                        }
+
                         if (image) {
                             imgEl.src = image;
                             imgEl.style.display = 'inline-block';
@@ -336,6 +342,11 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
                             // Close modal
                             var bsModalInstance = bootstrap.Modal.getInstance(document.getElementById('editConfirmModal'));
                             if (bsModalInstance) bsModalInstance.hide();
+                            // Clear file input after save to avoid accidental reuse
+                            const fileInputAfter = document.getElementById('modalImage');
+                            if (fileInputAfter) {
+                                try { fileInputAfter.value = ''; } catch(e) {}
+                            }
                         })
                         .catch(err => {
                             console.error(err);
