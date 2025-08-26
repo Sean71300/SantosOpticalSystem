@@ -23,7 +23,11 @@
                 e.RoleID AS RoleOrder
                 FROM employee e
                 LEFT JOIN BranchMaster b ON e.BranchCode = b.BranchCode 
-                WHERE e.Status = 'Active'";
+                    WHERE e.Status = 'Active'
+                    AND e.RoleID NOT IN (
+                        SELECT rm.RoleID FROM roleMaster rm 
+                        WHERE LOWER(rm.Description) LIKE '%superadmin%'
+                    )";
 
     
         // Special sorting logic for each column
