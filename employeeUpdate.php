@@ -87,7 +87,13 @@ $employee_id = $_SESSION['id'] ?? '';
 $stmt = $conn->prepare("UPDATE employee SET EmployeeName = ?, EmployeePicture = ?, EmployeeEmail = ?, EmployeeNumber = ?, RoleID = ?, LoginName = ?, Upd_by = ?, BranchCode = ? WHERE EmployeeID = ?");
 $stmt->bind_param('sssssssss', $name, $imagePath, $email, $phone, $role, $username, $upd_by, $branch, $id);
 if (!$stmt->execute()) {
-    echo json_encode(['success' => false, 'message' => 'Update failed: '.$stmt->error]);
+    $errno = $stmt->errno;
+    $errMsg = $stmt->error;
+    if ($errno == 1062) {
+        echo json_encode(['success' => false, 'message' => 'Update failed: username already exists', 'error' => $errMsg, 'errno' => $errno]);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Update failed: '.$errMsg, 'error' => $errMsg, 'errno' => $errno]);
+    }
     exit;
 }
 $stmt->close();
@@ -124,11 +130,12 @@ $resp = [
         'name' => htmlspecialchars($name, ENT_QUOTES, 'UTF-8'),
         'email' => htmlspecialchars($email, ENT_QUOTES, 'UTF-8'),
         'phone' => htmlspecialchars($phone, ENT_QUOTES, 'UTF-8'),
-        'role' => htmlspecialchars($role, ENT_QUOTES, 'UTF-8'),
+    'role' => htmlspecialchars($role, ENT_QUOTES, 'UTF-8'),
         'role_name' => htmlspecialchars($role_name ?: $role, ENT_QUOTES, 'UTF-8'),
         'branch' => htmlspecialchars($branch, ENT_QUOTES, 'UTF-8'),
         'branch_name' => htmlspecialchars($branch_name ?: $branch, ENT_QUOTES, 'UTF-8'),
-        'image' => htmlspecialchars($imagePath, ENT_QUOTES, 'UTF-8')
+    'image' => htmlspecialchars($imagePath, ENT_QUOTES, 'UTF-8'),
+    'username' => htmlspecialchars($username, ENT_QUOTES, 'UTF-8')
     ]
 ];
 

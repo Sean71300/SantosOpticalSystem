@@ -322,6 +322,7 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
                                     if (editBtn) {
                                         editBtn.setAttribute('data-name', data.name);
                                         editBtn.setAttribute('data-image', data.image);
+                                        editBtn.setAttribute('data-username', data.username || modal.querySelector('.modal-username').value);
                                         editBtn.setAttribute('data-email', data.email);
                                         editBtn.setAttribute('data-phone', data.phone);
                                         editBtn.setAttribute('data-role', data.role_name || data.role);
