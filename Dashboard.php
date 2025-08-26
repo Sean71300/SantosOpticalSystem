@@ -204,66 +204,60 @@ $salesData = getSalesOverviewData();
                         </a>
                     </div>
                     <hr class="border-1 border-black opacity-25">
-                    <?php
-                    // Show products with Stocks <= 5 (threshold enforced here)
-                    $displayList = [];
-                    foreach ($lowInventory as $p) {
-                        // if Stocks is numeric and <= 5
-                        if (isset($p['Stocks']) && is_numeric($p['Stocks']) && intval($p['Stocks']) <= 5) $displayList[] = $p;
-                    }
-                    if (count($displayList) === 0) {
-                        echo '<p class="text-center">No low stock products.</p>';
-                    } else {
-                        echo '<div class="list-group list-group-flush">';
-                        foreach ($displayList as $product) {
-                            $img = trim((string)($product['ProductImage'] ?? ''));
-                            $fallback = 'Images/logo.png';
-                            $imgToUse = $fallback;
-                            if ($img !== '') {
-                                if (stripos($img, 'http://') === 0 || stripos($img, 'https://') === 0) {
-                                    $imgToUse = $img;
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div class="row">
+                                <?php
+                                if (count($lowInventory) > 0) {
+                                    foreach ($lowInventory as $product) {
+                                        echo '<div class="container d-flex align-items-center">';
+                                        echo '<img src="' . htmlspecialchars($product['ProductImage']) . '" alt="Product Image" style="height:100px; width:100px;" class="img-thumbnail">';
+                                            echo '<div class="fw-bold ms-3">';
+                                                echo htmlspecialchars($product['Model']);
+                                                echo "<br> Available Stocks: ".htmlspecialchars($product['Stocks']);
+                                            echo '</div>';
+                                        echo '</div>';
+                                    }
                                 } else {
-                                    $cands = [];
-                                    $cands[] = __DIR__ . '/' . ltrim($img, '/\\');
-                                    $cands[] = __DIR__ . 'uploads/' . basename($img);
-                                    $cands[] = __DIR__ . 'Uploads/' . basename($img);
-                                    $cands[] = __DIR__ . 'Images/' . basename($img);
-                                    foreach ($cands as $c) { if (is_readable($c) && file_exists($c)) { $imgToUse = str_replace('\\','/', ltrim(substr($c, strlen(__DIR__) + 1), '/\\')); break; } }
-                                }
-                            }
-                            $imgEsc = htmlspecialchars($imgToUse, ENT_QUOTES, 'UTF-8');
-                            $nameEsc = htmlspecialchars($product['Model']);
-                            $stocksEsc = htmlspecialchars($product['Stocks']);
-                            echo '<div class="d-flex align-items-center p-2">';
-                            echo "<img src=\"{$imgEsc}\" alt=\"{$nameEsc}\" style=\"height:64px;width:64px;object-fit:cover;border-radius:6px;\" class=\"me-3 img-thumbnail\" onerror=\"this.onerror=null;this.src='Images/logo.png';\">";
-                            echo '<div class="flex-grow-1">';
-                            echo '<div class="fw-bold">' . $nameEsc . '</div>';
-                            echo '<div class="text-muted">Available Stocks: <strong>' . $stocksEsc . '</strong></div>';
-                            echo '</div>';
-                            echo '</div>';
-                        }
-                        echo '</div>';
-                    }
-                    ?>
+                                    echo '<p class="text-center">No low stock products.</p>';
+                                } 
+                                ?>
+                            </div>
+                        </li>
+                    </ul>
                 </div>
-            <?php if ($isAdmin): ?>    
+            <?php if ($isAdmin): ?>
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Recent Activity</h5>
                         <a href="logs.php" class="btn btn-sm btn-outline-secondary">
                             <i class="fas fa-list me-1"></i> Show All Logs
                         </a>
                     </div>
-                    <ul class="list-group list-group-flush">
-                        <?php foreach ($recentActivities as $activity): ?>
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <div>
-                                <small><?php echo date('M j, g:i A', strtotime($activity['Upd_dt'])); ?></small>
-                                <div><?php echo htmlspecialchars($activity['Description']) ." ". ($activity['TargetType']). " # " . ($activity['TargetID']); ?></div>
-                            </div>
-                            <span class="badge bg-primary rounded-pill">New</span>
-                        </li>
-                        <?php endforeach; ?>
-                    </ul>
+                    <div class="list-group list-group-flush" style="max-height:360px; overflow:auto; padding-right:6px;">
+                        <?php if (empty($recentActivities)): ?>
+                            <div class="text-center text-muted py-3">No recent activity.</div>
+                        <?php else: ?>
+                            <?php foreach ($recentActivities as $activity):
+                                $ts = strtotime($activity['Upd_dt']);
+                                $isNew = ($ts !== false) && (time() - $ts) <= 86400; // within 24 hours
+                                $timeLabel = $ts ? date('M j, g:i A', $ts) : htmlspecialchars($activity['Upd_dt']);
+                                $desc = htmlspecialchars($activity['Description']);
+                                $targetType = htmlspecialchars($activity['TargetType'] ?? '');
+                                $targetId = htmlspecialchars($activity['TargetID'] ?? '');
+                                $message = trim($desc . ' ' . $targetType . ($targetId !== '' ? ' # ' . $targetId : ''));
+                            ?>
+                            <a href="logs.php" class="list-group-item list-group-item-action d-flex justify-content-between align-items-start">
+                                <div class="me-3">
+                                    <div class="small text-muted"><?php echo $timeLabel; ?></div>
+                                    <div><?php echo $message; ?></div>
+                                </div>
+                                <?php if ($isNew): ?>
+                                    <span class="badge bg-primary rounded-pill align-self-center">New</span>
+                                <?php endif; ?>
+                            </a>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
             <?php endif; ?>
