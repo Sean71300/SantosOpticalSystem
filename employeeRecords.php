@@ -290,6 +290,13 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
                             console.warn('Failed to set explicit form fields:', e);
                         }
 
+                        // Ensure we don't send an IMAGE field when no file was chosen
+                        const fileInputForSubmit = modalForm.querySelector('#modalImage');
+                        if (fileInputForSubmit && fileInputForSubmit.files && fileInputForSubmit.files.length === 0) {
+                            // remove any stray IMAGE entry
+                            try { formData.delete('IMAGE'); } catch (e) { /* ignore */ }
+                        }
+
                         fetch('employeeUpdate.php', {
                             method: 'POST',
                             body: formData

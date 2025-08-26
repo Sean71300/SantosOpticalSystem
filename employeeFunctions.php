@@ -16,7 +16,8 @@
                         CASE 
                             WHEN e.RoleID = 1 THEN 'Admin'                            
                             WHEN e.RoleID = 4 THEN 'Admin'
-                            WHEN e.RoleID = 2 THEN 'Employee'
+                            WHEN e.RoleID = 2 THEN 'Employee'                            
+                            WHEN e.RoleID = 3 THEN 'Optometrist'
                             ELSE 'Other' 
                         END AS RoleDisplay,
                 e.RoleID AS RoleOrder
