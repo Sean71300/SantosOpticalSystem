@@ -169,9 +169,17 @@ $salesData = getSalesOverviewData();
                 <div class="dashboard-card">
                     <h5><i class="fas fa-chart-line me-2"></i>Sales Overview (Last 7 Days)</h5>
                     <hr class="border-1 border-black opacity-25">
-                    <div class="chart-container">
-                        <canvas id="salesChart"></canvas>
-                    </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0">View</h6>
+                            <div class="btn-group" role="group" aria-label="Sales range">
+                                <button type="button" class="btn btn-sm btn-outline-secondary sales-range-btn active" data-days="7">Week</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary sales-range-btn" data-days="30">Month</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary sales-range-btn" data-days="365">Year</button>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="salesChart"></canvas>
+                        </div>
                 </div>
             </div>
             
@@ -318,6 +326,39 @@ $salesData = getSalesOverviewData();
                         }
                     }
                 }
+            });
+
+            // Sales range toggle behavior
+            function setActiveButton(btn) {
+                document.querySelectorAll('.sales-range-btn').forEach(b => b.classList.remove('active'));
+                if (btn) btn.classList.add('active');
+            }
+
+            async function loadSalesRange(days, clickedButton) {
+                try {
+                    const resp = await fetch('salesData.php?days=' + encodeURIComponent(days));
+                    const json = await resp.json();
+                    if (!json.success) throw new Error('Failed to load sales data');
+
+                    const labels = json.data.map(d => d.date);
+                    const values = json.data.map(d => parseInt(d.total_sold || 0, 10));
+
+                    salesChart.data.labels = labels;
+                    salesChart.data.datasets[0].data = values;
+                    salesChart.update();
+
+                    setActiveButton(clickedButton);
+                } catch (err) {
+                    console.error('Error loading sales range:', err);
+                    alert('Could not load sales data. Check console for details.');
+                }
+            }
+
+            document.querySelectorAll('.sales-range-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const days = this.getAttribute('data-days');
+                    loadSalesRange(days, this);
+                });
             });
         });
     </script>
