@@ -183,14 +183,7 @@ $salesData = getSalesOverviewData();
                                     <select id="sales-month-select" class="form-select form-select-sm d-inline-block ms-2" style="width:auto; display:none;">
                                         <option value="">Month</option>
                                     </select>
-                                    <select id="sales-mode-select" class="form-select form-select-sm d-inline-block ms-2" style="width:auto;">
-                                        <option value="">Mode</option>
-                                        <option value="week1">Week 1</option>
-                                        <option value="week2">Week 2</option>
-                                        <option value="week3">Week 3</option>
-                                        <option value="week4">Week 4</option>
-                                        <option value="whole">Whole Month</option>
-                                    </select>
+                                    <!-- week-based mode removed per request -->
                                     <div id="sales-range-controls" class="d-inline-block ms-2">
                                         <!-- simplified: no range buttons to avoid errors -->
                                     </div>
@@ -425,17 +418,7 @@ $salesData = getSalesOverviewData();
                     params.set('start', se.start);
                     params.set('end', se.end);
 
-                    const modeSelect = document.getElementById('sales-mode-select');
-                    if (modeSelect && modeSelect.value) {
-                        // if user picked a week option, request month_weeks mode with bucket
-                        const val = modeSelect.value;
-                        if (val === 'week1' || val === 'week2' || val === 'week3' || val === 'week4' || val === 'whole') {
-                            params.set('mode','month_weeks');
-                            params.set('bucket', val);
-                        } else {
-                            params.set('mode', val);
-                        }
-                    }
+                    // no extra mode param (week-based mode removed)
                     const resp = await fetch('salesData.php?' + params.toString());
                     const text = await resp.text();
                     let json;
@@ -473,9 +456,7 @@ $salesData = getSalesOverviewData();
                 });
             });
 
-            // mode dropdown handler
-            const modeSelect = document.getElementById('sales-mode-select');
-            if (modeSelect) modeSelect.addEventListener('change', loadSalesRange);
+            // week-mode removed; no mode dropdown handler required
 
             // initialize year/month selects and load
             const yearSelectInit = document.getElementById('sales-year-select');
