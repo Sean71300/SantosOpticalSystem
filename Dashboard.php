@@ -213,6 +213,8 @@ $salesData = getSalesOverviewData();
                                         $img = $product['ProductImage'];
                                         // choose a server-side fallback so browser doesn't request missing files
                                         $imgRaw = trim((string)$img);
+                                        $fallback = 'Images/logo.png';
+                                        $imgToUse = $fallback;
 
                                         if ($imgRaw !== '') {
                                             // absolute URL -> trust it
@@ -231,9 +233,9 @@ $salesData = getSalesOverviewData();
                                                 $candidates[] = __DIR__ . '/Images/' . basename($imgRaw);
 
                                                 foreach ($candidates as $cand) {
-                                                    if (file_exists($cand)) {
+                                                    if (is_readable($cand) && file_exists($cand)) {
                                                         // convert to web-relative path
-                                                        $rel = str_replace('\\', '/', substr($cand, strlen(__DIR__) + 1));
+                                                        $rel = str_replace('\\', '/', ltrim(substr($cand, strlen(__DIR__) + 1), '/\\'));
                                                         $imgToUse = $rel;
                                                         break;
                                                     }
