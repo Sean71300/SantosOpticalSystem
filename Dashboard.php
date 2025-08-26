@@ -204,64 +204,49 @@ $salesData = getSalesOverviewData();
                         </a>
                     </div>
                     <hr class="border-1 border-black opacity-25">
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <div class="row">
-                                <?php
-                                if (count($lowInventory) > 0) {
-                                    foreach ($lowInventory as $product) {
-                                        echo '<div class="container d-flex align-items-center">';
-                                        $img = $product['ProductImage'];
-                                        // choose a server-side fallback so browser doesn't request missing files
-                                        $imgRaw = trim((string)$img);
-                                        $fallback = 'Images/logo.png';
-                                        $imgToUse = $fallback;
-
-                                        if ($imgRaw !== '') {
-                                            // absolute URL -> trust it
-                                            if (stripos($imgRaw, 'http://') === 0 || stripos($imgRaw, 'https://') === 0) {
-                                                $imgToUse = $imgRaw;
-                                            } else {
-                                                // build candidate paths to handle case and folder differences
-                                                $candidates = [];
-                                                $candidates[] = __DIR__ . '/' . ltrim($imgRaw, '/\\');
-                                                // try swapping uploads/ case
-                                                $candidates[] = __DIR__ . '/' . ltrim(str_ireplace('uploads/', 'Uploads/', $imgRaw), '/\\');
-                                                $candidates[] = __DIR__ . '/' . ltrim(str_ireplace('Uploads/', 'uploads/', $imgRaw), '/\\');
-                                                // try common folders with basename
-                                                $candidates[] = __DIR__ . '/Uploads/' . basename($imgRaw);
-                                                $candidates[] = __DIR__ . '/uploads/' . basename($imgRaw);
-                                                $candidates[] = __DIR__ . '/Images/' . basename($imgRaw);
-
-                                                foreach ($candidates as $cand) {
-                                                    if (is_readable($cand) && file_exists($cand)) {
-                                                        // convert to web-relative path
-                                                        $rel = str_replace('\\', '/', ltrim(substr($cand, strlen(__DIR__) + 1), '/\\'));
-                                                        $imgToUse = $rel;
-                                                        break;
-                                                    }
-                                                }
-                                            }
-                                        }
-
-                                        $imgEsc = htmlspecialchars($imgToUse, ENT_QUOTES, 'UTF-8');
-                                        echo "<img src=\"{$imgEsc}\" alt=\"Product Image\" style=\"height:100px; width:100px;\" class=\"img-thumbnail\" onerror=\"this.onerror=null;this.src='Images/logo.png';\">";
-                                            echo '<div class="fw-bold ms-3">';
-                                                echo htmlspecialchars($product['Model']);
-                                                echo "<br> Available Stocks: ".htmlspecialchars($product['Stocks']);
-                                            echo '</div>';
-                                        echo '</div>';
-                                    }
+                    <?php
+                    // Show products with Stocks <= 5 (threshold enforced here)
+                    $displayList = [];
+                    foreach ($lowInventory as $p) {
+                        // if Stocks is numeric and <= 5
+                        if (isset($p['Stocks']) && is_numeric($p['Stocks']) && intval($p['Stocks']) <= 5) $displayList[] = $p;
+                    }
+                    if (count($displayList) === 0) {
+                        echo '<p class="text-center">No low stock products.</p>';
+                    } else {
+                        echo '<div class="list-group list-group-flush">';
+                        foreach ($displayList as $product) {
+                            $img = trim((string)($product['ProductImage'] ?? ''));
+                            $fallback = 'Images/logo.png';
+                            $imgToUse = $fallback;
+                            if ($img !== '') {
+                                if (stripos($img, 'http://') === 0 || stripos($img, 'https://') === 0) {
+                                    $imgToUse = $img;
                                 } else {
-                                    echo '<p class="text-center">No low stock products.</p>';
-                                } 
-                                ?>
-                            </div>
-                        </li>
-                    </ul>
+                                    $cands = [];
+                                    $cands[] = __DIR__ . '/' . ltrim($img, '/\\');
+                                    $cands[] = __DIR__ . '/uploads/' . basename($img);
+                                    $cands[] = __DIR__ . '/Uploads/' . basename($img);
+                                    $cands[] = __DIR__ . '/Images/' . basename($img);
+                                    foreach ($cands as $c) { if (is_readable($c) && file_exists($c)) { $imgToUse = str_replace('\\','/', ltrim(substr($c, strlen(__DIR__) + 1), '/\\')); break; } }
+                                }
+                            }
+                            $imgEsc = htmlspecialchars($imgToUse, ENT_QUOTES, 'UTF-8');
+                            $nameEsc = htmlspecialchars($product['Model']);
+                            $stocksEsc = htmlspecialchars($product['Stocks']);
+                            echo '<div class="d-flex align-items-center p-2">';
+                            echo "<img src=\"{$imgEsc}\" alt=\"{$nameEsc}\" style=\"height:64px;width:64px;object-fit:cover;border-radius:6px;\" class=\"me-3 img-thumbnail\" onerror=\"this.onerror=null;this.src='Images/logo.png';\">";
+                            echo '<div class="flex-grow-1">';
+                            echo '<div class="fw-bold">' . $nameEsc . '</div>';
+                            echo '<div class="text-muted">Available Stocks: <strong>' . $stocksEsc . '</strong></div>';
+                            echo '</div>';
+                            echo '</div>';
+                        }
+                        echo '</div>';
+                    }
+                    ?>
                 </div>
-            <?php if ($isAdmin): ?>                    
-                <div class="dashboard-card recent-activity">    
+            <?php if ($isAdmin): ?>    
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Recent Activity</h5>
                         <a href="logs.php" class="btn btn-sm btn-outline-secondary">

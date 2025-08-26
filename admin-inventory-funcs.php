@@ -1004,7 +1004,7 @@ function deleteProduct()
 
     function getLowInventoryProducts($threshold = 10) {
         $link = connect();
-        $sql = "SELECT pbm.ProductID, pm.Model, bm.BranchName, pbm.Stocks 
+        $sql = "SELECT pbm.ProductID, pm.Model, pm.ProductImage, bm.BranchName, pbm.Stocks 
                 FROM ProductBranchMaster pbm
                 JOIN productMstr pm ON pbm.ProductID = pm.ProductID
                 JOIN BranchMaster bm ON pbm.BranchCode = bm.BranchCode
