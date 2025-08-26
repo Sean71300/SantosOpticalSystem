@@ -234,29 +234,39 @@ $salesData = getSalesOverviewData();
                         </a>
                     </div>
                         <div class="list-group list-group-flush recent-activity-list" style="max-height:360px; overflow:auto; padding-right:6px;">
-                            <?php if (empty($recentActivities)): ?>
-                                <div class="text-center text-muted py-3">No recent activity.</div>
-                            <?php else: ?>
-                                <?php foreach ($recentActivities as $activity):
+                            <?php
+                            if (empty($recentActivities)) {
+                                echo '<div class="text-center text-muted py-3">No recent activity.</div>';
+                            } else {
+                                $seen = [];
+                                $shown = 0;
+                                $maxShow = 20;
+                                foreach ($recentActivities as $activity) {
+                                    if ($shown >= $maxShow) break;
                                     $ts = strtotime($activity['Upd_dt']);
-                                    $isNew = ($ts !== false) && (time() - $ts) <= 86400; // within 24 hours
                                     $timeLabel = $ts ? date('M j, g:i A', $ts) : htmlspecialchars($activity['Upd_dt']);
-                                    $desc = htmlspecialchars($activity['Description']);
-                                    $targetType = htmlspecialchars($activity['TargetType'] ?? '');
-                                    $targetId = htmlspecialchars($activity['TargetID'] ?? '');
+                                    $desc = trim($activity['Description']);
+                                    $targetType = trim($activity['TargetType'] ?? '');
+                                    $targetId = trim($activity['TargetID'] ?? '');
                                     $message = trim($desc . ' ' . $targetType . ($targetId !== '' ? ' # ' . $targetId : ''));
-                                ?>
-                                <a href="logs.php" class="list-group-item list-group-item-action py-3 border-bottom d-flex justify-content-between align-items-center">
-                                    <div class="flex-grow-1 pe-2">
-                                        <div class="small text-muted mb-1"><?php echo $timeLabel; ?></div>
-                                        <div class="text-truncate" style="max-width:240px"><?php echo $message; ?></div>
-                                    </div>
-                                    <?php if ($isNew): ?>
-                                        <span class="badge bg-primary rounded-pill ms-2">New</span>
-                                    <?php endif; ?>
-                                </a>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
+                                    // dedupe by message + timestamp
+                                    $key = md5($timeLabel . '|' . $message);
+                                    if (isset($seen[$key])) continue;
+                                    $seen[$key] = true;
+                                    $isNew = ($ts !== false) && (time() - $ts) <= 86400;
+                                    $displayMessage = htmlspecialchars($message);
+                                    $displayTime = htmlspecialchars($timeLabel);
+                                    echo '<a href="logs.php" class="list-group-item list-group-item-action py-3 border-bottom d-flex justify-content-between align-items-center">';
+                                    echo '<div class="flex-grow-1 pe-2">';
+                                    echo '<div class="small text-muted mb-1">' . $displayTime . '</div>';
+                                    echo '<div class="text-truncate" style="max-width:240px">' . $displayMessage . '</div>';
+                                    echo '</div>';
+                                    if ($isNew) echo '<span class="badge bg-primary rounded-pill ms-2">New</span>';
+                                    echo '</a>';
+                                    $shown++;
+                                }
+                            }
+                            ?>
                         </div>
                         <?php foreach ($recentActivities as $activity): ?>
                         <li class="list-group-item d-flex justify-content-between align-items-center">
