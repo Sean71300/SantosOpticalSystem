@@ -81,6 +81,22 @@
                     )";
 
             mysqli_query($conn, $sql);
+            
+            $sql = "INSERT INTO roleMaster
+                    (RoleID, Description)
+                    VALUES
+                    ('3','Optometrist'
+                    )";
+
+            mysqli_query($conn, $sql);
+
+            $sql = "INSERT INTO roleMaster
+                    (RoleID, Description)
+                    VALUES
+                    ('4','Super Admin'
+                    )";
+
+            mysqli_query($conn, $sql);
         }
         else
         {
