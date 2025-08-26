@@ -264,6 +264,18 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
                         submitBtn.textContent = 'Saving...';
 
                         const formData = new FormData(modalForm);
+                        // Ensure required fields are explicitly present (some browsers/structures can omit selects)
+                        try {
+                            formData.set('id', modalForm.querySelector('.modal-emp-id').value || '');
+                            formData.set('name', modalForm.querySelector('.modal-name').value || '');
+                            formData.set('username', modalForm.querySelector('.modal-username').value || '');
+                            formData.set('email', modalForm.querySelector('.modal-email').value || '');
+                            formData.set('phone', modalForm.querySelector('.modal-phone').value || '');
+                            formData.set('role', modalForm.querySelector('.modal-role').value || '');
+                            formData.set('branch', modalForm.querySelector('.modal-branch').value || '');
+                        } catch (e) {
+                            console.warn('Failed to set explicit form fields:', e);
+                        }
 
                         fetch('employeeUpdate.php', {
                             method: 'POST',
@@ -330,6 +342,7 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
             });
         </script>
 
+        <script>
             // Function to handle table sorting
             function sortTable(column) {
                 const urlParams = new URLSearchParams(window.location.search);

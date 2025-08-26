@@ -42,8 +42,34 @@ $phone = $_POST['phone'] ?? '';
 $role = $_POST['role'] ?? '';
 $branch = $_POST['branch'] ?? '';
 
-if (empty($id) || empty($name) || empty($username) || empty($email) || empty($phone) || empty($role) || empty($branch)) {
-    echo json_encode(['success' => false, 'message' => 'All fields are required']);
+// Debug: log incoming POST and FILES to help diagnose missing fields (append-only)
+$logLine = "\n[".date('Y-m-d H:i:s')."] POST=".json_encode($_POST)." FILES=".json_encode(array_map(function($f){return ['name'=>$f['name'],'error'=>$f['error'],'size'=>$f['size']];}, $_FILES))."\n";
+@file_put_contents(__DIR__ . '/employeeUpdate_debug.log', $logLine, FILE_APPEND);
+
+// If role/branch/username missing, try to load from existing employee row (fallback)
+if (!empty($id) && (empty($role) || empty($branch) || empty($username))) {
+    $conn = connect();
+    $pst = $conn->prepare("SELECT RoleID, BranchCode, LoginName FROM employee WHERE EmployeeID = ? LIMIT 1");
+    if ($pst) {
+        $pst->bind_param('s', $id);
+        $pst->execute();
+        $pst->bind_result($exist_role, $exist_branch, $exist_login);
+        if ($pst->fetch()) {
+            if (empty($role)) $role = $exist_role;
+            if (empty($branch)) $branch = $exist_branch;
+            if (empty($username)) $username = $exist_login;
+        }
+        $pst->close();
+    }
+}
+
+// Validate and report missing fields for debugging
+$missing = [];
+foreach (['id','name','username','email','phone','role','branch'] as $f) {
+    if (empty($$f)) $missing[] = $f;
+}
+if (!empty($missing)) {
+    echo json_encode(['success' => false, 'message' => 'Missing fields: '.implode(', ', $missing), 'missing' => $missing]);
     exit;
 }
 
