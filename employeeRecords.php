@@ -110,6 +110,13 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
             .sortable.active .sort-icon {
                 display: inline-block;                
             }
+            /* Make edit modal wider to match main content card width */
+            @media (min-width: 992px) {
+                .modal-lg.custom-wide {
+                    max-width: calc(100% - 270px); /* account for 250px sidebar + padding */
+                    width: auto;
+                }
+            }
         </style>
     </head>
     <body>
@@ -365,7 +372,7 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
 
     <!-- Edit confirmation modal (moved inside body so Bootstrap can manage it) -->
     <div class="modal fade" id="editConfirmModal" tabindex="-1" aria-labelledby="editConfirmModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-dialog modal-lg modal-dialog-centered custom-wide">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="editConfirmModalLabel">Edit Employee</h5>

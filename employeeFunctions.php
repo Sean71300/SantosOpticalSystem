@@ -107,8 +107,8 @@
     function roleHandler($role) {
         $connection = connect();
     
-    // Exclude any role whose description mentions 'superadmin' (case-insensitive)
-    $sql = "SELECT * FROM roleMaster WHERE LOWER(Description) NOT LIKE '%superadmin%' ORDER BY Description";
+    // Return all roles (including SuperAdmin)
+    $sql = "SELECT * FROM roleMaster ORDER BY Description";
         $result = $connection->query($sql);
     
         if (!$result) {
