@@ -1,11 +1,20 @@
 <?php
+// Ensure we only return JSON to the client
 header('Content-Type: application/json; charset=utf-8');
+@ini_set('display_errors', '0');
+@error_reporting(0);
+// buffer any unexpected output from includes or warnings
+ob_start();
 // Minimal, robust sales data endpoint.
 // Accepts GET params: start=YYYY-MM-DD, end=YYYY-MM-DD
 // Returns JSON: { success:true, labels:[], claimed:[], cancelled:[], returned:[], start:'', end:'' }
 
 try {
 	require_once __DIR__ . '/connect.php';
+	$extraOutput = trim(ob_get_clean());
+	if (!empty($extraOutput)) {
+		@file_put_contents(__DIR__ . '/logs/salesData_errors.log', date('c') . " - Unexpected output during include: \n" . $extraOutput . "\n\n", FILE_APPEND);
+	}
 
 	// input validation
 	$start = isset($_GET['start']) ? $_GET['start'] : null;
@@ -132,6 +141,8 @@ try {
 	]);
 
 } catch (Exception $ex) {
+	// write to server log for diagnosis
+	@file_put_contents(__DIR__ . '/logs/salesData_errors.log', date('c') . " - " . $ex->getMessage() . "\n" . $ex->getTraceAsString() . "\n\n", FILE_APPEND);
 	http_response_code(500);
 	echo json_encode(['success'=>false,'error'=>$ex->getMessage()]);
 }

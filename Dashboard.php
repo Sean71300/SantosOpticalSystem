@@ -211,7 +211,8 @@ $salesData = getSalesOverviewData();
                                     foreach ($lowInventory as $product) {
                                         echo '<div class="container d-flex align-items-center">';
                                         $img = htmlspecialchars($product['ProductImage']);
-                                        echo '<img src="' . $img . '" alt="Product Image" style="height:100px; width:100px;" class="img-thumbnail" onerror="this.onerror=null;this.src=\'Images/default-product.png\';">';
+                                        // fallback to logo.png or an inline SVG if missing to avoid 404 console noise
+                                        echo '<img src="' . $img . '" alt="Product Image" style="height:100px; width:100px;" class="img-thumbnail" onerror="this.onerror=null;this.src=\'Images/logo.png\'; if(!this.complete){ this.src=\'data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'><rect width=\'100%\' height=\'100%\' fill=\'%23f0f0f0\'/><text x=\'50%\' y=\'50%\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-size=\'12\' fill=\'%23999\'>No Image</text></svg>\'; }">';
                                             echo '<div class="fw-bold ms-3">';
                                                 echo htmlspecialchars($product['Model']);
                                                 echo "<br> Available Stocks: ".htmlspecialchars($product['Stocks']);
