@@ -44,7 +44,7 @@ else {
         <?php if ($isAdmin): ?>
             <a href="Dashboard.php" class="sidebar-item <?php echo ($current_page == 'Dashboard.php') ? 'active' : ''; ?>">
                 <i class="fas fa-tachometer-alt"></i> 
-                <span class="sidebar-item-text">X</span>
+                <span class="sidebar-item-text">Dashboard</span>
             </a>
             <a href="customerRecords.php" class="sidebar-item <?php echo ($current_page == 'customerRecords.php') ? 'active' : ''; ?>">
                 <i class="fas fa-users"></i> 
