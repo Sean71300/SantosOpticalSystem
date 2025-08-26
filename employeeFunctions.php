@@ -53,13 +53,16 @@
         $role = $row['RoleDisplay'];
         $branch = htmlspecialchars($row['BranchName'] ?? '', ENT_QUOTES, 'UTF-8');
 
-        // Escape outputs to prevent XSS
+    // Escape outputs to prevent XSS
         $empId = htmlspecialchars($row['EmployeeID'], ENT_QUOTES, 'UTF-8');
         $empName = htmlspecialchars($row['EmployeeName'], ENT_QUOTES, 'UTF-8');
         $empEmail = htmlspecialchars($row['EmployeeEmail'], ENT_QUOTES, 'UTF-8');
         $empNumber = htmlspecialchars($row['EmployeeNumber'], ENT_QUOTES, 'UTF-8');
         $roleEsc = htmlspecialchars($role, ENT_QUOTES, 'UTF-8');
         $empPic = htmlspecialchars($row['EmployeePicture'] ?: 'Images/default.jpg', ENT_QUOTES, 'UTF-8');
+    $loginName = htmlspecialchars($row['LoginName'] ?? '', ENT_QUOTES, 'UTF-8');
+    $roleId = htmlspecialchars($row['RoleID'] ?? '', ENT_QUOTES, 'UTF-8');
+    $branchCode = htmlspecialchars($row['BranchCode'] ?? '', ENT_QUOTES, 'UTF-8');
 
         echo "<tr>
                 <td class='align-middle'>{$empId}</td>
@@ -72,7 +75,7 @@
                 </td>
                 <td class='align-middle'>{$branch}</td>
                 <td class='align-middle'>
-                    <a class='btn btn-primary btn-sm edit-btn' href='employeeEdit.php?EmployeeID={$empId}' data-name='{$empName}' data-image='{$empPic}' data-role='{$roleEsc}' data-branch='{$branch}'>Edit</a>
+                    <a class='btn btn-primary btn-sm edit-btn' href='employeeEdit.php?EmployeeID={$empId}' data-id='{$empId}' data-name='{$empName}' data-image='{$empPic}' data-role='{$roleEsc}' data-roleid='{$roleId}' data-username='{$loginName}' data-email='{$empEmail}' data-phone='{$empNumber}' data-branch='{$branch}' data-branchcode='{$branchCode}'>Edit</a>
                     <a class='btn btn-danger btn-sm delete-btn' href='employeeDelete.php?EmployeeID={$empId}'>Delete</a>
                 </td>
               </tr>";
@@ -179,7 +182,11 @@
             $result = $conn->query($sql);
             $row = $result->fetch_assoc();
             $imagePath = $row["EmployeePicture"]; 
-            
+            // If no file field was provided, return existing image path
+            if (!isset($_FILES["IMAGE"]) || $_FILES["IMAGE"]["error"] == UPLOAD_ERR_NO_FILE) {
+                return [$errorMessage, $imagePath];
+            }
+
             if ($_FILES["IMAGE"]["size"] < 100000000 && $_FILES["IMAGE"]["error"] == UPLOAD_ERR_OK) {                    
                 if (!empty($_FILES["IMAGE"]["name"])) {
                     // Create uploads directory if it doesn't exist
@@ -241,6 +248,21 @@
                 $stmt->execute();
                 $stmt->close();
             }
+    
+        // Log for employee edits (activity code 4)
+        function EGenerateLogs($employee_id,$id,$name)
+        {
+            $conn = connect(); 
+            $Logsid = generate_LogsID();
+        
+            $stmt = $conn->prepare("INSERT INTO Logs 
+                                (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description, Upd_dt)
+                                VALUES
+                                (?, ?, ?, 'employee', '4', ?, NOW())");
+            $stmt->bind_param("ssss", $Logsid, $employee_id, $id, $name);
+            $stmt->execute();
+            $stmt->close();
+        }
     function handleCancellation() 
     {
         if (isset($_POST['confirm_cancel'])) {

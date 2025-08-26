@@ -199,21 +199,31 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
             document.querySelectorAll('.edit-btn').forEach(btn => {
                 btn.addEventListener('click', function(e) {
                     e.preventDefault();
-                    const url = this.getAttribute('href');
-                    const name = this.getAttribute('data-name') || 'this employee';
+                    // Read data attributes
+                    const id = this.getAttribute('data-id');
+                    const name = this.getAttribute('data-name') || '';
                     const image = this.getAttribute('data-image') || '';
                     const role = this.getAttribute('data-role') || '';
+                    const roleId = this.getAttribute('data-roleid') || '';
                     const branch = this.getAttribute('data-branch') || '';
+                    const branchCode = this.getAttribute('data-branchcode') || '';
+                    const username = this.getAttribute('data-username') || '';
+                    const email = this.getAttribute('data-email') || '';
+                    const phone = this.getAttribute('data-phone') || '';
 
                     const modal = document.getElementById('editConfirmModal');
 
-                    // Populate text fields
-                    modal.querySelector('.modal-body .emp-name').textContent = name;
-                    modal.querySelector('.modal-body .emp-role').textContent = role;
-                    modal.querySelector('.modal-body .emp-branch').textContent = branch;
+                    // Populate form fields
+                    modal.querySelector('.modal-emp-id').value = id;
+                    modal.querySelector('.modal-name').value = name;
+                    modal.querySelector('.modal-username').value = username;
+                    modal.querySelector('.modal-email').value = email;
+                    modal.querySelector('.modal-phone').value = phone;
+                    modal.querySelector('.modal-role').value = roleId;
+                    modal.querySelector('.modal-branch').value = branchCode;
 
-                    // Populate image (show/hide depending on availability)
-                    const imgEl = modal.querySelector('.modal-body .emp-img');
+                    // Populate image display
+                    const imgEl = modal.querySelector('.emp-img');
                     if (image) {
                         imgEl.src = image;
                         imgEl.style.display = 'inline-block';
@@ -221,20 +231,69 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
                         imgEl.style.display = 'none';
                     }
 
-                    // Store target URL
-                    modal.querySelector('.confirm-edit').setAttribute('data-href', url);
-
                     var bsModal = new bootstrap.Modal(modal);
                     bsModal.show();
                 });
             });
 
-            // Handle confirm button inside modal
-            document.addEventListener('click', function(e) {
-                if (e.target && e.target.classList.contains('confirm-edit')) {
-                    const url = e.target.getAttribute('data-href');
-                    if (url) window.location.href = url;
-                }
+            // Handle modal form submission via AJAX
+            const modalForm = document.getElementById('modalEditForm');
+            modalForm.addEventListener('submit', function(evt) {
+                evt.preventDefault();
+                const submitBtn = modalForm.querySelector('.modal-save');
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Saving...';
+
+                const formData = new FormData(modalForm);
+
+                fetch('employeeUpdate.php', {
+                    method: 'POST',
+                    body: formData
+                }).then(r => r.json())
+                .then(resp => {
+                    if (!resp.success) {
+                        alert('Update failed: ' + resp.message);
+                        return;
+                    }
+
+                    // Update the table row inline
+                    const data = resp.data;
+                    const rows = document.querySelectorAll('table tbody tr');
+                    rows.forEach(row => {
+                        const idCell = row.querySelector('td:first-child');
+                        if (idCell && idCell.textContent.trim() === data.id.toString()) {
+                            row.querySelector('td:nth-child(2)').textContent = data.name;
+                            row.querySelector('td:nth-child(3)').textContent = data.email;
+                            row.querySelector('td:nth-child(4)').textContent = data.phone;
+                            row.querySelector('td:nth-child(5)').textContent = data.role;
+                            row.querySelector('td:nth-child(6) img').src = data.image;
+                            row.querySelector('td:nth-child(7)').textContent = data.branch;
+
+                            // Also update data-* attributes on Edit button so modal stays in sync
+                            const editBtn = row.querySelector('.edit-btn');
+                            if (editBtn) {
+                                editBtn.setAttribute('data-name', data.name);
+                                editBtn.setAttribute('data-image', data.image);
+                                editBtn.setAttribute('data-email', data.email);
+                                editBtn.setAttribute('data-phone', data.phone);
+                                editBtn.setAttribute('data-role', data.role);
+                                editBtn.setAttribute('data-branch', data.branch);
+                            }
+                        }
+                    });
+
+                    // Close modal
+                    var bsModalInstance = bootstrap.Modal.getInstance(document.getElementById('editConfirmModal'));
+                    if (bsModalInstance) bsModalInstance.hide();
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('An error occurred while updating.');
+                })
+                .finally(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Save changes';
+                });
             });
 
             // Function to handle table sorting
@@ -259,22 +318,67 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
 
     <!-- Edit confirmation modal (moved inside body so Bootstrap can manage it) -->
     <div class="modal fade" id="editConfirmModal" tabindex="-1" aria-labelledby="editConfirmModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="editConfirmModalLabel">Confirm Edit</h5>
+                    <h5 class="modal-title" id="editConfirmModalLabel">Edit Employee</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body text-center">
-                    <img class="emp-img mb-3" src="" alt="Employee Image" style="width:96px;height:96px;object-fit:cover;border-radius:8px;display:none;" />
-                    <p class="mb-1">You are about to edit <strong class="emp-name"></strong>.</p>
-                    <p class="mb-0"><small class="text-muted">Role: <span class="emp-role"></span></small></p>
-                    <p class="mb-0"><small class="text-muted">Branch: <span class="emp-branch"></span></small></p>
+                <form id="modalEditForm" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <input type="hidden" name="id" class="modal-emp-id">
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <img class="emp-img mb-3" src="" alt="Employee Image" style="width:128px;height:128px;object-fit:cover;border-radius:8px;display:none;" />
+                            <div>
+                                <label for="modalImage" class="btn btn-sm btn-success">
+                                    <input type="file" name="IMAGE" id="modalImage" accept=".jpg, .png, .jpeg" style="display:none;">
+                                    <i class="fas fa-camera me-1"></i> Change
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="mb-2">
+                                <label class="form-label">Full Name</label>
+                                <input type="text" class="form-control modal-name" name="name" required>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Username</label>
+                                <input type="text" class="form-control modal-username" name="username" required>
+                            </div>
+                            <div class="mb-2 row">
+                                <div class="col-md-6">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" class="form-control modal-email" name="email" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Contact</label>
+                                    <input type="text" class="form-control modal-phone" name="phone" required>
+                                </div>
+                            </div>
+                            <div class="mb-2 row">
+                                <div class="col-md-6">
+                                    <label class="form-label">Branch</label>
+                                    <select class="form-select modal-branch" name="branch" required>
+                                        <?php // We'll populate with AJAX-updated options client-side if needed ?>
+                                        <?php branchHandler(''); ?>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Role</label>
+                                    <select class="form-select modal-role" name="role" required>
+                                        <?php roleHandler(''); ?>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary confirm-edit">Edit</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary modal-save">Save changes</button>
                 </div>
+                </form>
             </div>
         </div>
     </div>
