@@ -1,9 +1,32 @@
 <?php
+// Ensure we always return JSON and capture unexpected output/errors
+ob_start();
+header('Content-Type: application/json');
+
+set_error_handler(function($severity, $message, $file, $line) {
+    http_response_code(500);
+    $payload = ['success' => false, 'message' => "PHP Error: $message in $file on line $line"];
+    echo json_encode($payload);
+    exit;
+});
+set_exception_handler(function($e) {
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => 'Unhandled exception: '.$e->getMessage()]);
+    exit;
+});
+register_shutdown_function(function() {
+    $err = error_get_last();
+    if ($err) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => 'Shutdown error: '.($err['message'] ?? '')]);
+        exit;
+    }
+});
+
 include 'setup.php';
 include 'employeeFunctions.php';
-include 'loginChecker.php';
-
-header('Content-Type: application/json');
+// Do not include loginChecker.php here because it may redirect with HTML; instead validate session minimally
+if (session_status() == PHP_SESSION_NONE) session_start();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['success' => false, 'message' => 'Invalid request method']);
@@ -83,6 +106,8 @@ $resp = [
     ]
 ];
 
+// Clear any buffered output (such as accidental HTML) and send clean JSON
+while (ob_get_level() > 0) ob_end_clean();
 echo json_encode($resp);
 
 ?>

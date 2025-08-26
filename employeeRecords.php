@@ -268,10 +268,20 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
                         fetch('employeeUpdate.php', {
                             method: 'POST',
                             body: formData
-                        }).then(r => r.json())
-                        .then(resp => {
+                        }).then(r => r.text())
+                        .then(text => {
+                            let resp;
+                            try {
+                                resp = JSON.parse(text);
+                            } catch (err) {
+                                // Server returned HTML or invalid JSON — show for debugging
+                                console.error('Invalid JSON response from server:', text);
+                                alert('Server returned invalid response. Check console for details.');
+                                return;
+                            }
+
                             if (!resp.success) {
-                                alert('Update failed: ' + resp.message);
+                                alert('Update failed: ' + (resp.message || 'unknown'));
                                 return;
                             }
 
@@ -348,7 +358,7 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
                     <h5 class="modal-title" id="editConfirmModalLabel">Edit Employee</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form id="modalEditForm" enctype="multipart/form-data">
+                <form id="modalEditForm" method="post" action="employeeUpdate.php" enctype="multipart/form-data">
                 <div class="modal-body">
                     <input type="hidden" name="id" class="modal-emp-id">
                     <div class="row">
