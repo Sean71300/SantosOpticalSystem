@@ -322,7 +322,10 @@ $salesData = getSalesOverviewData();
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    return context.parsed.y + ' products sold';
+                                    const label = context.dataset && context.dataset.label ? context.dataset.label : '';
+                                    const raw = context.parsed && (context.parsed.y !== undefined ? context.parsed.y : context.parsed);
+                                    const value = (raw === undefined || raw === null) ? 0 : raw;
+                                    return label + ': ' + value;
                                 }
                             }
                         }
