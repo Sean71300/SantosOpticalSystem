@@ -213,7 +213,6 @@ $salesData = getSalesOverviewData();
                                         $img = $product['ProductImage'];
                                         // choose a server-side fallback so browser doesn't request missing files
                                         $imgRaw = trim((string)$img);
-                                        $imgToUse = $fallback;
 
                                         if ($imgRaw !== '') {
                                             // absolute URL -> trust it
