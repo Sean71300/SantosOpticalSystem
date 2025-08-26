@@ -213,7 +213,6 @@ $salesData = getSalesOverviewData();
                                         $img = $product['ProductImage'];
                                         // choose a server-side fallback so browser doesn't request missing files
                                         $imgRaw = trim((string)$img);
-                                        $fallback = 'Images/logo.png';
                                         $imgToUse = $fallback;
 
                                         if ($imgRaw !== '') {
