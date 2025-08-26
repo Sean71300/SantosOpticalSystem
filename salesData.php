@@ -109,7 +109,7 @@ if ($groupBy === 'day') {
 		$qty = (int)$r['qty'];
 		$status = strtolower($r['status']);
 		if (isset($claimed[$date])) {
-			if ($status === 'claimed') $claimed[$date] += $qty;
+			if ($status === 'sold') $claimed[$date] += $qty;
 			elseif ($status === 'cancelled') $cancelled[$date] += $qty;
 			elseif ($status === 'returned') $returned[$date] += $qty;
 		}
