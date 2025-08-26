@@ -167,7 +167,7 @@ $salesData = getSalesOverviewData();
         <div class="row mt-4">
             <div class="col-md-8">
                 <div class="dashboard-card">
-                    <h5><i class="fas fa-chart-line me-2"></i>Sales Overview (Last 7 Days)</h5>
+                    <h5 id="sales-overview-title"><i class="fas fa-chart-line me-2"></i>Sales Overview (Last 7 Days)</h5>
                     <hr class="border-1 border-black opacity-25">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                                 <h6 class="mb-0">View</h6>
@@ -394,6 +394,15 @@ $salesData = getSalesOverviewData();
                     salesChart.data.datasets[1].data = json.cancelled.map(v=>parseInt(v||0,10));
                     salesChart.data.datasets[2].data = json.returned.map(v=>parseInt(v||0,10));
                     salesChart.update();
+                    // update header with selected date range
+                    const title = document.getElementById('sales-overview-title');
+                    if (title) {
+                        // format dates like 'Mar 3, 2025' or range 'Mar 3 - Sep 7, 2025'
+                        function fmt(d) { const dt = new Date(d); return dt.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }); }
+                        const startF = fmt(json.start);
+                        const endF = fmt(json.end);
+                        title.textContent = `Sales Overview — ${startF} to ${endF}`;
+                    }
                 } catch (err) {
                     console.error('Error loading sales range:', err);
                 }
@@ -422,7 +431,8 @@ $salesData = getSalesOverviewData();
             }
             const monthInit = document.getElementById('sales-month-select');
             if (monthInit && monthInit.options.length <= 1) {
-                for (let m = 1; m <= 12; m++) { const o = document.createElement('option'); o.value = m; o.textContent = m; monthInit.appendChild(o); }
+                const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+                for (let m = 1; m <= 12; m++) { const o = document.createElement('option'); o.value = m; o.textContent = monthNames[m-1]; monthInit.appendChild(o); }
                 monthInit.addEventListener('change', loadSalesRange);
                 monthInit.style.display = '';
             }
