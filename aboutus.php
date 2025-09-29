@@ -21,7 +21,7 @@
         <?php include "Navigation.php"?>
         <div class="button-container">
             <a href="aboutus.php" class="nav-button" data-aos="zoom-in">About Us</a>
-            <a href="ourservices.php" class="nav-button" data-aos="zoom-in" data-aos-delay="200">1 Services</a>
+            <a href="ourservices.php" class="nav-button" data-aos="zoom-in" data-aos-delay="200">Our Services</a>
         </div>
         
         <div class="container-fluid position-relative px-0">
