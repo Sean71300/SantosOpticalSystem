@@ -66,6 +66,10 @@ else {
                 <i class="fas fa-shopping-cart"></i> 
                 <span class="sidebar-item-text">Manage Orders</span>
             </a>
+            <a href="admin-branch.php" class="sidebar-item <?php echo ($current_page == 'admin-branch.php') ? 'active' : ''; ?>">
+                <i class="fa-solid fa-store"></i>
+                <span class="sidebar-item-text">Manage Branches</span>
+            </a>
             <a href="logs.php" class="sidebar-item <?php echo ($current_page == 'logs.php') ? 'active' : ''; ?>">
                 <i class="fas fa-clipboard-list"></i> 
                 <span class="sidebar-item-text">System Logs</span>
