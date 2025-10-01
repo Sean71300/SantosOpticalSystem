@@ -283,15 +283,13 @@ include 'admin-branch-funcs.php';
         <?php include 'sidebar.php'; ?>
 
         <div class="main-content">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="h3">Branches</h1>
-                <div>
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addBranchModal">
-                        <i class="fas fa-plus"></i> Add Branch
-                    </button>
+            <div class="main-content">
+                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+                    <h1><i class="fas fa-boxes me-2"></i> Branches</h1>
+                    <a class="btn btn-primary" href="admin-inventory-add.php" role="button">
+                        <i class="fas fa-plus me-2"></i> Add New Branch
+                    </a>            
                 </div>
-            </div>
-
             Lorem Ipsum
         </div>
     </body>
