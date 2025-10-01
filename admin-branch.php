@@ -294,7 +294,22 @@ include 'admin-branch-funcs.php';
                     <li>To edit or delete a branch, click the button at the 'Actions' column.</li>
                 </ul>
             </div>
-            Lorem Ipsum
+            
+            <div class="table-container">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col" class="sortable" data-column="BranchName">Branch Name <i class="fas fa-sort sort-icon"></i></th>
+                            <th scope="col" class="sortable" data-column="BranchLocation">Branch Location <i class="fas fa-sort sort-icon"></i></th>
+                            <th scope="col" class="sortable" data-column="ContactNo">Contact No. <i class="fas fa-sort sort-icon"></i></th>
+                        </tr>
+                    </thead>
+                    <tbody id="branchTableBody">
+                        <?php displayBranches(); ?>
+                    </tbody>
+                </table>
+            </div>
+            
         </div>
     </body>
 </html>
