@@ -302,6 +302,7 @@ include 'admin-branch-funcs.php';
                             <th scope="col" class="sortable" data-column="BranchName">Branch Name <i class="fas fa-sort sort-icon"></i></th>
                             <th scope="col" class="sortable" data-column="BranchLocation">Branch Location <i class="fas fa-sort sort-icon"></i></th>
                             <th scope="col" class="sortable" data-column="ContactNo">Contact No. <i class="fas fa-sort sort-icon"></i></th>
+                            <th colspan="2">Action</th>
                         </tr>
                     </thead>
                     <tbody id="branchTableBody">
@@ -309,7 +310,7 @@ include 'admin-branch-funcs.php';
                     </tbody>
                 </table>
             </div>
-            
+
         </div>
     </body>
 </html>
