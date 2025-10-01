@@ -274,4 +274,22 @@ include 'admin-branch-funcs.php';
             }
         </style>
     </head>
+
+    <body>
+        <button class="menu-toggle" id="menuToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <?php include 'sidebar.php'; ?>
+
+        <div class="main-content">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3">Branches</h1>
+                <div>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addBranchModal">
+                        <i class="fas fa-plus"></i> Add Branch
+                    </button>
+                </div>
+            </div>
+    </body>
 </html>
