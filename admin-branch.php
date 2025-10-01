@@ -4,10 +4,7 @@ include 'loginChecker.php';
 include 'admin-branch-funcs.php';
 ?>
 
-<html>
-<head>
-    <title>Admin Branch Page</title>
-    
+<html>  
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,7 +13,7 @@ include 'admin-branch-funcs.php';
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
         <link rel="stylesheet" href="customCodes/custom.css">
         <link rel="shortcut icon" type="image/x-icon" href="Images/logo.png"/>
-        <title>Admin | Inventories</title>
+        <title>Admin | Branch</title>
         <style>
             :root {
                 --sidebar-width: 250px;
@@ -283,13 +280,20 @@ include 'admin-branch-funcs.php';
         <?php include 'sidebar.php'; ?>
 
         <div class="main-content">
-            <div class="main-content">
-                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
-                    <h1><i class="fas fa-boxes me-2"></i> Branches</h1>
-                    <a class="btn btn-primary" href="admin-inventory-add.php" role="button">
-                        <i class="fas fa-plus me-2"></i> Add New Branch
-                    </a>            
-                </div>
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+                <h1><i class="fas fa-boxes me-2"></i> Branches</h1>
+                <a class="btn btn-primary" href="admin-inventory-add.php" role="button">
+                    <i class="fas fa-plus me-2"></i> Add New Branch
+                </a>            
+            </div>
+
+            <div class="table-instructions alert alert-info" style="margin-bottom: 20px; padding: 10px 15px; border-radius: 4px;">
+                <strong>Instructions:</strong>
+                <ul style="margin-bottom: 0; padding-left: 20px;">
+                    <li>To add a branch, click the button at the top right.</li>
+                    <li>To edit or delete a branch, click the button at the 'Actions' column.</li>
+                </ul>
+            </div>
             Lorem Ipsum
         </div>
     </body>
