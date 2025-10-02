@@ -102,10 +102,15 @@ $salesData = getSalesOverviewData();
                     <hr class="border-1 border-black opacity-25">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <div>
-                            <!-- Sales view controls removed -->
+                            <!-- compact header left area (empty) -->
                         </div>
                         <div>
-                            <!-- Year/month selectors removed per request -->
+                            <!-- Add a compact dropdown to choose view: week / month / year -->
+                            <select id="sales-mode-select" class="form-select form-select-sm" style="width:120px;">
+                                <option value="week">Week</option>
+                                <option value="month">Month</option>
+                                <option value="year">Year</option>
+                            </select>
                         </div>
                     </div>
                     <div class="chart-container">
@@ -334,7 +339,19 @@ $salesData = getSalesOverviewData();
                 }
             }
 
-            // Sales view buttons removed — chart uses default range (last 7 days)
+            // Wire the compact dropdown to switch range views
+            const salesModeSelect = document.getElementById('sales-mode-select');
+            if (salesModeSelect) {
+                // initialize from default
+                salesModeSelect.value = currentView;
+                salesModeSelect.addEventListener('change', function() {
+                    const val = this.value;
+                    if (['week','month','year'].includes(val)) {
+                        currentView = val;
+                        loadSalesRange();
+                    }
+                });
+            }
 
             // initialize and load default sales range
             loadSalesRange();
