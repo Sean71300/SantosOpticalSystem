@@ -104,7 +104,7 @@ $salesData = getSalesOverviewData();
             }
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
 </head>
 
 <body>
@@ -165,36 +165,6 @@ $salesData = getSalesOverviewData();
         </div>
         
         <div class="row mt-4">
-            <div class="col-md-8">
-                <div class="dashboard-card">
-                    <h5 id="sales-overview-title"><i class="fas fa-chart-line me-2"></i>Sales Overview (Last 7 Days)</h5>
-                    <hr class="border-1 border-black opacity-25">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                <h6 class="mb-0">View</h6>
-                                <div>
-                                    <div class="btn-group" role="group" aria-label="Sales view">
-                                        <button type="button" class="btn btn-sm btn-outline-secondary sales-view-btn active" data-view="week">Week</button>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary sales-view-btn" data-view="month">Month</button>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary sales-view-btn" data-view="year">Year</button>
-                                    </div>
-                                    <select id="sales-year-select" class="form-select form-select-sm d-inline-block ms-2" style="width:auto;">
-                                        <!-- years injected by JS -->
-                                    </select>
-                                    <select id="sales-month-select" class="form-select form-select-sm d-inline-block ms-2" style="width:auto; display:none;">
-                                        <option value="">Month</option>
-                                    </select>
-                                    <!-- week-based mode removed per request -->
-                                    <div id="sales-range-controls" class="d-inline-block ms-2">
-                                        <!-- simplified: no range buttons to avoid errors -->
-                                    </div>
-                                </div>
-                            </div>
-                        <div class="chart-container">
-                            <canvas id="salesChart"></canvas>
-                        </div>
-                </div>
-            </div>
-            
             <div class="col-md-4">
                 <div class="dashboard-card recent-activity">    
                     <div class="d-flex justify-content-between align-items-center mb-3">
