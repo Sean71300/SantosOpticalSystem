@@ -252,11 +252,15 @@ $salesData = getSalesOverviewData();
             const salesCtx = document.getElementById('salesChart') ? document.getElementById('salesChart').getContext('2d') : null;
             const salesChart = salesCtx ? new Chart(salesCtx, {
                 type: 'line',
-                data: { labels: [], datasets: [{ label: 'Sold', data: [], backgroundColor: 'rgba(40,167,69,0.15)', borderColor: 'rgba(40,167,69,1)', tension: 0.1, fill: true }] },
+                data: { labels: [], datasets: [
+                    { label: 'Sold', data: [], backgroundColor: 'rgba(40,167,69,0.15)', borderColor: 'rgba(40,167,69,1)', tension: 0.1, fill: true },
+                    { label: 'Cancelled', data: [], backgroundColor: 'rgba(220,53,69,0.12)', borderColor: 'rgba(220,53,69,1)', tension: 0.1, fill: true },
+                    { label: 'Returned', data: [], backgroundColor: 'rgba(255,193,7,0.12)', borderColor: 'rgba(255,193,7,1)', tension: 0.1, fill: true }
+                ] },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    scales: { y: { beginAtZero: true, title: { display: true, text: 'Products Sold' } }, x: { title: { display: true, text: 'Date' } } },
+                    scales: { y: { beginAtZero: true, title: { display: true, text: 'Quantity' } }, x: { title: { display: true, text: 'Date' } } },
                     plugins: { legend: { position: 'top' } }
                 }
             }) : null;
@@ -383,26 +387,40 @@ $salesData = getSalesOverviewData();
                     if (salesChart) {
                         salesChart.data.labels = formattedLabels(json.labels);
                         salesChart.data.datasets[0].data = json.sold.map(v => parseInt(v||0,10));
+                        salesChart.data.datasets[1].data = json.cancelled.map(v => parseInt(v||0,10));
+                        salesChart.data.datasets[2].data = json.returned.map(v => parseInt(v||0,10));
                         salesChart.update();
                     }
 
-                    const topList = document.getElementById('top-products');
-                    if (topList) {
-                        topList.innerHTML = '';
-                        if (json.topProducts && json.topProducts.length) {
-                            json.topProducts.forEach(p => {
-                                const li = document.createElement('li');
-                                li.className = 'list-group-item d-flex justify-content-between align-items-center';
-                                li.textContent = p.Model || ('Product ' + p.ProductID);
-                                const span = document.createElement('span');
-                                span.className = 'badge bg-primary rounded-pill';
-                                span.textContent = p.qty;
-                                li.appendChild(span);
-                                topList.appendChild(li);
-                            });
-                        } else {
-                            topList.innerHTML = '<li class="list-group-item text-muted">No sales in range.</li>';
-                        }
+                    // Top products: show three lists (sold, cancelled, returned)
+                    const topContainer = document.getElementById('top-products');
+                    if (topContainer) {
+                        topContainer.innerHTML = '';
+                        const sections = [ ['Sold', 'sold', 'primary'], ['Cancelled', 'cancelled', 'danger'], ['Returned', 'returned', 'warning'] ];
+                        sections.forEach(([label, key, badgeClass]) => {
+                            const header = document.createElement('li');
+                            header.className = 'list-group-item bg-light';
+                            header.innerHTML = `<strong>${label}</strong>`;
+                            topContainer.appendChild(header);
+                            const listItems = (json.topProducts && json.topProducts[key]) ? json.topProducts[key] : [];
+                            if (listItems.length === 0) {
+                                const empty = document.createElement('li');
+                                empty.className = 'list-group-item text-muted';
+                                empty.textContent = 'No items';
+                                topContainer.appendChild(empty);
+                            } else {
+                                listItems.forEach(p => {
+                                    const li = document.createElement('li');
+                                    li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                                    li.textContent = p.Model || ('Product ' + p.ProductID);
+                                    const span = document.createElement('span');
+                                    span.className = 'badge bg-' + badgeClass + ' rounded-pill';
+                                    span.textContent = p.qty;
+                                    li.appendChild(span);
+                                    topContainer.appendChild(li);
+                                });
+                            }
+                        });
                     }
 
                     const title = document.getElementById('sales-overview-title');
