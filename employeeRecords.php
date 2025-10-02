@@ -427,7 +427,7 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
             if (!targetId) return;
             const btn = this; btn.disabled = true; btn.textContent = 'Deleting...';
             const fd = new FormData(); fd.append('EmployeeID', targetId);
-            fetch('employeeDeleteAjax.php', { method: 'POST', body: fd })
+            fetch('employeeDeleteAjax.php', { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
             .then(async r => {
                 const txt = await r.text();
                 console.debug('[Delete] HTTP', r.status, txt);
@@ -474,7 +474,7 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
                 btn.disabled = true; btn.textContent = 'Creating...';
                 const fd = new FormData(createForm);
 
-                fetch('employeeCreateAjax.php', { method: 'POST', body: fd })
+                fetch('employeeCreateAjax.php', { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
                 .then(async r => {
                     const txt = await r.text();
                     console.debug('[Create] HTTP', r.status, txt);
