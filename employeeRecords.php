@@ -136,7 +136,7 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
                 <strong>Instructions:</strong>
                 <ul style="margin-bottom: 0; padding-left: 20px;">
                     <li>To add an Employee, click the button at the top right.</li>
-                    <li>To edit or delete Employee, click the button at the 'Actions' column.</li>
+                    <li>To edit or remove Employee, click the button at the 'Actions' column.</li>
 					<li>Click any column header to sort the table in ascending/descending order.</li>
                 </ul>
             </div>
@@ -197,7 +197,7 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
                 // Add confirmation for delete actions
                 document.querySelectorAll('.delete-btn').forEach(btn => {
                     btn.addEventListener('click', (e) => {
-                        if(!confirm('Are you sure you want to delete this employee?')) {
+                        if(!confirm('Are you sure you want to remove this employee?')) {
                             e.preventDefault();
                         }
                     });
@@ -389,12 +389,12 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
             }
         </script>
 
-    <!-- Delete confirmation modal -->
+    <!-- Remove confirmation modal -->
     <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Confirm Delete</h5>
+                    <h5 class="modal-title">Confirm Remove</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -402,7 +402,7 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" id="confirmDeleteBtn" class="btn btn-danger">Delete</button>
+                    <button type="button" id="confirmDeleteBtn" class="btn btn-danger">Remove</button>
                 </div>
             </div>
         </div>
@@ -451,7 +451,7 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
         document.getElementById('confirmDeleteBtn')?.addEventListener('click', function() {
             if (!targetId) return;
             const confirmBtn = this;
-            confirmBtn.disabled = true; confirmBtn.textContent = 'Deleting...';
+            confirmBtn.disabled = true; confirmBtn.textContent = 'Removing...';
 
             // hide confirmation and show processing modal
             var confirmModal = bootstrap.Modal.getInstance(document.getElementById('confirmDeleteModal'));
@@ -463,25 +463,25 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
             fetch('employeeDeleteAjax.php', { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
             .then(async r => {
                 const txt = await r.text();
-                console.debug('[Delete] HTTP', r.status, txt);
+                console.debug('[Remove] HTTP', r.status, txt);
                 try { return JSON.parse(txt); }
                 catch (e) { throw new Error('Invalid JSON response from server: ' + txt); }
             })
             .then(json => {
-                if (!json.success) throw new Error(json.message || 'Delete failed');
+                if (!json.success) throw new Error(json.message || 'Remove failed');
                 // show success modal, close processing
                 procModal.hide();
                 var successModal = new bootstrap.Modal(document.getElementById('deletedSuccessModal'));
                 successModal.show();
-                // refresh after 3 seconds
-                setTimeout(function() { location.reload(); }, 3000);
+                // refresh after 1 second
+                setTimeout(function() { location.reload(); }, 1000);
             })
             .catch(err => {
                 console.error(err);
                 procModal.hide();
-                alert('Delete failed: ' + err.message);
+                alert('Remove failed: ' + err.message);
             })
-            .finally(() => { confirmBtn.disabled = false; confirmBtn.textContent = 'Delete'; });
+            .finally(() => { confirmBtn.disabled = false; confirmBtn.textContent = 'Remove'; });
         });
     });
     </script>

@@ -82,7 +82,7 @@
                 <td class='align-middle'>{$branch}</td>
                 <td class='align-middle'>
                     <a class='btn btn-primary btn-sm edit-btn' href='employeeEdit.php?EmployeeID={$empId}' data-id='{$empId}' data-name='{$empName}' data-image='{$empPic}' data-role='{$roleEsc}' data-roleid='{$roleId}' data-username='{$loginName}' data-email='{$empEmail}' data-phone='{$empNumber}' data-branch='{$branch}' data-branchcode='{$branchCode}'>Edit</a>
-                    <a class='btn btn-danger btn-sm delete-btn' href='employeeDelete.php?EmployeeID={$empId}' data-id='{$empId}' data-name='{$empName}'>Delete</a>
+                    <a class='btn btn-danger btn-sm delete-btn' href='employeeDelete.php?EmployeeID={$empId}' data-id='{$empId}' data-name='{$empName}'>Remove</a>
                 </td>
               </tr>";
     }
