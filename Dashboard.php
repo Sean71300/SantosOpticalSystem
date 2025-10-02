@@ -162,13 +162,17 @@ $salesData = getSalesOverviewData();
                         </li>
                     </ul>
                 </div>
-            <?php if ($isAdmin): ?>    
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Recent Activity</h5>
-                        <a href="logs.php" class="btn btn-sm btn-outline-secondary">
-                            <i class="fas fa-list me-1"></i> Show All Logs
-                        </a>
-                    </div>
+            </div>
+            <?php if ($isAdmin): ?>
+                <div class="col-12 mt-3">
+                    <div class="dashboard-card">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Recent Activity</h5>
+                            <a href="logs.php" class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-list me-1"></i> Show All Logs
+                            </a>
+                        </div>
+                        <hr class="border-1 border-black opacity-25">
                         <div class="list-group list-group-flush recent-activity-list" style="max-height:360px; overflow:auto; padding-right:6px;">
                             <?php
                             if (empty($recentActivities)) {
@@ -204,10 +208,8 @@ $salesData = getSalesOverviewData();
                             }
                             ?>
                         </div>
-                        
-                    </ul>
+                    </div>
                 </div>
-            </div>
             <?php endif; ?>
         </div>
     </div>
@@ -434,13 +436,10 @@ $salesData = getSalesOverviewData();
                     // Net gain / loss display
                     const netEl = document.getElementById('net-summary');
                     if (netEl) {
-                        const net = parseFloat(json.net_total || 0);
+                        // salesOverview.php now returns net_gained (only sold revenue). Always show Net Gained.
+                        const net = parseFloat(json.net_gained || json.net_total || 0);
                         const fmt = new Intl.NumberFormat(undefined, { style: 'currency', currency: 'PHP', maximumFractionDigits: 2 });
-                        if (net >= 0) {
-                            netEl.innerHTML = `<span class="badge bg-success">Net Gain: ${fmt.format(net)}</span>`;
-                        } else {
-                            netEl.innerHTML = `<span class="badge bg-danger">Net Loss: ${fmt.format(Math.abs(net))}</span>`;
-                        }
+                        netEl.innerHTML = `<span class="badge bg-success">Net Gained: ${fmt.format(net)}</span>`;
                     }
                 } catch (err) {
                     console.error('Error loading sales range:', err);
