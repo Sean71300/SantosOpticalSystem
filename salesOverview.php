@@ -19,16 +19,25 @@ try {
 
     $conn = connect();
 
-    // Aggregate sold / cancelled / returned quantities per day
+    // Aggregate sold / cancelled / returned quantities and revenue per day
+    // Join product info to compute revenue = Quantity * Price (Price stored as varchar like '₱3,500')
     $sql = "SELECT DATE(oH.Created_dt) AS saleDate,
-                   COALESCE(SUM(CASE WHEN (oD.Status = 'Completed' OR oD.ActivityCode = 1) THEN oD.Quantity ELSE 0 END),0) AS sold,
-                   COALESCE(SUM(CASE WHEN UPPER(oD.Status) = 'CANCELLED' THEN oD.Quantity ELSE 0 END),0) AS cancelled,
-                   COALESCE(SUM(CASE WHEN UPPER(oD.Status) = 'RETURNED' THEN oD.Quantity ELSE 0 END),0) AS returned
-            FROM Order_hdr oH
-            JOIN orderDetails oD ON oH.Orderhdr_id = oD.OrderHdr_id
-            WHERE DATE(oH.Created_dt) BETWEEN ? AND ?
-            GROUP BY saleDate
-            ORDER BY saleDate ASC";
+             COALESCE(SUM(CASE WHEN (oD.Status = 'Completed' OR oD.ActivityCode = 1) THEN oD.Quantity ELSE 0 END),0) AS sold,
+             COALESCE(SUM(CASE WHEN UPPER(oD.Status) = 'CANCELLED' THEN oD.Quantity ELSE 0 END),0) AS cancelled,
+             COALESCE(SUM(CASE WHEN UPPER(oD.Status) = 'RETURNED' THEN oD.Quantity ELSE 0 END),0) AS returned,
+             COALESCE(SUM(CASE WHEN (oD.Status = 'Completed' OR oD.ActivityCode = 1) THEN oD.Quantity *
+                 COALESCE(CAST(REPLACE(REPLACE(p.Price, '₱', ''), ',', '') AS DECIMAL(12,2)),0) ELSE 0 END),0) AS sold_rev,
+             COALESCE(SUM(CASE WHEN UPPER(oD.Status) = 'CANCELLED' THEN oD.Quantity *
+                 COALESCE(CAST(REPLACE(REPLACE(p.Price, '₱', ''), ',', '') AS DECIMAL(12,2)),0) ELSE 0 END),0) AS cancelled_rev,
+             COALESCE(SUM(CASE WHEN UPPER(oD.Status) = 'RETURNED' THEN oD.Quantity *
+                 COALESCE(CAST(REPLACE(REPLACE(p.Price, '₱', ''), ',', '') AS DECIMAL(12,2)),0) ELSE 0 END),0) AS returned_rev
+        FROM Order_hdr oH
+        JOIN orderDetails oD ON oH.Orderhdr_id = oD.OrderHdr_id
+        LEFT JOIN ProductBranchMaster pb ON oD.ProductBranchID = pb.ProductBranchID
+        LEFT JOIN productMstr p ON pb.ProductID = p.ProductID
+        WHERE DATE(oH.Created_dt) BETWEEN ? AND ?
+        GROUP BY saleDate
+        ORDER BY saleDate ASC";
 
     $stmt = $conn->prepare($sql);
     if (!$stmt) throw new Exception('Prepare failed: ' . $conn->error);
@@ -51,13 +60,25 @@ try {
     $sold = [];
     $cancelled = [];
     $returned = [];
+    $sold_rev = [];
+    $cancelled_rev = [];
+    $returned_rev = [];
     foreach ($period as $dt) {
         $d = $dt->format('Y-m-d');
         $labels[] = $d;
         $sold[] = isset($map[$d]) ? $map[$d]['sold'] : 0;
         $cancelled[] = isset($map[$d]) ? $map[$d]['cancelled'] : 0;
         $returned[] = isset($map[$d]) ? $map[$d]['returned'] : 0;
+        $sold_rev[] = isset($map[$d]) ? (float)$map[$d]['sold_rev'] : 0.0;
+        $cancelled_rev[] = isset($map[$d]) ? (float)$map[$d]['cancelled_rev'] : 0.0;
+        $returned_rev[] = isset($map[$d]) ? (float)$map[$d]['returned_rev'] : 0.0;
     }
+
+    // totals
+    $total_sold_rev = array_sum($sold_rev);
+    $total_cancelled_rev = array_sum($cancelled_rev);
+    $total_returned_rev = array_sum($returned_rev);
+    $net_total = $total_sold_rev - $total_cancelled_rev - $total_returned_rev;
 
         // Top products (by quantity) in range for sold/cancelled/returned
         $topProducts = [ 'sold' => [], 'cancelled' => [], 'returned' => [] ];
@@ -109,14 +130,21 @@ try {
         }
 
         echo json_encode([
-                'success' => true,
-                'labels' => $labels,
-                'sold' => $sold,
-                'cancelled' => $cancelled,
-                'returned' => $returned,
-                'start' => $start,
-                'end' => $end,
-                'topProducts' => $topProducts
+            'success' => true,
+            'labels' => $labels,
+            'sold' => $sold,
+            'cancelled' => $cancelled,
+            'returned' => $returned,
+            'sold_rev' => $sold_rev,
+            'cancelled_rev' => $cancelled_rev,
+            'returned_rev' => $returned_rev,
+            'total_sold_rev' => $total_sold_rev,
+            'total_cancelled_rev' => $total_cancelled_rev,
+            'total_returned_rev' => $total_returned_rev,
+            'net_total' => $net_total,
+            'start' => $start,
+            'end' => $end,
+            'topProducts' => $topProducts
         ]);
     $stmt->close();
     $conn->close();

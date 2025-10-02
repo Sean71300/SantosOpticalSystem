@@ -124,6 +124,7 @@ $salesData = getSalesOverviewData();
                         <canvas id="salesChart"></canvas>
                     </div>
                     <div class="mt-3">
+                        <div id="net-summary" class="mb-2"></div>
                         <h6 class="mb-2">Top Products</h6>
                         <ul id="top-products" class="list-group list-group-flush"></ul>
                     </div>
@@ -428,6 +429,18 @@ $salesData = getSalesOverviewData();
                         const startF = new Date(json.start).toLocaleDateString();
                         const endF = new Date(json.end).toLocaleDateString();
                         title.textContent = `Sales Overview — ${startF} to ${endF}`;
+                    }
+
+                    // Net gain / loss display
+                    const netEl = document.getElementById('net-summary');
+                    if (netEl) {
+                        const net = parseFloat(json.net_total || 0);
+                        const fmt = new Intl.NumberFormat(undefined, { style: 'currency', currency: 'PHP', maximumFractionDigits: 2 });
+                        if (net >= 0) {
+                            netEl.innerHTML = `<span class="badge bg-success">Net Gain: ${fmt.format(net)}</span>`;
+                        } else {
+                            netEl.innerHTML = `<span class="badge bg-danger">Net Loss: ${fmt.format(Math.abs(net))}</span>`;
+                        }
                     }
                 } catch (err) {
                     console.error('Error loading sales range:', err);
