@@ -109,8 +109,7 @@ $salesData = getSalesOverviewData();
                             </div>
                         </div>
                         <div>
-                            <select id="sales-year-select" class="form-select form-select-sm d-inline-block ms-2" style="width:auto;"></select>
-                            <select id="sales-month-select" class="form-select form-select-sm d-inline-block ms-2" style="width:auto; display:none;"></select>
+                            <!-- Year/month selectors removed per request -->
                         </div>
                     </div>
                     <div class="chart-container">
@@ -330,24 +329,7 @@ $salesData = getSalesOverviewData();
                 });
             });
 
-            // initialize selectors
-            const yearSelectInit = document.getElementById('sales-year-select');
-            if (yearSelectInit) {
-                const thisYear = new Date().getFullYear();
-                for (let y = thisYear; y >= thisYear - 7; y--) {
-                    const opt = document.createElement('option'); opt.value = y; opt.textContent = y; yearSelectInit.appendChild(opt);
-                }
-                yearSelectInit.value = new Date().getFullYear();
-                yearSelectInit.addEventListener('change', loadSalesRange);
-            }
-            const monthInit = document.getElementById('sales-month-select');
-            if (monthInit) {
-                const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-                for (let m = 1; m <= 12; m++) { const o = document.createElement('option'); o.value = m; o.textContent = monthNames[m-1]; monthInit.appendChild(o); }
-                monthInit.addEventListener('change', loadSalesRange);
-                monthInit.style.display = '';
-            }
-
+            // initialize and load default sales range
             loadSalesRange();
         });
     </script>
@@ -547,27 +529,17 @@ $salesData = getSalesOverviewData();
 
             function computeStartEndForView(view) {
                 const now = new Date();
-                const yearSel = document.getElementById('sales-year-select');
-                const monthSel = document.getElementById('sales-month-select');
-                const year = yearSel ? parseInt(yearSel.value, 10) : now.getFullYear();
-                const month = monthSel && monthSel.value ? parseInt(monthSel.value, 10) : null;
-                let start = null; let end = null;
+                let start, end;
                 if (view === 'year') {
-                    start = new Date(year, 0, 1);
-                    end = new Date(year, 11, 31);
+                    start = new Date(now.getFullYear(), 0, 1);
+                    end = new Date(now.getFullYear(), 11, 31);
                 } else if (view === 'month') {
-                    const m = month !== null ? month - 1 : now.getMonth();
-                    start = new Date(year, m, 1);
-                    end = new Date(year, m + 1, 0);
-                } else { // week
-                    const m = month !== null ? month - 1 : now.getMonth();
-                    // default to current week within the chosen month: use first day of month to find week
-                    const first = new Date(year, m, 1);
-                    const day = first.getDay();
-                    // start at first day
-                    start = first;
-                    end = new Date(start);
-                    end.setDate(start.getDate() + 6);
+                    start = new Date(now.getFullYear(), now.getMonth(), 1);
+                    end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+                } else { // week (last 7 days)
+                    end = now;
+                    start = new Date();
+                    start.setDate(end.getDate() - 6);
                 }
                 return { start: start.toISOString().slice(0,10), end: end.toISOString().slice(0,10) };
             }
