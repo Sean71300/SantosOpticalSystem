@@ -279,259 +279,263 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
             </div>
         </div>
                     
-        <script>
-            // Sorting function
-            function sortTable(column) {
-                const urlParams = new URLSearchParams(window.location.search);
-                let currentSort = urlParams.get('sort') || 'CustomerID';
-                let currentOrder = urlParams.get('order') || 'ASC';
-                
-                let newOrder = 'ASC';
-                if (currentSort === column) {
-                    newOrder = currentOrder === 'ASC' ? 'DESC' : 'ASC';
-                }
-                
-                urlParams.set('sort', column);
-                urlParams.set('order', newOrder);
-                window.location.href = window.location.pathname + '?' + urlParams.toString();
-            }
-
-            // View orders functionality
-            document.addEventListener('DOMContentLoaded', function() {
-                // Orders modal functionality
-                document.querySelectorAll('.view-orders').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const customerID = this.getAttribute('data-customer-id');
-                        
-                        fetch('customerFunctions.php?action=getCustomerOrders&customerID=' + customerID)
-                            .then(response => response.json())
-                            .then(orders => {
-                                const tableBody = document.getElementById('ordersTableBody');
-                                tableBody.innerHTML = '';
-                                
-                                if (orders.length === 0) {
-                                    tableBody.innerHTML = '<tr><td colspan="4" class="text-center">No orders found for this customer</td></tr>';
-                                } else {
-                                    orders.forEach(order => {
-                                        const row = document.createElement('tr');
-                                        row.innerHTML = `
-                                            <td>${order.Model || 'N/A'}</td>
-                                            <td>${order.BrandName || 'N/A'}</td>
-                                            <td>${order.Quantity || 'N/A'}</td>
-                                            <td>${order.Created_dt || 'N/A'}</td>
-                                        `;
-                                        tableBody.appendChild(row);
-                                    });
-                                }
-                                
-                                const modal = new bootstrap.Modal(document.getElementById('ordersModal'));
-                                modal.show();
-                            })
-                            .catch(error => {
-                                console.error('Error fetching orders:', error);
-                            });
-                    });
-                });
-
-                // Remove (soft-delete) functionality
-                let removeTargetId = null;
-                document.querySelectorAll('.delete-btn').forEach(btn => {
-                    btn.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        removeTargetId = this.getAttribute('data-customer-id');
-                        const name = this.getAttribute('data-customer-name') || 'this customer';
-                        document.getElementById('removeCustomerName').textContent = name;
-                        const mdl = new bootstrap.Modal(document.getElementById('confirmRemoveModal'));
-                        mdl.show();
-                    });
-                });
-
-                document.getElementById('confirmRemoveBtn')?.addEventListener('click', function() {
-                    if (!removeTargetId) return;
-                    const btn = this; btn.disabled = true; btn.textContent = 'Removing...';
-                    var confModal = bootstrap.Modal.getInstance(document.getElementById('confirmRemoveModal'));
-                    if (confModal) confModal.hide();
-
-                    // Show a dedicated processing modal (centered spinner)
-                    var procModal = new bootstrap.Modal(document.getElementById('processingModalCustomer'), { backdrop: 'static', keyboard: false });
-                    procModal.show();
-
-                    const fd = new FormData(); fd.append('CustomerID', removeTargetId);
-                    fetch('customerDeleteAjax.php', { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-                    .then(async r => { const txt = await r.text(); console.debug('[Remove] HTTP', r.status, txt); try { return JSON.parse(txt); } catch (e) { throw new Error('Invalid JSON response: ' + txt); } })
-                    .then(json => {
-                        if (!json.success) throw new Error(json.message || 'Remove failed');
-                        // hide processing and show success modal
-                        procModal.hide();
-                        var successModal = new bootstrap.Modal(document.getElementById('deletedSuccessModalCustomer'));
-                        successModal.show();
-                        // refresh after 2 seconds
-                        setTimeout(() => { location.reload(); }, 2000);
-                    })
-                    .catch(err => { procModal.hide(); alert('Remove failed: ' + err.message); })
-                    .finally(() => { btn.disabled = false; btn.textContent = 'Remove'; });
-                });
-
-                // Profile modal: load edit form + medical history via AJAX
-                document.querySelectorAll('.profile-btn').forEach(btn => {
-                    btn.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        const customerID = this.getAttribute('data-customer-id');
-                        const body = document.getElementById('profileModalBody');
-                        body.innerHTML = '<div class="text-center">Loading...</div>';
-                        const modal = new bootstrap.Modal(document.getElementById('profileModal'));
-                        modal.show();
-
-                        // Fetch profile form (reuse a small endpoint on customerFunctions.php)
-                        fetch('customerFunctions.php?action=getCustomerProfile&customerID=' + customerID)
-                        .then(r => r.text())
-                        .then(html => {
-                            body.innerHTML = html;
-                            // The server returns a <script> to fetch medical records, but
-                            // scripts inside HTML inserted via innerHTML won't execute.
-                            // Fetch medical records explicitly here so they appear in the modal.
-                            fetch('customerFunctions.php?action=getCustomerMedicalRecords&customerID=' + customerID)
-                                .then(r2 => r2.text())
-                                .then(medHtml => {
-                                    const area = document.getElementById('medicalRecordsArea');
-                                    if (area) area.innerHTML = medHtml;
-                                })
-                                .catch(e => {
-                                    console.error('Error loading medical records', e);
-                                    const area = document.getElementById('medicalRecordsArea');
-                                    if (area) area.innerHTML = '<div class="alert alert-danger">Error loading medical records</div>';
-                                });
-                        })
-                        .catch(err => { body.innerHTML = '<div class="alert alert-danger">Error loading profile.</div>'; console.error(err); });
-                    });
-                });
-
-                // ===== New JS: submit profile edit form via AJAX when footer "Save" is clicked =====
-                document.getElementById('saveProfileBtn')?.addEventListener('click', function() {
-                    const btn = this;
-                    const modalBody = document.getElementById('profileModalBody');
-                    if (!modalBody) { alert('Profile area not found.'); return; }
-
-                    // Look for a form inside the loaded profile HTML
-                    const form = modalBody.querySelector('form');
-                    if (!form) { alert('No editable form was found in the profile.'); return; }
-
-                    // Determine endpoint: prefer form.action, fallback to a conventional ajax endpoint
-                    const endpoint = form.getAttribute('action') || 'customerUpdateAjax.php';
-                    const method = (form.getAttribute('method') || 'POST').toUpperCase();
-
-                    btn.disabled = true;
-                    const prevText = btn.textContent;
-                    btn.textContent = 'Saving...';
-
-                    const fd = new FormData(form);
-
-                    fetch(endpoint, { method: method, body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-                    .then(async r => {
-                        const txt = await r.text();
-                        try { return JSON.parse(txt); }
-                        catch (e) { throw new Error('Invalid JSON response from server: ' + txt); }
-                    })
-                    .then(json => {
-                        if (!json.success) throw new Error(json.message || 'Save failed');
-                        const modal = bootstrap.Modal.getInstance(document.getElementById('profileModal'));
-                        if (modal) modal.hide();
-                        // quick refresh to reflect updated record
-                        setTimeout(() => { location.reload(); }, 800);
-                    })
-                    .catch(err => {
-                        alert('Save failed: ' + err.message);
-                        console.error('Profile save error:', err);
-                    })
-                    .finally(() => {
-                        btn.disabled = false;
-                        btn.textContent = prevText;
-                    });
-                });
-
-                // New Customer button
-                document.getElementById('newCustomerBtn')?.addEventListener('click', function() {
-                    const mdl = new bootstrap.Modal(document.getElementById('newCustomerModal'));
-                    mdl.show();
-                });
-
-                // New Customer form submit via AJAX
-                document.getElementById('newCustomerForm')?.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    const form = this; const btn = document.getElementById('submitNewCustomer');
-                    btn.disabled = true; btn.textContent = 'Creating...';
-                    const fd = new FormData(form);
-                    fetch('customerCreateAjax.php', { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-                    .then(async r => { const txt = await r.text(); console.debug('[CreateCustomer] HTTP', r.status, txt); try { return JSON.parse(txt); } catch (e) { throw new Error('Invalid JSON response: ' + txt); } })
-                    .then(json => {
-                        if (!json.success) throw new Error(json.message || 'Create failed');
-                        // close modal and refresh quickly
-                        var m = bootstrap.Modal.getInstance(document.getElementById('newCustomerModal'));
-                        if (m) m.hide();
-                        setTimeout(() => { location.reload(); }, 1000);
-                    })
-                    .catch(err => { alert('Create failed: ' + err.message); })
-                    .finally(() => { btn.disabled = false; btn.textContent = 'Create'; });
-                });
-                
-                // Medical record form submit via AJAX (works for add modal inside this page)
-                const medForm = document.getElementById('medicalRecordForm');
-                if (medForm) {
-                    medForm.addEventListener('submit', function(e) {
-                        e.preventDefault();
-                        const btn = medForm.querySelector('button[type="submit"]');
-                        if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
-                        const fd = new FormData(medForm);
-                        fetch('medical-records-funcs.php', { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-                        .then(async r => { const txt = await r.text(); console.debug('[AddMed] HTTP', r.status, txt); try { return JSON.parse(txt); } catch (e) { throw new Error('Invalid JSON response: ' + txt); } })
-                        .then(json => {
-                            if (!json.success) throw new Error(json.message || 'Add record failed');
-                            // close modal
-                            const addModal = bootstrap.Modal.getInstance(document.getElementById('addMedicalRecordModal'));
-                            if (addModal) addModal.hide();
-                            // refresh medical records area if profile modal is open
-                            const profileModalEl = document.getElementById('profileModal');
-                            if (profileModalEl && bootstrap.Modal.getInstance(profileModalEl)) {
-                                const customerID = fd.get('customerID');
-                                fetch('customerFunctions.php?action=getCustomerMedicalRecords&customerID=' + encodeURIComponent(customerID))
-                                    .then(r=>r.text()).then(html=>{ const area = document.getElementById('medicalRecordsArea'); if (area) area.innerHTML = html; })
-                                    .catch(e=>console.error('Failed to refresh medical records', e));
-                            }
-                        })
-                        .catch(err => { alert('Add record failed: ' + err.message); })
-                        .finally(() => { if (btn) { btn.disabled = false; btn.textContent = 'Save Record'; } });
-                    });
-                }
-
-                // Delegate clicks for any Add Record buttons that target the add modal.
-                // This handles buttons injected dynamically into the profile HTML.
-                document.addEventListener('click', function(e) {
-                    const btn = e.target.closest('[data-bs-target="#addMedicalRecordModal"]');
-                    if (!btn) return;
-                    e.preventDefault();
-                    const modalEl = document.getElementById('addMedicalRecordModal');
-                    if (!modalEl) return;
-
-                    // Populate customerID and default date
-                    const customerID = btn.getAttribute('data-customer-id') || '';
-                    const modalCustomerID = modalEl.querySelector('#modalCustomerID');
-                    if (modalCustomerID) modalCustomerID.value = customerID;
-                    const visitDateEl = modalEl.querySelector('#visit_date');
-                    if (visitDateEl) visitDateEl.value = new Date().toISOString().split('T')[0];
-
-                    // Clear other fields
-                    modalEl.querySelectorAll('input[type=text], textarea, input[type=number]').forEach(i => i.value = '');
-
-                    // Show the modal programmatically
-                    const addModal = new bootstrap.Modal(modalEl);
-                    addModal.show();
-                });
-            });
-        </script>
+        
 
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+        <script>
+        // Sorting function
+        function sortTable(column) {
+            const urlParams = new URLSearchParams(window.location.search);
+            let currentSort = urlParams.get('sort') || 'CustomerID';
+            let currentOrder = urlParams.get('order') || 'ASC';
+            
+            let newOrder = 'ASC';
+            if (currentSort === column) {
+                newOrder = currentOrder === 'ASC' ? 'DESC' : 'ASC';
+            }
+            
+            urlParams.set('sort', column);
+            urlParams.set('order', newOrder);
+            window.location.href = window.location.pathname + '?' + urlParams.toString();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Orders modal functionality
+            document.querySelectorAll('.view-orders').forEach(button => {
+                button.addEventListener('click', function() {
+                    const customerID = this.getAttribute('data-customer-id');
+
+                    fetch('customerFunctions.php?action=getCustomerOrders&customerID=' + customerID)
+                        .then(response => response.json())
+                        .then(orders => {
+                            const tableBody = document.getElementById('ordersTableBody');
+                            tableBody.innerHTML = '';
+
+                            if (orders.length === 0) {
+                                tableBody.innerHTML = '<tr><td colspan="4" class="text-center">No orders found for this customer</td></tr>';
+                            } else {
+                                orders.forEach(order => {
+                                    const row = document.createElement('tr');
+                                    row.innerHTML = `
+                                        <td>${order.Model || 'N/A'}</td>
+                                        <td>${order.BrandName || 'N/A'}</td>
+                                        <td>${order.Quantity || 'N/A'}</td>
+                                        <td>${order.Created_dt || 'N/A'}</td>
+                                    `;
+                                    tableBody.appendChild(row);
+                                });
+                            }
+
+                            const modal = new bootstrap.Modal(document.getElementById('ordersModal'));
+                            modal.show();
+                        })
+                        .catch(error => {
+                            console.error('Error fetching orders:', error);
+                        });
+                });
+            });
+
+            // Remove (soft-delete) functionality
+            let removeTargetId = null;
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    removeTargetId = this.getAttribute('data-customer-id');
+                    const name = this.getAttribute('data-customer-name') || 'this customer';
+                    document.getElementById('removeCustomerName').textContent = name;
+                    const mdl = new bootstrap.Modal(document.getElementById('confirmRemoveModal'));
+                    mdl.show();
+                });
+            });
+
+            document.getElementById('confirmRemoveBtn')?.addEventListener('click', function() {
+                if (!removeTargetId) return;
+                const btn = this; btn.disabled = true; btn.textContent = 'Removing...';
+                var confModal = bootstrap.Modal.getInstance(document.getElementById('confirmRemoveModal'));
+                if (confModal) confModal.hide();
+
+                // Show a dedicated processing modal (centered spinner)
+                var procModal = new bootstrap.Modal(document.getElementById('processingModalCustomer'), { backdrop: 'static', keyboard: false });
+                procModal.show();
+
+                const fd = new FormData(); fd.append('CustomerID', removeTargetId);
+                fetch('customerDeleteAjax.php', { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(async r => { const txt = await r.text(); console.debug('[Remove] HTTP', r.status, txt); try { return JSON.parse(txt); } catch (e) { throw new Error('Invalid JSON response: ' + txt); } })
+                .then(json => {
+                    if (!json.success) throw new Error(json.message || 'Remove failed');
+                    // hide processing and show success modal
+                    procModal.hide();
+                    var successModal = new bootstrap.Modal(document.getElementById('deletedSuccessModalCustomer'));
+                    successModal.show();
+                    // refresh after 2 seconds
+                    setTimeout(() => { location.reload(); }, 2000);
+                })
+                .catch(err => { procModal.hide(); alert('Remove failed: ' + err.message); })
+                .finally(() => { btn.disabled = false; btn.textContent = 'Remove'; });
+            });
+
+            // Profile modal: load edit form + medical history via AJAX
+            document.querySelectorAll('.profile-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const customerID = this.getAttribute('data-customer-id');
+                    const body = document.getElementById('profileModalBody');
+                    body.innerHTML = '<div class="text-center">Loading...</div>';
+                    const modal = new bootstrap.Modal(document.getElementById('profileModal'));
+                    modal.show();
+
+                    // Fetch profile form (reuse a small endpoint on customerFunctions.php)
+                    fetch('customerFunctions.php?action=getCustomerProfile&customerID=' + customerID)
+                    .then(r => r.text())
+                    .then(html => {
+                        body.innerHTML = html;
+                        // The server returns a <script> to fetch medical records, but
+                        // scripts inside HTML inserted via innerHTML won't execute.
+                        // Fetch medical records explicitly here so they appear in the modal.
+                        fetch('customerFunctions.php?action=getCustomerMedicalRecords&customerID=' + customerID)
+                            .then(r2 => r2.text())
+                            .then(medHtml => {
+                                const area = document.getElementById('medicalRecordsArea');
+                                if (area) area.innerHTML = medHtml;
+                            })
+                            .catch(e => {
+                                console.error('Error loading medical records', e);
+                                const area = document.getElementById('medicalRecordsArea');
+                                if (area) area.innerHTML = '<div class="alert alert-danger">Error loading medical records</div>';
+                            });
+                    })
+                    .catch(err => { body.innerHTML = '<div class="alert alert-danger">Error loading profile.</div>'; console.error(err); });
+                });
+            });
+
+            // ===== New JS: submit profile edit form via AJAX when footer "Save" is clicked =====
+            document.getElementById('saveProfileBtn')?.addEventListener('click', function() {
+                const btn = this;
+                const modalBody = document.getElementById('profileModalBody');
+                if (!modalBody) { alert('Profile area not found.'); return; }
+
+                // Look for a form inside the loaded profile HTML
+                const form = modalBody.querySelector('form');
+                if (!form) { alert('No editable form was found in the profile.'); return; }
+
+                // Determine endpoint: prefer form.action, fallback to a conventional ajax endpoint
+                const endpoint = form.getAttribute('action') || 'customerUpdateAjax.php';
+                const method = (form.getAttribute('method') || 'POST').toUpperCase();
+
+                btn.disabled = true;
+                const prevText = btn.textContent;
+                btn.textContent = 'Saving...';
+
+                const fd = new FormData(form);
+
+                fetch(endpoint, { method: method, body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(async r => {
+                    const txt = await r.text();
+                    try { return JSON.parse(txt); }
+                    catch (e) { throw new Error('Invalid JSON response from server: ' + txt); }
+                })
+                .then(json => {
+                    if (!json.success) throw new Error(json.message || 'Save failed');
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('profileModal'));
+                    if (modal) modal.hide();
+                    // quick refresh to reflect updated record
+                    setTimeout(() => { location.reload(); }, 800);
+                })
+                .catch(err => {
+                    alert('Save failed: ' + err.message);
+                    console.error('Profile save error:', err);
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.textContent = prevText;
+                });
+            });
+
+            // New Customer button
+            document.getElementById('newCustomerBtn')?.addEventListener('click', function() {
+                const mdl = new bootstrap.Modal(document.getElementById('newCustomerModal'));
+                mdl.show();
+            });
+
+            // New Customer form submit via AJAX
+            document.getElementById('newCustomerForm')?.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const form = this; const btn = document.getElementById('submitNewCustomer');
+                btn.disabled = true; btn.textContent = 'Creating...';
+                const fd = new FormData(form);
+                fetch('customerCreateAjax.php', { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(async r => { const txt = await r.text(); console.debug('[CreateCustomer] HTTP', r.status, txt); try { return JSON.parse(txt); } catch (e) { throw new Error('Invalid JSON response: ' + txt); } })
+                .then(json => {
+                    if (!json.success) throw new Error(json.message || 'Create failed');
+                    // close modal and refresh quickly
+                    var m = bootstrap.Modal.getInstance(document.getElementById('newCustomerModal'));
+                    if (m) m.hide();
+                    setTimeout(() => { location.reload(); }, 1000);
+                })
+                .catch(err => { alert('Create failed: ' + err.message); })
+                .finally(() => { btn.disabled = false; btn.textContent = 'Create'; });
+            });
+
+            // Medical record form submit via AJAX (works for add modal inside this page)
+            const medForm = document.getElementById('medicalRecordForm');
+            if (medForm) {
+                medForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const btn = medForm.querySelector('button[type="submit"]');
+                    if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+                    const fd = new FormData(medForm);
+                    fetch('medical-records-funcs.php', { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                    .then(async r => { const txt = await r.text(); console.debug('[AddMed] HTTP', r.status, txt); try { return JSON.parse(txt); } catch (e) { throw new Error('Invalid JSON response: ' + txt); } })
+                    .then(json => {
+                        if (!json.success) throw new Error(json.message || 'Add record failed');
+                        // close modal
+                        const addModal = bootstrap.Modal.getInstance(document.getElementById('addMedicalRecordModal'));
+                        if (addModal) addModal.hide();
+                        // refresh medical records area if profile modal is open
+                        const profileModalEl = document.getElementById('profileModal');
+                        if (profileModalEl && bootstrap.Modal.getInstance(profileModalEl)) {
+                            const customerID = fd.get('customerID');
+                            fetch('customerFunctions.php?action=getCustomerMedicalRecords&customerID=' + encodeURIComponent(customerID))
+                                .then(r=>r.text()).then(html=>{ const area = document.getElementById('medicalRecordsArea'); if (area) area.innerHTML = html; })
+                                .catch(e=>console.error('Failed to refresh medical records', e));
+                        }
+                    })
+                    .catch(err => { alert('Add record failed: ' + err.message); })
+                    .finally(() => { if (btn) { btn.disabled = false; btn.textContent = 'Save Record'; } });
+                });
+            }
+
+            // Delegate clicks for any Add Record buttons that target the add modal.
+            // This handles buttons injected dynamically into the profile HTML.
+            document.addEventListener('click', function(e) {
+                const btn = e.target.closest('[data-bs-target="#addMedicalRecordModal"]');
+                if (!btn) return;
+                e.preventDefault();
+                const modalEl = document.getElementById('addMedicalRecordModal');
+                if (!modalEl) return;
+
+                // Populate customerID and default date
+                const customerID = btn.getAttribute('data-customer-id') || '';
+                const modalCustomerID = modalEl.querySelector('#modalCustomerID');
+                if (modalCustomerID) modalCustomerID.value = customerID;
+                const visitDateEl = modalEl.querySelector('#visit_date');
+                if (visitDateEl) visitDateEl.value = new Date().toISOString().split('T')[0];
+
+                // Clear other fields
+                modalEl.querySelectorAll('input[type=text], textarea, input[type=number]').forEach(i => i.value = '');
+
+                // Remove focus from any element inside the profile modal to avoid
+                // aria-hidden errors when opening a nested modal, then show modal.
+                try { if (document.activeElement && document.activeElement !== document.body) document.activeElement.blur(); } catch (e) { /* ignore */ }
+                const addModal = new bootstrap.Modal(modalEl);
+                addModal.show();
+            });
+        });
+        </script>
+
         <script src="customCodes/custom.js"></script>
     </body>
 </html>
