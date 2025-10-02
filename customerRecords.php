@@ -603,7 +603,7 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                     const btn = medForm.querySelector('button[type="submit"]');
                     if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
                     const fd = new FormData(medForm);
-                    fetch('medical-records-funcs.php', { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                    fetch('medical-records-funcs.php', { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }, credentials: 'same-origin' })
                     .then(async r => { const txt = await r.text(); console.debug('[AddMed] HTTP', r.status, txt); try { return JSON.parse(txt); } catch (e) { throw new Error('Invalid JSON response: ' + txt); } })
                     .then(json => {
                         if (!json.success) throw new Error(json.message || 'Add record failed');
@@ -727,7 +727,7 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                 const btn = form.querySelector('button[type="submit"]');
                 if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
                 const fd = new FormData(form);
-                fetch('medical-records-funcs.php', { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                fetch('medical-records-funcs.php', { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }, credentials: 'same-origin' })
                 .then(async r => { const txt = await r.text(); try { return JSON.parse(txt); } catch (e) { throw new Error('Invalid JSON response: ' + txt); } })
                 .then(json => {
                     if (!json.success) throw new Error(json.message || 'Add record failed');

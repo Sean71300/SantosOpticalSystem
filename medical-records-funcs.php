@@ -3,8 +3,16 @@ include_once 'setup.php';
 include 'ActivityTracker.php';
 include 'loginChecker.php';
 
+// Detect AJAX requests early
+$isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+
 // Check if user is logged in
 if (!isset($_SESSION["username"])) {
+    if ($isAjax) {
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['success' => false, 'message' => 'INVALID ACCESS', 'detail' => 'Please login to continue.']);
+        exit();
+    }
     header("Location: login.php");
     exit();
 }
@@ -92,7 +100,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit();
     }
 } else {
-    // Redirect if accessed directly
+    // If accessed directly via GET/other, return JSON for AJAX or redirect for normal requests
+    if ($isAjax) {
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['success' => false, 'message' => 'INVALID ACCESS', 'detail' => 'Invalid request method']);
+        exit();
+    }
+    // Redirect if accessed directly by browser
     header("Location: customerRecords.php");
     exit();
 }
