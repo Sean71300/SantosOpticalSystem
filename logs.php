@@ -319,7 +319,28 @@ $conn->close();
                             </li>
                         <?php endif; ?>
 
-                        <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                        <?php 
+                            // Sliding window pagination: show current +/- 5 pages (max 11 visible)
+                            $maxVisible = 11;
+                            $half = floor($maxVisible / 2);
+                            // Ensure current page within bounds
+                            if ($totalPages <= 0) $totalPages = 1;
+                            $currentPage = max(1, min($currentPage, $totalPages));
+
+                            $start = $currentPage - $half;
+                            $end = $currentPage + $half;
+
+                            if ($start < 1) {
+                                $end += 1 - $start;
+                                $start = 1;
+                            }
+                            if ($end > $totalPages) {
+                                $start -= $end - $totalPages;
+                                $end = $totalPages;
+                                if ($start < 1) $start = 1;
+                            }
+
+                            for ($i = $start; $i <= $end; $i++): ?>
                             <li class="page-item <?php echo ($i == $currentPage) ? 'active' : ''; ?>">
                                 <a class="page-link" href="?<?php 
                                     echo http_build_query(array_merge(
