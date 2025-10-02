@@ -95,7 +95,7 @@ $salesData = getSalesOverviewData();
             </div>
         </div>
         
-        <div class="row mt-4">
+    <div class="row mt-4 dashboard-row">
             <div class="col-md-8">
                 <div class="dashboard-card">
                     <h5 id="sales-overview-title"><i class="fas fa-chart-line me-2"></i>Sales Overview</h5>
@@ -147,7 +147,7 @@ $salesData = getSalesOverviewData();
                                 if (count($lowInventory) > 0) {
                                     foreach ($lowInventory as $product) {
                                         echo '<div class="container d-flex align-items-center">';
-                                        echo '<img src="' . htmlspecialchars($product['ProductImage']) . '" alt="Product Image" style="height:100px; width:100px;" class="img-thumbnail">';
+                                        echo '<img src="' . htmlspecialchars($product['ProductImage']) . '" alt="Product Image" class="img-thumbnail product-thumb">';
                                             echo '<div class="fw-bold ms-3">';
                                                 echo htmlspecialchars($product['Model']);
                                                 echo "<br> Available Stocks: ".htmlspecialchars($product['Stocks']);
@@ -171,7 +171,7 @@ $salesData = getSalesOverviewData();
                             </a>
                         </div>
                         <hr class="border-1 border-black opacity-25">
-                        <div class="list-group list-group-flush recent-activity-list" style="max-height:360px; overflow:auto; padding-right:6px;">
+                        <div class="list-group list-group-flush recent-activity-list">
                             <?php
                             if (empty($recentActivities)) {
                                 echo '<div class="text-center text-muted py-3">No recent activity.</div>';
