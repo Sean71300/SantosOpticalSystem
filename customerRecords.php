@@ -684,6 +684,48 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                                     <input type="text" name="eye_condition" class="form-control">
                                 </div>
                             </div>
+
+                            <div class="row mb-2">
+                                <div class="col-md-6">
+                                    <label class="form-label">Systemic Diseases</label>
+                                    <input type="text" name="systemic_diseases" class="form-control">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Pupillary Distance (mm)</label>
+                                    <input type="number" step="0.01" name="pupillary_distance" class="form-control">
+                                </div>
+                            </div>
+
+                            <div class="row mb-2">
+                                <div class="col-md-4">
+                                    <label class="form-label">Visual Acuity (Right)</label>
+                                    <input type="text" name="visual_acuity_right" class="form-control">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Visual Acuity (Left)</label>
+                                    <input type="text" name="visual_acuity_left" class="form-control">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Intraocular Pressure - Right (mmHg)</label>
+                                    <input type="number" step="0.01" name="intraocular_pressure_right" class="form-control">
+                                </div>
+                            </div>
+
+                            <div class="row mb-2">
+                                <div class="col-md-4">
+                                    <label class="form-label">Intraocular Pressure - Left (mmHg)</label>
+                                    <input type="number" step="0.01" name="intraocular_pressure_left" class="form-control">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Refraction (Right)</label>
+                                    <input type="text" name="refraction_right" class="form-control">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Refraction (Left)</label>
+                                    <input type="text" name="refraction_left" class="form-control">
+                                </div>
+                            </div>
+
                             <div class="row mb-2">
                                 <div class="col-md-6">
                                     <label class="form-label">Current Medications</label>
@@ -694,6 +736,36 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                                     <textarea name="allergies" class="form-control" rows="2"></textarea>
                                 </div>
                             </div>
+
+                            <div class="row mb-2">
+                                <div class="col-md-6">
+                                    <label class="form-label">Family Eye History</label>
+                                    <textarea name="family_eye_history" class="form-control" rows="2"></textarea>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Previous Eye Surgeries</label>
+                                    <textarea name="previous_eye_surgeries" class="form-control" rows="2"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="row mb-2">
+                                <div class="col-md-6">
+                                    <label class="form-label">Corneal Topography</label>
+                                    <textarea name="corneal_topography" class="form-control" rows="2"></textarea>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Fundus Examination</label>
+                                    <textarea name="fundus_examination" class="form-control" rows="2"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="row mb-2">
+                                <div class="col-12">
+                                    <label class="form-label">Additional Notes</label>
+                                    <textarea name="additional_notes" class="form-control" rows="3"></textarea>
+                                </div>
+                            </div>
+
                             <div class="d-flex gap-2 justify-content-end">
                                 <button type="button" id="cancelAddInline" class="btn btn-secondary">Cancel</button>
                                 <button type="submit" class="btn btn-primary">Save Record</button>
