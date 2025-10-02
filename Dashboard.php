@@ -283,6 +283,11 @@ $salesData = getSalesOverviewData();
                     monthNames.push(dt.toLocaleString(undefined, { month: 'long' }));
                 }
                 monthSel.innerHTML = '';
+                // add Whole Year option first
+                const wholeYearOpt = document.createElement('option');
+                wholeYearOpt.value = 'whole-year';
+                wholeYearOpt.textContent = 'Whole Year';
+                monthSel.appendChild(wholeYearOpt);
                 monthNames.forEach((name, idx) => {
                     const opt = document.createElement('option');
                     opt.value = (idx + 1).toString();
@@ -293,6 +298,11 @@ $salesData = getSalesOverviewData();
                 const now = new Date();
                 const thisYear = now.getFullYear();
                 yearSel.innerHTML = '';
+                // add All Time option first
+                const allOpt = document.createElement('option');
+                allOpt.value = 'all';
+                allOpt.textContent = 'All Time';
+                yearSel.appendChild(allOpt);
                 for (let y = thisYear; y >= thisYear - 4; y--) {
                     const opt = document.createElement('option');
                     opt.value = y.toString();
@@ -308,12 +318,33 @@ $salesData = getSalesOverviewData();
                 const monthSel = document.getElementById('sales-month-select');
                 const weekSel = document.getElementById('sales-week-select');
                 const yearSel = document.getElementById('sales-year-select');
-                const month = monthSel ? parseInt(monthSel.value, 10) : (new Date()).getMonth() + 1;
-                const year = yearSel ? parseInt(yearSel.value, 10) : (new Date()).getFullYear();
+                const monthVal = monthSel ? monthSel.value : null;
+                const yearVal = yearSel ? yearSel.value : null;
                 const week = weekSel ? weekSel.value : 'month';
 
-                const firstDay = new Date(year, month - 1, 1);
-                const lastDay = new Date(year, month, 0);
+                const now = new Date();
+
+                // All time
+                if (yearVal === 'all') {
+                    const start = new Date(2015, 0, 1);
+                    const end = now;
+                    return { start: start.toISOString().slice(0,10), end: end.toISOString().slice(0,10) };
+                }
+
+                // parse numeric month/year
+                const month = monthVal && monthVal !== 'whole-year' ? parseInt(monthVal, 10) : null;
+                const year = yearVal ? parseInt(yearVal, 10) : now.getFullYear();
+
+                // If whole-year selected
+                if (monthVal === 'whole-year') {
+                    const startY = new Date(year, 0, 1);
+                    const endY = new Date(year, 11, 31);
+                    return { start: startY.toISOString().slice(0,10), end: endY.toISOString().slice(0,10) };
+                }
+
+                // Fallback if month/year not numeric
+                const firstDay = new Date(year, (month || (now.getMonth()+1)) - 1, 1);
+                const lastDay = new Date(year, (month || (now.getMonth()+1)), 0);
 
                 let start = new Date(firstDay);
                 let end = new Date(lastDay);
@@ -385,12 +416,39 @@ $salesData = getSalesOverviewData();
                 }
             }
 
-            // populate selectors and wire change events
+            // populate selectors and wire change events with state management
             populateMonthYearSelectors();
-            ['sales-month-select','sales-week-select','sales-year-select'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.addEventListener('change', loadSalesRange);
-            });
+
+            function updateSelectorStates() {
+                const monthSel = document.getElementById('sales-month-select');
+                const weekSel = document.getElementById('sales-week-select');
+                const yearSel = document.getElementById('sales-year-select');
+                if (!monthSel || !weekSel || !yearSel) return;
+
+                if (yearSel.value === 'all') {
+                    // All Time: disable month and week
+                    monthSel.disabled = true;
+                    weekSel.disabled = true;
+                } else {
+                    monthSel.disabled = false;
+                    // if Whole Year selected, week segments don't apply
+                    if (monthSel.value === 'whole-year') {
+                        weekSel.disabled = true;
+                    } else {
+                        weekSel.disabled = false;
+                    }
+                }
+            }
+
+            // initial state
+            updateSelectorStates();
+
+            const monthSel = document.getElementById('sales-month-select');
+            const weekSel = document.getElementById('sales-week-select');
+            const yearSel = document.getElementById('sales-year-select');
+            if (monthSel) monthSel.addEventListener('change', function() { updateSelectorStates(); loadSalesRange(); });
+            if (weekSel) weekSel.addEventListener('change', loadSalesRange);
+            if (yearSel) yearSel.addEventListener('change', function() { updateSelectorStates(); loadSalesRange(); });
 
             // initial load
             loadSalesRange();
