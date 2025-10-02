@@ -389,6 +389,56 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
             }
         </script>
 
+    <!-- Delete confirmation modal -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Delete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to remove <strong id="delEmployeeName"></strong>?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" id="confirmDeleteBtn" class="btn btn-danger">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let targetId = null;
+        // Open confirmation modal instead of navigating
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                targetId = this.getAttribute('data-id');
+                const name = this.getAttribute('data-name') || 'this employee';
+                document.getElementById('delEmployeeName').textContent = name;
+                const mdl = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
+                mdl.show();
+            });
+        });
+
+        document.getElementById('confirmDeleteBtn')?.addEventListener('click', function() {
+            if (!targetId) return;
+            const btn = this; btn.disabled = true; btn.textContent = 'Deleting...';
+            const fd = new FormData(); fd.append('EmployeeID', targetId);
+            fetch('employeeDeleteAjax.php', { method: 'POST', body: fd })
+            .then(r => r.json())
+            .then(json => {
+                if (!json.success) throw new Error(json.message || 'Delete failed');
+                location.reload();
+            })
+            .catch(err => { console.error(err); alert('Delete failed: ' + err.message); })
+            .finally(() => { btn.disabled = false; btn.textContent = 'Delete'; });
+        });
+    });
+    </script>
+
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Create modal: preview image
