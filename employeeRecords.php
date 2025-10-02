@@ -428,12 +428,25 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
             const btn = this; btn.disabled = true; btn.textContent = 'Deleting...';
             const fd = new FormData(); fd.append('EmployeeID', targetId);
             fetch('employeeDeleteAjax.php', { method: 'POST', body: fd })
-            .then(r => r.json())
+            .then(async r => {
+                const txt = await r.text();
+                console.debug('[Delete] HTTP', r.status, txt);
+                try {
+                    return JSON.parse(txt);
+                } catch (e) {
+                    // If server returned HTML or plain text, surface it for debugging
+                    throw new Error('Invalid JSON response from server: ' + txt);
+                }
+            })
             .then(json => {
                 if (!json.success) throw new Error(json.message || 'Delete failed');
                 location.reload();
             })
-            .catch(err => { console.error(err); alert('Delete failed: ' + err.message); })
+            .catch(err => {
+                console.error(err);
+                // show a readable dialog with server output when possible
+                alert('Delete failed: ' + err.message);
+            })
             .finally(() => { btn.disabled = false; btn.textContent = 'Delete'; });
         });
     });
