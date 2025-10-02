@@ -407,6 +407,31 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
             </div>
         </div>
     </div>
+    <!-- Processing modal (shows while deletion is in progress) -->
+    <div class="modal fade" id="processingModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center py-4">
+                    <div class="spinner-border text-danger me-2" role="status"></div>
+                    <span>Deleting employee...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success modal (shown after deletion) -->
+    <div class="modal fade" id="deletedSuccessModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">Employee Removed</h5>
+                </div>
+                <div class="modal-body text-center">
+                    The employee has been removed. This window will close and the list will refresh shortly.
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -425,29 +450,38 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
 
         document.getElementById('confirmDeleteBtn')?.addEventListener('click', function() {
             if (!targetId) return;
-            const btn = this; btn.disabled = true; btn.textContent = 'Deleting...';
+            const confirmBtn = this;
+            confirmBtn.disabled = true; confirmBtn.textContent = 'Deleting...';
+
+            // hide confirmation and show processing modal
+            var confirmModal = bootstrap.Modal.getInstance(document.getElementById('confirmDeleteModal'));
+            if (confirmModal) confirmModal.hide();
+            var procModal = new bootstrap.Modal(document.getElementById('processingModal'), { backdrop: 'static', keyboard: false });
+            procModal.show();
+
             const fd = new FormData(); fd.append('EmployeeID', targetId);
             fetch('employeeDeleteAjax.php', { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
             .then(async r => {
                 const txt = await r.text();
                 console.debug('[Delete] HTTP', r.status, txt);
-                try {
-                    return JSON.parse(txt);
-                } catch (e) {
-                    // If server returned HTML or plain text, surface it for debugging
-                    throw new Error('Invalid JSON response from server: ' + txt);
-                }
+                try { return JSON.parse(txt); }
+                catch (e) { throw new Error('Invalid JSON response from server: ' + txt); }
             })
             .then(json => {
                 if (!json.success) throw new Error(json.message || 'Delete failed');
-                location.reload();
+                // show success modal, close processing
+                procModal.hide();
+                var successModal = new bootstrap.Modal(document.getElementById('deletedSuccessModal'));
+                successModal.show();
+                // refresh after 3 seconds
+                setTimeout(function() { location.reload(); }, 3000);
             })
             .catch(err => {
                 console.error(err);
-                // show a readable dialog with server output when possible
+                procModal.hide();
                 alert('Delete failed: ' + err.message);
             })
-            .finally(() => { btn.disabled = false; btn.textContent = 'Delete'; });
+            .finally(() => { confirmBtn.disabled = false; confirmBtn.textContent = 'Delete'; });
         });
     });
     </script>
