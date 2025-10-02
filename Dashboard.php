@@ -279,7 +279,25 @@ $salesData = getSalesOverviewData();
                     if (!json.success) throw new Error(json.error || 'Failed to load sales');
 
                     if (salesChart) {
-                        salesChart.data.labels = json.labels.map(d => d);
+                        // Format labels for readability: weekdays for short ranges, day+month for month ranges, month names for long ranges
+                        function formattedLabels(labels) {
+                            const n = labels.length;
+                            return labels.map(d => {
+                                const dt = new Date(d + 'T00:00:00');
+                                if (n <= 14) {
+                                    // Week view: 'Mon 29'
+                                    return dt.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric' }).replace(',', '');
+                                } else if (n <= 62) {
+                                    // Month-ish range: 'Sep 29'
+                                    return dt.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+                                } else {
+                                    // Year / long range: 'Sep'
+                                    return dt.toLocaleDateString(undefined, { month: 'short' });
+                                }
+                            });
+                        }
+
+                        salesChart.data.labels = formattedLabels(json.labels);
                         salesChart.data.datasets[0].data = json.sold.map(v => parseInt(v||0,10));
                         salesChart.update();
                     }
