@@ -72,8 +72,9 @@
                 JOIN brandMaster b ON p.BrandID = b.BrandID
                 WHERE oh.CustomerID = ?";
         
-        $stmt = $connection->prepare($sql);
-        $stmt->bind_param("i", $customerID);
+    $stmt = $connection->prepare($sql);
+    // CustomerID may be alphanumeric (generated IDs), bind as string to avoid converting to 0
+    $stmt->bind_param("s", $customerID);
         $stmt->execute();
         $result = $stmt->get_result();
 

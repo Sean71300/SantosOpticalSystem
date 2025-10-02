@@ -174,7 +174,32 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                 </div>
             </div>
         </div>
+        
+                <!-- Processing modal (shows while deleting a customer) -->
+                <div class="modal fade" id="processingModalCustomer" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-body text-center py-4">
+                                <div class="spinner-border text-danger me-2" role="status"></div>
+                                <span>Removing customer...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
+                <!-- Success modal (shown after deletion) -->
+                <div class="modal fade" id="deletedSuccessModalCustomer" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header bg-success text-white">
+                                <h5 class="modal-title">Customer Removed</h5>
+                            </div>
+                            <div class="modal-body text-center">
+                                The customer has been removed. This window will close and the list will refresh shortly.
+                            </div>
+                        </div>
+                    </div>
+                </div>
         <!-- Remove confirmation modal -->
         <div class="modal fade" id="confirmRemoveModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
@@ -326,9 +351,9 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                     const btn = this; btn.disabled = true; btn.textContent = 'Removing...';
                     var confModal = bootstrap.Modal.getInstance(document.getElementById('confirmRemoveModal'));
                     if (confModal) confModal.hide();
-                    var procModal = new bootstrap.Modal(document.getElementById('ordersModal'), { backdrop: 'static', keyboard: false });
-                    // Show a lightweight processing indicator using ordersModal body
-                    document.getElementById('ordersTableBody').innerHTML = '<tr><td colspan="4" class="text-center">Removing...</td></tr>';
+
+                    // Show a dedicated processing modal (centered spinner)
+                    var procModal = new bootstrap.Modal(document.getElementById('processingModalCustomer'), { backdrop: 'static', keyboard: false });
                     procModal.show();
 
                     const fd = new FormData(); fd.append('CustomerID', removeTargetId);
@@ -336,9 +361,12 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                     .then(async r => { const txt = await r.text(); console.debug('[Remove] HTTP', r.status, txt); try { return JSON.parse(txt); } catch (e) { throw new Error('Invalid JSON response: ' + txt); } })
                     .then(json => {
                         if (!json.success) throw new Error(json.message || 'Remove failed');
+                        // hide processing and show success modal
                         procModal.hide();
-                        // quick refresh after 1 second
-                        setTimeout(() => { location.reload(); }, 1000);
+                        var successModal = new bootstrap.Modal(document.getElementById('deletedSuccessModalCustomer'));
+                        successModal.show();
+                        // refresh after 2 seconds
+                        setTimeout(() => { location.reload(); }, 2000);
                     })
                     .catch(err => { procModal.hide(); alert('Remove failed: ' + err.message); })
                     .finally(() => { btn.disabled = false; btn.textContent = 'Remove'; });
@@ -357,7 +385,23 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                         // Fetch profile form (reuse a small endpoint on customerFunctions.php)
                         fetch('customerFunctions.php?action=getCustomerProfile&customerID=' + customerID)
                         .then(r => r.text())
-                        .then(html => { body.innerHTML = html; })
+                        .then(html => {
+                            body.innerHTML = html;
+                            // The server returns a <script> to fetch medical records, but
+                            // scripts inside HTML inserted via innerHTML won't execute.
+                            // Fetch medical records explicitly here so they appear in the modal.
+                            fetch('customerFunctions.php?action=getCustomerMedicalRecords&customerID=' + customerID)
+                                .then(r2 => r2.text())
+                                .then(medHtml => {
+                                    const area = document.getElementById('medicalRecordsArea');
+                                    if (area) area.innerHTML = medHtml;
+                                })
+                                .catch(e => {
+                                    console.error('Error loading medical records', e);
+                                    const area = document.getElementById('medicalRecordsArea');
+                                    if (area) area.innerHTML = '<div class="alert alert-danger">Error loading medical records</div>';
+                                });
+                        })
                         .catch(err => { body.innerHTML = '<div class="alert alert-danger">Error loading profile.</div>'; console.error(err); });
                     });
                 });
