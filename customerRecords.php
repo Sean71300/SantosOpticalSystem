@@ -493,15 +493,20 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                         if (!json.success) throw new Error(json.message || 'Add record failed');
                         // close modal
                         const addModal = bootstrap.Modal.getInstance(document.getElementById('addMedicalRecordModal'));
-                        if (addModal) addModal.hide();
-                        // refresh medical records area if profile modal is open
-                        const profileModalEl = document.getElementById('profileModal');
-                        if (profileModalEl && bootstrap.Modal.getInstance(profileModalEl)) {
-                            const customerID = fd.get('customerID');
-                            fetch('customerFunctions.php?action=getCustomerMedicalRecords&customerID=' + encodeURIComponent(customerID))
-                                .then(r=>r.text()).then(html=>{ const area = document.getElementById('medicalRecordsArea'); if (area) area.innerHTML = html; })
-                                .catch(e=>console.error('Failed to refresh medical records', e));
-                        }
+                            if (addModal) addModal.hide();
+                            // After adding, re-open profile modal (if it was hidden) and refresh the records area
+                            const profileModalEl = document.getElementById('profileModal');
+                            if (profileModalEl) {
+                                const profileModal = new bootstrap.Modal(profileModalEl);
+                                // small delay to allow modal backdrop transitions
+                                setTimeout(() => {
+                                    profileModal.show();
+                                    const customerID = fd.get('customerID');
+                                    fetch('customerFunctions.php?action=getCustomerMedicalRecords&customerID=' + encodeURIComponent(customerID))
+                                        .then(r=>r.text()).then(html=>{ const area = document.getElementById('medicalRecordsArea'); if (area) area.innerHTML = html; })
+                                        .catch(e=>console.error('Failed to refresh medical records', e));
+                                }, 250);
+                            }
                     })
                     .catch(err => { alert('Add record failed: ' + err.message); })
                     .finally(() => { if (btn) { btn.disabled = false; btn.textContent = 'Save Record'; } });
@@ -527,9 +532,16 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                 // Clear other fields
                 modalEl.querySelectorAll('input[type=text], textarea, input[type=number]').forEach(i => i.value = '');
 
-                // Remove focus from any element inside the profile modal to avoid
-                // aria-hidden errors when opening a nested modal, then show modal.
+                // Remove focus from any element to avoid aria-hidden errors.
                 try { if (document.activeElement && document.activeElement !== document.body) document.activeElement.blur(); } catch (e) { /* ignore */ }
+
+                // If profile modal is open, hide it first to avoid nested modal conflicts.
+                const profileModalEl = document.getElementById('profileModal');
+                const profileInstance = profileModalEl ? bootstrap.Modal.getInstance(profileModalEl) : null;
+                if (profileInstance) {
+                    profileInstance.hide();
+                }
+
                 const addModal = new bootstrap.Modal(modalEl);
                 addModal.show();
             });
