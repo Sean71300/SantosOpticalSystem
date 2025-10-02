@@ -50,7 +50,10 @@ try {
         $map[$r['saleDate']] = [
             'sold' => (int)$r['sold'],
             'cancelled' => (int)$r['cancelled'],
-            'returned' => (int)$r['returned']
+            'returned' => (int)$r['returned'],
+            'sold_rev' => isset($r['sold_rev']) ? (float)$r['sold_rev'] : 0.0,
+            'cancelled_rev' => isset($r['cancelled_rev']) ? (float)$r['cancelled_rev'] : 0.0,
+            'returned_rev' => isset($r['returned_rev']) ? (float)$r['returned_rev'] : 0.0
         ];
     }
 
