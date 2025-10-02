@@ -127,9 +127,9 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
             <div class="table-container">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h1><i class="fas fa-users-cog me-2"></i> Employee Records</h1>
-                    <a class="btn btn-primary" href="employeeCreate.php" role="button">
+                    <button class="btn btn-primary" id="newEmployeeBtn" type="button" data-bs-toggle="modal" data-bs-target="#createEmployeeModal">
                         <i class="fas fa-plus me-2"></i> New Employee
-                    </a>            
+                    </button>
                 </div>
                 
                 <div class="table-instructions alert alert-info" style="margin-bottom: 20px; padding: 10px 15px; border-radius: 4px;">
@@ -389,6 +389,45 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
             }
         </script>
 
+    <script>
+        // Create modal: preview image
+        document.getElementById('createImage')?.addEventListener('change', function() {
+            const file = this.files && this.files[0];
+            const imgEl = document.querySelector('#createEmployeeModal .employee-img');
+            if (file && imgEl) {
+                const reader = new FileReader();
+                reader.onload = function(e) { imgEl.src = e.target.result; };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Submit create form via AJAX
+        const createForm = document.getElementById('createEmployeeForm');
+        if (createForm) {
+            createForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const btn = createForm.querySelector('button[type="submit"]');
+                btn.disabled = true; btn.textContent = 'Creating...';
+                const fd = new FormData(createForm);
+
+                fetch('employeeCreateAjax.php', { method: 'POST', body: fd })
+                .then(r => r.json())
+                .then(json => {
+                    if (!json.success) {
+                        alert('Create failed: ' + (json.message || 'Unknown'));
+                        return;
+                    }
+                    // success: reload to show new row (could insert row dynamically)
+                    location.reload();
+                })
+                .catch(err => {
+                    console.error(err); alert('Error creating employee');
+                })
+                .finally(() => { btn.disabled = false; btn.textContent = 'Create'; });
+            });
+        }
+    </script>
+
     <!-- Edit confirmation modal (moved inside body so Bootstrap can manage it) -->
     <div class="modal fade" id="editConfirmModal" tabindex="-1" aria-labelledby="editConfirmModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered custom-wide">
@@ -451,6 +490,69 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     <button type="submit" class="btn btn-primary modal-save">Save changes</button>
                 </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Create Employee Modal -->
+    <div class="modal fade" id="createEmployeeModal" tabindex="-1" aria-labelledby="createEmployeeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered custom-wide">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createEmployeeModalLabel">New Employee</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="createEmployeeForm" enctype="multipart/form-data">
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Full Name</label>
+                                <input type="text" class="form-control form-control-lg" name="name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Username</label>
+                                <input type="text" class="form-control form-control-lg" name="username" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Password</label>
+                                <input type="password" class="form-control form-control-lg" name="password" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control form-control-lg" name="email" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Contact Number</label>
+                                <input type="text" class="form-control form-control-lg" name="phone" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Branch</label>
+                                <select class="form-select form-control-lg" name="branch" required>
+                                    <?php branchHandler(''); ?>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Role</label>
+                                <select class="form-select form-control-lg" name="role" required>
+                                    <?php roleHandler(''); ?>
+                                </select>
+                            </div>
+                            <div class="col-md-6 text-center">
+                                <img src="Images/default.jpg" alt="Employee Image" class="employee-img mb-2">
+                                <div>
+                                    <label for="createImage" class="btn btn-success btn-sm">
+                                        <input type="file" name="IMAGE" id="createImage" accept=".jpg,.png,.jpeg" style="display:none;">
+                                        <i class="fas fa-camera me-1"></i> Change
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Create</button>
+                    </div>
                 </form>
             </div>
         </div>
