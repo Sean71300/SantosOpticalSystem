@@ -104,13 +104,20 @@ $salesData = getSalesOverviewData();
                         <div>
                             <!-- compact header left area (empty) -->
                         </div>
-                        <div>
-                            <!-- Add a compact dropdown to choose view: week / month / year -->
-                            <select id="sales-mode-select" class="form-select form-select-sm" style="width:120px;">
-                                <option value="week">Week</option>
-                                <option value="month">Month</option>
-                                <option value="year">Year</option>
+                        <div class="d-flex align-items-center">
+                            <!-- 1) Month selector -->
+                            <select id="sales-month-select" class="form-select form-select-sm d-inline-block" style="width:150px;">
                             </select>
+                            <!-- 2) Week selector (Week1..Week4, Whole Month) -->
+                            <select id="sales-week-select" class="form-select form-select-sm d-inline-block ms-2" style="width:140px;">
+                                <option value="week1">Week 1</option>
+                                <option value="week2">Week 2</option>
+                                <option value="week3">Week 3</option>
+                                <option value="week4">Week 4</option>
+                                <option value="month">Whole Month</option>
+                            </select>
+                            <!-- 3) Year selector -->
+                            <select id="sales-year-select" class="form-select form-select-sm d-inline-block ms-2" style="width:110px;"></select>
                         </div>
                     </div>
                     <div class="chart-container">
@@ -123,104 +130,6 @@ $salesData = getSalesOverviewData();
                 </div>
             </div>
             
-            <div class="col-md-4">
-                <div class="dashboard-card recent-activity">    
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="mb-0"><i class="fa-solid fa-circle-exclamation me-2"></i>Low Stocks</h5>
-                        <a href="<?php echo ($isAdmin) ? 'admin-inventory.php' : 'Employee-inventory.php'; ?>" class="btn btn-sm btn-outline-secondary">
-                        <i class="fa-solid fa-boxes-stacked"></i> Show Inventory
-                        </a>
-                    </div>
-                    <hr class="border-1 border-black opacity-25">
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <div class="row">
-                                <?php
-                                if (count($lowInventory) > 0) {
-                                    foreach ($lowInventory as $product) {
-                                        echo '<div class="container d-flex align-items-center">';
-                                        echo '<img src="' . htmlspecialchars($product['ProductImage']) . '" alt="Product Image" style="height:100px; width:100px;" class="img-thumbnail">';
-                                            echo '<div class="fw-bold ms-3">';
-                                                echo htmlspecialchars($product['Model']);
-                                                echo "<br> Available Stocks: ".htmlspecialchars($product['Stocks']);
-                                            echo '</div>';
-                                        echo '</div>';
-                                    }
-                                } else {
-                                    echo '<p class="text-center">No low stock products.</p>';
-                                } 
-                                ?>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-            <?php if ($isAdmin): ?>    
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Recent Activity</h5>
-                        <a href="logs.php" class="btn btn-sm btn-outline-secondary">
-                            <i class="fas fa-list me-1"></i> Show All Logs
-                        </a>
-                    </div>
-                        <div class="list-group list-group-flush recent-activity-list" style="max-height:360px; overflow:auto; padding-right:6px;">
-                            <?php
-                            if (empty($recentActivities)) {
-                                echo '<div class="text-center text-muted py-3">No recent activity.</div>';
-                            } else {
-                                $seen = [];
-                                $shown = 0;
-                                $maxShow = 20;
-                                foreach ($recentActivities as $activity) {
-                                    if ($shown >= $maxShow) break;
-                                    $ts = strtotime($activity['Upd_dt']);
-                                    $timeLabel = $ts ? date('M j, g:i A', $ts) : htmlspecialchars($activity['Upd_dt']);
-                                    $desc = trim($activity['Description']);
-                                    $targetType = trim($activity['TargetType'] ?? '');
-                                    $targetId = trim($activity['TargetID'] ?? '');
-                                    $message = trim($desc . ' ' . $targetType . ($targetId !== '' ? ' # ' . $targetId : ''));
-                                    // dedupe by message + timestamp
-                                    $key = md5($timeLabel . '|' . $message);
-                                    if (isset($seen[$key])) continue;
-                                    $seen[$key] = true;
-                                    $isNew = ($ts !== false) && (time() - $ts) <= 86400;
-                                    $displayMessage = htmlspecialchars($message);
-                                    $displayTime = htmlspecialchars($timeLabel);
-                                    echo '<a href="logs.php" class="list-group-item list-group-item-action py-3 border-bottom d-flex justify-content-between align-items-center">';
-                                    echo '<div class="flex-grow-1 pe-2">';
-                                    echo '<div class="small text-muted mb-1">' . $displayTime . '</div>';
-                                    echo '<div class="text-truncate" style="max-width:240px">' . $displayMessage . '</div>';
-                                    echo '</div>';
-                                    if ($isNew) echo '<span class="badge bg-primary rounded-pill ms-2">New</span>';
-                                    echo '</a>';
-                                    $shown++;
-                                }
-                            }
-                            ?>
-                        </div>
-                        
-                    </ul>
-                </div>
-            </div>
-            <?php endif; ?>
-        </div>
-    </div>
-
-    <!-- Script consolidated below (removed duplicate) -->
-</body>
-</html>
-                            <select id="sales-year-select" class="form-select form-select-sm d-inline-block ms-2" style="width:auto;"></select>
-                            <select id="sales-month-select" class="form-select form-select-sm d-inline-block ms-2" style="width:auto; display:none;"></select>
-                        </div>
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="salesChart"></canvas>
-                    </div>
-                    <div class="mt-3">
-                        <h6 class="mb-2">Top Products</h6>
-                        <ul id="top-products" class="list-group list-group-flush"></ul>
-                    </div>
-                </div>
-            </div>
-
             <div class="col-md-4">
                 <div class="dashboard-card recent-activity">    
                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -352,25 +261,7 @@ $salesData = getSalesOverviewData();
                 }
             }) : null;
 
-            let currentView = 'week';
-
-            function computeStartEndForView(view) {
-                const now = new Date();
-                let start, end;
-                if (view === 'year') {
-                    start = new Date(now.getFullYear(), 0, 1);
-                    end = new Date(now.getFullYear(), 11, 31);
-                } else if (view === 'month') {
-                    start = new Date(now.getFullYear(), now.getMonth(), 1);
-                    end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-                } else { // week
-                    end = now;
-                    start = new Date();
-                    start.setDate(end.getDate() - 6);
-                }
-                return { start: start.toISOString().slice(0,10), end: end.toISOString().slice(0,10) };
-            }
-
+            // New: populate month/year selectors and compute start/end from 3 selectors (month, week segment, year)
             function formattedLabels(labels) {
                 const n = labels.length;
                 return labels.map(d => {
@@ -381,13 +272,78 @@ $salesData = getSalesOverviewData();
                 });
             }
 
+            function populateMonthYearSelectors() {
+                const monthSel = document.getElementById('sales-month-select');
+                const yearSel = document.getElementById('sales-year-select');
+                if (!monthSel || !yearSel) return;
+
+                const monthNames = [];
+                for (let m = 0; m < 12; m++) {
+                    const dt = new Date(2000, m, 1);
+                    monthNames.push(dt.toLocaleString(undefined, { month: 'long' }));
+                }
+                monthSel.innerHTML = '';
+                monthNames.forEach((name, idx) => {
+                    const opt = document.createElement('option');
+                    opt.value = (idx + 1).toString();
+                    opt.textContent = name;
+                    monthSel.appendChild(opt);
+                });
+
+                const now = new Date();
+                const thisYear = now.getFullYear();
+                yearSel.innerHTML = '';
+                for (let y = thisYear; y >= thisYear - 4; y--) {
+                    const opt = document.createElement('option');
+                    opt.value = y.toString();
+                    opt.textContent = y.toString();
+                    yearSel.appendChild(opt);
+                }
+
+                monthSel.value = (now.getMonth() + 1).toString();
+                yearSel.value = now.getFullYear().toString();
+            }
+
+            function computeStartEndFromSelectors() {
+                const monthSel = document.getElementById('sales-month-select');
+                const weekSel = document.getElementById('sales-week-select');
+                const yearSel = document.getElementById('sales-year-select');
+                const month = monthSel ? parseInt(monthSel.value, 10) : (new Date()).getMonth() + 1;
+                const year = yearSel ? parseInt(yearSel.value, 10) : (new Date()).getFullYear();
+                const week = weekSel ? weekSel.value : 'month';
+
+                const firstDay = new Date(year, month - 1, 1);
+                const lastDay = new Date(year, month, 0);
+
+                let start = new Date(firstDay);
+                let end = new Date(lastDay);
+
+                if (week === 'week1') {
+                    start = new Date(year, month - 1, 1);
+                    end = new Date(year, month - 1, Math.min(7, lastDay.getDate()));
+                } else if (week === 'week2') {
+                    start = new Date(year, month - 1, 8);
+                    end = new Date(year, month - 1, Math.min(14, lastDay.getDate()));
+                } else if (week === 'week3') {
+                    start = new Date(year, month - 1, 15);
+                    end = new Date(year, month - 1, Math.min(21, lastDay.getDate()));
+                } else if (week === 'week4') {
+                    start = new Date(year, month - 1, 22);
+                    end = new Date(year, month - 1, lastDay.getDate());
+                } else if (week === 'month') {
+                    start = new Date(firstDay);
+                    end = new Date(lastDay);
+                }
+
+                return { start: start.toISOString().slice(0,10), end: end.toISOString().slice(0,10) };
+            }
+
             async function loadSalesRange() {
                 try {
-                    const se = computeStartEndForView(currentView);
+                    const se = computeStartEndFromSelectors();
                     const params = new URLSearchParams({ start: se.start, end: se.end });
                     const url = 'salesOverview.php?' + params.toString();
-                    // debug info: what view / url we are requesting
-                    console.debug('[Sales] currentView=', currentView, 'request=', url);
+                    console.debug('[Sales] request=', url);
                     const resp = await fetch(url, { cache: 'no-store' });
                     const json = await resp.json();
                     console.debug('[Sales] response=', json);
@@ -429,18 +385,12 @@ $salesData = getSalesOverviewData();
                 }
             }
 
-            // Wire dropdown
-            const salesModeSelect = document.getElementById('sales-mode-select');
-            if (salesModeSelect) {
-                salesModeSelect.value = currentView;
-                salesModeSelect.addEventListener('change', function() {
-                    const v = this.value;
-                    if (['week','month','year'].includes(v)) {
-                        currentView = v;
-                        loadSalesRange();
-                    }
-                });
-            }
+            // populate selectors and wire change events
+            populateMonthYearSelectors();
+            ['sales-month-select','sales-week-select','sales-year-select'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('change', loadSalesRange);
+            });
 
             // initial load
             loadSalesRange();
