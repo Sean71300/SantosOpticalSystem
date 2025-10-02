@@ -1,6 +1,6 @@
 <?php
 // salesOverview.php
-// Returns JSON aggregated sales (completed orders) between start and end dates.
+// Returns JSON aggregated sales (claimed or completed orders treated as sold) between start and end dates.
 include 'setup.php';
 header('Content-Type: application/json');
 
@@ -22,10 +22,10 @@ try {
     // Aggregate sold / cancelled / returned quantities and revenue per day
     // Join product info to compute revenue = Quantity * Price (Price stored as varchar like '₱3,500')
     $sql = "SELECT DATE(oH.Created_dt) AS saleDate,
-             COALESCE(SUM(CASE WHEN (oD.Status = 'Completed' OR oD.ActivityCode = 1) THEN oD.Quantity ELSE 0 END),0) AS sold,
+             COALESCE(SUM(CASE WHEN (oD.Status IN ('Completed','Claimed') OR oD.ActivityCode = 1) THEN oD.Quantity ELSE 0 END),0) AS sold,
              COALESCE(SUM(CASE WHEN UPPER(oD.Status) = 'CANCELLED' THEN oD.Quantity ELSE 0 END),0) AS cancelled,
              COALESCE(SUM(CASE WHEN UPPER(oD.Status) = 'RETURNED' THEN oD.Quantity ELSE 0 END),0) AS returned,
-             COALESCE(SUM(CASE WHEN (oD.Status = 'Completed' OR oD.ActivityCode = 1) THEN oD.Quantity *
+             COALESCE(SUM(CASE WHEN (oD.Status IN ('Completed','Claimed') OR oD.ActivityCode = 1) THEN oD.Quantity *
                  COALESCE(CAST(REPLACE(REPLACE(p.Price, '₱', ''), ',', '') AS DECIMAL(12,2)),0) ELSE 0 END),0) AS sold_rev,
              COALESCE(SUM(CASE WHEN UPPER(oD.Status) = 'CANCELLED' THEN oD.Quantity *
                  COALESCE(CAST(REPLACE(REPLACE(p.Price, '₱', ''), ',', '') AS DECIMAL(12,2)),0) ELSE 0 END),0) AS cancelled_rev,
@@ -92,7 +92,7 @@ try {
                                      JOIN ProductBranchMaster pb ON oD.ProductBranchID = pb.ProductBranchID
                                      JOIN productMstr p ON pb.ProductID = p.ProductID
                                      JOIN Order_hdr oH ON oH.Orderhdr_id = oD.OrderHdr_id
-                                     WHERE (oD.Status = 'Completed' OR oD.ActivityCode = 1)
+                                     WHERE (oD.Status IN ('Completed','Claimed') OR oD.ActivityCode = 1)
                                          AND DATE(oH.Created_dt) BETWEEN ? AND ?
                                      GROUP BY p.ProductID
                                      ORDER BY qty DESC
