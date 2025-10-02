@@ -39,8 +39,8 @@
                         {
                             echo 
                             "
-                                <a class='btn btn-primary btn-sm' href='customerEdit.php?CustomerID={$row['CustomerID']}'>Profile</a>
-                                <a class='btn btn-danger btn-sm' href='customerDelete.php?CustomerID={$row['CustomerID']}'>Delete</a>
+                                <button class='btn btn-primary btn-sm profile-btn' data-customer-id='{$row['CustomerID']}'>Profile</button>
+                                <button class='btn btn-danger btn-sm delete-btn' data-customer-id='{$row['CustomerID']}' data-customer-name=".htmlspecialchars($row['CustomerName']).">Remove</button>
 
                             ";
                         }
@@ -96,6 +96,58 @@
             echo json_encode($orders);
             exit();
         }
+    }
+
+    // Return HTML snippet for profile modal (edit form + medical history)
+    if (isset($_GET['action']) && $_GET['action'] === 'getCustomerProfile' && isset($_GET['customerID'])) {
+        $customerID = $_GET['customerID'];
+        $conn = connect();
+        $stmt = $conn->prepare("SELECT * FROM customer WHERE CustomerID = ? LIMIT 1");
+        $stmt->bind_param('s', $customerID);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        $row = $res->fetch_assoc();
+        $stmt->close();
+
+        header('Content-Type: text/html; charset=utf-8');
+        if (!$row) {
+            echo '<div class="alert alert-danger">Customer not found.</div>';
+            exit();
+        }
+
+        // Simple edit form
+        echo '<div class="container-fluid">';
+        echo '<form id="profileForm">';
+        echo '<input type="hidden" name="CustomerID" value="'.htmlspecialchars($row['CustomerID']).'">';
+        echo '<div class="row">';
+        echo '<div class="col-md-6">';
+        echo '<div class="mb-3"><label class="form-label">Name</label><input type="text" name="CustomerName" class="form-control" value="'.htmlspecialchars($row['CustomerName']).'"></div>';
+        echo '<div class="mb-3"><label class="form-label">Address</label><input type="text" name="CustomerAddress" class="form-control" value="'.htmlspecialchars($row['CustomerAddress']).'"></div>';
+        echo '<div class="mb-3"><label class="form-label">Contact</label><input type="text" name="CustomerContact" class="form-control" value="'.htmlspecialchars($row['CustomerContact']).'"></div>';
+        echo '</div>';
+        echo '<div class="col-md-6">';
+        echo '<div class="mb-3"><label class="form-label">Info</label><textarea name="CustomerInfo" class="form-control">'.htmlspecialchars($row['CustomerInfo']).'</textarea></div>';
+        echo '<div class="mb-3"><label class="form-label">Notes</label><textarea name="Notes" class="form-control">'.htmlspecialchars($row['Notes']).'</textarea></div>';
+        echo '</div>';
+        echo '</div>';
+        echo '</form>';
+
+        // Append medical records area
+        echo '<hr><div id="medicalRecordsArea">';
+        // reuse existing function to echo medical records
+        echo '</div>';
+        echo '</div>';
+
+        // Load medical records via a small script so we don't duplicate code server-side
+        echo '<script>fetch("customerFunctions.php?action=getCustomerMedicalRecords&customerID='.rawurlencode($customerID).'").then(r=>r.text()).then(html=>{document.getElementById("medicalRecordsArea").innerHTML = html;}).catch(e=>{console.error(e);document.getElementById("medicalRecordsArea").innerHTML = "<div class=\"alert alert-danger\">Error loading medical records</div>";});</script>';
+        exit();
+    }
+
+    // Endpoint to return rendered medical records (so profile modal can load them)
+    if (isset($_GET['action']) && $_GET['action'] === 'getCustomerMedicalRecords' && isset($_GET['customerID'])) {
+        header('Content-Type: text/html; charset=utf-8');
+        getMedicalRecords($_GET['customerID']);
+        exit();
     }
 
     function handleCustomerForm() {

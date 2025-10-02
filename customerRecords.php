@@ -97,9 +97,9 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
             <div class="table-container">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h1><i class="fas fa-user-plus ms-2"></i> Customer Records</h1>
-                    <a class="btn btn-primary" href="customerCreate.php" role="button">
+                    <button class="btn btn-primary" id="newCustomerBtn" type="button">
                         <i class="fas fa-plus me-2"></i> New Customer
-                    </a>            
+                    </button>
                 </div>
                 
                 <div class="table-instructions alert alert-info" style="margin-bottom: 20px; padding: 10px 15px; border-radius: 4px;">
@@ -107,7 +107,7 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                     <ul style="margin-bottom: 0; padding-left: 20px;">
                         <li>To add a customer, click the button at the top right.</li>
                         <?php if ($isAdmin): ?>
-                            <li>To edit or delete customer, click the Profile or Delete button at the 'Actions' column.</li>
+                            <li>To edit or remove customer, click the Profile or Remove button at the 'Actions' column.</li>
                         <?php endif; ?>
                         <li>To check their order, click the Order button at the 'Actions' column.</li>
                         <li>Click any column header to sort the table in ascending/descending order.</li>
@@ -174,6 +174,85 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                 </div>
             </div>
         </div>
+
+        <!-- Remove confirmation modal -->
+        <div class="modal fade" id="confirmRemoveModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Confirm Remove</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Are you sure you want to remove <strong id="removeCustomerName">this customer</strong>? The record will be removed and the list will refresh shortly.
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" id="confirmRemoveBtn" class="btn btn-danger">Remove</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Customer Profile / Edit modal (full width) -->
+        <div class="modal fade" id="profileModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-fullscreen">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="profileModalTitle">Customer Profile</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="profileModalBody">
+                        <!-- Profile and medical history will be loaded here via AJAX -->
+                        <div class="text-center">Loading...</div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" id="saveProfileBtn" class="btn btn-primary">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- New Customer modal -->
+        <div class="modal fade" id="newCustomerModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add New Customer</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form id="newCustomerForm">
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label">Name</label>
+                                <input type="text" name="name" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Address</label>
+                                <input type="text" name="address" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Contact</label>
+                                <input type="text" name="phone" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Info</label>
+                                <textarea name="info" class="form-control" rows="2"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Notes</label>
+                                <textarea name="notes" class="form-control" rows="2"></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" id="submitNewCustomer" class="btn btn-primary">Create</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
                     
         <script>
             // Sorting function
@@ -227,6 +306,85 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                                 console.error('Error fetching orders:', error);
                             });
                     });
+                });
+
+                // Remove (soft-delete) functionality
+                let removeTargetId = null;
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        removeTargetId = this.getAttribute('data-customer-id');
+                        const name = this.getAttribute('data-customer-name') || 'this customer';
+                        document.getElementById('removeCustomerName').textContent = name;
+                        const mdl = new bootstrap.Modal(document.getElementById('confirmRemoveModal'));
+                        mdl.show();
+                    });
+                });
+
+                document.getElementById('confirmRemoveBtn')?.addEventListener('click', function() {
+                    if (!removeTargetId) return;
+                    const btn = this; btn.disabled = true; btn.textContent = 'Removing...';
+                    var confModal = bootstrap.Modal.getInstance(document.getElementById('confirmRemoveModal'));
+                    if (confModal) confModal.hide();
+                    var procModal = new bootstrap.Modal(document.getElementById('ordersModal'), { backdrop: 'static', keyboard: false });
+                    // Show a lightweight processing indicator using ordersModal body
+                    document.getElementById('ordersTableBody').innerHTML = '<tr><td colspan="4" class="text-center">Removing...</td></tr>';
+                    procModal.show();
+
+                    const fd = new FormData(); fd.append('CustomerID', removeTargetId);
+                    fetch('customerDeleteAjax.php', { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                    .then(async r => { const txt = await r.text(); console.debug('[Remove] HTTP', r.status, txt); try { return JSON.parse(txt); } catch (e) { throw new Error('Invalid JSON response: ' + txt); } })
+                    .then(json => {
+                        if (!json.success) throw new Error(json.message || 'Remove failed');
+                        procModal.hide();
+                        // quick refresh after 1 second
+                        setTimeout(() => { location.reload(); }, 1000);
+                    })
+                    .catch(err => { procModal.hide(); alert('Remove failed: ' + err.message); })
+                    .finally(() => { btn.disabled = false; btn.textContent = 'Remove'; });
+                });
+
+                // Profile modal: load edit form + medical history via AJAX
+                document.querySelectorAll('.profile-btn').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const customerID = this.getAttribute('data-customer-id');
+                        const body = document.getElementById('profileModalBody');
+                        body.innerHTML = '<div class="text-center">Loading...</div>';
+                        const modal = new bootstrap.Modal(document.getElementById('profileModal'));
+                        modal.show();
+
+                        // Fetch profile form (reuse a small endpoint on customerFunctions.php)
+                        fetch('customerFunctions.php?action=getCustomerProfile&customerID=' + customerID)
+                        .then(r => r.text())
+                        .then(html => { body.innerHTML = html; })
+                        .catch(err => { body.innerHTML = '<div class="alert alert-danger">Error loading profile.</div>'; console.error(err); });
+                    });
+                });
+
+                // New Customer button
+                document.getElementById('newCustomerBtn')?.addEventListener('click', function() {
+                    const mdl = new bootstrap.Modal(document.getElementById('newCustomerModal'));
+                    mdl.show();
+                });
+
+                // New Customer form submit via AJAX
+                document.getElementById('newCustomerForm')?.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const form = this; const btn = document.getElementById('submitNewCustomer');
+                    btn.disabled = true; btn.textContent = 'Creating...';
+                    const fd = new FormData(form);
+                    fetch('customerCreateAjax.php', { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                    .then(async r => { const txt = await r.text(); console.debug('[CreateCustomer] HTTP', r.status, txt); try { return JSON.parse(txt); } catch (e) { throw new Error('Invalid JSON response: ' + txt); } })
+                    .then(json => {
+                        if (!json.success) throw new Error(json.message || 'Create failed');
+                        // close modal and refresh quickly
+                        var m = bootstrap.Modal.getInstance(document.getElementById('newCustomerModal'));
+                        if (m) m.hide();
+                        setTimeout(() => { location.reload(); }, 1000);
+                    })
+                    .catch(err => { alert('Create failed: ' + err.message); })
+                    .finally(() => { btn.disabled = false; btn.textContent = 'Create'; });
                 });
             });
         </script>
