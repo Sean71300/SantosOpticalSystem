@@ -502,6 +502,30 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                         .finally(() => { if (btn) { btn.disabled = false; btn.textContent = 'Save Record'; } });
                     });
                 }
+
+                // Delegate clicks for any Add Record buttons that target the add modal.
+                // This handles buttons injected dynamically into the profile HTML.
+                document.addEventListener('click', function(e) {
+                    const btn = e.target.closest('[data-bs-target="#addMedicalRecordModal"]');
+                    if (!btn) return;
+                    e.preventDefault();
+                    const modalEl = document.getElementById('addMedicalRecordModal');
+                    if (!modalEl) return;
+
+                    // Populate customerID and default date
+                    const customerID = btn.getAttribute('data-customer-id') || '';
+                    const modalCustomerID = modalEl.querySelector('#modalCustomerID');
+                    if (modalCustomerID) modalCustomerID.value = customerID;
+                    const visitDateEl = modalEl.querySelector('#visit_date');
+                    if (visitDateEl) visitDateEl.value = new Date().toISOString().split('T')[0];
+
+                    // Clear other fields
+                    modalEl.querySelectorAll('input[type=text], textarea, input[type=number]').forEach(i => i.value = '');
+
+                    // Show the modal programmatically
+                    const addModal = new bootstrap.Modal(modalEl);
+                    addModal.show();
+                });
             });
         </script>
 
