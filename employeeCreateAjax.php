@@ -46,7 +46,7 @@ try {
     if (!$stmt) throw new Exception('Prepare failed: ' . $conn->error);
     @file_put_contents(__DIR__.'/employeeCreateAjax_debug.log', "[".date('Y-m-d H:i:s')."] Prepare OK\n", FILE_APPEND);
     error_log("employeeCreateAjax: Prepare OK");
-    $stmt->bind_param('sssssssss', $id, $name, $imagePathOrNull, $email, $phone, $role, $username, $hashed_pw, $branch, $upd_by);
+    $stmt->bind_param('ssssssssss', $id, $name, $imagePathOrNull, $email, $phone, $role, $username, $hashed_pw, $branch, $upd_by);
     if (!$stmt->execute()) {
         $e = $stmt->error;
     @file_put_contents(__DIR__.'/employeeCreateAjax_debug.log', "[".date('Y-m-d H:i:s')."] Execute failed: " . $e . "\n", FILE_APPEND);
