@@ -1,6 +1,6 @@
 <?php
 // salesOverview.php
-// Returns JSON aggregated sales (claimed or completed orders treated as sold) between start and end dates.
+// Returns JSON aggregated sales (only 'Claimed' orders are treated as sold) between start and end dates.
 include 'setup.php';
 header('Content-Type: application/json');
 
@@ -22,10 +22,10 @@ try {
     // Aggregate sold / cancelled / returned quantities and revenue per day
     // Join product info to compute revenue = Quantity * Price (Price stored as varchar like '₱3,500')
     $sql = "SELECT DATE(oH.Created_dt) AS saleDate,
-             COALESCE(SUM(CASE WHEN (oD.Status = 'Claimed' OR oD.ActivityCode = 1) THEN oD.Quantity ELSE 0 END),0) AS sold,
+             COALESCE(SUM(CASE WHEN UPPER(oD.Status) = 'CLAIMED' THEN oD.Quantity ELSE 0 END),0) AS sold,
              COALESCE(SUM(CASE WHEN UPPER(oD.Status) = 'CANCELLED' THEN oD.Quantity ELSE 0 END),0) AS cancelled,
              COALESCE(SUM(CASE WHEN UPPER(oD.Status) = 'RETURNED' THEN oD.Quantity ELSE 0 END),0) AS returned,
-             COALESCE(SUM(CASE WHEN (oD.Status = 'Claimed' OR oD.ActivityCode = 1) THEN oD.Quantity *
+             COALESCE(SUM(CASE WHEN UPPER(oD.Status) = 'CLAIMED' THEN oD.Quantity *
                  COALESCE(CAST(REPLACE(REPLACE(p.Price, '₱', ''), ',', '') AS DECIMAL(12,2)),0) ELSE 0 END),0) AS sold_rev,
              COALESCE(SUM(CASE WHEN UPPER(oD.Status) = 'CANCELLED' THEN oD.Quantity *
                  COALESCE(CAST(REPLACE(REPLACE(p.Price, '₱', ''), ',', '') AS DECIMAL(12,2)),0) ELSE 0 END),0) AS cancelled_rev,
@@ -81,7 +81,8 @@ try {
     $total_sold_rev = array_sum($sold_rev);
     $total_cancelled_rev = array_sum($cancelled_rev);
     $total_returned_rev = array_sum($returned_rev);
-    $net_total = $total_sold_rev - $total_cancelled_rev - $total_returned_rev;
+    // Per user request: do not treat cancelled/returned as net loss here — only show net gained from sold items.
+    $net_total = $total_sold_rev;
 
         // Top products (by quantity) in range for sold/cancelled/returned
         $topProducts = [ 'sold' => [], 'cancelled' => [], 'returned' => [] ];
@@ -144,6 +145,8 @@ try {
             'total_sold_rev' => $total_sold_rev,
             'total_cancelled_rev' => $total_cancelled_rev,
             'total_returned_rev' => $total_returned_rev,
+            // net_gained is provided for clarity — equals total sold revenue only (no subtraction of cancelled/returned)
+            'net_gained' => $total_sold_rev,
             'net_total' => $net_total,
             'start' => $start,
             'end' => $end,
