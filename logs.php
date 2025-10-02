@@ -320,9 +320,9 @@ $conn->close();
                         <?php endif; ?>
 
                         <?php 
-                            // Sliding window pagination: show current +/- 5 pages (max 11 visible)
-                            $maxVisible = 11;
-                            $half = floor($maxVisible / 2);
+                            // Sliding window pagination: show current +/- 10 pages (max 21 visible)
+                            $maxVisible = 21;
+                            $half = floor($maxVisible / 2); // 10
                             // Ensure current page within bounds
                             if ($totalPages <= 0) $totalPages = 1;
                             $currentPage = max(1, min($currentPage, $totalPages));
