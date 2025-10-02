@@ -204,159 +204,7 @@ $salesData = getSalesOverviewData();
         </div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const sidebar = document.getElementById('sidebar');
-            const mobileToggle = document.getElementById('mobileMenuToggle');
-            const body = document.body;
-            
-            if (mobileToggle) {
-                mobileToggle.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    sidebar.classList.toggle('active');
-                    body.classList.toggle('sidebar-open');
-                });
-            }
-            
-            document.addEventListener('click', function(e) {
-                if (window.innerWidth <= 992 && 
-                    !sidebar.contains(e.target) && 
-                    (!mobileToggle || e.target !== mobileToggle)) {
-                    sidebar.classList.remove('active');
-                    body.classList.remove('sidebar-open');
-                }
-            });
-            
-            document.querySelectorAll('.sidebar-item').forEach(item => {
-                item.addEventListener('click', function() {
-                    if (window.innerWidth <= 992) {
-                        sidebar.classList.remove('active');
-                        body.classList.remove('sidebar-open');
-                    }
-                });
-            });
-            
-            window.addEventListener('resize', function() {
-                if (window.innerWidth > 992) {
-                    sidebar.classList.remove('active');
-                    body.classList.remove('sidebar-open');
-                }
-            });
-
-            // Sales chart and top-products loader
-            const salesCtx = document.getElementById('salesChart') ? document.getElementById('salesChart').getContext('2d') : null;
-            const salesChart = salesCtx ? new Chart(salesCtx, {
-                type: 'line',
-                data: { labels: [], datasets: [{ label: 'Sold', data: [], backgroundColor: 'rgba(40,167,69,0.15)', borderColor: 'rgba(40,167,69,1)', tension: 0.1, fill: true }] },
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, title: { display: true, text: 'Products Sold' } }, x: { title: { display: true, text: 'Date' } } }, plugins: { legend: { position: 'top' } } }
-            }) : null;
-
-            let currentView = 'week';
-
-            function computeStartEndForView(view) {
-                const now = new Date();
-                const yearSel = document.getElementById('sales-year-select');
-                const monthSel = document.getElementById('sales-month-select');
-                const year = yearSel ? parseInt(yearSel.value, 10) : now.getFullYear();
-                const month = monthSel && monthSel.value ? parseInt(monthSel.value, 10) : null;
-                let start = null; let end = null;
-                if (view === 'year') {
-                    start = new Date(year, 0, 1);
-                    end = new Date(year, 11, 31);
-                } else if (view === 'month') {
-                    const m = month !== null ? month - 1 : now.getMonth();
-                    start = new Date(year, m, 1);
-                    end = new Date(year, m + 1, 0);
-                } else { // week
-                    end = now;
-                    start = new Date();
-                    start.setDate(end.getDate() - 6);
-                }
-                return { start: start.toISOString().slice(0,10), end: end.toISOString().slice(0,10) };
-            }
-
-            async function loadSalesRange() {
-                try {
-                    const se = computeStartEndForView(currentView);
-                    const params = new URLSearchParams({ start: se.start, end: se.end });
-                    const resp = await fetch('salesOverview.php?' + params.toString());
-                    const json = await resp.json();
-                    if (!json.success) throw new Error(json.error || 'Failed to load sales');
-
-                    if (salesChart) {
-                        // Format labels for readability: weekdays for short ranges, day+month for month ranges, month names for long ranges
-                        function formattedLabels(labels) {
-                            const n = labels.length;
-                            return labels.map(d => {
-                                const dt = new Date(d + 'T00:00:00');
-                                if (n <= 14) {
-                                    // Week view: 'Mon 29'
-                                    return dt.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric' }).replace(',', '');
-                                } else if (n <= 62) {
-                                    // Month-ish range: 'Sep 29'
-                                    return dt.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-                                } else {
-                                    // Year / long range: 'Sep'
-                                    return dt.toLocaleDateString(undefined, { month: 'short' });
-                                }
-                            });
-                        }
-
-                        salesChart.data.labels = formattedLabels(json.labels);
-                        salesChart.data.datasets[0].data = json.sold.map(v => parseInt(v||0,10));
-                        salesChart.update();
-                    }
-
-                    const topList = document.getElementById('top-products');
-                    if (topList) {
-                        topList.innerHTML = '';
-                        if (json.topProducts && json.topProducts.length) {
-                            json.topProducts.forEach(p => {
-                                const li = document.createElement('li');
-                                li.className = 'list-group-item d-flex justify-content-between align-items-center';
-                                li.textContent = p.Model || ('Product ' + p.ProductID);
-                                const span = document.createElement('span');
-                                span.className = 'badge bg-primary rounded-pill';
-                                span.textContent = p.qty;
-                                li.appendChild(span);
-                                topList.appendChild(li);
-                            });
-                        } else {
-                            topList.innerHTML = '<li class="list-group-item text-muted">No sales in range.</li>';
-                        }
-                    }
-
-                    // update sales card title with range
-                    const title = document.getElementById('sales-overview-title');
-                    if (title) {
-                        const startF = new Date(json.start).toLocaleDateString();
-                        const endF = new Date(json.end).toLocaleDateString();
-                        title.textContent = `Sales Overview — ${startF} to ${endF}`;
-                    }
-
-                } catch (err) {
-                    console.error('Error loading sales range:', err);
-                }
-            }
-
-            // Wire the compact dropdown to switch range views
-            const salesModeSelect = document.getElementById('sales-mode-select');
-            if (salesModeSelect) {
-                // initialize from default
-                salesModeSelect.value = currentView;
-                salesModeSelect.addEventListener('change', function() {
-                    const val = this.value;
-                    if (['week','month','year'].includes(val)) {
-                        currentView = val;
-                        loadSalesRange();
-                    }
-                });
-            }
-
-            // initialize and load default sales range
-            loadSalesRange();
-        });
-    </script>
+    <!-- Script consolidated below (removed duplicate) -->
 </body>
 </html>
                             <select id="sales-year-select" class="form-select form-select-sm d-inline-block ms-2" style="width:auto;"></select>
@@ -459,7 +307,7 @@ $salesData = getSalesOverviewData();
             const sidebar = document.getElementById('sidebar');
             const mobileToggle = document.getElementById('mobileMenuToggle');
             const body = document.body;
-            
+
             if (mobileToggle) {
                 mobileToggle.addEventListener('click', function(e) {
                     e.stopPropagation();
@@ -467,16 +315,14 @@ $salesData = getSalesOverviewData();
                     body.classList.toggle('sidebar-open');
                 });
             }
-            
+
             document.addEventListener('click', function(e) {
-                if (window.innerWidth <= 992 && 
-                    !sidebar.contains(e.target) && 
-                    (!mobileToggle || e.target !== mobileToggle)) {
+                if (window.innerWidth <= 992 && !sidebar.contains(e.target) && (!mobileToggle || e.target !== mobileToggle)) {
                     sidebar.classList.remove('active');
                     body.classList.remove('sidebar-open');
                 }
             });
-            
+
             document.querySelectorAll('.sidebar-item').forEach(item => {
                 item.addEventListener('click', function() {
                     if (window.innerWidth <= 992) {
@@ -485,7 +331,7 @@ $salesData = getSalesOverviewData();
                     }
                 });
             });
-            
+
             window.addEventListener('resize', function() {
                 if (window.innerWidth > 992) {
                     sidebar.classList.remove('active');
@@ -493,63 +339,20 @@ $salesData = getSalesOverviewData();
                 }
             });
 
-            // initial placeholder data (will be overwritten by API)
-            const salesData = {
-                labels: [],
-                datasets: [
-                    { label: 'Sold', data: [], backgroundColor: 'rgba(40,167,69,0.15)', borderColor: 'rgba(40,167,69,1)', tension: 0.1, fill: true },
-                    { label: 'Cancelled', data: [], backgroundColor: 'rgba(220,53,69,0.15)', borderColor: 'rgba(220,53,69,1)', tension: 0.1, fill: true },
-                    { label: 'Returned', data: [], backgroundColor: 'rgba(255,193,7,0.15)', borderColor: 'rgba(255,193,7,1)', tension: 0.1, fill: true }
-                ]
-            };
-
-            const salesCtx = document.getElementById('salesChart').getContext('2d');
-            const salesChart = new Chart(salesCtx, {
+            // Chart setup
+            const salesCtx = document.getElementById('salesChart') ? document.getElementById('salesChart').getContext('2d') : null;
+            const salesChart = salesCtx ? new Chart(salesCtx, {
                 type: 'line',
-                data: salesData,
+                data: { labels: [], datasets: [{ label: 'Sold', data: [], backgroundColor: 'rgba(40,167,69,0.15)', borderColor: 'rgba(40,167,69,1)', tension: 0.1, fill: true }] },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Products Sold'
-                            }
-                        },
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Date'
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const label = context.dataset && context.dataset.label ? context.dataset.label : '';
-                                    const raw = context.parsed && (context.parsed.y !== undefined ? context.parsed.y : context.parsed);
-                                    const value = (raw === undefined || raw === null) ? 0 : raw;
-                                    return label + ': ' + value;
-                                }
-                            }
-                        }
-                    }
+                    scales: { y: { beginAtZero: true, title: { display: true, text: 'Products Sold' } }, x: { title: { display: true, text: 'Date' } } },
+                    plugins: { legend: { position: 'top' } }
                 }
-            });
+            }) : null;
 
-            // Simplified: only view and year/month selectors remain. Chart will request explicit start/end dates.
             let currentView = 'week';
-
-            function setActiveViewButton(btn) {
-                document.querySelectorAll('.sales-view-btn').forEach(b => b.classList.remove('active'));
-                if (btn) btn.classList.add('active');
-            }
 
             function computeStartEndForView(view) {
                 const now = new Date();
@@ -560,7 +363,7 @@ $salesData = getSalesOverviewData();
                 } else if (view === 'month') {
                     start = new Date(now.getFullYear(), now.getMonth(), 1);
                     end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-                } else { // week (last 7 days)
+                } else { // week
                     end = now;
                     start = new Date();
                     start.setDate(end.getDate() - 6);
@@ -568,34 +371,57 @@ $salesData = getSalesOverviewData();
                 return { start: start.toISOString().slice(0,10), end: end.toISOString().slice(0,10) };
             }
 
+            function formattedLabels(labels) {
+                const n = labels.length;
+                return labels.map(d => {
+                    const dt = new Date(d + 'T00:00:00');
+                    if (n <= 14) return dt.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric' }).replace(',', '');
+                    if (n <= 62) return dt.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+                    return dt.toLocaleDateString(undefined, { month: 'short' });
+                });
+            }
+
             async function loadSalesRange() {
                 try {
-                    const params = new URLSearchParams();
-                    const yearSel = document.getElementById('sales-year-select');
-                    params.set('year', yearSel ? yearSel.value : new Date().getFullYear());
                     const se = computeStartEndForView(currentView);
-                    params.set('start', se.start);
-                    params.set('end', se.end);
+                    const params = new URLSearchParams({ start: se.start, end: se.end });
+                    const url = 'salesOverview.php?' + params.toString();
+                    // debug info: what view / url we are requesting
+                    console.debug('[Sales] currentView=', currentView, 'request=', url);
+                    const resp = await fetch(url, { cache: 'no-store' });
+                    const json = await resp.json();
+                    console.debug('[Sales] response=', json);
+                    if (!json.success) throw new Error(json.error || 'Failed to load sales');
 
-                    // no extra mode param (week-based mode removed)
-                    const resp = await fetch('salesData.php?' + params.toString());
-                    const text = await resp.text();
-                    let json;
-                    try { json = JSON.parse(text); } catch (e) { throw new Error('Invalid JSON: ' + text); }
-                    if (!json.success) throw new Error(json.error || 'Failed to load sales data');
+                    if (salesChart) {
+                        salesChart.data.labels = formattedLabels(json.labels);
+                        salesChart.data.datasets[0].data = json.sold.map(v => parseInt(v||0,10));
+                        salesChart.update();
+                    }
 
-                    salesChart.data.labels = json.labels;
-                    salesChart.data.datasets[0].data = json.claimed.map(v=>parseInt(v||0,10));
-                    salesChart.data.datasets[1].data = json.cancelled.map(v=>parseInt(v||0,10));
-                    salesChart.data.datasets[2].data = json.returned.map(v=>parseInt(v||0,10));
-                    salesChart.update();
-                    // update header with selected date range
+                    const topList = document.getElementById('top-products');
+                    if (topList) {
+                        topList.innerHTML = '';
+                        if (json.topProducts && json.topProducts.length) {
+                            json.topProducts.forEach(p => {
+                                const li = document.createElement('li');
+                                li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                                li.textContent = p.Model || ('Product ' + p.ProductID);
+                                const span = document.createElement('span');
+                                span.className = 'badge bg-primary rounded-pill';
+                                span.textContent = p.qty;
+                                li.appendChild(span);
+                                topList.appendChild(li);
+                            });
+                        } else {
+                            topList.innerHTML = '<li class="list-group-item text-muted">No sales in range.</li>';
+                        }
+                    }
+
                     const title = document.getElementById('sales-overview-title');
                     if (title) {
-                        // format dates like 'Mar 3, 2025' or range 'Mar 3 - Sep 7, 2025'
-                        function fmt(d) { const dt = new Date(d); return dt.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }); }
-                        const startF = fmt(json.start);
-                        const endF = fmt(json.end);
+                        const startF = new Date(json.start).toLocaleDateString();
+                        const endF = new Date(json.end).toLocaleDateString();
                         title.textContent = `Sales Overview — ${startF} to ${endF}`;
                     }
                 } catch (err) {
@@ -603,39 +429,20 @@ $salesData = getSalesOverviewData();
                 }
             }
 
-            // View button handlers
-            document.querySelectorAll('.sales-view-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    currentView = this.dataset.view;
-                    // clear mode dropdown when switching view
-                    const modeSelect = document.getElementById('sales-mode-select');
-                    if (modeSelect) modeSelect.value = '';
-                    setActiveViewButton(this);
-                    loadSalesRange();
+            // Wire dropdown
+            const salesModeSelect = document.getElementById('sales-mode-select');
+            if (salesModeSelect) {
+                salesModeSelect.value = currentView;
+                salesModeSelect.addEventListener('change', function() {
+                    const v = this.value;
+                    if (['week','month','year'].includes(v)) {
+                        currentView = v;
+                        loadSalesRange();
+                    }
                 });
-            });
-
-            // week-mode removed; no mode dropdown handler required
-
-            // initialize year/month selects and load
-            const yearSelectInit = document.getElementById('sales-year-select');
-            if (yearSelectInit && !yearSelectInit.dataset.initialized) {
-                const thisYear = new Date().getFullYear();
-                for (let y = thisYear; y >= thisYear - 7; y--) {
-                    const opt = document.createElement('option'); opt.value = y; opt.textContent = y;
-                    yearSelectInit.appendChild(opt);
-                }
-                yearSelectInit.value = new Date().getFullYear();
-                yearSelectInit.dataset.initialized = '1';
-                yearSelectInit.addEventListener('change', loadSalesRange);
             }
-            const monthInit = document.getElementById('sales-month-select');
-            if (monthInit && monthInit.options.length <= 1) {
-                const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-                for (let m = 1; m <= 12; m++) { const o = document.createElement('option'); o.value = m; o.textContent = monthNames[m-1]; monthInit.appendChild(o); }
-                monthInit.addEventListener('change', loadSalesRange);
-                monthInit.style.display = '';
-            }
+
+            // initial load
             loadSalesRange();
         });
     </script>
