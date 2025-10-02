@@ -473,6 +473,35 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                     .catch(err => { alert('Create failed: ' + err.message); })
                     .finally(() => { btn.disabled = false; btn.textContent = 'Create'; });
                 });
+                
+                // Medical record form submit via AJAX (works for add modal inside this page)
+                const medForm = document.getElementById('medicalRecordForm');
+                if (medForm) {
+                    medForm.addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        const btn = medForm.querySelector('button[type="submit"]');
+                        if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+                        const fd = new FormData(medForm);
+                        fetch('medical-records-funcs.php', { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                        .then(async r => { const txt = await r.text(); console.debug('[AddMed] HTTP', r.status, txt); try { return JSON.parse(txt); } catch (e) { throw new Error('Invalid JSON response: ' + txt); } })
+                        .then(json => {
+                            if (!json.success) throw new Error(json.message || 'Add record failed');
+                            // close modal
+                            const addModal = bootstrap.Modal.getInstance(document.getElementById('addMedicalRecordModal'));
+                            if (addModal) addModal.hide();
+                            // refresh medical records area if profile modal is open
+                            const profileModalEl = document.getElementById('profileModal');
+                            if (profileModalEl && bootstrap.Modal.getInstance(profileModalEl)) {
+                                const customerID = fd.get('customerID');
+                                fetch('customerFunctions.php?action=getCustomerMedicalRecords&customerID=' + encodeURIComponent(customerID))
+                                    .then(r=>r.text()).then(html=>{ const area = document.getElementById('medicalRecordsArea'); if (area) area.innerHTML = html; })
+                                    .catch(e=>console.error('Failed to refresh medical records', e));
+                            }
+                        })
+                        .catch(err => { alert('Add record failed: ' + err.message); })
+                        .finally(() => { if (btn) { btn.disabled = false; btn.textContent = 'Save Record'; } });
+                    });
+                }
             });
         </script>
 

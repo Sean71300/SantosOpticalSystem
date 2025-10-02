@@ -474,7 +474,7 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
                 var successModal = new bootstrap.Modal(document.getElementById('deletedSuccessModal'));
                 successModal.show();
                 // refresh after 1 second
-                setTimeout(function() { location.reload(); }, 1000);
+                setTimeout(function() { location.reload(); }, 2000);
             })
             .catch(err => {
                 console.error(err);

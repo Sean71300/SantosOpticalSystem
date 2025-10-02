@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Prepare the SQL statement
     $conn = connect();
     $historyID = generate_historyID();
-    
+
     $sql = "INSERT INTO customerMedicalHistory (
             history_id, CustomerID, visit_date, eye_condition, systemic_diseases,
             visual_acuity_right, visual_acuity_left, intraocular_pressure_right,
@@ -28,47 +28,66 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             pupillary_distance, current_medications, allergies, family_eye_history,
             previous_eye_surgeries, corneal_topography, fundus_examination, additional_notes
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    
+
     $stmt = $conn->prepare($sql);
     if ($stmt) {
+        // Bind all parameters as strings to avoid type mismatch issues
         $stmt->bind_param(
-            "iissssssddsssssssss",
+            str_repeat('s', 19),
             $historyID,
             $customerID,
             $visit_date,
-            $_POST['eye_condition'],
-            $_POST['systemic_diseases'],
-            $_POST['visual_acuity_right'],
-            $_POST['visual_acuity_left'],
-            $_POST['intraocular_pressure_right'],
-            $_POST['intraocular_pressure_left'],
-            $_POST['refraction_right'],
-            $_POST['refraction_left'],
-            $_POST['pupillary_distance'],
-            $_POST['current_medications'],
-            $_POST['allergies'],
-            $_POST['family_eye_history'],
-            $_POST['previous_eye_surgeries'],
-            $_POST['corneal_topography'],
-            $_POST['fundus_examination'],
-            $_POST['additional_notes']
+            $_POST['eye_condition'] ?? null,
+            $_POST['systemic_diseases'] ?? null,
+            $_POST['visual_acuity_right'] ?? null,
+            $_POST['visual_acuity_left'] ?? null,
+            $_POST['intraocular_pressure_right'] ?? null,
+            $_POST['intraocular_pressure_left'] ?? null,
+            $_POST['refraction_right'] ?? null,
+            $_POST['refraction_left'] ?? null,
+            $_POST['pupillary_distance'] ?? null,
+            $_POST['current_medications'] ?? null,
+            $_POST['allergies'] ?? null,
+            $_POST['family_eye_history'] ?? null,
+            $_POST['previous_eye_surgeries'] ?? null,
+            $_POST['corneal_topography'] ?? null,
+            $_POST['fundus_examination'] ?? null,
+            $_POST['additional_notes'] ?? null
         );
-        
+
         if ($stmt->execute()) {
             // Log the activity
-            $employee_id = $_SESSION["id"];
-            GenerateLogs($employee_id, $customerID, "Added medical record");
-            
-            // Redirect back to the customer profile with success message
-            header("Location: customerEdit.php?CustomerID=$customerID&success=Medical+record+added+successfully");
-            exit();
+            $employee_id = $_SESSION["id"] ?? null;
+            if ($employee_id) {
+                GenerateLogs($employee_id, $customerID, "Added medical record");
+            }
+
+            // If request is AJAX, return JSON; otherwise redirect back
+            $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+            if ($isAjax) {
+                header('Content-Type: application/json; charset=utf-8');
+                echo json_encode(['success' => true, 'message' => 'Medical record added']);
+                exit();
+            } else {
+                header("Location: customerEdit.php?CustomerID=$customerID&success=Medical+record+added+successfully");
+                exit();
+            }
         } else {
-            // Redirect back with error message
-            header("Location: customerEdit.php?CustomerID=$customerID&error=" . urlencode($errorMessage));
+            $err = $stmt->error;
+            if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+                header('Content-Type: application/json; charset=utf-8');
+                echo json_encode(['success' => false, 'message' => 'Database error: ' . $err]);
+                exit();
+            }
+            header("Location: customerEdit.php?CustomerID=$customerID&error=" . urlencode('Database error'));
             exit();
         }
     } else {
-        // Redirect back with error message
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode(['success' => false, 'message' => 'Prepare failed: ' . $conn->error]);
+            exit();
+        }
         header("Location: customerEdit.php?CustomerID=$customerID&error=Database error");
         exit();
     }
