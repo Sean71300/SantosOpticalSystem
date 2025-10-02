@@ -5,6 +5,11 @@ include 'employeeFunctions.php';
 if (session_status() == PHP_SESSION_NONE) session_start();
 
 try {
+    // Debug logging: capture request for diagnosis
+    $dbg = "\n[".date('Y-m-d H:i:s')."] employeeCreateAjax POST=".json_encode($_POST)." FILES=".json_encode(array_map(function($f){return ['name'=>$f['name'] ?? null,'error'=>$f['error'] ?? null,'size'=>$f['size'] ?? null];}, $_FILES))."\n";
+    @file_put_contents(__DIR__.'/employeeCreateAjax_debug.log', $dbg, FILE_APPEND);
+    // Also write to PHP error log for environments where file writes are restricted
+    error_log("employeeCreateAjax: " . $dbg);
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') throw new Exception('Invalid request method');
 
     // basic validation
@@ -39,12 +44,18 @@ try {
     $stmt = $conn->prepare("INSERT INTO employee (EmployeeID,EmployeeName,EmployeePicture,EmployeeEmail,EmployeeNumber,RoleID,LoginName,Password,BranchCode,Status,Upd_by)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Active', ?)");
     if (!$stmt) throw new Exception('Prepare failed: ' . $conn->error);
+    @file_put_contents(__DIR__.'/employeeCreateAjax_debug.log', "[".date('Y-m-d H:i:s')."] Prepare OK\n", FILE_APPEND);
+    error_log("employeeCreateAjax: Prepare OK");
     $stmt->bind_param('sssssssss', $id, $name, $imagePathOrNull, $email, $phone, $role, $username, $hashed_pw, $branch, $upd_by);
     if (!$stmt->execute()) {
         $e = $stmt->error;
+    @file_put_contents(__DIR__.'/employeeCreateAjax_debug.log', "[".date('Y-m-d H:i:s')."] Execute failed: " . $e . "\n", FILE_APPEND);
+    error_log("employeeCreateAjax: Execute failed: " . $e);
         $stmt->close();
         throw new Exception('Insert failed: ' . $e);
     }
+    @file_put_contents(__DIR__.'/employeeCreateAjax_debug.log', "[".date('Y-m-d H:i:s')."] Execute OK\n", FILE_APPEND);
+    error_log("employeeCreateAjax: Execute OK");
     $stmt->close();
 
     // fetch role/branch display names

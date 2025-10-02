@@ -390,6 +390,7 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
         </script>
 
     <script>
+    document.addEventListener('DOMContentLoaded', function() {
         // Create modal: preview image
         document.getElementById('createImage')?.addEventListener('change', function() {
             const file = this.files && this.files[0];
@@ -411,7 +412,16 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
                 const fd = new FormData(createForm);
 
                 fetch('employeeCreateAjax.php', { method: 'POST', body: fd })
-                .then(r => r.json())
+                .then(async r => {
+                    const txt = await r.text();
+                    console.debug('[Create] HTTP', r.status, txt);
+                    try {
+                        const json = JSON.parse(txt);
+                        return json;
+                    } catch (e) {
+                        throw new Error('Invalid JSON response: ' + txt);
+                    }
+                })
                 .then(json => {
                     if (!json.success) {
                         alert('Create failed: ' + (json.message || 'Unknown'));
@@ -421,11 +431,12 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
                     location.reload();
                 })
                 .catch(err => {
-                    console.error(err); alert('Error creating employee');
+                    console.error(err); alert('Error creating employee - check console for details');
                 })
                 .finally(() => { btn.disabled = false; btn.textContent = 'Create'; });
             });
         }
+    });
     </script>
 
     <!-- Edit confirmation modal (moved inside body so Bootstrap can manage it) -->
