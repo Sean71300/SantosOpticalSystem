@@ -27,28 +27,6 @@
     width: auto;
     height: auto;          
     }
-
-  /* Dashboard layout helpers */
-  @media (min-width: 992px) {
-    /* Make the sales + right column row stretch to equal heights */
-    .dashboard-row { display: flex; align-items: stretch; gap: 20px; }
-
-    /* Ensure columns behave as flexible columns */
-    .dashboard-row .col-md-8 { display: flex; flex-direction: column; }
-    .dashboard-row .col-md-4 { display: flex; flex-direction: column; }
-
-    /* Right column: make both cards share available height equally */
-    .dashboard-row .col-md-4 .dashboard-card { flex: 1 1 0; display: flex; flex-direction: column; }
-    .dashboard-row .col-md-4 .dashboard-card .list-group,
-    .dashboard-row .col-md-4 .dashboard-card .recent-activity-list { flex: 1 1 auto; overflow: auto; }
-  }
-
-  /* Recent activity list (moved from inline styles) */
-  .recent-activity-list { max-height: 360px; overflow: auto; padding-right: 6px; }
-
-  /* Low stocks images (moved from inline styles) */
-  .product-thumb { height: 100px; width: 100px; object-fit: cover; }
-
   /*for home page*/
   
   .bannerfont{
