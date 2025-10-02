@@ -101,6 +101,20 @@ $conn->close();
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             padding: 20px;
+            /* reserve space at the bottom so pagination doesn't overflow the card */
+            padding-bottom: 90px;
+            position: relative;
+        }
+        /* Keep pagination inside the logs card */
+        .logs-container nav[aria-label="Logs pagination"] {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
         }
         .log-entry {
             border-left: 4px solid #0d6efd;
@@ -162,7 +176,11 @@ $conn->close();
         }
         @media (max-width: 576px) {
             .logs-container {
-                padding: 15px;
+                padding: 15px 15px 100px; /* extra bottom padding on small screens */
+            }
+            .logs-container nav[aria-label="Logs pagination"] {
+                position: static; /* let pagination flow on very small screens */
+                margin-top: 15px;
             }
             .d-flex.justify-content-between.align-items-center.mb-4 {
                 flex-direction: column;
