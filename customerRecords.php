@@ -362,6 +362,49 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                     });
                 });
 
+                // ===== New JS: submit profile edit form via AJAX when footer "Save" is clicked =====
+                document.getElementById('saveProfileBtn')?.addEventListener('click', function() {
+                    const btn = this;
+                    const modalBody = document.getElementById('profileModalBody');
+                    if (!modalBody) { alert('Profile area not found.'); return; }
+
+                    // Look for a form inside the loaded profile HTML
+                    const form = modalBody.querySelector('form');
+                    if (!form) { alert('No editable form was found in the profile.'); return; }
+
+                    // Determine endpoint: prefer form.action, fallback to a conventional ajax endpoint
+                    const endpoint = form.getAttribute('action') || 'customerUpdateAjax.php';
+                    const method = (form.getAttribute('method') || 'POST').toUpperCase();
+
+                    btn.disabled = true;
+                    const prevText = btn.textContent;
+                    btn.textContent = 'Saving...';
+
+                    const fd = new FormData(form);
+
+                    fetch(endpoint, { method: method, body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                    .then(async r => {
+                        const txt = await r.text();
+                        try { return JSON.parse(txt); }
+                        catch (e) { throw new Error('Invalid JSON response from server: ' + txt); }
+                    })
+                    .then(json => {
+                        if (!json.success) throw new Error(json.message || 'Save failed');
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('profileModal'));
+                        if (modal) modal.hide();
+                        // quick refresh to reflect updated record
+                        setTimeout(() => { location.reload(); }, 800);
+                    })
+                    .catch(err => {
+                        alert('Save failed: ' + err.message);
+                        console.error('Profile save error:', err);
+                    })
+                    .finally(() => {
+                        btn.disabled = false;
+                        btn.textContent = prevText;
+                    });
+                });
+
                 // New Customer button
                 document.getElementById('newCustomerBtn')?.addEventListener('click', function() {
                     const mdl = new bootstrap.Modal(document.getElementById('newCustomerModal'));
