@@ -102,11 +102,7 @@ $salesData = getSalesOverviewData();
                     <hr class="border-1 border-black opacity-25">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <div>
-                            <div class="btn-group" role="group" aria-label="Sales view">
-                                <button type="button" class="btn btn-sm btn-outline-secondary sales-view-btn active" data-view="week">Week</button>
-                                <button type="button" class="btn btn-sm btn-outline-secondary sales-view-btn" data-view="month">Month</button>
-                                <button type="button" class="btn btn-sm btn-outline-secondary sales-view-btn" data-view="year">Year</button>
-                            </div>
+                            <!-- Sales view controls removed -->
                         </div>
                         <div>
                             <!-- Year/month selectors removed per request -->
@@ -320,14 +316,7 @@ $salesData = getSalesOverviewData();
                 }
             }
 
-            document.querySelectorAll('.sales-view-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    currentView = this.dataset.view;
-                    document.querySelectorAll('.sales-view-btn').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    loadSalesRange();
-                });
-            });
+            // Sales view buttons removed — chart uses default range (last 7 days)
 
             // initialize and load default sales range
             loadSalesRange();
