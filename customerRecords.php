@@ -278,6 +278,122 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                 </div>
             </div>
         </div>
+        
+        <!-- Add Medical Record Modal -->
+        <div class="modal fade" id="addMedicalRecordModal" tabindex="-1" aria-labelledby="addMedicalRecordModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title" id="addMedicalRecordModalLabel">Add New Medical Record</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form id="medicalRecordForm" method="post" action="medical-records-funcs.php">
+                        <div class="modal-body">
+                            <input type="hidden" name="customerID" id="modalCustomerID">
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="visit_date" class="form-label">Visit Date <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" id="visit_date" name="visit_date" required>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="eye_condition" class="form-label">Eye Condition</label>
+                                    <input type="text" class="form-control" id="eye_condition" name="eye_condition">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="systemic_diseases" class="form-label">Systemic Diseases</label>
+                                    <input type="text" class="form-control" id="systemic_diseases" name="systemic_diseases" placeholder="e.g., diabetes, hypertension">
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label for="visual_acuity_right" class="form-label">Visual Acuity (Right)</label>
+                                    <input type="text" class="form-control" id="visual_acuity_right" name="visual_acuity_right" placeholder="e.g., 20/20">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="visual_acuity_left" class="form-label">Visual Acuity (Left)</label>
+                                    <input type="text" class="form-control" id="visual_acuity_left" name="visual_acuity_left" placeholder="e.g., 20/20">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="pupillary_distance" class="form-label">Pupillary Distance (mm)</label>
+                                    <input type="number" class="form-control" id="pupillary_distance" name="pupillary_distance">
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="intraocular_pressure_right" class="form-label">Intraocular Pressure - Right (mmHg)</label>
+                                    <input type="number" step="0.01" class="form-control" id="intraocular_pressure_right" name="intraocular_pressure_right">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="intraocular_pressure_left" class="form-label">Intraocular Pressure - Left (mmHg)</label>
+                                    <input type="number" step="0.01" class="form-control" id="intraocular_pressure_left" name="intraocular_pressure_left">
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="refraction_right" class="form-label">Refraction (Right)</label>
+                                    <input type="text" class="form-control" id="refraction_right" name="refraction_right" placeholder="e.g., -1.50 DS">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="refraction_left" class="form-label">Refraction (Left)</label>
+                                    <input type="text" class="form-control" id="refraction_left" name="refraction_left" placeholder="e.g., -1.25 DS">
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="current_medications" class="form-label">Current Medications</label>
+                                    <textarea class="form-control" id="current_medications" name="current_medications" rows="2"></textarea>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="allergies" class="form-label">Allergies</label>
+                                    <textarea class="form-control" id="allergies" name="allergies" rows="2"></textarea>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="family_eye_history" class="form-label">Family Eye History</label>
+                                    <textarea class="form-control" id="family_eye_history" name="family_eye_history" rows="2"></textarea>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="previous_eye_surgeries" class="form-label">Previous Eye Surgeries</label>
+                                    <textarea class="form-control" id="previous_eye_surgeries" name="previous_eye_surgeries" rows="2"></textarea>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="corneal_topography" class="form-label">Corneal Topography</label>
+                                    <textarea class="form-control" id="corneal_topography" name="corneal_topography" rows="2"></textarea>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="fundus_examination" class="form-label">Fundus Examination</label>
+                                    <textarea class="form-control" id="fundus_examination" name="fundus_examination" rows="2"></textarea>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <label for="additional_notes" class="form-label">Additional Notes</label>
+                                    <textarea class="form-control" id="additional_notes" name="additional_notes" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Save Record</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
                     
         
 
@@ -532,46 +648,99 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                 });
             }
 
-            // Delegate clicks for any Add Record buttons that target the add modal.
-            // This handles buttons injected dynamically into the profile HTML.
+            // Delegate clicks for Add Record buttons (injected HTML). Instead of
+            // opening a nested Bootstrap modal (which causes backdrop/focus errors),
+            // inject an inline form into the medical records area.
             document.addEventListener('click', function(e) {
-                const btn = e.target.closest('[data-bs-target="#addMedicalRecordModal"]');
+                const btn = e.target.closest('[data-customer-id]');
                 if (!btn) return;
+                // only handle Add Record buttons (we expect text contains 'Add Record')
+                if (!btn.textContent || !btn.textContent.includes('Add Record')) return;
+
                 e.preventDefault();
-                const modalEl = document.getElementById('addMedicalRecordModal');
-                if (!modalEl) return;
-
-                // Populate customerID and default date
                 const customerID = btn.getAttribute('data-customer-id') || '';
-                const modalCustomerID = modalEl.querySelector('#modalCustomerID');
-                if (modalCustomerID) modalCustomerID.value = customerID;
-                const visitDateEl = modalEl.querySelector('#visit_date');
-                if (visitDateEl) visitDateEl.value = new Date().toISOString().split('T')[0];
+                const area = document.getElementById('medicalRecordsArea');
+                if (!area) return;
 
-                // Clear other fields
-                modalEl.querySelectorAll('input[type=text], textarea, input[type=number]').forEach(i => i.value = '');
-
-                // Remove focus from any element to avoid aria-hidden errors.
-                try { if (document.activeElement && document.activeElement !== document.body) document.activeElement.blur(); } catch (e) { /* ignore */ }
-
-                // If profile modal is open, hide it first to avoid nested modal conflicts.
-                const profileModalEl = document.getElementById('profileModal');
-                const profileInstance = profileModalEl ? (bootstrap.Modal.getInstance(profileModalEl) || bootstrap.Modal.getOrCreateInstance(profileModalEl)) : null;
-                const addModal = bootstrap.Modal.getOrCreateInstance(modalEl);
-
-                const showAdd = function() { try { addModal.show(); } catch (e) { console.error(e); } };
-
-                if (profileModalEl && profileModalEl.classList.contains('show') && profileInstance) {
-                    // Wait for profile modal to finish hiding before showing add modal
-                    const onHidden = function() {
-                        profileModalEl.removeEventListener('hidden.bs.modal', onHidden);
-                        showAdd();
-                    };
-                    profileModalEl.addEventListener('hidden.bs.modal', onHidden);
-                    try { profileInstance.hide(); } catch (e) { profileModalEl.removeEventListener('hidden.bs.modal', onHidden); showAdd(); }
-                } else {
-                    showAdd();
+                // If an inline form already exists, focus it instead
+                if (document.getElementById('medicalRecordFormInline')) {
+                    document.getElementById('medicalRecordFormInline').querySelector('input[name="visit_date"]').focus();
+                    return;
                 }
+
+                // Build inline form HTML
+                const formHtml = `
+                    <div class="card mb-3 p-3" id="addRecordInline">
+                        <h5>Add Medical Record</h5>
+                        <form id="medicalRecordFormInline" method="post" action="medical-records-funcs.php">
+                            <input type="hidden" name="customerID" value="${customerID}">
+                            <div class="row mb-2">
+                                <div class="col-md-4">
+                                    <label class="form-label">Visit Date</label>
+                                    <input type="date" name="visit_date" class="form-control" required value="${new Date().toISOString().split('T')[0]}">
+                                </div>
+                                <div class="col-md-8">
+                                    <label class="form-label">Eye Condition</label>
+                                    <input type="text" name="eye_condition" class="form-control">
+                                </div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-6">
+                                    <label class="form-label">Current Medications</label>
+                                    <textarea name="current_medications" class="form-control" rows="2"></textarea>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Allergies</label>
+                                    <textarea name="allergies" class="form-control" rows="2"></textarea>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2 justify-content-end">
+                                <button type="button" id="cancelAddInline" class="btn btn-secondary">Cancel</button>
+                                <button type="submit" class="btn btn-primary">Save Record</button>
+                            </div>
+                        </form>
+                    </div>
+                `;
+
+                // Insert at the top of the medical records area
+                const container = document.createElement('div');
+                container.innerHTML = formHtml;
+                area.prepend(container);
+                // focus first input
+                const firstInput = document.querySelector('#medicalRecordFormInline input[name="visit_date"]');
+                if (firstInput) firstInput.focus();
+            });
+
+            // Handle cancel for inline form
+            document.addEventListener('click', function(e) {
+                if (e.target && e.target.id === 'cancelAddInline') {
+                    const el = document.getElementById('addRecordInline');
+                    if (el) el.remove();
+                }
+            });
+
+            // Submit handler for inline form
+            document.addEventListener('submit', function(e) {
+                if (!e.target || e.target.id !== 'medicalRecordFormInline') return;
+                e.preventDefault();
+                const form = e.target;
+                const btn = form.querySelector('button[type="submit"]');
+                if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+                const fd = new FormData(form);
+                fetch('medical-records-funcs.php', { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(async r => { const txt = await r.text(); try { return JSON.parse(txt); } catch (e) { throw new Error('Invalid JSON response: ' + txt); } })
+                .then(json => {
+                    if (!json.success) throw new Error(json.message || 'Add record failed');
+                    // remove inline form
+                    const el = document.getElementById('addRecordInline'); if (el) el.remove();
+                    // refresh medical records area
+                    const customerID = fd.get('customerID');
+                    fetch('customerFunctions.php?action=getCustomerMedicalRecords&customerID=' + encodeURIComponent(customerID))
+                        .then(r=>r.text()).then(html=>{ const area = document.getElementById('medicalRecordsArea'); if (area) area.innerHTML = html; })
+                        .catch(e=>console.error('Failed to refresh medical records', e));
+                })
+                .catch(err => { alert('Add record failed: ' + err.message); })
+                .finally(() => { if (btn) { btn.disabled = false; btn.textContent = 'Save Record'; } });
             });
         });
         </script>
