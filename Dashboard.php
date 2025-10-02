@@ -162,10 +162,8 @@ $salesData = getSalesOverviewData();
                         </li>
                     </ul>
                 </div>
-            </div>
             <?php if ($isAdmin): ?>
-                <div class="col-12 mt-3">
-                    <div class="dashboard-card">
+                    <div class="dashboard-card mt-3">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Recent Activity</h5>
                             <a href="logs.php" class="btn btn-sm btn-outline-secondary">
@@ -209,8 +207,8 @@ $salesData = getSalesOverviewData();
                             ?>
                         </div>
                     </div>
-                </div>
             <?php endif; ?>
+            </div>
         </div>
     </div>
 
