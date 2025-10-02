@@ -101,20 +101,26 @@ $conn->close();
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             padding: 20px;
-            /* reserve space at the bottom so pagination doesn't overflow the card */
-            padding-bottom: 90px;
+            /* reserve modest space at the bottom so pagination sits inside the card */
+            padding-bottom: 24px;
             position: relative;
         }
-        /* Keep pagination inside the logs card */
+        /* Keep pagination inside the logs card by letting it flow below the list.
+           Allow horizontal scrolling for long page lists so it never overflows. */
         .logs-container nav[aria-label="Logs pagination"] {
-            position: absolute;
-            left: 0;
-            right: 0;
-            bottom: 16px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
+            position: static;
+            margin-top: 18px;
+            display: block;
+        }
+        .logs-container .pagination {
+            justify-content: flex-start; /* allow natural flow */
+            gap: 6px;
+            overflow-x: auto;
+            white-space: nowrap;
+            padding-bottom: 6px;
+        }
+        .logs-container .pagination .page-item {
+            display: inline-block;
         }
         .log-entry {
             border-left: 4px solid #0d6efd;
@@ -176,11 +182,11 @@ $conn->close();
         }
         @media (max-width: 576px) {
             .logs-container {
-                padding: 15px 15px 100px; /* extra bottom padding on small screens */
+                padding: 15px 15px 30px; /* extra bottom padding on small screens */
             }
             .logs-container nav[aria-label="Logs pagination"] {
                 position: static; /* let pagination flow on very small screens */
-                margin-top: 15px;
+                margin-top: 12px;
             }
             .d-flex.justify-content-between.align-items-center.mb-4 {
                 flex-direction: column;
