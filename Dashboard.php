@@ -4,160 +4,19 @@ include 'ActivityTracker.php';
 include 'loginChecker.php';
 include 'adminFunctions.php';
 
-$isAdmin = isset($_SESSION['roleid']) && $_SESSION['roleid'] === 1;
+            // Sales chart and top-products loader
+            const salesCtx = document.getElementById('salesChart') ? document.getElementById('salesChart').getContext('2d') : null;
+            const salesChart = salesCtx ? new Chart(salesCtx, {
+                type: 'line',
+                data: { labels: [], datasets: [{ label: 'Sold', data: [], backgroundColor: 'rgba(40,167,69,0.15)', borderColor: 'rgba(40,167,69,1)', tension: 0.1, fill: true }] },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, title: { display: true, text: 'Products Sold' } }, x: { title: { display: true, text: 'Date' } } }, plugins: { legend: { position: 'top' } } }
+            }) : null;
 
-// Get all counts
-$customerCount = getCustomerCount();
-$employeeCount = getEmployeeCount();
-$inventoryCount = getInventoryCount();
-$orderCount = getOrderCount();
-$claimedOrderCount = getClaimedOrderCount();
-$recentActivities = getRecentActivities();
-$lowInventory = getLowInventoryProducts();
-$salesData = getSalesOverviewData();
+            let currentView = 'week';
 
-?>
-
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="customCodes/custom.css">
-    <link rel="shortcut icon" type="image/x-icon" href="Images/logo.png"/>
-    <title>Dashboard</title>
-    <style>
-        body {
-            background-color: #f5f7fa;
-            padding-top: 60px;
-        }
-        .main-content {
-            margin-left: 250px;
-            padding: 20px;
-            width: calc(100% - 250px);
-            transition: margin 0.3s ease;
-        }
-        .dashboard-card {
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-            padding: 20px;
-            background-color: white;
-            transition: transform 0.3s;
-        }
-        .dashboard-card:hover {
-            transform: translateY(-5px);
-        }
-        .card-icon {
-            font-size: 2rem;
-            margin-bottom: 15px;
-        }
-        .stat-number {
-            font-size: 2rem;
-            font-weight: bold;
-        }
-        .recent-activity {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        .chart-container {
-            height: 300px;
-            width: 100%;
-        }
-        .card-icon.text-success {
-            color: #28a745 !important;
-        }
-        .btn-outline-success {
-            color: #28a745;
-            border-color: #28a745;
-        }
-        .btn-outline-success:hover {
-            color: #fff;
-            background-color: #28a745;
-            border-color: #28a745;
-        }
-        @media (max-width: 992px) {
-            .main-content {
-                margin-left: 0;
-                width: 100%;
-            }
-        }
-        @media (max-width: 768px) {
-            .col-md-3 {
-                flex: 0 0 50%;
-                max-width: 50%;
-            }
-            .stat-number {
-                font-size: 1.5rem;
-            }
-        }
-        @media (max-width: 576px) {
-            .col-md-3 {
-                flex: 0 0 100%;
-                max-width: 100%;
-            }
-            .main-content {
-                padding: 15px;
-            }
-        }
-    </style>
-</head>
-</head>
-
-<body>
-    <?php include "sidebar.php"; ?>
-
-    <div class="main-content">
-        <?php
-            $username = $_SESSION["username"];
-            echo "<h2 class='mb-4'>Welcome back, $username</h2>";
-        ?>
-        
-        <div class="row">
-            <div class="col-md-3">
-                <div class="dashboard-card">
-                    <div class="card-icon text-primary">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <h5>Customers</h5>
-                    <div class="stat-number"><?php echo number_format($customerCount); ?></div>
-                    <a href="customerRecords.php" class="btn btn-sm btn-outline-primary mt-2">View All</a>
-                </div>
-            </div>
-            
-            <?php if ($isAdmin): ?>
-            <div class="col-md-3">
-                <div class="dashboard-card">
-                    <div class="card-icon text-success">
-                        <i class="fas fa-user-tie"></i>
-                    </div>
-                    <h5>Employees</h5>
-                    <div class="stat-number"><?php echo number_format($employeeCount); ?></div>
-                    <a href="employeeRecords.php" class="btn btn-sm btn-outline-success mt-2">View All</a>
-                </div>
-            </div>
-            <?php endif; ?>
-            
-            <div class="col-md-3">
-                <div class="dashboard-card">
-                    <div class="card-icon text-warning">
-                        <i class="fas fa-boxes"></i>
-                    </div>
-                    <h5>Inventory</h5>
-                    <div class="stat-number"><?php echo number_format($inventoryCount); ?></div>
-                    <a href="<?php echo ($isAdmin) ? 'admin-inventory.php' : 'Employee-inventory.php'; ?>" class="btn btn-sm btn-outline-warning mt-2">View All</a>
-                </div>
-            </div>
-            
-            <div class="col-md-3">
-                <div class="dashboard-card">
-                    <div class="card-icon text-info">
-                        <i class="fas fa-shopping-cart"></i>
-                    </div>
-                    <h5>Total Orders</h5>
+            function computeStartEndForView(view) {
+                const now = new Date();
+                const yearSel = document.getElementById('sales-year-select');
                     <div class="stat-number"><?php echo number_format($orderCount); ?></div>
                     <a href="order.php" class="btn btn-sm btn-outline-info mt-2">View All</a>
                 </div>
@@ -165,6 +24,106 @@ $salesData = getSalesOverviewData();
         </div>
         
         <div class="row mt-4">
+            <div class="col-md-8">
+                <div class="dashboard-card">
+                    <h5><i class="fas fa-chart-line me-2"></i>Sales Overview</h5>
+                    <hr class="border-1 border-black opacity-25">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <button type="button" class="btn btn-sm btn-outline-secondary sales-view-btn active" data-view="week">Week</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary sales-view-btn" data-view="month">Month</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary sales-view-btn" data-view="year">Year</button>
+                        </div>
+                        <div>
+
+            async function loadSalesRange() {
+                try {
+                    const se = computeStartEndForView(currentView);
+                    const params = new URLSearchParams({ start: se.start, end: se.end });
+                    const resp = await fetch('salesOverview.php?' + params.toString());
+                    const json = await resp.json();
+                    if (!json.success) throw new Error(json.error || 'Failed to load sales');
+
+                    if (salesChart) {
+                        salesChart.data.labels = json.labels.map(d => d);
+                        salesChart.data.datasets[0].data = json.sold.map(v => parseInt(v||0,10));
+                        salesChart.update();
+                    }
+
+                    const topList = document.getElementById('top-products');
+                    if (topList) {
+                        topList.innerHTML = '';
+                        if (json.topProducts && json.topProducts.length) {
+                            json.topProducts.forEach(p => {
+                                const li = document.createElement('li');
+                                li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                                li.textContent = p.Model || ('Product ' + p.ProductID);
+                                const span = document.createElement('span');
+                                span.className = 'badge bg-primary rounded-pill';
+                                span.textContent = p.qty;
+                                li.appendChild(span);
+                                topList.appendChild(li);
+                            });
+                        } else {
+                            topList.innerHTML = '<li class="list-group-item text-muted">No sales in range.</li>';
+                        }
+                    }
+
+                    // update sales card title with range
+                    const title = document.querySelector('.dashboard-card h5');
+                    if (title) {
+                        const startF = new Date(json.start).toLocaleDateString();
+                        const endF = new Date(json.end).toLocaleDateString();
+                        title.textContent = `Sales Overview — ${startF} to ${endF}`;
+                    }
+
+                } catch (err) {
+                    console.error('Error loading sales range:', err);
+                }
+            }
+
+            document.querySelectorAll('.sales-view-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    currentView = this.dataset.view;
+                    document.querySelectorAll('.sales-view-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    loadSalesRange();
+                });
+            });
+
+            // initialize selectors
+            const yearSelectInit = document.getElementById('sales-year-select');
+            if (yearSelectInit) {
+                const thisYear = new Date().getFullYear();
+                for (let y = thisYear; y >= thisYear - 7; y--) {
+                    const opt = document.createElement('option'); opt.value = y; opt.textContent = y; yearSelectInit.appendChild(opt);
+                }
+                yearSelectInit.value = new Date().getFullYear();
+                yearSelectInit.addEventListener('change', loadSalesRange);
+            }
+            const monthInit = document.getElementById('sales-month-select');
+            if (monthInit) {
+                const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+                for (let m = 1; m <= 12; m++) { const o = document.createElement('option'); o.value = m; o.textContent = monthNames[m-1]; monthInit.appendChild(o); }
+                monthInit.addEventListener('change', loadSalesRange);
+                monthInit.style.display = '';
+            }
+
+            loadSalesRange();
+                            <select id="sales-year-select" class="form-select form-select-sm d-inline-block ms-2" style="width:auto;"></select>
+                            <select id="sales-month-select" class="form-select form-select-sm d-inline-block ms-2" style="width:auto; display:none;"></select>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="salesChart"></canvas>
+                    </div>
+                    <div class="mt-3">
+                        <h6 class="mb-2">Top Products</h6>
+                        <ul id="top-products" class="list-group list-group-flush"></ul>
+                    </div>
+                </div>
+            </div>
+
             <div class="col-md-4">
                 <div class="dashboard-card recent-activity">    
                     <div class="d-flex justify-content-between align-items-center mb-3">
