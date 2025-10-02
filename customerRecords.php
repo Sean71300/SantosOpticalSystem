@@ -493,20 +493,39 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                         if (!json.success) throw new Error(json.message || 'Add record failed');
                         // close modal
                         const addModal = bootstrap.Modal.getInstance(document.getElementById('addMedicalRecordModal'));
-                            if (addModal) addModal.hide();
-                            // After adding, re-open profile modal (if it was hidden) and refresh the records area
-                            const profileModalEl = document.getElementById('profileModal');
-                            if (profileModalEl) {
-                                const profileModal = new bootstrap.Modal(profileModalEl);
-                                // small delay to allow modal backdrop transitions
-                                setTimeout(() => {
-                                    profileModal.show();
-                                    const customerID = fd.get('customerID');
-                                    fetch('customerFunctions.php?action=getCustomerMedicalRecords&customerID=' + encodeURIComponent(customerID))
-                                        .then(r=>r.text()).then(html=>{ const area = document.getElementById('medicalRecordsArea'); if (area) area.innerHTML = html; })
-                                        .catch(e=>console.error('Failed to refresh medical records', e));
-                                }, 250);
-                            }
+                                    if (addModal) {
+                                        // Hide the add modal first, then when it's fully hidden re-open the profile modal
+                                        const addModalEl = document.getElementById('addMedicalRecordModal');
+                                        const addInstance = bootstrap.Modal.getInstance(addModalEl) || bootstrap.Modal.getOrCreateInstance(addModalEl);
+                                        const profileModalEl = document.getElementById('profileModal');
+                                        const customerID = fd.get('customerID');
+
+                                        const onHidden = function() {
+                                            addModalEl.removeEventListener('hidden.bs.modal', onHidden);
+                                            // Re-open profile modal and refresh records
+                                            if (profileModalEl) {
+                                                const profileInstance = bootstrap.Modal.getOrCreateInstance(profileModalEl);
+                                                profileInstance.show();
+                                                fetch('customerFunctions.php?action=getCustomerMedicalRecords&customerID=' + encodeURIComponent(customerID))
+                                                    .then(r=>r.text()).then(html=>{ const area = document.getElementById('medicalRecordsArea'); if (area) area.innerHTML = html; })
+                                                    .catch(e=>console.error('Failed to refresh medical records', e));
+                                            }
+                                        };
+
+                                        addModalEl.addEventListener('hidden.bs.modal', onHidden);
+                                        try { addInstance.hide(); } catch (e) { /* fallback */ onHidden(); }
+                                    } else {
+                                        // If add modal instance not found, just re-open profile and refresh
+                                        const profileModalEl = document.getElementById('profileModal');
+                                        if (profileModalEl) {
+                                            const profileInstance = bootstrap.Modal.getOrCreateInstance(profileModalEl);
+                                            profileInstance.show();
+                                            const customerID = fd.get('customerID');
+                                            fetch('customerFunctions.php?action=getCustomerMedicalRecords&customerID=' + encodeURIComponent(customerID))
+                                                .then(r=>r.text()).then(html=>{ const area = document.getElementById('medicalRecordsArea'); if (area) area.innerHTML = html; })
+                                                .catch(e=>console.error('Failed to refresh medical records', e));
+                                        }
+                                    }
                     })
                     .catch(err => { alert('Add record failed: ' + err.message); })
                     .finally(() => { if (btn) { btn.disabled = false; btn.textContent = 'Save Record'; } });
@@ -537,13 +556,22 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
 
                 // If profile modal is open, hide it first to avoid nested modal conflicts.
                 const profileModalEl = document.getElementById('profileModal');
-                const profileInstance = profileModalEl ? bootstrap.Modal.getInstance(profileModalEl) : null;
-                if (profileInstance) {
-                    profileInstance.hide();
-                }
+                const profileInstance = profileModalEl ? (bootstrap.Modal.getInstance(profileModalEl) || bootstrap.Modal.getOrCreateInstance(profileModalEl)) : null;
+                const addModal = bootstrap.Modal.getOrCreateInstance(modalEl);
 
-                const addModal = new bootstrap.Modal(modalEl);
-                addModal.show();
+                const showAdd = function() { try { addModal.show(); } catch (e) { console.error(e); } };
+
+                if (profileModalEl && profileModalEl.classList.contains('show') && profileInstance) {
+                    // Wait for profile modal to finish hiding before showing add modal
+                    const onHidden = function() {
+                        profileModalEl.removeEventListener('hidden.bs.modal', onHidden);
+                        showAdd();
+                    };
+                    profileModalEl.addEventListener('hidden.bs.modal', onHidden);
+                    try { profileInstance.hide(); } catch (e) { profileModalEl.removeEventListener('hidden.bs.modal', onHidden); showAdd(); }
+                } else {
+                    showAdd();
+                }
             });
         });
         </script>
