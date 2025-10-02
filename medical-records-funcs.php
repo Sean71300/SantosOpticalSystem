@@ -39,28 +39,49 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     $stmt = $conn->prepare($sql);
     if ($stmt) {
+        // Assign POST values to variables first because bind_param requires variables (passed by reference)
+        $v_history_id = $historyID;
+        $v_customer_id = $customerID;
+        $v_visit_date = $visit_date;
+        $v_eye_condition = $_POST['eye_condition'] ?? '';
+        $v_systemic_diseases = $_POST['systemic_diseases'] ?? '';
+        $v_visual_acuity_right = $_POST['visual_acuity_right'] ?? '';
+        $v_visual_acuity_left = $_POST['visual_acuity_left'] ?? '';
+        $v_intraocular_pressure_right = $_POST['intraocular_pressure_right'] ?? '';
+        $v_intraocular_pressure_left = $_POST['intraocular_pressure_left'] ?? '';
+        $v_refraction_right = $_POST['refraction_right'] ?? '';
+        $v_refraction_left = $_POST['refraction_left'] ?? '';
+        $v_pupillary_distance = $_POST['pupillary_distance'] ?? '';
+        $v_current_medications = $_POST['current_medications'] ?? '';
+        $v_allergies = $_POST['allergies'] ?? '';
+        $v_family_eye_history = $_POST['family_eye_history'] ?? '';
+        $v_previous_eye_surgeries = $_POST['previous_eye_surgeries'] ?? '';
+        $v_corneal_topography = $_POST['corneal_topography'] ?? '';
+        $v_fundus_examination = $_POST['fundus_examination'] ?? '';
+        $v_additional_notes = $_POST['additional_notes'] ?? '';
+
         // Bind all parameters as strings to avoid type mismatch issues
         $stmt->bind_param(
             str_repeat('s', 19),
-            $historyID,
-            $customerID,
-            $visit_date,
-            $_POST['eye_condition'] ?? null,
-            $_POST['systemic_diseases'] ?? null,
-            $_POST['visual_acuity_right'] ?? null,
-            $_POST['visual_acuity_left'] ?? null,
-            $_POST['intraocular_pressure_right'] ?? null,
-            $_POST['intraocular_pressure_left'] ?? null,
-            $_POST['refraction_right'] ?? null,
-            $_POST['refraction_left'] ?? null,
-            $_POST['pupillary_distance'] ?? null,
-            $_POST['current_medications'] ?? null,
-            $_POST['allergies'] ?? null,
-            $_POST['family_eye_history'] ?? null,
-            $_POST['previous_eye_surgeries'] ?? null,
-            $_POST['corneal_topography'] ?? null,
-            $_POST['fundus_examination'] ?? null,
-            $_POST['additional_notes'] ?? null
+            $v_history_id,
+            $v_customer_id,
+            $v_visit_date,
+            $v_eye_condition,
+            $v_systemic_diseases,
+            $v_visual_acuity_right,
+            $v_visual_acuity_left,
+            $v_intraocular_pressure_right,
+            $v_intraocular_pressure_left,
+            $v_refraction_right,
+            $v_refraction_left,
+            $v_pupillary_distance,
+            $v_current_medications,
+            $v_allergies,
+            $v_family_eye_history,
+            $v_previous_eye_surgeries,
+            $v_corneal_topography,
+            $v_fundus_examination,
+            $v_additional_notes
         );
 
         if ($stmt->execute()) {

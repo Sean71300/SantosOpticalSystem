@@ -706,9 +706,15 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                 const container = document.createElement('div');
                 container.innerHTML = formHtml;
                 area.prepend(container);
-                // focus first input
-                const firstInput = document.querySelector('#medicalRecordFormInline input[name="visit_date"]');
-                if (firstInput) firstInput.focus();
+                // focus first input but delay slightly and avoid focusing while profile modal is aria-hidden
+                setTimeout(() => {
+                    const firstInput = document.querySelector('#medicalRecordFormInline input[name="visit_date"]');
+                    const profileModalEl = document.getElementById('profileModal');
+                    const ariaHidden = profileModalEl ? profileModalEl.getAttribute('aria-hidden') : null;
+                    if (firstInput && ariaHidden !== 'true') {
+                        try { firstInput.focus(); } catch (e) { /* ignore focus errors */ }
+                    }
+                }, 120);
             });
 
             // Handle cancel for inline form
