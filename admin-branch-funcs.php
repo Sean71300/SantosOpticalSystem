@@ -11,7 +11,10 @@ include 'setup.php';
                 echo "<td>" . htmlspecialchars($row['BranchLocation']) . "</td>";
                 echo "<td>" . htmlspecialchars($row['ContactNo']) . "</td>";
                 // Action buttons
-                
+                echo "<td>";
+                    echo "<button class='edit-btn' data-branch='" . htmlspecialchars($row['BranchName']) . "'>Edit</button> ";
+                    echo "<button class='delete-btn' data-branch='" . htmlspecialchars($row['BranchName']) . "'>Delete</button>";
+                echo "</td>";
                 echo "</tr>";
             }
         } else {
