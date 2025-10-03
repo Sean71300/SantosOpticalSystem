@@ -82,75 +82,108 @@ $salesData = getSalesOverviewData();
                 </div>
             </div>
             <?php endif; ?>
-            
-            <div class="col-md-3">
-                <div class="dashboard-card">
-                    <div class="card-icon text-warning"><i class="fas fa-boxes"></i></div>
-                    <h5>Inventory</h5>
-                    <div class="stat-number"><?php echo number_format($inventoryCount); ?></div>
-                    <a href="<?php echo ($isAdmin) ? 'admin-inventory.php' : 'Employee-inventory.php'; ?>" class="btn btn-sm btn-outline-warning mt-2">View All</a>
-                </div>
-            </div>
-            
-            <div class="col-md-3">
-                <div class="dashboard-card">
-                    <div class="card-icon text-info"><i class="fas fa-shopping-cart"></i></div>
-                    <h5>Total Orders</h5>
-                    <div class="stat-number"><?php echo number_format($orderCount); ?></div>
-                    <a href="order.php" class="btn btn-sm btn-outline-info mt-2">View All</a>
-                </div>
-            </div>
-        </div>
-        
-        <div class="row mt-4">
-            <div class="col-md-8">
-                <div class="dashboard-card">
-                    <h5 id="sales-overview-title"><i class="fas fa-chart-line me-2"></i>Sales Overview</h5>
-                    <hr class="border-1 border-black opacity-25">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div>
-                            <!-- compact header left area (empty) -->
-                        </div>
-                        <div class="d-flex align-items-center">
-                            <!-- 1) Month selector -->
-                            <select id="sales-month-select" class="form-select form-select-sm d-inline-block" style="width:150px;">
-                            </select>
-                            <!-- 2) Week selector (Week1..Week4, Whole Month) -->
-                            <select id="sales-week-select" class="form-select form-select-sm d-inline-block ms-2" style="width:140px;">
-                                <option value="week1">Week 1</option>
-                                <option value="week2">Week 2</option>
-                                <option value="week3">Week 3</option>
-                                <option value="week4">Week 4</option>
-                                <option value="month">Whole Month</option>
-                            </select>
-                            <!-- 3) Year selector -->
-                            <select id="sales-year-select" class="form-select form-select-sm d-inline-block ms-2" style="width:110px;"></select>
+            <?php 
+                $ridLocal = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0; 
+                $isEmployeeOnly = ($ridLocal === 2) && !$isAdmin; 
+            ?>
+            <?php if ($isAdmin): ?>
+                <div class="row mt-4">
+                    <div class="col-md-8">
+                        <div class="dashboard-card">
+                            <h5 id="sales-overview-title"><i class="fas fa-chart-line me-2"></i>Sales Overview</h5>
+                            <hr class="border-1 border-black opacity-25">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div></div>
+                                <div class="d-flex align-items-center">
+                                    <select id="sales-month-select" class="form-select form-select-sm d-inline-block" style="width:150px;"></select>
+                                    <select id="sales-week-select" class="form-select form-select-sm d-inline-block ms-2" style="width:140px;">
+                                        <option value="week1">Week 1</option>
+                                        <option value="week2">Week 2</option>
+                                        <option value="week3">Week 3</option>
+                                        <option value="week4">Week 4</option>
+                                        <option value="month">Whole Month</option>
+                                    </select>
+                                    <select id="sales-year-select" class="form-select form-select-sm d-inline-block ms-2" style="width:110px;"></select>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="salesChart"></canvas>
+                            </div>
+                            <div class="mt-3">
+                                <div id="net-summary" class="mb-2"></div>
+                                <h6 class="mb-2">Top Products</h6>
+                                <ul id="top-products" class="list-group list-group-flush"></ul>
+                            </div>
                         </div>
                     </div>
-                    <div class="chart-container">
-                        <canvas id="salesChart"></canvas>
-                    </div>
-                    <div class="mt-3">
-                        <div id="net-summary" class="mb-2"></div>
-                        <h6 class="mb-2">Top Products</h6>
-                        <ul id="top-products" class="list-group list-group-flush"></ul>
+                    <div class="col-md-4">
+                        <div class="dashboard-card recent-activity">    
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="mb-0"><i class="fa-solid fa-circle-exclamation me-2"></i>Low Stocks</h5>
+                                <a href="<?php echo ($isAdmin) ? 'admin-inventory.php' : 'Employee-inventory.php'; ?>" class="btn btn-sm btn-outline-secondary">
+                                    <i class="fa-solid fa-boxes-stacked"></i> Show Inventory
+                                </a>
+                            </div>
+                            <hr class="border-1 border-black opacity-25">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div class="row">
+                                        <?php
+                                        if (count($lowInventory) > 0) {
+                                            foreach ($lowInventory as $product) {
+                                                echo '<div class="container d-flex align-items-center">';
+                                                echo '<img src="' . htmlspecialchars($product['ProductImage']) . '" alt="Product Image" style="height:100px; width:100px;" class="img-thumbnail">';
+                                                echo '<div class="fw-bold ms-3">';
+                                                echo htmlspecialchars($product['Model']);
+                                                echo "<br> Available Stocks: ".htmlspecialchars($product['Stocks']);
+                                                echo '</div>';
+                                                echo '</div>';
+                                            }
+                                        } else {
+                                            echo '<p class="text-center">No low stock products.</p>';
+                                        }
+                                        ?>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
-            </div>
-            
-            <div class="col-md-4">
-                <div class="dashboard-card recent-activity">    
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="mb-0"><i class="fa-solid fa-circle-exclamation me-2"></i>Low Stocks</h5>
-                        <a href="<?php echo ($isAdmin) ? 'admin-inventory.php' : 'Employee-inventory.php'; ?>" class="btn btn-sm btn-outline-secondary">
-                        <i class="fa-solid fa-boxes-stacked"></i> Show Inventory
-                        </a>
+            <?php elseif ($isEmployeeOnly): ?>
+                <div class="row mt-4">
+                    <div class="col-12 d-flex justify-content-center">
+                        <div class="col-lg-8 col-xl-6">
+                            <div class="dashboard-card recent-activity">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="mb-0 text-center w-100"><i class="fa-solid fa-circle-exclamation me-2"></i>Low Stocks</h5>
+                                </div>
+                                <hr class="border-1 border-black opacity-25">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div class="row">
+                                            <?php
+                                            if (count($lowInventory) > 0) {
+                                                foreach ($lowInventory as $product) {
+                                                    echo '<div class="container d-flex align-items-center">';
+                                                    echo '<img src="' . htmlspecialchars($product['ProductImage']) . '" alt="Product Image" style="height:100px; width:100px;" class="img-thumbnail">';
+                                                    echo '<div class="fw-bold ms-3">';
+                                                    echo htmlspecialchars($product['Model']);
+                                                    echo "<br> Available Stocks: ".htmlspecialchars($product['Stocks']);
+                                                    echo '</div>';
+                                                    echo '</div>';
+                                                }
+                                            } else {
+                                                echo '<p class="text-center">No low stock products.</p>';
+                                            }
+                                            ?>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
                     </div>
-                    <hr class="border-1 border-black opacity-25">
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <div class="row">
-                                <?php
+                </div>
+            <?php endif; ?>
                                 if (count($lowInventory) > 0) {
                                     foreach ($lowInventory as $product) {
                                         echo '<div class="container d-flex align-items-center">';
