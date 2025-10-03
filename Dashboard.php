@@ -131,8 +131,9 @@ $salesData = getSalesOverviewData();
                                         <?php
                                         if (count($lowInventory) > 0) {
                                             foreach ($lowInventory as $product) {
+                                                $img = !empty($product['ProductImage']) ? $product['ProductImage'] : 'Images/logo.png';
                                                 echo '<div class="container d-flex align-items-center">';
-                                                echo '<img src="' . htmlspecialchars($product['ProductImage']) . '" alt="Product Image" style="height:100px; width:100px;" class="img-thumbnail">';
+                                                echo '<img src="' . htmlspecialchars($img) . '" alt="Product Image" style="height:100px; width:100px;" class="img-thumbnail">';
                                                 echo '<div class="fw-bold ms-3">';
                                                 echo htmlspecialchars($product['Model']);
                                                 echo "<br> Available Stocks: ".htmlspecialchars($product['Stocks']);
@@ -164,8 +165,9 @@ $salesData = getSalesOverviewData();
                                             <?php
                                             if (count($lowInventory) > 0) {
                                                 foreach ($lowInventory as $product) {
+                                                    $img = !empty($product['ProductImage']) ? $product['ProductImage'] : 'Images/logo.png';
                                                     echo '<div class="container d-flex align-items-center">';
-                                                    echo '<img src="' . htmlspecialchars($product['ProductImage']) . '" alt="Product Image" style="height:100px; width:100px;" class="img-thumbnail">';
+                                                    echo '<img src="' . htmlspecialchars($img) . '" alt="Product Image" style="height:100px; width:100px;" class="img-thumbnail">';
                                                     echo '<div class="fw-bold ms-3">';
                                                     echo htmlspecialchars($product['Model']);
                                                     echo "<br> Available Stocks: ".htmlspecialchars($product['Stocks']);
@@ -184,24 +186,6 @@ $salesData = getSalesOverviewData();
                     </div>
                 </div>
             <?php endif; ?>
-                                if (count($lowInventory) > 0) {
-                                    foreach ($lowInventory as $product) {
-                                        echo '<div class="container d-flex align-items-center">';
-                                        echo '<img src="' . htmlspecialchars($product['ProductImage']) . '" alt="Product Image" style="height:100px; width:100px;" class="img-thumbnail">';
-                                            echo '<div class="fw-bold ms-3">';
-                                                echo htmlspecialchars($product['Model']);
-                                                echo "<br> Available Stocks: ".htmlspecialchars($product['Stocks']);
-                                            echo '</div>';
-                                        echo '</div>';
-                                    }
-                                } else {
-                                    echo '<p class="text-center">No low stock products.</p>';
-                                } 
-                                ?>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
             <?php if ($isAdmin): ?>
                     <div class="dashboard-card mt-3">
                         <div class="d-flex justify-content-between align-items-center mb-3">
