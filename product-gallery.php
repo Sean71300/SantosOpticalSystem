@@ -137,7 +137,9 @@
             
             echo "<div class='product-card'>";
                 echo "<div class='card'>";
-                    echo '<img src="' . $row['ProductImage']. '" class="card-img-top" alt="'. $row['Model'] .'">';
+                    echo "<div class='card-img-container'>";
+                        echo '<img src="' . $row['ProductImage']. '" class="card-img-top" alt="'. $row['Model'] .'">';
+                    echo "</div>";
                     echo "<div class='card-body'>";
                         echo "<h5 class='card-title'>".$row['Model']."</h5>";
                         echo "<div class='card-category'>".$row['CategoryType']."</div>";
@@ -338,12 +340,28 @@
                 border-color: #007bff;
             }
             
-            .product-card .card-img-top {
-                height: 220px;
-                object-fit: contain;
-                padding: 1rem;
+            /* IMPROVED IMAGE STYLING - Fills container completely */
+            .product-card .card-img-container {
+                height: 250px;
+                overflow: hidden;
                 background-color: #f8f9fa;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0;
                 border-bottom: 1px solid #e9ecef;
+            }
+            
+            .product-card .card-img-top {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                object-position: center;
+                transition: transform 0.3s ease;
+            }
+            
+            .product-card .card:hover .card-img-top {
+                transform: scale(1.05);
             }
             
             .product-card .card-body {
@@ -574,21 +592,26 @@
                 .filter-dropdown {
                     min-width: 100%;
                 }
+                
+                /* Adjust image height for mobile */
+                .product-card .card-img-container {
+                    height: 220px;
+                }
             }
             
             @media (max-width: 576px) {
                 .product-grid {
                     grid-template-columns: 1fr;
-                gap: 1rem;
-                padding: 0 0.5rem;
-                margin-bottom: 1rem;
-                max-width: 100%;
-                overflow-x: hidden;
-                box-sizing: border-box;
-                width: 100%;
-                display: grid;
-            }
-                
+                    gap: 1rem;
+                    padding: 0 0.5rem;
+                    margin-bottom: 1rem;
+                    max-width: 100%;
+                    overflow-x: hidden;
+                    box-sizing: border-box;
+                    width: 100%;
+                    display: grid;
+                }
+                    
                 .product-card {
                     width: 100%;
                     margin: 0 auto;
@@ -604,6 +627,11 @@
                 .container {
                     padding-left: 0.5rem;
                     padding-right: 0.5rem;
+                }
+                
+                /* Adjust image height for small mobile */
+                .product-card .card-img-container {
+                    height: 200px;
                 }
             }
         </style>
@@ -810,6 +838,9 @@
                         <input type="hidden" name="page" value="1"> <!-- Always reset to page 1 when applying a new filter -->
                         <?php if(isset($_GET['search'])): ?>
                             <input type="hidden" name="search" value="<?php echo $_GET['search']; ?>">
+                        <?php endif; ?>
+                        <?php if(isset($_GET['sort'])): ?>
+                            <input type="hidden" name="sort" value="<?php echo $_GET['sort']; ?>">
                         <?php endif; ?>
                         <?php if(isset($_GET['shape'])): ?>
                             <input type="hidden" name="shape" value="<?php echo $_GET['shape']; ?>">
