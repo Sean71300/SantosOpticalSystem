@@ -82,13 +82,33 @@ $salesData = getSalesOverviewData();
                 </div>
             </div>
             <?php endif; ?>
+
+            <!-- Inventory card (visible to all roles) -->
+            <div class="col-md-3">
+                <div class="dashboard-card">
+                    <div class="card-icon text-warning"><i class="fas fa-boxes-stacked"></i></div>
+                    <h5>Inventory</h5>
+                    <div class="stat-number"><?php echo number_format($inventoryCount); ?></div>
+                    <a href="<?php echo ($isAdmin) ? 'admin-inventory.php' : 'Employee-inventory.php'; ?>" class="btn btn-sm btn-outline-warning mt-2">View All</a>
+                </div>
+            </div>
+
+            <!-- Orders card (visible to all roles) -->
+            <div class="col-md-3">
+                <div class="dashboard-card">
+                    <div class="card-icon text-info"><i class="fas fa-receipt"></i></div>
+                    <h5>Total Orders</h5>
+                    <div class="stat-number"><?php echo number_format($orderCount); ?></div>
+                    <a href="order.php" class="btn btn-sm btn-outline-info mt-2">View All</a>
+                </div>
+            </div>
             <?php 
                 $ridLocal = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0; 
                 $isEmployeeOnly = ($ridLocal === 2) && !$isAdmin; 
             ?>
             <?php if ($isAdmin): ?>
                 <div class="row mt-4">
-                    <div class="col-md-8">
+                    <div class="col-md-7">
                         <div class="dashboard-card">
                             <h5 id="sales-overview-title"><i class="fas fa-chart-line me-2"></i>Sales Overview</h5>
                             <hr class="border-1 border-black opacity-25">
@@ -116,7 +136,7 @@ $salesData = getSalesOverviewData();
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-5">
                         <div class="dashboard-card recent-activity">    
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h5 class="mb-0"><i class="fa-solid fa-circle-exclamation me-2"></i>Low Stocks</h5>
@@ -153,7 +173,7 @@ $salesData = getSalesOverviewData();
             <?php elseif ($isEmployeeOnly): ?>
                 <div class="row mt-4">
                     <div class="col-12 d-flex justify-content-center">
-                        <div class="col-lg-8 col-xl-6">
+                        <div class="col-lg-10 col-xl-7">
                             <div class="dashboard-card recent-activity">
                                 <div class="d-flex justify-content-between align-items-center mb-3">
                                     <h5 class="mb-0 text-center w-100"><i class="fa-solid fa-circle-exclamation me-2"></i>Low Stocks</h5>
