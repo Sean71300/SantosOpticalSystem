@@ -4,7 +4,14 @@ include 'ActivityTracker.php';
 include 'loginChecker.php';
 include 'adminFunctions.php';
 
-$isAdmin = isset($_SESSION['roleid']) && $_SESSION['roleid'] === 1;
+$isAdmin = false;
+// Consider roleid 1 (Admin) and roleid 4 (Super Admin) as admin-level for dashboard access
+if (isset($_SESSION['roleid'])) {
+    $rid = (int)$_SESSION['roleid'];
+    if ($rid === 1 || $rid === 4) {
+        $isAdmin = true;
+    }
+}
 
 // Get all counts
 $customerCount = getCustomerCount();

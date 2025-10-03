@@ -128,12 +128,25 @@ if (isset($_SESSION['role'])) {
                         
                         // Menu items based on user type
                         if (isset($_SESSION["user_type"]) && $_SESSION["user_type"] == 'employee') {
-                            if (isset($_SESSION["roleid"]) && $_SESSION["roleid"] == 1) {
-                                echo '<li><a class="dropdown-item" href="Dashboard.php">Admin page</a></li>';
-                            } else if (isset($_SESSION["roleid"]) && $_SESSION["roleid"] == 2) {
-                                echo '<li><a class="dropdown-item" href="Dashboard.php">Employee page</a></li>';
+                            if (isset($_SESSION["roleid"])) {
+                                $rIdLocal = (int)$_SESSION["roleid"];
+                                if ($rIdLocal === 4) {
+                                    // Super Admin
+                                    echo '<li><a class="dropdown-item" href="Dashboard.php">Admin Panel</a></li>';
+                                } elseif ($rIdLocal === 1) {
+                                    echo '<li><a class="dropdown-item" href="Dashboard.php">Admin page</a></li>';
+                                } elseif ($rIdLocal === 2) {
+                                    echo '<li><a class="dropdown-item" href="Dashboard.php">Employee page</a></li>';
+                                }
                             }
-                        } 
+                        }
+                        // If user_type isn't employee but role string indicates super admin/admin, show admin panel link
+                        else if (isset($_SESSION["role"])) {
+                            $rnameLocal = strtolower((string)$_SESSION["role"]);
+                            if (in_array($rnameLocal, ['super admin', 'superadmin', 'admin'], true)) {
+                                echo '<li><a class="dropdown-item" href="Dashboard.php">Admin Panel</a></li>';
+                            }
+                        }
                         else if (isset($_SESSION["user_type"]) && $_SESSION["user_type"] == 'customer') {
                             echo '<li><a class="dropdown-item" href="customer_dashboard.php">Medical History</a></li>';
                             echo '<li><a class="dropdown-item" href="trackorder.php">Track Order</a></li>';
