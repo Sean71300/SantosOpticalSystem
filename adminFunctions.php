@@ -94,22 +94,56 @@ function getClaimedOrderCount() {
     return $claimed;
 }
 
-function getLowInventoryProducts() {
+function getLowInventoryProducts($threshold = 10, $limit = 5) {
+    // Role-based scoping: Super Admin (roleid 4) sees all branches; others limited to their branch
+    if (session_status() === PHP_SESSION_NONE) { @session_start(); }
+    $rid = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0;
+    $branchCode = isset($_SESSION['branchcode']) ? (string)$_SESSION['branchcode'] : '';
+
     $conn = connect();
     $products = [];
-    $query = "SELECT p.ProductID, p.Model, p.ProductImage, pb.Stocks
-              FROM productMstr p
-              JOIN ProductBranchMaster pb ON p.ProductID = pb.ProductID
-              WHERE pb.Stocks < 10 AND p.Avail_FL = 'Available'
-              ORDER BY pb.Stocks ASC LIMIT 5";
-    if ($stmt = $conn->prepare($query)) {
-        $stmt->execute();
-        $res = $stmt->get_result();
-        if ($res) {
-            $products = $res->fetch_all(MYSQLI_ASSOC);
+
+    if ($rid === 4) {
+        // Super Admin: all branches
+        $query = "SELECT p.ProductID, p.Model, p.ProductImage, pb.Stocks
+                  FROM productMstr p
+                  JOIN ProductBranchMaster pb ON p.ProductID = pb.ProductID
+                  WHERE pb.Stocks <= ? AND p.Avail_FL = 'Available'
+                  ORDER BY pb.Stocks ASC
+                  LIMIT ?";
+        if ($stmt = $conn->prepare($query)) {
+            $stmt->bind_param('ii', $threshold, $limit);
+            $stmt->execute();
+            $res = $stmt->get_result();
+            if ($res) {
+                $products = $res->fetch_all(MYSQLI_ASSOC);
+            }
+            $stmt->close();
         }
-        $stmt->close();
+    } else {
+        // Admin/Employee: restrict to their branch; if no branch in session, return empty
+        if ($branchCode === '') {
+            mysqli_close($conn);
+            return [];
+        }
+        $query = "SELECT p.ProductID, p.Model, p.ProductImage, pb.Stocks
+                  FROM productMstr p
+                  JOIN ProductBranchMaster pb ON p.ProductID = pb.ProductID
+                  WHERE pb.Stocks <= ? AND p.Avail_FL = 'Available' AND pb.BranchCode = ?
+                  ORDER BY pb.Stocks ASC
+                  LIMIT ?";
+        if ($stmt = $conn->prepare($query)) {
+            // Branch codes are treated as strings in app logic
+            $stmt->bind_param('isi', $threshold, $branchCode, $limit);
+            $stmt->execute();
+            $res = $stmt->get_result();
+            if ($res) {
+                $products = $res->fetch_all(MYSQLI_ASSOC);
+            }
+            $stmt->close();
+        }
     }
+
     mysqli_close($conn);
     return $products;
 }
