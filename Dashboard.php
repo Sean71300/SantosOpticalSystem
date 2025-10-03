@@ -65,7 +65,13 @@ $salesData = getSalesOverviewData();
             $username = $_SESSION["username"] ?? 'User';
             echo "<h2 class='mb-4'>Welcome back, " . htmlspecialchars($username) . "</h2>";
         ?>
-        
+        <?php 
+            // Determine employee-only early so we can switch layouts
+            $ridLocal = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0; 
+            $isEmployeeOnly = ($ridLocal === 2) && !$isAdmin; 
+        ?>
+
+        <?php if (!$isEmployeeOnly): ?>
         <div class="row">
             <div class="col-md-3">
                 <div class="dashboard-card">
@@ -106,10 +112,7 @@ $salesData = getSalesOverviewData();
                     <a href="order.php" class="btn btn-sm btn-outline-info mt-2">View All</a>
                 </div>
             </div>
-            <?php 
-                $ridLocal = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0; 
-                $isEmployeeOnly = ($ridLocal === 2) && !$isAdmin; 
-            ?>
+            <?php // $isEmployeeOnly already computed above ?>
             <?php if ($isAdmin): ?>
                 <div class="row mt-4 equal-height-row">
                     <div class="col-md-9 col-lg-9 d-flex">
@@ -177,14 +180,55 @@ $salesData = getSalesOverviewData();
                     </div>
                 </div>
             <?php elseif ($isEmployeeOnly): ?>
-                <div class="row mt-4">
-                    <div class="col-12 d-flex justify-content-center">
-                        <div class="col-lg-10 col-xl-7">
-                            <div class="dashboard-card recent-activity">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <h5 class="mb-0 text-center w-100"><i class="fa-solid fa-circle-exclamation me-2"></i>Low Stocks</h5>
-                                </div>
-                                <hr class="border-1 border-black opacity-25">
+                <!-- Employee: 2x2 grid filling the page -->
+                <div class="row g-4 mt-1 equal-height-row">
+                    <!-- Top-left: Customers -->
+                    <div class="col-12 col-md-6 d-flex">
+                        <div class="dashboard-card equal-height w-100">
+                            <div class="card-icon text-primary"><i class="fas fa-users"></i></div>
+                            <h5>Customers</h5>
+                            <div class="stat-number"><?php echo number_format($customerCount); ?></div>
+                            <div class="mt-auto">
+                                <a href="customerRecords.php" class="btn btn-sm btn-outline-primary">View All</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top-right: Inventory -->
+                    <div class="col-12 col-md-6 d-flex">
+                        <div class="dashboard-card equal-height w-100">
+                            <div class="card-icon text-warning"><i class="fas fa-boxes-stacked"></i></div>
+                            <h5>Inventory</h5>
+                            <div class="stat-number"><?php echo number_format($inventoryCount); ?></div>
+                            <div class="mt-auto">
+                                <a href="Employee-inventory.php" class="btn btn-sm btn-outline-warning">View All</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom-left: Total Orders -->
+                    <div class="col-12 col-md-6 d-flex">
+                        <div class="dashboard-card equal-height w-100">
+                            <div class="card-icon text-info"><i class="fas fa-receipt"></i></div>
+                            <h5>Total Orders</h5>
+                            <div class="stat-number"><?php echo number_format($orderCount); ?></div>
+                            <div class="mt-auto">
+                                <a href="order.php" class="btn btn-sm btn-outline-info">View All</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom-right: Low Stocks -->
+                    <div class="col-12 col-md-6 d-flex">
+                        <div class="dashboard-card equal-height w-100">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="mb-0"><i class="fa-solid fa-circle-exclamation me-2"></i>Low Stocks</h5>
+                                <a href="Employee-inventory.php" class="btn btn-sm btn-outline-secondary">
+                                    <i class="fa-solid fa-boxes-stacked"></i> Show Inventory
+                                </a>
+                            </div>
+                            <hr class="border-1 border-black opacity-25">
+                            <div class="scroll-section">
                                 <ul class="list-group list-group-flush">
                                     <li class="list-group-item d-flex justify-content-between align-items-center">
                                         <div class="row">
