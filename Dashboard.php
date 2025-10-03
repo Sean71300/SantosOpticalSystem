@@ -53,7 +53,10 @@ if (!is_numeric($orderCount)) { $orderCount = 0; }
         .equal-height-row { align-items: stretch; }
     .equal-height { height: 100%; display: flex; flex-direction: column; width: 100%; flex: 1 1 auto; }
         .scroll-section { flex: 1 1 auto; overflow: auto; }
-        .chart-container { height: 300px; width: 100%; }
+    .chart-container { height: 300px; width: 100%; }
+    /* Low Stocks half-height (admin view) */
+    .low-stocks-half.equal-height { height: 50% !important; flex: 0 0 auto; }
+    .low-stocks-half .scroll-section { flex: 1 1 auto; overflow: auto; }
         .card-icon.text-success { color: #28a745 !important; }
         .btn-outline-success { color: #28a745; border-color: #28a745; }
         .btn-outline-success:hover { color: #fff; background-color: #28a745; border-color: #28a745; }
@@ -150,7 +153,7 @@ if (!is_numeric($orderCount)) { $orderCount = 0; }
                         </div>
                     </div>
                     <div class="col-md-3 col-lg-3 d-flex">
-                        <div class="dashboard-card equal-height">    
+                        <div class="dashboard-card equal-height low-stocks-half">    
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h5 class="mb-0"><i class="fa-solid fa-circle-exclamation me-2"></i>Low Stocks</h5>
                                 <a href="<?php echo ($isAdmin) ? 'admin-inventory.php' : 'Employee-inventory.php'; ?>" class="btn btn-sm btn-outline-secondary">
