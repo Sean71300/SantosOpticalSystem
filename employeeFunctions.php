@@ -29,6 +29,38 @@
                         WHERE LOWER(rm.Description) LIKE '%superadmin%'
                     )";
 
+        // Branch scoping: Admin (1) and Employee (2) can only see employees in their own branch
+        $roleId = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0;
+        $sessionBranch = isset($_SESSION['branchcode']) ? (string)$_SESSION['branchcode'] : '';
+        $username = isset($_SESSION['username']) ? (string)$_SESSION['username'] : '';
+
+        $isRestrictedRole = in_array($roleId, [1, 2], true);
+
+        if ($isRestrictedRole) {
+            // Attempt to resolve missing branch from login if not in session
+            if ($sessionBranch === '' && $username !== '') {
+                if ($stmt = $connection->prepare("SELECT BranchCode FROM employee WHERE LoginName = ? LIMIT 1")) {
+                    $stmt->bind_param('s', $username);
+                    if ($stmt->execute()) {
+                        $res = $stmt->get_result();
+                        if ($res && ($row = $res->fetch_assoc())) {
+                            $_SESSION['branchcode'] = (string)$row['BranchCode'];
+                            $sessionBranch = $_SESSION['branchcode'];
+                        }
+                    }
+                    $stmt->close();
+                }
+            }
+
+            if ($sessionBranch !== '') {
+                $escBranch = $connection->real_escape_string($sessionBranch);
+                $sql .= " AND e.BranchCode = '" . $escBranch . "'";
+            } else {
+                // If still unresolved, return empty set by forcing impossible condition
+                $sql .= " AND 1=0";
+            }
+        }
+
     
         // Special sorting logic for each column
         switch($sort) {
@@ -91,23 +123,60 @@
     // Rest of your functions remain the same...
     function branchHandler($branch) {
         $connection = connect();
-    
-        $sql = "SELECT * FROM BranchMaster";
+
+        $roleId = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0;
+        $sessionBranch = isset($_SESSION['branchcode']) ? (string)$_SESSION['branchcode'] : '';
+        $username = isset($_SESSION['username']) ? (string)$_SESSION['username'] : '';
+
+        $isRestrictedRole = in_array($roleId, [1, 2], true);
+
+        if ($isRestrictedRole) {
+            // Resolve branch if missing
+            if ($sessionBranch === '' && $username !== '') {
+                if ($stmt = $connection->prepare("SELECT BranchCode FROM employee WHERE LoginName = ? LIMIT 1")) {
+                    $stmt->bind_param('s', $username);
+                    if ($stmt->execute()) {
+                        $res = $stmt->get_result();
+                        if ($res && ($row = $res->fetch_assoc())) {
+                            $_SESSION['branchcode'] = (string)$row['BranchCode'];
+                            $sessionBranch = $_SESSION['branchcode'];
+                        }
+                    }
+                    $stmt->close();
+                }
+            }
+
+            if ($sessionBranch !== '') {
+                if ($stmt = $connection->prepare("SELECT BranchCode, BranchName FROM BranchMaster WHERE BranchCode = ?")) {
+                    $stmt->bind_param('s', $sessionBranch);
+                    $stmt->execute();
+                    $result = $stmt->get_result();
+                    while ($row = $result->fetch_assoc()) {
+                        echo "<option value='" . htmlspecialchars($row['BranchCode'], ENT_QUOTES, 'UTF-8') . "' "
+                           . (($branch == $row['BranchCode']) ? 'selected' : '') . 
+                           ">" . htmlspecialchars($row['BranchName'], ENT_QUOTES, 'UTF-8') . "</option>";
+                    }
+                    $stmt->close();
+                }
+                return;
+            } else {
+                // If cannot resolve, output no options to avoid cross-branch leakage
+                return;
+            }
+        }
+
+        // Super Admin and other unrestricted roles: list all branches
+        $sql = "SELECT BranchCode, BranchName FROM BranchMaster";
         $result = $connection->query($sql);
     
         if (!$result) {
             die("Invalid query: " . $connection->error);
-        }        
-    
-        // Read data of each row
+        }
         while ($row = $result->fetch_assoc()) {
-            // Use double quotes for the option value and PHP echo
-            echo "
-                <option value='{$row['BranchCode']}' " . (($branch == $row['BranchCode']) ? 'selected' : '') . ">
-                    {$row['BranchName']}
-                </option>
-            ";
-        }            
+            echo "<option value='" . htmlspecialchars($row['BranchCode'], ENT_QUOTES, 'UTF-8') . "' "
+               . (($branch == $row['BranchCode']) ? 'selected' : '') . 
+               ">" . htmlspecialchars($row['BranchName'], ENT_QUOTES, 'UTF-8') . "</option>";
+        }
     }
 
     function roleHandler($role) {

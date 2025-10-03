@@ -42,6 +42,56 @@ $phone = $_POST['phone'] ?? '';
 $role = $_POST['role'] ?? '';
 $branch = $_POST['branch'] ?? '';
 
+// Enforce branch scoping for Admin (1) and Employee (2): they may only edit employees in their own branch and cannot move employees to another branch
+$sessionRole = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0;
+$sessionBranch = isset($_SESSION['branchcode']) ? (string)$_SESSION['branchcode'] : '';
+$usernameSess = $_SESSION['username'] ?? '';
+$isRestrictedRole = in_array($sessionRole, [1,2], true);
+if ($isRestrictedRole) {
+    // Resolve session branch if empty
+    if ($sessionBranch === '' && $usernameSess !== '') {
+        $connResolve = connect();
+        if ($rsStmt = $connResolve->prepare("SELECT BranchCode FROM employee WHERE LoginName = ? LIMIT 1")) {
+            $rsStmt->bind_param('s', $usernameSess);
+            if ($rsStmt->execute()) {
+                $rRes = $rsStmt->get_result();
+                if ($rRes && ($rw = $rRes->fetch_assoc())) {
+                    $_SESSION['branchcode'] = (string)$rw['BranchCode'];
+                    $sessionBranch = $_SESSION['branchcode'];
+                }
+            }
+            $rsStmt->close();
+        }
+    }
+    if ($sessionBranch === '') {
+        echo json_encode(['success' => false, 'message' => 'Unable to resolve your branch. Edit denied.']);
+        exit;
+    }
+    // Fetch target employee's branch to verify
+    if (!empty($id)) {
+        $connCheck = connect();
+        if ($chk = $connCheck->prepare("SELECT BranchCode FROM employee WHERE EmployeeID = ? LIMIT 1")) {
+            $chk->bind_param('s', $id);
+            if ($chk->execute()) {
+                $chkRes = $chk->get_result();
+                if ($chkRes && ($rowChk = $chkRes->fetch_assoc())) {
+                    $targetBranch = (string)$rowChk['BranchCode'];
+                    if ($targetBranch !== $sessionBranch) {
+                        echo json_encode(['success' => false, 'message' => 'You may only edit employees in your branch.']);
+                        exit;
+                    }
+                } else {
+                    echo json_encode(['success' => false, 'message' => 'Employee not found.']);
+                    exit;
+                }
+            }
+            $chk->close();
+        }
+    }
+    // Force branch to session branch to prevent moving employees across branches
+    $branch = $sessionBranch;
+}
+
 // Debug: log incoming POST and FILES to help diagnose missing fields (append-only)
 $logLine = "\n[".date('Y-m-d H:i:s')."] POST=".json_encode($_POST)." FILES=".json_encode(array_map(function($f){return ['name'=>$f['name'],'error'=>$f['error'],'size'=>$f['size']];}, $_FILES))."\n";
 @file_put_contents(__DIR__ . '/employeeUpdate_debug.log', $logLine, FILE_APPEND);

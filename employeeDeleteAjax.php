@@ -9,6 +9,43 @@ try {
     $id = $_POST['EmployeeID'] ?? '';
     if (empty($id)) throw new Exception('Missing EmployeeID');
 
+    // Branch scoping enforcement: Admin (1) and Employee (2) can only delete within their branch
+    $sessionRole = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0;
+    $sessionBranch = isset($_SESSION['branchcode']) ? (string)$_SESSION['branchcode'] : '';
+    $usernameSess = $_SESSION['username'] ?? '';
+    $isRestrictedRole = in_array($sessionRole, [1,2], true);
+    if ($isRestrictedRole) {
+        if ($sessionBranch === '' && $usernameSess !== '') {
+            $connResolve = connect();
+            if ($rs = $connResolve->prepare("SELECT BranchCode FROM employee WHERE LoginName = ? LIMIT 1")) {
+                $rs->bind_param('s', $usernameSess);
+                if ($rs->execute()) {
+                    $resR = $rs->get_result();
+                    if ($resR && ($rw = $resR->fetch_assoc())) {
+                        $_SESSION['branchcode'] = (string)$rw['BranchCode'];
+                        $sessionBranch = $_SESSION['branchcode'];
+                    }
+                }
+                $rs->close();
+            }
+        }
+        if ($sessionBranch === '') throw new Exception('Unable to resolve your branch.');
+        // Check target employee branch
+        $connChk = connect();
+        if ($chk = $connChk->prepare("SELECT BranchCode FROM employee WHERE EmployeeID = ? LIMIT 1")) {
+            $chk->bind_param('s', $id);
+            $chk->execute();
+            $rsChk = $chk->get_result();
+            if (!$rsChk || !($rowC = $rsChk->fetch_assoc())) {
+                throw new Exception('Employee not found');
+            }
+            if ((string)$rowC['BranchCode'] !== $sessionBranch) {
+                throw new Exception('You may only remove employees in your branch.');
+            }
+            $chk->close();
+        }
+    }
+
     $conn = connect();
     $Aid = generate_ArchiveID();
     $Eid = $_SESSION['id'] ?? '';

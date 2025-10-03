@@ -21,6 +21,32 @@ try {
     $role = $_POST['role'] ?? '';
     $branch = $_POST['branch'] ?? '';
 
+    // Enforce branch scoping for Admin (1) and Employee (2)
+    $roleId = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0;
+    $sessionBranch = isset($_SESSION['branchcode']) ? (string)$_SESSION['branchcode'] : '';
+    $usernameSess = $_SESSION['username'] ?? '';
+    $isRestrictedRole = in_array($roleId, [1,2], true);
+    if ($isRestrictedRole) {
+        if ($sessionBranch === '' && $usernameSess !== '') {
+            // Resolve from employee table
+            $connTmp = connect();
+            if ($st = $connTmp->prepare("SELECT BranchCode FROM employee WHERE LoginName = ? LIMIT 1")) {
+                $st->bind_param('s', $usernameSess);
+                if ($st->execute()) {
+                    $rs = $st->get_result();
+                    if ($rs && ($r = $rs->fetch_assoc())) {
+                        $_SESSION['branchcode'] = (string)$r['BranchCode'];
+                        $sessionBranch = $_SESSION['branchcode'];
+                    }
+                }
+                $st->close();
+            }
+        }
+        if ($sessionBranch === '') throw new Exception('Unable to resolve your branch to create an employee.');
+        // Force branch to current user's branch regardless of submitted value
+        $branch = $sessionBranch;
+    }
+
     $missing = [];
     foreach (['name','username','password','email','phone','role','branch'] as $f) {
         if (empty($$f)) $missing[] = $f;
