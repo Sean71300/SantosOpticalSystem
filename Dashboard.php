@@ -61,7 +61,7 @@ if (!is_numeric($orderCount)) { $orderCount = 0; }
         .btn-outline-success { color: #28a745; border-color: #28a745; }
         .btn-outline-success:hover { color: #fff; background-color: #28a745; border-color: #28a745; }
     /* Horizontal Low Stocks strip */
-    .low-stocks-strip { display: flex; flex-direction: row; flex-wrap: nowrap; gap: 12px; overflow-x: auto; overflow-y: hidden; padding-bottom: 6px; }
+    .low-stocks-strip { display: flex; flex-direction: row; flex-wrap: nowrap; gap: 12px; overflow-x: auto; overflow-y: hidden; padding-bottom: 6px; justify-content: center; align-items: center; }
     .low-stocks-item { min-width: 280px; border: 1px solid #e9ecef; border-radius: 8px; padding: 10px; background: #fff; display: flex; align-items: center; }
     .low-stocks-item img { height: 80px; width: 80px; object-fit: cover; }
     .low-stocks-item .meta { font-weight: 600; margin-left: 10px; }
@@ -158,7 +158,7 @@ if (!is_numeric($orderCount)) { $orderCount = 0; }
                         </div>
                     </div>
                     <div class="col-md-3 col-lg-3 d-flex">
-                        <div class="dashboard-card equal-height low-stocks-half">    
+                        <div class="dashboard-card equal-height">    
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h5 class="mb-0"><i class="fa-solid fa-circle-exclamation me-2"></i>Low Stocks</h5>
                                 <a href="<?php echo ($isAdmin) ? 'admin-inventory.php' : 'Employee-inventory.php'; ?>" class="btn btn-sm btn-outline-secondary">
@@ -167,24 +167,28 @@ if (!is_numeric($orderCount)) { $orderCount = 0; }
                             </div>
                             <hr class="border-1 border-black opacity-25">
                             <div class="scroll-section">
-                                    <div class="low-stocks-strip">
-                                        <?php
-                                        if (count($lowInventory) > 0) {
-                                            foreach ($lowInventory as $product) {
-                                                $img = !empty($product['ProductImage']) ? $product['ProductImage'] : 'Images/logo.png';
-                                                echo '<div class="low-stocks-item">';
-                                                echo '<img src="' . htmlspecialchars($img) . '" alt="Product Image" class="img-thumbnail me-2">';
-                                                echo '<div class="meta">';
-                                                echo htmlspecialchars($product['Model']);
-                                                echo "<br><span class=\"text-muted\">Available Stocks: " . htmlspecialchars($product['Stocks']) . "</span>";
-                                                echo '</div>';
-                                                echo '</div>';
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div class="row">
+                                            <?php
+                                            if (count($lowInventory) > 0) {
+                                                foreach ($lowInventory as $product) {
+                                                    $img = !empty($product['ProductImage']) ? $product['ProductImage'] : 'Images/logo.png';
+                                                    echo '<div class="container d-flex align-items-center">';
+                                                    echo '<img src="' . htmlspecialchars($img) . '" alt="Product Image" style="height:100px; width:100px;" class="img-thumbnail">';
+                                                    echo '<div class="fw-bold ms-3">';
+                                                    echo htmlspecialchars($product['Model']);
+                                                    echo "<br> Available Stocks: ".htmlspecialchars($product['Stocks']);
+                                                    echo '</div>';
+                                                    echo '</div>';
+                                                }
+                                            } else {
+                                                echo '<p class="text-center">No low stock products.</p>';
                                             }
-                                        } else {
-                                            echo '<div class="text-center text-muted w-100">No low stock products.</div>';
-                                        }
-                                        ?>
-                                    </div>
+                                            ?>
+                                        </div>
+                                    </li>
+                                </ul>
                             </div>
                         </div>
                     </div>
