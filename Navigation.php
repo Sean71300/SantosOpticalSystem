@@ -1,5 +1,37 @@
 <?php
 $current_page = basename($_SERVER['PHP_SELF']);
+
+// If the current user is an employee/admin/super-admin, don't render the public navigation.
+// This prevents employees and admins from viewing or clicking the public site navigation.
+$hideNav = false;
+if (session_status() === PHP_SESSION_NONE) {
+    // session should already be started by the including page, but be defensive
+    @session_start();
+}
+if (isset($_SESSION['user_type'])) {
+    $ut = strtolower((string)$_SESSION['user_type']);
+    if ($ut === 'employee' || $ut === 'admin') {
+        $hideNav = true;
+    }
+}
+// roleid 1 -> admin, 2 -> employee in this app; additionally check any role name
+if (isset($_SESSION['roleid'])) {
+    $rid = (int)$_SESSION['roleid'];
+    if (in_array($rid, [1,2], true)) {
+        $hideNav = true;
+    }
+}
+if (isset($_SESSION['role'])) {
+    $rname = strtolower((string)$_SESSION['role']);
+    if (in_array($rname, ['admin', 'super admin', 'superadmin'], true)) {
+        $hideNav = true;
+    }
+}
+
+if ($hideNav) {
+    // Stop rendering this file — it's included into pages, so return to caller.
+    return;
+}
 ?>
 
 <style>
