@@ -2,6 +2,14 @@
 include 'ActivityTracker.php';
 include 'loginChecker.php';
 include 'admin-branch-funcs.php';
+
+// Only Super Admin (roleid 4) can access Branch Management
+if (session_status() === PHP_SESSION_NONE) { @session_start(); }
+$rid = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0;
+if ($rid !== 4) {
+    header('Location: Dashboard.php');
+    exit();
+}
 ?>
 
 <html>  
