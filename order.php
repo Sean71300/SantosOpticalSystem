@@ -252,7 +252,8 @@ function countOrderHeaders($conn, $search = '', $branch = '', $status = '') {
             $where[] = "(Orderhdr_id LIKE ? OR CustomerID IN ($placeholders))";
             $params[] = '%' . $search . '%';
             $params = array_merge($params, $customerIds);
-            $types .= str_repeat('i', count($customerIds)) . 's';
+            // treat IDs as strings across the app for consistency
+            $types .= 's' . str_repeat('s', count($customerIds));
         } else {
             $where[] = "Orderhdr_id LIKE ?";
             $params[] = '%' . $search . '%';
@@ -508,6 +509,32 @@ $search = $_GET['search'] ?? '';
 $branch = $_GET['branch'] ?? '';
 $status = $_GET['status'] ?? '';
 
+// Enforce branch scoping for employees (roleid = 2)
+$isEmployee = isset($_SESSION['roleid']) && (int)$_SESSION['roleid'] === 2;
+if ($isEmployee) {
+    // Prefer branch from session; if missing, fetch from DB using login name and cache in session
+    $sessionBranch = $_SESSION['branchcode'] ?? '';
+    if (empty($sessionBranch)) {
+        $tmpConn = connect();
+        if ($tmpConn) {
+            $empStmt = $tmpConn->prepare("SELECT BranchCode FROM employee WHERE LoginName = ? LIMIT 1");
+            if ($empStmt && isset($_SESSION['username'])) {
+                $empStmt->bind_param('s', $_SESSION['username']);
+                $empStmt->execute();
+                $empRes = $empStmt->get_result();
+                if ($row = $empRes->fetch_assoc()) {
+                    $_SESSION['branchcode'] = (string)$row['BranchCode'];
+                    $sessionBranch = $_SESSION['branchcode'];
+                }
+                $empStmt->close();
+            }
+            $tmpConn->close();
+        }
+    }
+    // Force branch filter to employee's branch regardless of query params
+    $branch = $sessionBranch;
+}
+
 $conn = connect();
 
 $orderHeaders = getOrderHeaders($conn, $search, $branch, $status, $ordersPerPage, $offset);
@@ -720,6 +747,8 @@ $conn->close();
                     <input type="text" class="form-control" id="search" name="search" 
                            placeholder="Search orders or customers..." value="<?php echo htmlspecialchars($search); ?>">
                 </div>
+                <?php $isEmployeeLocal = isset($_SESSION['roleid']) && (int)$_SESSION['roleid'] === 2; ?>
+                <?php if (!$isEmployeeLocal): ?>
                 <div class="col-md-3">
                     <label for="branch" class="form-label">Filter by Branch</label>
                     <select class="form-select" id="branch" name="branch">
@@ -734,6 +763,12 @@ $conn->close();
                         <?php endwhile; ?>
                     </select>
                 </div>
+                <?php else: ?>
+                <div class="col-md-3">
+                    <label class="form-label">Branch</label>
+                    <input type="text" class="form-control" value="<?php echo htmlspecialchars(getBranchName(connect(), $_SESSION['branchcode'] ?? '')); ?>" disabled>
+                </div>
+                <?php endif; ?>
                 
                 <div class="col-md-3">
                     <label for="status" class="form-label">Filter by Status</label>
