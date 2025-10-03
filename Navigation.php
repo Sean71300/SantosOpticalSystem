@@ -3,7 +3,9 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
 // If the current user is an employee/admin/super-admin, don't render the public navigation.
 // This prevents employees and admins from viewing or clicking the public site navigation.
+// By default show Track Order link; we'll disable it for staff/admins
 $hideNav = false;
+$showTrackOrder = true;
 if (session_status() === PHP_SESSION_NONE) {
     // session should already be started by the including page, but be defensive
     @session_start();
@@ -12,6 +14,7 @@ if (isset($_SESSION['user_type'])) {
     $ut = strtolower((string)$_SESSION['user_type']);
     if ($ut === 'employee' || $ut === 'admin') {
         $hideNav = true;
+        $showTrackOrder = false;
     }
 }
 // roleid 1 -> admin, 2 -> employee in this app; additionally check any role name
@@ -19,19 +22,20 @@ if (isset($_SESSION['roleid'])) {
     $rid = (int)$_SESSION['roleid'];
     if (in_array($rid, [1,2], true)) {
         $hideNav = true;
+        $showTrackOrder = false;
     }
 }
 if (isset($_SESSION['role'])) {
     $rname = strtolower((string)$_SESSION['role']);
     if (in_array($rname, ['admin', 'super admin', 'superadmin'], true)) {
         $hideNav = true;
+        $showTrackOrder = false;
     }
 }
 
-if ($hideNav) {
-    // Stop rendering this file — it's included into pages, so return to caller.
-    return;
-}
+// Don't completely return; instead conditionally hide specific links (Track Order)
+// We'll still render the rest of the navigation for consistency.
+// (This keeps the brand and other links visible on admin pages.)
 ?>
 
 <style>
@@ -98,9 +102,11 @@ if ($hideNav) {
                     <li class="nav-item m-2">
                         <a class="nav-link <?php echo ($current_page == 'aboutus.php') ? 'active' : ''; ?>" href="aboutus.php">ABOUT</a>
                     </li> 
+                    <?php if ($showTrackOrder): ?>
                     <li class="nav-item">
                         <a class="nav-link m-2 <?php echo ($current_page == 'trackorder.php') ? 'active' : ''; ?>" href="trackorder.php">TRACK ORDER</a>
-                    </li> 
+                    </li>
+                    <?php endif; ?> 
                     <?php  
                     if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
                         echo '<li class="nav-item m-2">';
