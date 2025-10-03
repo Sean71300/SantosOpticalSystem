@@ -179,8 +179,10 @@ $salesData = getSalesOverviewData();
                         </div>
                     </div>
                 </div>
-            <?php elseif ($isEmployeeOnly): ?>
-                <!-- Employee: 2x2 grid filling the page -->
+            <?php endif; ?>
+
+            <?php if ($isEmployeeOnly): ?>
+                <!-- Employee: 2x2 grid filling the page (outside admin/non-employee block) -->
                 <div class="row g-4 mt-1 equal-height-row">
                     <!-- Top-left: Customers -->
                     <div class="col-12 col-md-6 d-flex">
@@ -256,6 +258,7 @@ $salesData = getSalesOverviewData();
                     </div>
                 </div>
             <?php endif; ?>
+
             <?php if ($isAdmin): ?>
                     <div class="dashboard-card mt-3">
                         <div class="d-flex justify-content-between align-items-center mb-3">
