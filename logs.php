@@ -101,6 +101,26 @@ $conn->close();
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             padding: 20px;
+            /* reserve modest space at the bottom so pagination sits inside the card */
+            padding-bottom: 24px;
+            position: relative;
+        }
+        /* Keep pagination inside the logs card by letting it flow below the list.
+           Allow horizontal scrolling for long page lists so it never overflows. */
+        .logs-container nav[aria-label="Logs pagination"] {
+            position: static;
+            margin-top: 18px;
+            display: block;
+        }
+        .logs-container .pagination {
+            justify-content: flex-start; /* allow natural flow */
+            gap: 6px;
+            overflow-x: auto;
+            white-space: nowrap;
+            padding-bottom: 6px;
+        }
+        .logs-container .pagination .page-item {
+            display: inline-block;
         }
         .log-entry {
             border-left: 4px solid #0d6efd;
@@ -162,7 +182,11 @@ $conn->close();
         }
         @media (max-width: 576px) {
             .logs-container {
-                padding: 15px;
+                padding: 15px 15px 30px; /* extra bottom padding on small screens */
+            }
+            .logs-container nav[aria-label="Logs pagination"] {
+                position: static; /* let pagination flow on very small screens */
+                margin-top: 12px;
             }
             .d-flex.justify-content-between.align-items-center.mb-4 {
                 flex-direction: column;
@@ -295,7 +319,28 @@ $conn->close();
                             </li>
                         <?php endif; ?>
 
-                        <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                        <?php 
+                            // Sliding window pagination: show current +/- 10 pages (max 21 visible)
+                            $maxVisible = 21;
+                            $half = floor($maxVisible / 2); // 10
+                            // Ensure current page within bounds
+                            if ($totalPages <= 0) $totalPages = 1;
+                            $currentPage = max(1, min($currentPage, $totalPages));
+
+                            $start = $currentPage - $half;
+                            $end = $currentPage + $half;
+
+                            if ($start < 1) {
+                                $end += 1 - $start;
+                                $start = 1;
+                            }
+                            if ($end > $totalPages) {
+                                $start -= $end - $totalPages;
+                                $end = $totalPages;
+                                if ($start < 1) $start = 1;
+                            }
+
+                            for ($i = $start; $i <= $end; $i++): ?>
                             <li class="page-item <?php echo ($i == $currentPage) ? 'active' : ''; ?>">
                                 <a class="page-link" href="?<?php 
                                     echo http_build_query(array_merge(

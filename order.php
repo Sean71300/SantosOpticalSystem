@@ -5,6 +5,18 @@ include_once 'setup.php';
 include 'ActivityTracker.php'; 
 include 'loginChecker.php';
 
+// Helper: bind params to mysqli_stmt using references (safe for dynamic arrays)
+function bind_params_stmt($stmt, $types, $params) {
+    if (empty($params)) return;
+    // mysqli::bind_param requires parameters passed by reference
+    $refs = [];
+    foreach ($params as $k => $v) {
+        $refs[$k] = &$params[$k];
+    }
+    array_unshift($refs, $types);
+    return call_user_func_array([$stmt, 'bind_param'], $refs);
+}
+
 function getOrderHeaders($conn, $search = '', $branch = '', $status = '', $limit = 10, $offset = 0) {
     $query = "SELECT Orderhdr_id, CustomerID, BranchCode, Created_dt, Created_by FROM Order_hdr";
     
@@ -15,9 +27,9 @@ function getOrderHeaders($conn, $search = '', $branch = '', $status = '', $limit
     if (!empty($search)) {
         $customerIds = [];
         $customerQuery = "SELECT CustomerID FROM customer WHERE CustomerName LIKE ?";
-        $stmt = $conn->prepare($customerQuery);
-        $searchParam = '%' . $search . '%';
-        $stmt->bind_param('s', $searchParam);
+    $stmt = $conn->prepare($customerQuery);
+    $searchParam = '%' . $search . '%';
+    $stmt->bind_param('s', $searchParam);
         $stmt->execute();
         $result = $stmt->get_result();
         while ($row = $result->fetch_assoc()) {
@@ -29,8 +41,9 @@ function getOrderHeaders($conn, $search = '', $branch = '', $status = '', $limit
             $placeholders = implode(',', array_fill(0, count($customerIds), '?'));
             $where[] = "(Orderhdr_id LIKE ? OR CustomerID IN ($placeholders))";
             $params[] = '%' . $search . '%';
+            // customer IDs are treated as strings in many parts of the app
             $params = array_merge($params, $customerIds);
-            $types .= str_repeat('i', count($customerIds)) . 's';
+            $types .= 's' . str_repeat('s', count($customerIds));
         } else {
             $where[] = "Orderhdr_id LIKE ?";
             $params[] = '%' . $search . '%';
@@ -55,7 +68,7 @@ function getOrderHeaders($conn, $search = '', $branch = '', $status = '', $limit
     
     $stmt = $conn->prepare($query);
     if (!empty($params)) {
-        $stmt->bind_param($types, ...$params);
+        bind_params_stmt($stmt, $types, $params);
     }
     $stmt->execute();
     $result = $stmt->get_result();
@@ -86,7 +99,8 @@ function getOrderHeaders($conn, $search = '', $branch = '', $status = '', $limit
 function getOrderStatus($conn, $orderId) {
     $query = "SELECT Status FROM orderDetails WHERE OrderHdr_id = ?";
     $stmt = $conn->prepare($query);
-    $stmt->bind_param('i', $orderId);
+    // Order IDs might be non-integer in some setups; bind as string to be safe
+    $stmt->bind_param('s', $orderId);
     $stmt->execute();
     $result = $stmt->get_result();
     
@@ -126,7 +140,7 @@ function getOrderStatus($conn, $orderId) {
 function getCustomerName($conn, $customerId) {
     $query = "SELECT CustomerName FROM customer WHERE CustomerID = ?";
     $stmt = $conn->prepare($query);
-    $stmt->bind_param('i', $customerId);
+    $stmt->bind_param('s', $customerId);
     $stmt->execute();
     $result = $stmt->get_result();
     $row = $result->fetch_assoc();
@@ -137,7 +151,7 @@ function getCustomerName($conn, $customerId) {
 function getCustomerID($conn, $OrderId) {
     $query = "SELECT CustomerID FROM Order_hdr WHERE Orderhdr_id = ?";
     $stmt = $conn->prepare($query);
-    $stmt->bind_param('i', $OrderId);
+    $stmt->bind_param('s', $OrderId);
     $stmt->execute();
     $result = $stmt->get_result();
     $row = $result->fetch_assoc();
@@ -197,7 +211,7 @@ function getOrderDetails($conn, $orderId) {
               JOIN brandMaster b ON p.BrandID = b.BrandID
               WHERE od.OrderHdr_id = ?";
     $stmt = $conn->prepare($query);
-    $stmt->bind_param('i', $orderId);
+    $stmt->bind_param('s', $orderId);
     $stmt->execute();
     $result = $stmt->get_result();
     $details = [];
@@ -273,7 +287,7 @@ function countOrderHeaders($conn, $search = '', $branch = '', $status = '') {
         $allStmt = $conn->prepare($allOrdersQuery);
         
         if (!empty($params)) {
-            $allStmt->bind_param($types, ...$params);
+            bind_params_stmt($allStmt, $types, $params);
         }
         
         $allStmt->execute();
@@ -507,7 +521,7 @@ foreach ($orderHeaders as $header) {
     
     $customerQuery = "SELECT CustomerName, CustomerContact, CustomerAddress FROM customer WHERE CustomerID = ?";
     $stmt = $conn->prepare($customerQuery);
-    $stmt->bind_param('i', $header['CustomerID']);
+    $stmt->bind_param('s', $header['CustomerID']);
     $stmt->execute();
     $customer = $stmt->get_result()->fetch_assoc();
     $stmt->close();

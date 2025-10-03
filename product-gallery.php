@@ -110,39 +110,42 @@
             $sql .= " ORDER BY p.Model ASC";
     }
     
-    // Get total count
-    $countSql = ($branch > 0) 
-        ? str_replace("DISTINCT p.*, pb.Stocks, b.BranchName", "COUNT(DISTINCT p.ProductID) as total", $sql)
-        : str_replace("p.*,", "COUNT(DISTINCT p.ProductID) as total", $sql);
+    // Get total count - FIXED VERSION
+    $countSql = "SELECT COUNT(*) as total FROM ($sql) as count_table";
     
     $countResult = mysqli_query($conn, $countSql);
-    $totalData = mysqli_fetch_assoc($countResult);
-    $total = $totalData['total'];
+    if ($countResult) {
+        $totalData = mysqli_fetch_assoc($countResult);
+        $total = $totalData['total'];
+    } else {
+        // Fallback if the count query fails
+        $total = 0;
+    }
     $totalPages = ceil($total / $perPage);
 
-    // Add pagination limits
+    // Add pagination limits to main query
     $sql .= " LIMIT $start, $perPage";
     $result = mysqli_query($conn, $sql);
     
-    echo "<div class='row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4' id='productGrid'>";
+    echo "<div class='product-grid-container'>";
+    echo "<div class='product-grid' id='productGrid'>";
     
-    if ($total > 0) {
+    if ($total > 0 && $result) {
         while($row = mysqli_fetch_assoc($result)) {
             $searchableText = strtolower($row['Model']);
             $faceShape = isset($row['ShapeID']) ? getFaceShapeName($row['ShapeID']) : 'Not specified';
             
-            echo "<div class='col d-flex product-card' data-search='".htmlspecialchars($searchableText, ENT_QUOTES)."'>";
-                echo "<div class='card w-100' style='max-width: 380px;'>";
-                    echo '<img src="' . $row['ProductImage']. '" class="card-img-top img-fluid" style="height: 280px;" alt="'. $row['Model'] .'">';
-                    echo "<div class='card-body d-flex flex-column'>";
-                        echo "<h5 class='card-title' style='min-height: 1.5rem;'>".$row['Model']."</h5>";
-                        echo "<hr>";
-                        echo "<div class='card-text mb-2'>".$row['CategoryType']."</div>";
-                        echo "<div class='card-text mb-2'>".$row['Material']."</div>";
+            echo "<div class='product-card'>";
+                echo "<div class='card'>";
+                    echo '<img src="' . $row['ProductImage']. '" class="card-img-top" alt="'. $row['Model'] .'">';
+                    echo "<div class='card-body'>";
+                        echo "<h5 class='card-title'>".$row['Model']."</h5>";
+                        echo "<div class='card-category'>".$row['CategoryType']."</div>";
+                        echo "<div class='card-material'>".$row['Material']."</div>";
                         $price = $row['Price'];
                         $numeric_price = preg_replace('/[^0-9.]/', '', $price);
                         $formatted_price = is_numeric($numeric_price) ? '₱' . number_format((float)$numeric_price, 2) : '₱0.00';
-                        echo "<div class='card-text mb-2'>".$formatted_price."</div>";
+                        echo "<div class='card-price'>".$formatted_price."</div>";
                         
                         if ($branch > 0) {
                             // Specific branch view
@@ -151,10 +154,9 @@
                             $availability = ($stock > 0) ? "Available at $branchName" : "Out of stock at $branchName";
                             
                             if ($stock > 0) {
-                                echo "<div class='card-text mb-2 text-success'>$availability</div>";
-                                echo "</div>";
-                                echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
-                                    echo "<button type='button' class='btn btn-primary w-100 py-2 view-details' data-bs-toggle='modal' data-bs-target='#productModal' 
+                                echo "<div class='card-availability available'>$availability</div>";
+                                echo "<div class='card-footer'>";
+                                    echo "<button type='button' class='btn btn-primary view-details' data-bs-toggle='modal' data-bs-target='#productModal' 
                                           data-product-id='".$row['ProductID']."'
                                           data-product-name='".htmlspecialchars($row['Model'], ENT_QUOTES)."'
                                           data-product-image='".htmlspecialchars($row['ProductImage'], ENT_QUOTES)."'
@@ -168,10 +170,9 @@
                                       </button>";
                                 echo "</div>";
                             } else {
-                                echo "<div class='card-text mb-2 text-danger'>$availability</div>";
-                                echo "</div>";
-                                echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
-                                    echo "<a href='#' class='btn btn-secondary w-100 py-2 disabled'>Not Available</a>";
+                                echo "<div class='card-availability not-available'>$availability</div>";
+                                echo "<div class='card-footer'>";
+                                    echo "<button class='btn btn-secondary disabled'>Not Available</button>";
                                 echo "</div>";
                             }
                         } else {
@@ -180,10 +181,9 @@
                             $minStock = $row['MinStocks'];
                             
                             if (!empty($availableBranches)) {
-                                echo "<div class='card-text mb-2 text-success'>Available at: $availableBranches</div>";
-                                echo "</div>";
-                                echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
-                                    echo "<button type='button' class='btn btn-primary w-100 py-2 view-details' data-bs-toggle='modal' data-bs-target='#productModal' 
+                                echo "<div class='card-availability available'>Available at multiple branches</div>";
+                                echo "<div class='card-footer'>";
+                                    echo "<button type='button' class='btn btn-primary view-details' data-bs-toggle='modal' data-bs-target='#productModal' 
                                           data-product-id='".$row['ProductID']."'
                                           data-product-name='".htmlspecialchars($row['Model'], ENT_QUOTES)."'
                                           data-product-image='".htmlspecialchars($row['ProductImage'], ENT_QUOTES)."'
@@ -197,10 +197,9 @@
                                       </button>";
                                 echo "</div>";
                             } else {
-                                echo "<div class='card-text mb-2 text-danger'>Not available at any branch</div>";
-                                echo "</div>";
-                                echo "<div class='card-footer bg-transparent border-top-0 mt-auto pt-0'>";
-                                    echo "<a href='#' class='btn btn-secondary w-100 py-2 disabled'>Not Available</a>";
+                                echo "<div class='card-availability not-available'>Not available at any branch</div>";
+                                echo "<div class='card-footer'>";
+                                    echo "<button class='btn btn-secondary disabled'>Not Available</button>";
                                 echo "</div>";
                             }
                         }
@@ -209,72 +208,71 @@
             echo "</div>";
         }
     } else {
-        echo "<div class='col-12 py-5 no-results' style='display: flex; justify-content: center; align-items: center; min-height: 300px;'>";
+        echo "<div class='no-results'>";
         if ($shape > 0) {
             $shapeName = getFaceShapeName($shape);
-            echo "<h4 class='text-center'>No products found for frame shape: $shapeName</h4>";
+            echo "<h4>No products found for frame shape: $shapeName</h4>";
         } else if ($branch > 0) {
             $conn = connect();
             $branchQuery = "SELECT BranchName FROM BranchMaster WHERE BranchCode = $branch";
             $branchResult = mysqli_query($conn, $branchQuery);
             $branchName = mysqli_fetch_assoc($branchResult)['BranchName'];
             $conn->close();
-            echo "<h4 class='text-center'>No products found at branch: $branchName</h4>";
+            echo "<h4>No products found at branch: $branchName</h4>";
         } else {
-            echo "<h4 class='text-center'>No products found matching your search.</h4>";
+            echo "<h4>No products found matching your search.</h4>";
         }
         echo "</div>";
     }
     
     echo "</div>"; 
+    echo "</div>";
 
     // Pagination links
     if ($totalPages > 1) {
-        echo "<div class='col-12 mt-5'>";
-            echo "<div class='d-flex justify-content-center'>";
-                echo "<ul class='pagination'>";
-                if ($page > 1) {
-                    echo "<li class='page-item'><a class='page-link' href='" . buildQueryString($page - 1, $_GET) . "'>Previous</a></li>";
-                } else {
-                    echo "<li class='page-item disabled'><a class='page-link'>Previous</a></li>";
-                }
+        echo "<div class='pagination-container'>";
+            echo "<div class='pagination'>";
+            if ($page > 1) {
+                echo "<a class='page-link' href='" . buildQueryString($page - 1, $_GET) . "'>Previous</a>";
+            } else {
+                echo "<span class='page-link disabled'>Previous</span>";
+            }
 
-                $maxPagesToShow = 5;
-                $startPage = max(1, $page - floor($maxPagesToShow / 2));
-                $endPage = min($totalPages, $startPage + $maxPagesToShow - 1);
-                
-                if ($endPage - $startPage < $maxPagesToShow - 1) {
-                    $startPage = max(1, $endPage - $maxPagesToShow + 1);
+            $maxPagesToShow = 5;
+            $startPage = max(1, $page - floor($maxPagesToShow / 2));
+            $endPage = min($totalPages, $startPage + $maxPagesToShow - 1);
+            
+            if ($endPage - $startPage < $maxPagesToShow - 1) {
+                $startPage = max(1, $endPage - $maxPagesToShow + 1);
+            }
+            
+            if ($startPage > 1) {
+                echo "<a class='page-link' href='" . buildQueryString(1, $_GET) . "'>1</a>";
+                if ($startPage > 2) {
+                    echo "<span class='page-link disabled'>...</span>";
                 }
-                
-                if ($startPage > 1) {
-                    echo "<li class='page-item'><a class='page-link' href='" . buildQueryString(1, $_GET) . "'>1</a></li>";
-                    if ($startPage > 2) {
-                        echo "<li class='page-item disabled'><span class='page-link'>...</span></li>";
-                    }
-                }
-                
-                for ($i = $startPage; $i <= $endPage; $i++) {                       
-                    if ($i == $page) {
-                        echo "<li class='page-item active' aria-current='page'><a class='page-link disabled'>$i</a></li>"; 
-                    } else {
-                        echo "<li class='page-item'><a class='page-link' href='" . buildQueryString($i, $_GET) . "'>$i</a></li>";
-                    }
-                }
-                
-                if ($endPage < $totalPages) {
-                    if ($endPage < $totalPages - 1) {
-                        echo "<li class='page-item disabled'><span class='page-link'>...</span></li>";
-                    }
-                    echo "<li class='page-item'><a class='page-link' href='" . buildQueryString($totalPages, $_GET) . "'>$totalPages</a></li>";
-                }
-
-                if ($page < $totalPages) {
-                    echo "<li class='page-item'><a class='page-link' href='" . buildQueryString($page + 1, $_GET) . "'>Next</a></li>";
+            }
+            
+            for ($i = $startPage; $i <= $endPage; $i++) {                       
+                if ($i == $page) {
+                    echo "<span class='page-link active'>$i</span>"; 
                 } else {
-                    echo "<li class='page-item disabled'><a class='page-link'>Next</a></li>";
+                    echo "<a class='page-link' href='" . buildQueryString($i, $_GET) . "'>$i</a>";
                 }
-                echo "</ul>";
+            }
+            
+            if ($endPage < $totalPages) {
+                if ($endPage < $totalPages - 1) {
+                    echo "<span class='page-link disabled'>...</span>";
+                }
+                echo "<a class='page-link' href='" . buildQueryString($totalPages, $_GET) . "'>$totalPages</a>";
+            }
+
+            if ($page < $totalPages) {
+                echo "<a class='page-link' href='" . buildQueryString($page + 1, $_GET) . "'>Next</a>";
+            } else {
+                echo "<span class='page-link disabled'>Next</span>";
+            }
             echo "</div>";
         echo "</div>"; 
     }
@@ -306,13 +304,169 @@
                     max-width: 1400px;
                 }
             }
-            .card {
+            
+            /* Product Grid Layout Fixes */
+            .product-grid-container {
+                width: 100%;
+            }
+            
+            .product-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                gap: 1.5rem;
+                margin-bottom: 2rem;
+            }
+            
+            .product-card {
+                height: 100%;
+            }
+            
+            .product-card .card {
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+                transition: all 0.3s ease;
+                border: 1px solid #e9ecef;
+                border-radius: 0.75rem;
+                overflow: hidden;
                 box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-                transition: transform 0.3s ease;
             }
-            .card:hover {
+            
+            .product-card .card:hover {
                 transform: translateY(-5px);
+                box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+                border-color: #007bff;
             }
+            
+            .product-card .card-img-top {
+                height: 220px;
+                object-fit: contain;
+                padding: 1rem;
+                background-color: #f8f9fa;
+                border-bottom: 1px solid #e9ecef;
+            }
+            
+            .product-card .card-body {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                padding: 1.25rem;
+            }
+            
+            .product-card .card-title {
+                font-size: 1.1rem;
+                font-weight: 600;
+                margin-bottom: 0.75rem;
+                line-height: 1.3;
+                color: #333;
+                min-height: 2.6rem;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+            
+            .product-card .card-category,
+            .product-card .card-material {
+                font-size: 0.9rem;
+                color: #6c757d;
+                margin-bottom: 0.5rem;
+            }
+            
+            .product-card .card-price {
+                font-size: 1.2rem;
+                font-weight: 700;
+                color: #007bff;
+                margin: 0.75rem 0;
+            }
+            
+            .product-card .card-availability {
+                font-size: 0.85rem;
+                padding: 0.5rem;
+                border-radius: 0.375rem;
+                margin: 0.75rem 0;
+                text-align: center;
+                font-weight: 500;
+            }
+            
+            .product-card .card-availability.available {
+                background-color: #d1e7dd;
+                color: #0f5132;
+                border: 1px solid #badbcc;
+            }
+            
+            .product-card .card-availability.not-available {
+                background-color: #f8d7da;
+                color: #842029;
+                border: 1px solid #f5c2c7;
+            }
+            
+            .product-card .card-footer {
+                background-color: transparent;
+                border-top: 1px solid #e9ecef;
+                padding: 1rem 1.25rem;
+                margin-top: auto;
+            }
+            
+            .product-card .btn {
+                width: 100%;
+                padding: 0.75rem;
+                font-weight: 500;
+            }
+            
+            .no-results {
+                grid-column: 1 / -1;
+                text-align: center;
+                padding: 3rem 1rem;
+                color: #6c757d;
+            }
+            
+            .no-results h4 {
+                margin-bottom: 1rem;
+                font-weight: 400;
+            }
+            
+            /* Pagination Styles */
+            .pagination-container {
+                display: flex;
+                justify-content: center;
+                margin-top: 2rem;
+            }
+            
+            .pagination {
+                display: flex;
+                gap: 0.5rem;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .page-link {
+                padding: 0.5rem 1rem;
+                border: 1px solid #dee2e6;
+                border-radius: 0.375rem;
+                color: #007bff;
+                text-decoration: none;
+                transition: all 0.2s;
+            }
+            
+            .page-link:hover {
+                background-color: #e9ecef;
+                border-color: #dee2e6;
+            }
+            
+            .page-link.active {
+                background-color: #007bff;
+                border-color: #007bff;
+                color: white;
+            }
+            
+            .page-link.disabled {
+                color: #6c757d;
+                pointer-events: none;
+                background-color: #f8f9fa;
+            }
+            
+            /* Filter and Search Styles */
             .filter-container {
                 display: flex;
                 justify-content: flex-end;
@@ -320,20 +474,21 @@
                 margin-bottom: 20px;
                 flex-wrap: wrap;
             }
+            
             .filter-dropdown {
                 max-width: 250px;
                 min-width: 200px;
             }
+            
             .search-container {
                 margin-bottom: 30px;
             }
+            
             .search-box {
                 max-width: 500px;
                 margin: 0 auto;
             }
-            .product-card.hidden {
-                display: none;
-            }
+            
             #liveSearchResults {
                 position: absolute;
                 width: 100%;
@@ -349,18 +504,22 @@
                 overflow-y: auto;
                 display: none;
             }
+            
             .live-search-item {
                 padding: 10px;
                 border-bottom: 1px solid #eee;
                 cursor: pointer;
             }
+            
             .live-search-item:hover {
                 background-color: #f8f9fa;
             }
+            
             .live-search-item.highlight {
                 background-color: #e9ecef;
             }
             
+            /* Modal Styles */
             .product-image-container {
                 height: 350px;
                 border: 1px solid #eee;
@@ -399,6 +558,53 @@
             .list-group-item {
                 background-color: transparent;
                 border-color: rgba(0,0,0,0.05);
+            }
+            
+            /* Responsive adjustments */
+            @media (max-width: 768px) {
+                .product-grid {
+                    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                    gap: 1rem;
+                }
+                
+                .filter-container {
+                    justify-content: flex-start;
+                }
+                
+                .filter-dropdown {
+                    min-width: 100%;
+                }
+            }
+            
+            @media (max-width: 576px) {
+                .product-grid {
+                    grid-template-columns: 1fr;
+                gap: 1rem;
+                padding: 0 0.5rem;
+                margin-bottom: 1rem;
+                max-width: 100%;
+                overflow-x: hidden;
+                box-sizing: border-box;
+                width: 100%;
+                display: grid;
+            }
+                
+                .product-card {
+                    width: 100%;
+                    margin: 0 auto;
+                    max-width: 100%;
+                    box-sizing: border-box;
+                }
+                
+                .product-card .card {
+                    margin: 0;
+                    width: 100%;
+                }
+                
+                .container {
+                    padding-left: 0.5rem;
+                    padding-right: 0.5rem;
+                }
             }
         </style>
     </head>
@@ -506,41 +712,6 @@
                     <!-- Branch Filter -->
                     <form method="get" action="" class="filter-dropdown">
                         <input type="hidden" name="page" value="1"> <!-- Reset to page 1 when changing filters -->
-                        <?php if(isset($_GET['search'])): ?>
-                            <input type="hidden" name="search" value="<?php echo $_GET['search']; ?>">
-                        <?php endif; ?>
-                        <?php if(isset($_GET['sort'])): ?>
-                            <input type="hidden" name="sort" value="<?php echo $_GET['sort']; ?>">
-                        <?php endif; ?>
-                        <?php if(isset($_GET['shape'])): ?>
-                            <input type="hidden" name="shape" value="<?php echo $_GET['shape']; ?>">
-                        <?php endif; ?>
-                        <?php if(isset($_GET['category'])): ?>
-                            <input type="hidden" name="category" value="<?php echo $_GET['category']; ?>">
-                        <?php endif; ?>
-                        <div class="input-group">
-                            <label class="input-group-text" for="branchSelect">Branch:</label>
-                            <select class="form-select" id="branchSelect" name="branch" onchange="this.form.submit()">
-                                <option value="">All Branches</option>
-                                <?php
-                                    $conn = connect();
-                                    $branchQuery = "SELECT BranchCode, BranchName FROM BranchMaster";
-                                    $branchResult = mysqli_query($conn, $branchQuery);
-                                    while ($branch = mysqli_fetch_assoc($branchResult)) {
-                                        $selected = (isset($_GET['branch']) && $_GET['branch'] == $branch['BranchCode']) ? 'selected' : '';
-                                        echo "<option value='{$branch['BranchCode']}' $selected>{$branch['BranchName']}</option>";
-                                    }
-                                    $conn->close();
-                                ?>
-                            </select>
-                        </div>
-                    </form>
-                    
-                
-                <div class="filter-container">
-                    <!-- Branch Filter -->
-                    <form method="get" action="" class="filter-dropdown">
-                        <input type="hidden" name="page" value="1"> <!-- Always reset to page 1 when applying a new filter -->
                         <?php if(isset($_GET['search'])): ?>
                             <input type="hidden" name="search" value="<?php echo $_GET['search']; ?>">
                         <?php endif; ?>
@@ -859,4 +1030,3 @@
         </script>
     </body>
 </html>
-

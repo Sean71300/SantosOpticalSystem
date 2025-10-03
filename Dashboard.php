@@ -4,7 +4,14 @@ include 'ActivityTracker.php';
 include 'loginChecker.php';
 include 'adminFunctions.php';
 
-$isAdmin = isset($_SESSION['roleid']) && $_SESSION['roleid'] === 1;
+$isAdmin = false;
+// Consider roleid 1 (Admin) and roleid 4 (Super Admin) as admin-level for dashboard access
+if (isset($_SESSION['roleid'])) {
+    $rid = (int)$_SESSION['roleid'];
+    if ($rid === 1 || $rid === 4) {
+        $isAdmin = true;
+    }
+}
 
 // Get all counts
 $customerCount = getCustomerCount();
@@ -15,7 +22,6 @@ $claimedOrderCount = getClaimedOrderCount();
 $recentActivities = getRecentActivities();
 $lowInventory = getLowInventoryProducts();
 $salesData = getSalesOverviewData();
-
 ?>
 
 <!DOCTYPE html>
@@ -30,98 +36,36 @@ $salesData = getSalesOverviewData();
     <link rel="shortcut icon" type="image/x-icon" href="Images/logo.png"/>
     <title>Dashboard</title>
     <style>
-        body {
-            background-color: #f5f7fa;
-            padding-top: 60px;
-        }
-        .main-content {
-            margin-left: 250px;
-            padding: 20px;
-            width: calc(100% - 250px);
-            transition: margin 0.3s ease;
-        }
-        .dashboard-card {
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-            padding: 20px;
-            background-color: white;
-            transition: transform 0.3s;
-        }
-        .dashboard-card:hover {
-            transform: translateY(-5px);
-        }
-        .card-icon {
-            font-size: 2rem;
-            margin-bottom: 15px;
-        }
-        .stat-number {
-            font-size: 2rem;
-            font-weight: bold;
-        }
-        .recent-activity {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        .chart-container {
-            height: 300px;
-            width: 100%;
-        }
-        .card-icon.text-success {
-            color: #28a745 !important;
-        }
-        .btn-outline-success {
-            color: #28a745;
-            border-color: #28a745;
-        }
-        .btn-outline-success:hover {
-            color: #fff;
-            background-color: #28a745;
-            border-color: #28a745;
-        }
-        @media (max-width: 992px) {
-            .main-content {
-                margin-left: 0;
-                width: 100%;
-            }
-        }
-        @media (max-width: 768px) {
-            .col-md-3 {
-                flex: 0 0 50%;
-                max-width: 50%;
-            }
-            .stat-number {
-                font-size: 1.5rem;
-            }
-        }
-        @media (max-width: 576px) {
-            .col-md-3 {
-                flex: 0 0 100%;
-                max-width: 100%;
-            }
-            .main-content {
-                padding: 15px;
-            }
-        }
+        body { background-color: #f5f7fa; padding-top: 60px; }
+        .main-content { margin-left: 250px; padding: 20px; width: calc(100% - 250px); transition: margin 0.3s ease; }
+        .dashboard-card { border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; padding: 20px; background-color: white; transition: transform 0.3s; }
+        .dashboard-card:hover { transform: translateY(-5px); }
+        .card-icon { font-size: 2rem; margin-bottom: 15px; }
+        .stat-number { font-size: 2rem; font-weight: bold; }
+        .recent-activity { max-height: 400px; overflow-y: auto; }
+        .chart-container { height: 300px; width: 100%; }
+        .card-icon.text-success { color: #28a745 !important; }
+        .btn-outline-success { color: #28a745; border-color: #28a745; }
+        .btn-outline-success:hover { color: #fff; background-color: #28a745; border-color: #28a745; }
+        @media (max-width: 992px) { .main-content { margin-left: 0; width: 100%; } }
+        @media (max-width: 768px) { .col-md-3 { flex: 0 0 50%; max-width: 50%; } .stat-number { font-size: 1.5rem; } }
+        @media (max-width: 576px) { .col-md-3 { flex: 0 0 100%; max-width: 100%; } .main-content { padding: 15px; } }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-
 <body>
     <?php include "sidebar.php"; ?>
 
     <div class="main-content">
         <?php
-            $username = $_SESSION["username"];
-            echo "<h2 class='mb-4'>Welcome back, $username</h2>";
+            $username = $_SESSION["username"] ?? 'User';
+            echo "<h2 class='mb-4'>Welcome back, " . htmlspecialchars($username) . "</h2>";
         ?>
         
         <div class="row">
             <div class="col-md-3">
                 <div class="dashboard-card">
-                    <div class="card-icon text-primary">
-                        <i class="fas fa-users"></i>
-                    </div>
+                    <div class="card-icon text-primary"><i class="fas fa-users"></i></div>
                     <h5>Customers</h5>
                     <div class="stat-number"><?php echo number_format($customerCount); ?></div>
                     <a href="customerRecords.php" class="btn btn-sm btn-outline-primary mt-2">View All</a>
@@ -131,108 +75,126 @@ $salesData = getSalesOverviewData();
             <?php if ($isAdmin): ?>
             <div class="col-md-3">
                 <div class="dashboard-card">
-                    <div class="card-icon text-success">
-                        <i class="fas fa-user-tie"></i>
-                    </div>
+                    <div class="card-icon text-success"><i class="fas fa-user-tie"></i></div>
                     <h5>Employees</h5>
                     <div class="stat-number"><?php echo number_format($employeeCount); ?></div>
                     <a href="employeeRecords.php" class="btn btn-sm btn-outline-success mt-2">View All</a>
                 </div>
             </div>
             <?php endif; ?>
-            
-            <div class="col-md-3">
-                <div class="dashboard-card">
-                    <div class="card-icon text-warning">
-                        <i class="fas fa-boxes"></i>
-                    </div>
-                    <h5>Inventory</h5>
-                    <div class="stat-number"><?php echo number_format($inventoryCount); ?></div>
-                    <a href="<?php echo ($isAdmin) ? 'admin-inventory.php' : 'Employee-inventory.php'; ?>" class="btn btn-sm btn-outline-warning mt-2">View All</a>
-                </div>
-            </div>
-            
-            <div class="col-md-3">
-                <div class="dashboard-card">
-                    <div class="card-icon text-info">
-                        <i class="fas fa-shopping-cart"></i>
-                    </div>
-                    <h5>Total Orders</h5>
-                    <div class="stat-number"><?php echo number_format($orderCount); ?></div>
-                    <a href="order.php" class="btn btn-sm btn-outline-info mt-2">View All</a>
-                </div>
-            </div>
-        </div>
-        
-        <div class="row mt-4">
-            <div class="col-md-8">
-                <div class="dashboard-card">
-                    <h5 id="sales-overview-title"><i class="fas fa-chart-line me-2"></i>Sales Overview (Last 7 Days)</h5>
-                    <hr class="border-1 border-black opacity-25">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                <h6 class="mb-0">View</h6>
-                                <div>
-                                    <div class="btn-group" role="group" aria-label="Sales view">
-                                        <button type="button" class="btn btn-sm btn-outline-secondary sales-view-btn active" data-view="week">Week</button>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary sales-view-btn" data-view="month">Month</button>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary sales-view-btn" data-view="year">Year</button>
-                                    </div>
-                                    <select id="sales-year-select" class="form-select form-select-sm d-inline-block ms-2" style="width:auto;">
-                                        <!-- years injected by JS -->
+            <?php 
+                $ridLocal = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0; 
+                $isEmployeeOnly = ($ridLocal === 2) && !$isAdmin; 
+            ?>
+            <?php if ($isAdmin): ?>
+                <div class="row mt-4">
+                    <div class="col-md-8">
+                        <div class="dashboard-card">
+                            <h5 id="sales-overview-title"><i class="fas fa-chart-line me-2"></i>Sales Overview</h5>
+                            <hr class="border-1 border-black opacity-25">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div></div>
+                                <div class="d-flex align-items-center">
+                                    <select id="sales-month-select" class="form-select form-select-sm d-inline-block" style="width:150px;"></select>
+                                    <select id="sales-week-select" class="form-select form-select-sm d-inline-block ms-2" style="width:140px;">
+                                        <option value="week1">Week 1</option>
+                                        <option value="week2">Week 2</option>
+                                        <option value="week3">Week 3</option>
+                                        <option value="week4">Week 4</option>
+                                        <option value="month">Whole Month</option>
                                     </select>
-                                    <select id="sales-month-select" class="form-select form-select-sm d-inline-block ms-2" style="width:auto; display:none;">
-                                        <option value="">Month</option>
-                                    </select>
-                                    <!-- week-based mode removed per request -->
-                                    <div id="sales-range-controls" class="d-inline-block ms-2">
-                                        <!-- simplified: no range buttons to avoid errors -->
-                                    </div>
+                                    <select id="sales-year-select" class="form-select form-select-sm d-inline-block ms-2" style="width:110px;"></select>
                                 </div>
                             </div>
-                        <div class="chart-container">
-                            <canvas id="salesChart"></canvas>
+                            <div class="chart-container">
+                                <canvas id="salesChart"></canvas>
+                            </div>
+                            <div class="mt-3">
+                                <div id="net-summary" class="mb-2"></div>
+                                <h6 class="mb-2">Top Products</h6>
+                                <ul id="top-products" class="list-group list-group-flush"></ul>
+                            </div>
                         </div>
-                </div>
-            </div>
-            
-            <div class="col-md-4">
-                <div class="dashboard-card recent-activity">    
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="mb-0"><i class="fa-solid fa-circle-exclamation me-2"></i>Low Stocks</h5>
-                        <a href="<?php echo ($isAdmin) ? 'admin-inventory.php' : 'Employee-inventory.php'; ?>" class="btn btn-sm btn-outline-secondary">
-                        <i class="fa-solid fa-boxes-stacked"></i> Show Inventory
-                        </a>
                     </div>
-                    <hr class="border-1 border-black opacity-25">
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <div class="row">
-                                <?php
-                                if (count($lowInventory) > 0) {
-                                    foreach ($lowInventory as $product) {
-                                        echo '<div class="container d-flex align-items-center">';
-                                        echo '<img src="' . htmlspecialchars($product['ProductImage']) . '" alt="Product Image" style="height:100px; width:100px;" class="img-thumbnail">';
-                                            echo '<div class="fw-bold ms-3">';
+                    <div class="col-md-4">
+                        <div class="dashboard-card recent-activity">    
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="mb-0"><i class="fa-solid fa-circle-exclamation me-2"></i>Low Stocks</h5>
+                                <a href="<?php echo ($isAdmin) ? 'admin-inventory.php' : 'Employee-inventory.php'; ?>" class="btn btn-sm btn-outline-secondary">
+                                    <i class="fa-solid fa-boxes-stacked"></i> Show Inventory
+                                </a>
+                            </div>
+                            <hr class="border-1 border-black opacity-25">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div class="row">
+                                        <?php
+                                        if (count($lowInventory) > 0) {
+                                            foreach ($lowInventory as $product) {
+                                                $img = !empty($product['ProductImage']) ? $product['ProductImage'] : 'Images/logo.png';
+                                                echo '<div class="container d-flex align-items-center">';
+                                                echo '<img src="' . htmlspecialchars($img) . '" alt="Product Image" style="height:100px; width:100px;" class="img-thumbnail">';
+                                                echo '<div class="fw-bold ms-3">';
                                                 echo htmlspecialchars($product['Model']);
                                                 echo "<br> Available Stocks: ".htmlspecialchars($product['Stocks']);
-                                            echo '</div>';
-                                        echo '</div>';
-                                    }
-                                } else {
-                                    echo '<p class="text-center">No low stock products.</p>';
-                                } 
-                                ?>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-            <?php if ($isAdmin): ?>    
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Recent Activity</h5>
-                        <a href="logs.php" class="btn btn-sm btn-outline-secondary">
-                            <i class="fas fa-list me-1"></i> Show All Logs
-                        </a>
+                                                echo '</div>';
+                                                echo '</div>';
+                                            }
+                                        } else {
+                                            echo '<p class="text-center">No low stock products.</p>';
+                                        }
+                                        ?>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
+                </div>
+            <?php elseif ($isEmployeeOnly): ?>
+                <div class="row mt-4">
+                    <div class="col-12 d-flex justify-content-center">
+                        <div class="col-lg-8 col-xl-6">
+                            <div class="dashboard-card recent-activity">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="mb-0 text-center w-100"><i class="fa-solid fa-circle-exclamation me-2"></i>Low Stocks</h5>
+                                </div>
+                                <hr class="border-1 border-black opacity-25">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div class="row">
+                                            <?php
+                                            if (count($lowInventory) > 0) {
+                                                foreach ($lowInventory as $product) {
+                                                    $img = !empty($product['ProductImage']) ? $product['ProductImage'] : 'Images/logo.png';
+                                                    echo '<div class="container d-flex align-items-center">';
+                                                    echo '<img src="' . htmlspecialchars($img) . '" alt="Product Image" style="height:100px; width:100px;" class="img-thumbnail">';
+                                                    echo '<div class="fw-bold ms-3">';
+                                                    echo htmlspecialchars($product['Model']);
+                                                    echo "<br> Available Stocks: ".htmlspecialchars($product['Stocks']);
+                                                    echo '</div>';
+                                                    echo '</div>';
+                                                }
+                                            } else {
+                                                echo '<p class="text-center">No low stock products.</p>';
+                                            }
+                                            ?>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <?php endif; ?>
+            <?php if ($isAdmin): ?>
+                    <div class="dashboard-card mt-3">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Recent Activity</h5>
+                            <a href="logs.php" class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-list me-1"></i> Show All Logs
+                            </a>
+                        </div>
+                        <hr class="border-1 border-black opacity-25">
                         <div class="list-group list-group-flush recent-activity-list" style="max-height:360px; overflow:auto; padding-right:6px;">
                             <?php
                             if (empty($recentActivities)) {
@@ -268,11 +230,9 @@ $salesData = getSalesOverviewData();
                             }
                             ?>
                         </div>
-                        
-                    </ul>
-                </div>
-            </div>
+                    </div>
             <?php endif; ?>
+            </div>
         </div>
     </div>
 
@@ -281,7 +241,7 @@ $salesData = getSalesOverviewData();
             const sidebar = document.getElementById('sidebar');
             const mobileToggle = document.getElementById('mobileMenuToggle');
             const body = document.body;
-            
+
             if (mobileToggle) {
                 mobileToggle.addEventListener('click', function(e) {
                     e.stopPropagation();
@@ -289,16 +249,14 @@ $salesData = getSalesOverviewData();
                     body.classList.toggle('sidebar-open');
                 });
             }
-            
+
             document.addEventListener('click', function(e) {
-                if (window.innerWidth <= 992 && 
-                    !sidebar.contains(e.target) && 
-                    (!mobileToggle || e.target !== mobileToggle)) {
+                if (window.innerWidth <= 992 && !sidebar.contains(e.target) && (!mobileToggle || e.target !== mobileToggle)) {
                     sidebar.classList.remove('active');
                     body.classList.remove('sidebar-open');
                 }
             });
-            
+
             document.querySelectorAll('.sidebar-item').forEach(item => {
                 item.addEventListener('click', function() {
                     if (window.innerWidth <= 992) {
@@ -307,7 +265,7 @@ $salesData = getSalesOverviewData();
                     }
                 });
             });
-            
+
             window.addEventListener('resize', function() {
                 if (window.innerWidth > 992) {
                     sidebar.classList.remove('active');
@@ -315,159 +273,236 @@ $salesData = getSalesOverviewData();
                 }
             });
 
-            // initial placeholder data (will be overwritten by API)
-            const salesData = {
-                labels: [],
-                datasets: [
-                    { label: 'Sold', data: [], backgroundColor: 'rgba(40,167,69,0.15)', borderColor: 'rgba(40,167,69,1)', tension: 0.1, fill: true },
-                    { label: 'Cancelled', data: [], backgroundColor: 'rgba(220,53,69,0.15)', borderColor: 'rgba(220,53,69,1)', tension: 0.1, fill: true },
-                    { label: 'Returned', data: [], backgroundColor: 'rgba(255,193,7,0.15)', borderColor: 'rgba(255,193,7,1)', tension: 0.1, fill: true }
-                ]
-            };
-
-            const salesCtx = document.getElementById('salesChart').getContext('2d');
-            const salesChart = new Chart(salesCtx, {
+            // Chart setup
+            const salesCtx = document.getElementById('salesChart') ? document.getElementById('salesChart').getContext('2d') : null;
+            const salesChart = salesCtx ? new Chart(salesCtx, {
                 type: 'line',
-                data: salesData,
+                data: { labels: [], datasets: [
+                    { label: 'Sold', data: [], backgroundColor: 'rgba(40,167,69,0.15)', borderColor: 'rgba(40,167,69,1)', tension: 0.1, fill: true },
+                    { label: 'Cancelled', data: [], backgroundColor: 'rgba(220,53,69,0.12)', borderColor: 'rgba(220,53,69,1)', tension: 0.1, fill: true },
+                    { label: 'Returned', data: [], backgroundColor: 'rgba(255,193,7,0.12)', borderColor: 'rgba(255,193,7,1)', tension: 0.1, fill: true }
+                ] },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Products Sold'
-                            }
-                        },
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Date'
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const label = context.dataset && context.dataset.label ? context.dataset.label : '';
-                                    const raw = context.parsed && (context.parsed.y !== undefined ? context.parsed.y : context.parsed);
-                                    const value = (raw === undefined || raw === null) ? 0 : raw;
-                                    return label + ': ' + value;
-                                }
-                            }
-                        }
-                    }
+                    scales: { y: { beginAtZero: true, title: { display: true, text: 'Quantity' } }, x: { title: { display: true, text: 'Date' } } },
+                    plugins: { legend: { position: 'top' } }
                 }
-            });
+            }) : null;
 
-            // Simplified: only view and year/month selectors remain. Chart will request explicit start/end dates.
-            let currentView = 'week';
-
-            function setActiveViewButton(btn) {
-                document.querySelectorAll('.sales-view-btn').forEach(b => b.classList.remove('active'));
-                if (btn) btn.classList.add('active');
+            // New: populate month/year selectors and compute start/end from 3 selectors (month, week segment, year)
+            function formattedLabels(labels) {
+                const n = labels.length;
+                return labels.map(d => {
+                    const dt = new Date(d + 'T00:00:00');
+                    if (n <= 14) return dt.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric' }).replace(',', '');
+                    if (n <= 62) return dt.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+                    return dt.toLocaleDateString(undefined, { month: 'short' });
+                });
             }
 
-            function computeStartEndForView(view) {
-                const now = new Date();
-                const yearSel = document.getElementById('sales-year-select');
+            function populateMonthYearSelectors() {
                 const monthSel = document.getElementById('sales-month-select');
-                const year = yearSel ? parseInt(yearSel.value, 10) : now.getFullYear();
-                const month = monthSel && monthSel.value ? parseInt(monthSel.value, 10) : null;
-                let start = null; let end = null;
-                if (view === 'year') {
-                    start = new Date(year, 0, 1);
-                    end = new Date(year, 11, 31);
-                } else if (view === 'month') {
-                    const m = month !== null ? month - 1 : now.getMonth();
-                    start = new Date(year, m, 1);
-                    end = new Date(year, m + 1, 0);
-                } else { // week
-                    const m = month !== null ? month - 1 : now.getMonth();
-                    // default to current week within the chosen month: use first day of month to find week
-                    const first = new Date(year, m, 1);
-                    const day = first.getDay();
-                    // start at first day
-                    start = first;
-                    end = new Date(start);
-                    end.setDate(start.getDate() + 6);
+                const yearSel = document.getElementById('sales-year-select');
+                if (!monthSel || !yearSel) return;
+
+                const monthNames = [];
+                for (let m = 0; m < 12; m++) {
+                    const dt = new Date(2000, m, 1);
+                    monthNames.push(dt.toLocaleString(undefined, { month: 'long' }));
                 }
+                monthSel.innerHTML = '';
+                // add Whole Year option first
+                const wholeYearOpt = document.createElement('option');
+                wholeYearOpt.value = 'whole-year';
+                wholeYearOpt.textContent = 'Whole Year';
+                monthSel.appendChild(wholeYearOpt);
+                monthNames.forEach((name, idx) => {
+                    const opt = document.createElement('option');
+                    opt.value = (idx + 1).toString();
+                    opt.textContent = name;
+                    monthSel.appendChild(opt);
+                });
+
+                const now = new Date();
+                const thisYear = now.getFullYear();
+                yearSel.innerHTML = '';
+                // add All Time option first
+                const allOpt = document.createElement('option');
+                allOpt.value = 'all';
+                allOpt.textContent = 'All Time';
+                yearSel.appendChild(allOpt);
+                for (let y = thisYear; y >= thisYear - 4; y--) {
+                    const opt = document.createElement('option');
+                    opt.value = y.toString();
+                    opt.textContent = y.toString();
+                    yearSel.appendChild(opt);
+                }
+
+                monthSel.value = (now.getMonth() + 1).toString();
+                yearSel.value = now.getFullYear().toString();
+            }
+
+            function computeStartEndFromSelectors() {
+                const monthSel = document.getElementById('sales-month-select');
+                const weekSel = document.getElementById('sales-week-select');
+                const yearSel = document.getElementById('sales-year-select');
+                const monthVal = monthSel ? monthSel.value : null;
+                const yearVal = yearSel ? yearSel.value : null;
+                const week = weekSel ? weekSel.value : 'month';
+
+                const now = new Date();
+
+                // All time
+                if (yearVal === 'all') {
+                    const start = new Date(2015, 0, 1);
+                    const end = now;
+                    return { start: start.toISOString().slice(0,10), end: end.toISOString().slice(0,10) };
+                }
+
+                // parse numeric month/year
+                const month = monthVal && monthVal !== 'whole-year' ? parseInt(monthVal, 10) : null;
+                const year = yearVal ? parseInt(yearVal, 10) : now.getFullYear();
+
+                // If whole-year selected
+                if (monthVal === 'whole-year') {
+                    const startY = new Date(year, 0, 1);
+                    const endY = new Date(year, 11, 31);
+                    return { start: startY.toISOString().slice(0,10), end: endY.toISOString().slice(0,10) };
+                }
+
+                // Fallback if month/year not numeric
+                const firstDay = new Date(year, (month || (now.getMonth()+1)) - 1, 1);
+                const lastDay = new Date(year, (month || (now.getMonth()+1)), 0);
+
+                let start = new Date(firstDay);
+                let end = new Date(lastDay);
+
+                if (week === 'week1') {
+                    start = new Date(year, month - 1, 1);
+                    end = new Date(year, month - 1, Math.min(7, lastDay.getDate()));
+                } else if (week === 'week2') {
+                    start = new Date(year, month - 1, 8);
+                    end = new Date(year, month - 1, Math.min(14, lastDay.getDate()));
+                } else if (week === 'week3') {
+                    start = new Date(year, month - 1, 15);
+                    end = new Date(year, month - 1, Math.min(21, lastDay.getDate()));
+                } else if (week === 'week4') {
+                    start = new Date(year, month - 1, 22);
+                    end = new Date(year, month - 1, lastDay.getDate());
+                } else if (week === 'month') {
+                    start = new Date(firstDay);
+                    end = new Date(lastDay);
+                }
+
                 return { start: start.toISOString().slice(0,10), end: end.toISOString().slice(0,10) };
             }
 
             async function loadSalesRange() {
                 try {
-                    const params = new URLSearchParams();
-                    const yearSel = document.getElementById('sales-year-select');
-                    params.set('year', yearSel ? yearSel.value : new Date().getFullYear());
-                    const se = computeStartEndForView(currentView);
-                    params.set('start', se.start);
-                    params.set('end', se.end);
+                    const se = computeStartEndFromSelectors();
+                    const params = new URLSearchParams({ start: se.start, end: se.end });
+                    const url = 'salesOverview.php?' + params.toString();
+                    console.debug('[Sales] request=', url);
+                    const resp = await fetch(url, { cache: 'no-store' });
+                    const json = await resp.json();
+                    console.debug('[Sales] response=', json);
+                    if (!json.success) throw new Error(json.error || 'Failed to load sales');
 
-                    // no extra mode param (week-based mode removed)
-                    const resp = await fetch('salesData.php?' + params.toString());
-                    const text = await resp.text();
-                    let json;
-                    try { json = JSON.parse(text); } catch (e) { throw new Error('Invalid JSON: ' + text); }
-                    if (!json.success) throw new Error(json.error || 'Failed to load sales data');
+                    if (salesChart) {
+                        salesChart.data.labels = formattedLabels(json.labels);
+                        salesChart.data.datasets[0].data = json.sold.map(v => parseInt(v||0,10));
+                        salesChart.data.datasets[1].data = json.cancelled.map(v => parseInt(v||0,10));
+                        salesChart.data.datasets[2].data = json.returned.map(v => parseInt(v||0,10));
+                        salesChart.update();
+                    }
 
-                    salesChart.data.labels = json.labels;
-                    salesChart.data.datasets[0].data = json.claimed.map(v=>parseInt(v||0,10));
-                    salesChart.data.datasets[1].data = json.cancelled.map(v=>parseInt(v||0,10));
-                    salesChart.data.datasets[2].data = json.returned.map(v=>parseInt(v||0,10));
-                    salesChart.update();
-                    // update header with selected date range
+                    // Top products: show three lists (sold, cancelled, returned)
+                    const topContainer = document.getElementById('top-products');
+                    if (topContainer) {
+                        topContainer.innerHTML = '';
+                        const sections = [ ['Sold', 'sold', 'primary'], ['Cancelled', 'cancelled', 'danger'], ['Returned', 'returned', 'warning'] ];
+                        sections.forEach(([label, key, badgeClass]) => {
+                            const header = document.createElement('li');
+                            header.className = 'list-group-item bg-light';
+                            header.innerHTML = `<strong>${label}</strong>`;
+                            topContainer.appendChild(header);
+                            const listItems = (json.topProducts && json.topProducts[key]) ? json.topProducts[key] : [];
+                            if (listItems.length === 0) {
+                                const empty = document.createElement('li');
+                                empty.className = 'list-group-item text-muted';
+                                empty.textContent = 'No items';
+                                topContainer.appendChild(empty);
+                            } else {
+                                listItems.forEach(p => {
+                                    const li = document.createElement('li');
+                                    li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                                    li.textContent = p.Model || ('Product ' + p.ProductID);
+                                    const span = document.createElement('span');
+                                    span.className = 'badge bg-' + badgeClass + ' rounded-pill';
+                                    span.textContent = p.qty;
+                                    li.appendChild(span);
+                                    topContainer.appendChild(li);
+                                });
+                            }
+                        });
+                    }
+
                     const title = document.getElementById('sales-overview-title');
                     if (title) {
-                        // format dates like 'Mar 3, 2025' or range 'Mar 3 - Sep 7, 2025'
-                        function fmt(d) { const dt = new Date(d); return dt.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }); }
-                        const startF = fmt(json.start);
-                        const endF = fmt(json.end);
+                        const startF = new Date(json.start).toLocaleDateString();
+                        const endF = new Date(json.end).toLocaleDateString();
                         title.textContent = `Sales Overview — ${startF} to ${endF}`;
+                    }
+
+                    // Net gain / loss display
+                    const netEl = document.getElementById('net-summary');
+                    if (netEl) {
+                        // salesOverview.php now returns net_gained (only sold revenue). Always show Net Gained.
+                        const net = parseFloat(json.net_gained || json.net_total || 0);
+                        const fmt = new Intl.NumberFormat(undefined, { style: 'currency', currency: 'PHP', maximumFractionDigits: 2 });
+                        netEl.innerHTML = `<span class="badge bg-success">Net Gained: ${fmt.format(net)}</span>`;
                     }
                 } catch (err) {
                     console.error('Error loading sales range:', err);
                 }
             }
 
-            // View button handlers
-            document.querySelectorAll('.sales-view-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    currentView = this.dataset.view;
-                    // clear mode dropdown when switching view
-                    const modeSelect = document.getElementById('sales-mode-select');
-                    if (modeSelect) modeSelect.value = '';
-                    setActiveViewButton(this);
-                    loadSalesRange();
-                });
-            });
+            // populate selectors and wire change events with state management
+            populateMonthYearSelectors();
 
-            // week-mode removed; no mode dropdown handler required
+            function updateSelectorStates() {
+                const monthSel = document.getElementById('sales-month-select');
+                const weekSel = document.getElementById('sales-week-select');
+                const yearSel = document.getElementById('sales-year-select');
+                if (!monthSel || !weekSel || !yearSel) return;
 
-            // initialize year/month selects and load
-            const yearSelectInit = document.getElementById('sales-year-select');
-            if (yearSelectInit && !yearSelectInit.dataset.initialized) {
-                const thisYear = new Date().getFullYear();
-                for (let y = thisYear; y >= thisYear - 7; y--) {
-                    const opt = document.createElement('option'); opt.value = y; opt.textContent = y;
-                    yearSelectInit.appendChild(opt);
+                if (yearSel.value === 'all') {
+                    // All Time: disable month and week
+                    monthSel.disabled = true;
+                    weekSel.disabled = true;
+                } else {
+                    monthSel.disabled = false;
+                    // if Whole Year selected, week segments don't apply
+                    if (monthSel.value === 'whole-year') {
+                        weekSel.disabled = true;
+                    } else {
+                        weekSel.disabled = false;
+                    }
                 }
-                yearSelectInit.value = new Date().getFullYear();
-                yearSelectInit.dataset.initialized = '1';
-                yearSelectInit.addEventListener('change', loadSalesRange);
             }
-            const monthInit = document.getElementById('sales-month-select');
-            if (monthInit && monthInit.options.length <= 1) {
-                const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-                for (let m = 1; m <= 12; m++) { const o = document.createElement('option'); o.value = m; o.textContent = monthNames[m-1]; monthInit.appendChild(o); }
-                monthInit.addEventListener('change', loadSalesRange);
-                monthInit.style.display = '';
-            }
+
+            // initial state
+            updateSelectorStates();
+
+            const monthSel = document.getElementById('sales-month-select');
+            const weekSel = document.getElementById('sales-week-select');
+            const yearSel = document.getElementById('sales-year-select');
+            if (monthSel) monthSel.addEventListener('change', function() { updateSelectorStates(); loadSalesRange(); });
+            if (weekSel) weekSel.addEventListener('change', loadSalesRange);
+            if (yearSel) yearSel.addEventListener('change', function() { updateSelectorStates(); loadSalesRange(); });
+
+            // initial load
             loadSalesRange();
         });
     </script>

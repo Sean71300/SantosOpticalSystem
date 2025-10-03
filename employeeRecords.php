@@ -127,16 +127,16 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
             <div class="table-container">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h1><i class="fas fa-users-cog me-2"></i> Employee Records</h1>
-                    <a class="btn btn-primary" href="employeeCreate.php" role="button">
+                    <button class="btn btn-primary" id="newEmployeeBtn" type="button" data-bs-toggle="modal" data-bs-target="#createEmployeeModal">
                         <i class="fas fa-plus me-2"></i> New Employee
-                    </a>            
+                    </button>
                 </div>
                 
                 <div class="table-instructions alert alert-info" style="margin-bottom: 20px; padding: 10px 15px; border-radius: 4px;">
                 <strong>Instructions:</strong>
                 <ul style="margin-bottom: 0; padding-left: 20px;">
                     <li>To add an Employee, click the button at the top right.</li>
-                    <li>To edit or delete Employee, click the button at the 'Actions' column.</li>
+                    <li>To edit or remove Employee, click the button at the 'Actions' column.</li>
 					<li>Click any column header to sort the table in ascending/descending order.</li>
                 </ul>
             </div>
@@ -197,7 +197,7 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
                 // Add confirmation for delete actions
                 document.querySelectorAll('.delete-btn').forEach(btn => {
                     btn.addEventListener('click', (e) => {
-                        if(!confirm('Are you sure you want to delete this employee?')) {
+                        if(!confirm('Are you sure you want to remove this employee?')) {
                             e.preventDefault();
                         }
                     });
@@ -389,6 +389,153 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
             }
         </script>
 
+    <!-- Remove confirmation modal -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Remove</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to remove <strong id="delEmployeeName"></strong>?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" id="confirmDeleteBtn" class="btn btn-danger">Remove</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Processing modal (shows while deletion is in progress) -->
+    <div class="modal fade" id="processingModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center py-4">
+                    <div class="spinner-border text-danger me-2" role="status"></div>
+                    <span>Deleting employee...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success modal (shown after deletion) -->
+    <div class="modal fade" id="deletedSuccessModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">Employee Removed</h5>
+                </div>
+                <div class="modal-body text-center">
+                    The employee has been removed. This window will close and the list will refresh shortly.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let targetId = null;
+        // Open confirmation modal instead of navigating
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                targetId = this.getAttribute('data-id');
+                const name = this.getAttribute('data-name') || 'this employee';
+                document.getElementById('delEmployeeName').textContent = name;
+                const mdl = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
+                mdl.show();
+            });
+        });
+
+        document.getElementById('confirmDeleteBtn')?.addEventListener('click', function() {
+            if (!targetId) return;
+            const confirmBtn = this;
+            confirmBtn.disabled = true; confirmBtn.textContent = 'Removing...';
+
+            // hide confirmation and show processing modal
+            var confirmModal = bootstrap.Modal.getInstance(document.getElementById('confirmDeleteModal'));
+            if (confirmModal) confirmModal.hide();
+            var procModal = new bootstrap.Modal(document.getElementById('processingModal'), { backdrop: 'static', keyboard: false });
+            procModal.show();
+
+            const fd = new FormData(); fd.append('EmployeeID', targetId);
+            fetch('employeeDeleteAjax.php', { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(async r => {
+                const txt = await r.text();
+                console.debug('[Remove] HTTP', r.status, txt);
+                try { return JSON.parse(txt); }
+                catch (e) { throw new Error('Invalid JSON response from server: ' + txt); }
+            })
+            .then(json => {
+                if (!json.success) throw new Error(json.message || 'Remove failed');
+                // show success modal, close processing
+                procModal.hide();
+                var successModal = new bootstrap.Modal(document.getElementById('deletedSuccessModal'));
+                successModal.show();
+                // refresh after 1 second
+                setTimeout(function() { location.reload(); }, 2000);
+            })
+            .catch(err => {
+                console.error(err);
+                procModal.hide();
+                alert('Remove failed: ' + err.message);
+            })
+            .finally(() => { confirmBtn.disabled = false; confirmBtn.textContent = 'Remove'; });
+        });
+    });
+    </script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Create modal: preview image
+        document.getElementById('createImage')?.addEventListener('change', function() {
+            const file = this.files && this.files[0];
+            const imgEl = document.querySelector('#createEmployeeModal .employee-img');
+            if (file && imgEl) {
+                const reader = new FileReader();
+                reader.onload = function(e) { imgEl.src = e.target.result; };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Submit create form via AJAX
+        const createForm = document.getElementById('createEmployeeForm');
+        if (createForm) {
+            createForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const btn = createForm.querySelector('button[type="submit"]');
+                btn.disabled = true; btn.textContent = 'Creating...';
+                const fd = new FormData(createForm);
+
+                fetch('employeeCreateAjax.php', { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(async r => {
+                    const txt = await r.text();
+                    console.debug('[Create] HTTP', r.status, txt);
+                    try {
+                        const json = JSON.parse(txt);
+                        return json;
+                    } catch (e) {
+                        throw new Error('Invalid JSON response: ' + txt);
+                    }
+                })
+                .then(json => {
+                    if (!json.success) {
+                        alert('Create failed: ' + (json.message || 'Unknown'));
+                        return;
+                    }
+                    // success: reload to show new row (could insert row dynamically)
+                    location.reload();
+                })
+                .catch(err => {
+                    console.error(err); alert('Error creating employee - check console for details');
+                })
+                .finally(() => { btn.disabled = false; btn.textContent = 'Create'; });
+            });
+        }
+    });
+    </script>
+
     <!-- Edit confirmation modal (moved inside body so Bootstrap can manage it) -->
     <div class="modal fade" id="editConfirmModal" tabindex="-1" aria-labelledby="editConfirmModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered custom-wide">
@@ -451,6 +598,69 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     <button type="submit" class="btn btn-primary modal-save">Save changes</button>
                 </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Create Employee Modal -->
+    <div class="modal fade" id="createEmployeeModal" tabindex="-1" aria-labelledby="createEmployeeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered custom-wide">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createEmployeeModalLabel">New Employee</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="createEmployeeForm" enctype="multipart/form-data">
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Full Name</label>
+                                <input type="text" class="form-control form-control-lg" name="name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Username</label>
+                                <input type="text" class="form-control form-control-lg" name="username" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Password</label>
+                                <input type="password" class="form-control form-control-lg" name="password" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control form-control-lg" name="email" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Contact Number</label>
+                                <input type="text" class="form-control form-control-lg" name="phone" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Branch</label>
+                                <select class="form-select form-control-lg" name="branch" required>
+                                    <?php branchHandler(''); ?>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Role</label>
+                                <select class="form-select form-control-lg" name="role" required>
+                                    <?php roleHandler(''); ?>
+                                </select>
+                            </div>
+                            <div class="col-md-6 text-center">
+                                <img src="Images/default.jpg" alt="Employee Image" class="employee-img mb-2">
+                                <div>
+                                    <label for="createImage" class="btn btn-success btn-sm">
+                                        <input type="file" name="IMAGE" id="createImage" accept=".jpg,.png,.jpeg" style="display:none;">
+                                        <i class="fas fa-camera me-1"></i> Change
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Create</button>
+                    </div>
                 </form>
             </div>
         </div>

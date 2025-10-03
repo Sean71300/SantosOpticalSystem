@@ -25,22 +25,31 @@ $_SESSION['LAST_ACTIVITY'] = time();
 
 ?>
 
-<script>
-    let timeout; // Variable to track the timeout
+<?php
+// If this is a normal page load, output the small client-side activity script.
+// If it's an AJAX request (X-Requested-With: XMLHttpRequest), don't output the script
+// because AJAX endpoints should return clean JSON only.
+$isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+if (!$isAjax) {
+    ?>
+    <script>
+        let timeout; // Variable to track the timeout
 
-    // Function to log out the user
-    function logout() {
-        window.location.href = 'logout.php'; // Redirect to logout script
-    }
+        // Function to log out the user
+        function logout() {
+            window.location.href = 'logout.php'; // Redirect to logout script
+        }
 
-    // Function to reset the inactivity timer
-    function resetTimer() {
-        clearTimeout(timeout);
-        timeout = setTimeout(logout, 900000); // 300000 ms = 5 minutes
-    }
+        // Function to reset the inactivity timer
+        function resetTimer() {
+            clearTimeout(timeout);
+            timeout = setTimeout(logout, 900000); // 900000 ms = 15 minutes
+        }
 
-    // Event listeners for user activity
-    window.onload = resetTimer; // Reset timer on page load
-    window.onmousemove = resetTimer; // Reset timer on mouse movement
-    window.onkeypress = resetTimer; // Reset timer on key press
-</script>
+        // Event listeners for user activity
+        window.onload = resetTimer; // Reset timer on page load
+        window.onmousemove = resetTimer; // Reset timer on mouse movement
+        window.onkeypress = resetTimer; // Reset timer on key press
+    </script>
+    <?php
+}

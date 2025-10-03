@@ -1,16 +1,16 @@
 <?php
 // Set panel title based on role
-$panel = " Panel"; 
-$isAdmin = isset($_SESSION['roleid']) && $_SESSION['roleid'] === 1;
-$isOptometrist = isset($_SESSION['roleid']) && $_SESSION['roleid'] === 3;
+$panel = " Panel";
+$rid = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0;
+$isAdmin = in_array($rid, [1, 4], true); // 1=Admin, 4=Super Admin
+$isOptometrist = ($rid === 3);
 
-if ($isAdmin === true) {
-    $panel = "Admin". $panel;
-} elseif ($isOptometrist == true) {
-    $panel = "Optometrist". $panel;
-}
-else {
-    $panel = "Employee". $panel;
+if ($isAdmin) {
+    $panel = "Admin" . $panel;
+} elseif ($isOptometrist) {
+    $panel = "Optometrist" . $panel;
+} else {
+    $panel = "Employee" . $panel;
 }
 ?>
 
@@ -36,10 +36,12 @@ else {
     
     <!-- Sidebar Menu -->
     <div class="sidebar-menu">
-        <?php 
-        $current_page = basename($_SERVER['PHP_SELF']);
-        $isAdmin = isset($_SESSION['roleid']) && $_SESSION['roleid'] === 1;
-        ?>
+    <?php 
+    $current_page = basename($_SERVER['PHP_SELF']);
+    // Reuse the same admin detection (Admin or Super Admin)
+    $rid = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0;
+    $isAdmin = in_array($rid, [1, 4], true);
+    ?>
         
         <?php if ($isAdmin): ?>
             <a href="Dashboard.php" class="sidebar-item <?php echo ($current_page == 'Dashboard.php') ? 'active' : ''; ?>">
@@ -66,10 +68,12 @@ else {
                 <i class="fas fa-shopping-cart"></i> 
                 <span class="sidebar-item-text">Manage Orders</span>
             </a>
+            <?php if ($rid === 4): ?>
             <a href="admin-branch.php" class="sidebar-item <?php echo ($current_page == 'admin-branch.php') ? 'active' : ''; ?>">
                 <i class="fa-solid fa-store"></i>
                 <span class="sidebar-item-text">Manage Branches</span>
             </a>
+            <?php endif; ?>
             <a href="logs.php" class="sidebar-item <?php echo ($current_page == 'logs.php') ? 'active' : ''; ?>">
                 <i class="fas fa-clipboard-list"></i> 
                 <span class="sidebar-item-text">System Logs</span>
