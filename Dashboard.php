@@ -22,6 +22,12 @@ $claimedOrderCount = getClaimedOrderCount();
 $recentActivities = getRecentActivities();
 $lowInventory = getLowInventoryProducts();
 $salesData = getSalesOverviewData();
+// Defensive guards
+if (!is_array($lowInventory)) { $lowInventory = []; }
+if (!is_numeric($customerCount)) { $customerCount = 0; }
+if (!is_numeric($employeeCount)) { $employeeCount = 0; }
+if (!is_numeric($inventoryCount)) { $inventoryCount = 0; }
+if (!is_numeric($orderCount)) { $orderCount = 0; }
 ?>
 
 <!DOCTYPE html>
@@ -179,6 +185,7 @@ $salesData = getSalesOverviewData();
                         </div>
                     </div>
                 </div>
+            <?php endif; ?>
             <?php endif; ?>
 
             <?php if ($isEmployeeOnly): ?>
