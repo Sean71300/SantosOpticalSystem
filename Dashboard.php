@@ -45,7 +45,7 @@ $salesData = getSalesOverviewData();
         .recent-activity { max-height: 400px; overflow-y: auto; }
         /* Equal-height helpers for admin view */
         .equal-height-row { align-items: stretch; }
-        .equal-height { height: 100%; display: flex; flex-direction: column; }
+    .equal-height { height: 100%; display: flex; flex-direction: column; width: 100%; flex: 1 1 auto; }
         .scroll-section { flex: 1 1 auto; overflow: auto; }
         .chart-container { height: 300px; width: 100%; }
         .card-icon.text-success { color: #28a745 !important; }
@@ -315,6 +315,21 @@ $salesData = getSalesOverviewData();
                     plugins: { legend: { position: 'top' } }
                 }
             }) : null;
+
+            // Ensure the chart uses the full width of its container (fixes right-side whitespace)
+            if (salesChart) {
+                const canvas = document.getElementById('salesChart');
+                const container = canvas ? canvas.parentElement : null;
+                // Resize once after layout settles
+                setTimeout(() => { try { salesChart.resize(); } catch (_) {} }, 60);
+                // Resize on window resize
+                window.addEventListener('resize', () => { try { salesChart.resize(); } catch (_) {} });
+                // Resize when the container size changes
+                if (container && 'ResizeObserver' in window) {
+                    const ro = new ResizeObserver(() => { try { salesChart.resize(); } catch (_) {} });
+                    ro.observe(container);
+                }
+            }
 
             // New: populate month/year selectors and compute start/end from 3 selectors (month, week segment, year)
             function formattedLabels(labels) {
