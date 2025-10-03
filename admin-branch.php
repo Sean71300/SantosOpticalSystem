@@ -299,9 +299,9 @@ include 'admin-branch-funcs.php';
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th scope="col" class="sortable" data-column="BranchName">Branch Name <i class="fas fa-sort sort-icon"></i></th>
-                            <th scope="col" class="sortable" data-column="BranchLocation">Branch Location <i class="fas fa-sort sort-icon"></i></th>
-                            <th scope="col" class="sortable" data-column="ContactNo">Contact No. <i class="fas fa-sort sort-icon"></i></th>
+                            <th>Branch Name</th>
+                            <th>Branch Location</th>
+                            <th>Contact No.</th>
                             <th colspan="2">Action</th>
                         </tr>
                     </thead>
