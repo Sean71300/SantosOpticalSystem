@@ -27,7 +27,7 @@ if (isset($_SESSION['roleid'])) {
 }
 if (isset($_SESSION['role'])) {
     $rname = strtolower((string)$_SESSION['role']);
-    if (in_array($rname, ['admin', 'super admin', 'superadmin', 'owner'], true)) {
+    if (in_array($rname, ['admin', 'super admin', 'superadmin'], true)) {
         $hideNav = true;
         $showTrackOrder = false;
     }
@@ -143,7 +143,7 @@ if (isset($_SESSION['role'])) {
                         // If user_type isn't employee but role string indicates super admin/admin, show admin panel link
                         else if (isset($_SESSION["role"])) {
                             $rnameLocal = strtolower((string)$_SESSION["role"]);
-                            if (in_array($rnameLocal, ['super admin', 'superadmin', 'admin', 'owner'], true)) {
+                            if (in_array($rnameLocal, ['super admin', 'superadmin', 'admin'], true)) {
                                 echo '<li><a class="dropdown-item" href="Dashboard.php">Admin Panel</a></li>';
                             }
                         }
