@@ -192,10 +192,10 @@ if (!is_numeric($orderCount)) { $orderCount = 0; }
             <?php endif; ?>
 
             <?php if ($isEmployeeOnly): ?>
-                <!-- Employee: 2x2 grid filling the page (outside admin/non-employee block) -->
-                <div class="row g-4 mt-1 equal-height-row">
-                    <!-- Top-left: Customers -->
-                    <div class="col-12 col-md-6 d-flex">
+                <!-- Employee: first row with 3 stat cards, second row full-width Low Stocks -->
+                <div class="row g-4 mt-1">
+                    <!-- Row 1: Customers, Inventory, Total Orders -->
+                    <div class="col-12 col-md-4 d-flex">
                         <div class="dashboard-card equal-height w-100">
                             <div class="card-icon text-primary"><i class="fas fa-users"></i></div>
                             <h5>Customers</h5>
@@ -206,8 +206,7 @@ if (!is_numeric($orderCount)) { $orderCount = 0; }
                         </div>
                     </div>
 
-                    <!-- Top-right: Inventory -->
-                    <div class="col-12 col-md-6 d-flex">
+                    <div class="col-12 col-md-4 d-flex">
                         <div class="dashboard-card equal-height w-100">
                             <div class="card-icon text-warning"><i class="fas fa-boxes-stacked"></i></div>
                             <h5>Inventory</h5>
@@ -218,8 +217,7 @@ if (!is_numeric($orderCount)) { $orderCount = 0; }
                         </div>
                     </div>
 
-                    <!-- Bottom-left: Total Orders -->
-                    <div class="col-12 col-md-6 d-flex">
+                    <div class="col-12 col-md-4 d-flex">
                         <div class="dashboard-card equal-height w-100">
                             <div class="card-icon text-info"><i class="fas fa-receipt"></i></div>
                             <h5>Total Orders</h5>
@@ -229,9 +227,11 @@ if (!is_numeric($orderCount)) { $orderCount = 0; }
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Bottom-right: Low Stocks -->
-                    <div class="col-12 col-md-6 d-flex">
+                <!-- Row 2: Low Stocks full width -->
+                <div class="row g-4 mt-1">
+                    <div class="col-12 d-flex">
                         <div class="dashboard-card equal-height w-100">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <h5 class="mb-0"><i class="fa-solid fa-circle-exclamation me-2"></i>Low Stocks</h5>
