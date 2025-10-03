@@ -15,7 +15,61 @@ if (isset($_POST['searchProduct'])) {
     $branchName = $_GET['branch'] ?? $_SESSION['current_branch'] ?? '';
 }
 
-// Store current branch in session
+// Role flags
+$isAdminRole = isset($_SESSION['roleid']) && (string)$_SESSION['roleid'] === '1';
+$isSuperAdmin = isset($_SESSION['roleid']) && (string)$_SESSION['roleid'] === '4';
+
+// If Admin (role 1), enforce scoping to their own branch only
+if ($isAdminRole) {
+    $sessionBranchCode = $_SESSION['branchcode'] ?? '';
+
+    // Fallback: if branch code isn't in session, fetch via login name
+    if ($sessionBranchCode === '' && !empty($_SESSION['username'])) {
+        $tmp = connect();
+        if ($tmp instanceof mysqli) {
+            if ($stmt = $tmp->prepare("SELECT BranchCode FROM employee WHERE LoginName = ? LIMIT 1")) {
+                $stmt->bind_param('s', $_SESSION['username']);
+                if ($stmt->execute()) {
+                    $res = $stmt->get_result();
+                    if ($row = $res->fetch_assoc()) {
+                        $_SESSION['branchcode'] = (string)$row['BranchCode'];
+                        $sessionBranchCode = $_SESSION['branchcode'];
+                    }
+                }
+                $stmt->close();
+            }
+            $tmp->close();
+        }
+    }
+
+    // Resolve BranchName from BranchCode
+    $resolvedBranchName = '';
+    if ($sessionBranchCode !== '') {
+        $tmp = connect();
+        if ($tmp instanceof mysqli) {
+            if ($stmt = $tmp->prepare("SELECT BranchName FROM BranchMaster WHERE BranchCode = ? LIMIT 1")) {
+                // BranchCode stored as string in session; bind as string
+                $stmt->bind_param('s', $sessionBranchCode);
+                if ($stmt->execute()) {
+                    $res = $stmt->get_result();
+                    if ($row = $res->fetch_assoc()) {
+                        $resolvedBranchName = (string)$row['BranchName'];
+                    }
+                }
+                $stmt->close();
+            }
+            $tmp->close();
+        }
+    }
+
+    // Force to resolved branch name; if not found, use a sentinel to avoid showing all branches
+    if ($resolvedBranchName === '') {
+        $resolvedBranchName = '__INVALID_BRANCH__';
+    }
+    $branchName = $resolvedBranchName;
+}
+
+// Store current branch in session (after any enforcement)
 $_SESSION['current_branch'] = $branchName;
 
 $lowInventory = getLowInventoryProducts();
@@ -360,34 +414,41 @@ $lowInventory = getLowInventoryProducts();
                 <form method="post" class="row g-3" id="branchForm">
                     <div class="col-md-8 col-sm-12">
                         <label for="chooseBranch" class="form-label">Select Branch</label>
-                        <select name="chooseBranch" id="chooseBranch" class="form-select form-select-sm">
-                            <option value='' <?= empty($branchName) ? 'selected' : '' ?>>View All Branches</option>
-                            <?php 
-                            $link = connect();
-                            if (!$link) {
-                                die("Database connection failed: " . mysqli_connect_error());
-                            }
-                            
-                            $sql = "SELECT BranchName FROM BranchMaster";
-                            $result = mysqli_query($link, $sql);
-                            
-                            if (!$result) {
-                                die("Query failed: " . mysqli_error($link));
-                            }
-                            
-                            while($row = mysqli_fetch_assoc($result)) {
-                                $selected = (strcasecmp($row['BranchName'], $branchName) === 0) ? 'selected' : '';
-                                echo "<option value='".htmlspecialchars($row['BranchName'])."' $selected>".htmlspecialchars($row['BranchName'])."</option>";
-                            }
-                            mysqli_close($link);
-                            ?>
-                        </select>
+                        <?php if ($isAdminRole): ?>
+                            <input type="text" class="form-control form-control-sm" value="<?= htmlspecialchars($branchName) ?>" disabled>
+                            <input type="hidden" name="chooseBranch" id="chooseBranch" value="<?= htmlspecialchars($branchName) ?>">
+                        <?php else: ?>
+                            <select name="chooseBranch" id="chooseBranch" class="form-select form-select-sm">
+                                <option value='' <?= empty($branchName) ? 'selected' : '' ?>>View All Branches</option>
+                                <?php 
+                                $link = connect();
+                                if (!$link) {
+                                    die("Database connection failed: " . mysqli_connect_error());
+                                }
+                                
+                                $sql = "SELECT BranchName FROM BranchMaster";
+                                $result = mysqli_query($link, $sql);
+                                
+                                if (!$result) {
+                                    die("Query failed: " . mysqli_error($link));
+                                }
+                                
+                                while($row = mysqli_fetch_assoc($result)) {
+                                    $selected = (strcasecmp($row['BranchName'], $branchName) === 0) ? 'selected' : '';
+                                    echo "<option value='".htmlspecialchars($row['BranchName'])."' $selected>".htmlspecialchars($row['BranchName'])."</option>";
+                                }
+                                mysqli_close($link);
+                                ?>
+                            </select>
+                        <?php endif; ?>
                     </div>
-                    <div class="col-md-4 col-sm-12 d-flex align-items-end">
-                        <button type="submit" class="btn btn-primary w-100" name="searchProduct">
-                            <i class="fas fa-search me-2"></i> Search
-                        </button>
-                    </div>
+                    <?php if (!$isAdminRole): ?>
+                        <div class="col-md-4 col-sm-12 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100" name="searchProduct">
+                                <i class="fas fa-search me-2"></i> Search
+                            </button>
+                        </div>
+                    <?php endif; ?>
                 </form>
             </div>
 
@@ -501,10 +562,16 @@ $lowInventory = getLowInventoryProducts();
                         echo '</tbody></table>';
                     }
 
-                    if (empty($branchName)) {
-                        branchSelection($sort, $order);                   
+                    // Admins are always scoped to a specific branch; prevent All Branches view
+                    if (!$isAdminRole && empty($branchName)) {
+                        branchSelection($sort, $order);
                     } else {
-                        branchView($sort, $order);
+                        // If branch name is invalid sentinel, render an empty table with message
+                        if ($branchName === '__INVALID_BRANCH__') {
+                            echo '<div class="alert alert-warning">No branch is assigned to your account. Please contact the administrator.</div>';
+                        } else {
+                            branchView($sort, $order);
+                        }
                     }
                     ?>
 

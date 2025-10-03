@@ -1004,13 +1004,51 @@ function deleteProduct()
 
     function getLowInventoryProducts($threshold = 10) {
         $link = connect();
-        $sql = "SELECT pbm.ProductID, pm.Model, pm.ProductImage, bm.BranchName, pbm.Stocks 
-                FROM ProductBranchMaster pbm
-                JOIN productMstr pm ON pbm.ProductID = pm.ProductID
-                JOIN BranchMaster bm ON pbm.BranchCode = bm.BranchCode
-                WHERE pbm.Stocks <= ? AND pbm.Avail_FL = 'Available' AND pm.Avail_FL = 'Available'";
-        $stmt = mysqli_prepare($link, $sql);
-        mysqli_stmt_bind_param($stmt, "i", $threshold);
+        $roleid = isset($_SESSION['roleid']) ? (string)$_SESSION['roleid'] : '';
+
+        // Super Admin (4): see all branches
+        if ($roleid === '4') {
+            $sql = "SELECT pbm.ProductID, pm.Model, pm.ProductImage, bm.BranchName, pbm.Stocks 
+                    FROM ProductBranchMaster pbm
+                    JOIN productMstr pm ON pbm.ProductID = pm.ProductID
+                    JOIN BranchMaster bm ON pbm.BranchCode = bm.BranchCode
+                    WHERE pbm.Stocks <= ? AND pbm.Avail_FL = 'Available' AND pm.Avail_FL = 'Available'";
+            $stmt = mysqli_prepare($link, $sql);
+            mysqli_stmt_bind_param($stmt, "i", $threshold);
+        } else {
+            // Admin (1) and other roles: restrict by their branch
+            $branchCode = isset($_SESSION['branchcode']) ? (string)$_SESSION['branchcode'] : '';
+
+            // Fallback: try resolving branch code by login name if missing
+            if ($branchCode === '' && !empty($_SESSION['username'])) {
+                $stmtResolve = mysqli_prepare($link, "SELECT BranchCode FROM employee WHERE LoginName = ? LIMIT 1");
+                if ($stmtResolve) {
+                    mysqli_stmt_bind_param($stmtResolve, "s", $_SESSION['username']);
+                    mysqli_stmt_execute($stmtResolve);
+                    $res = mysqli_stmt_get_result($stmtResolve);
+                    if ($row = mysqli_fetch_assoc($res)) {
+                        $_SESSION['branchcode'] = (string)$row['BranchCode'];
+                        $branchCode = $_SESSION['branchcode'];
+                    }
+                    mysqli_stmt_close($stmtResolve);
+                }
+            }
+
+            if ($branchCode === '') {
+                mysqli_close($link);
+                return [];
+            }
+
+            $sql = "SELECT pbm.ProductID, pm.Model, pm.ProductImage, bm.BranchName, pbm.Stocks 
+                    FROM ProductBranchMaster pbm
+                    JOIN productMstr pm ON pbm.ProductID = pm.ProductID
+                    JOIN BranchMaster bm ON pbm.BranchCode = bm.BranchCode
+                    WHERE pbm.Stocks <= ? AND pbm.Avail_FL = 'Available' AND pm.Avail_FL = 'Available' AND bm.BranchCode = ?";
+            $stmt = mysqli_prepare($link, $sql);
+            // Bind as string for consistency with other code paths
+            mysqli_stmt_bind_param($stmt, "is", $threshold, $branchCode);
+        }
+
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
         $lowInventory = [];
