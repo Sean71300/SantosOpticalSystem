@@ -112,7 +112,7 @@ $salesData = getSalesOverviewData();
             ?>
             <?php if ($isAdmin): ?>
                 <div class="row mt-4 equal-height-row">
-                    <div class="col-md-7 d-flex">
+                    <div class="col-md-9 col-lg-9 d-flex">
                         <div class="dashboard-card equal-height">
                             <h5 id="sales-overview-title"><i class="fas fa-chart-line me-2"></i>Sales Overview</h5>
                             <hr class="border-1 border-black opacity-25">
@@ -140,7 +140,7 @@ $salesData = getSalesOverviewData();
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-5 d-flex">
+                    <div class="col-md-3 col-lg-3 d-flex">
                         <div class="dashboard-card equal-height">    
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h5 class="mb-0"><i class="fa-solid fa-circle-exclamation me-2"></i>Low Stocks</h5>
