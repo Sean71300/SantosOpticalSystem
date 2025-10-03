@@ -509,9 +509,10 @@ $search = $_GET['search'] ?? '';
 $branch = $_GET['branch'] ?? '';
 $status = $_GET['status'] ?? '';
 
-// Enforce branch scoping for employees (roleid = 2)
-$isEmployee = isset($_SESSION['roleid']) && (int)$_SESSION['roleid'] === 2;
-if ($isEmployee) {
+// Enforce branch scoping for Admins (roleid = 1) and Employees (roleid = 2)
+$roleId = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0;
+$isRestrictedRole = ($roleId === 1 || $roleId === 2);
+if ($isRestrictedRole) {
     // Prefer branch from session; if missing, fetch from DB using login name and cache in session
     $sessionBranch = $_SESSION['branchcode'] ?? '';
     if (empty($sessionBranch)) {
@@ -747,8 +748,11 @@ $conn->close();
                     <input type="text" class="form-control" id="search" name="search" 
                            placeholder="Search orders or customers..." value="<?php echo htmlspecialchars($search); ?>">
                 </div>
-                <?php $isEmployeeLocal = isset($_SESSION['roleid']) && (int)$_SESSION['roleid'] === 2; ?>
-                <?php if (!$isEmployeeLocal): ?>
+                <?php 
+                    $roleLocal = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0; 
+                    $isRestrictedLocal = ($roleLocal === 1 || $roleLocal === 2);
+                ?>
+                <?php if (!$isRestrictedLocal): ?>
                 <div class="col-md-3">
                     <label for="branch" class="form-label">Filter by Branch</label>
                     <select class="form-select" id="branch" name="branch">
