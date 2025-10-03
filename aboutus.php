@@ -128,291 +128,51 @@
               </div>
           </div>
         </div>  
-   <footer class="footer-section py-5 mt-5">
-    <div class="container">
-        <div class="row g-4">
-            <!-- Logo Section -->
-            <div class="col-lg-3 col-md-6 mb-4">
-                <div class="footer-brand text-center text-md-start">
-                    <img src="Images/logo.png" alt="Santos Optical Logo" width="180" class="mb-3">
-                    <h5 class="fw-bold text-primary mb-2">Santos Optical</h5>
-                    <p class="text-muted small">Quality eyewear and professional eye care services since 2001</p>
+    <footer class="py-5 border-top mt-5 pt-4" style="background-color: #ffffff; margin-top: 50px; border-color: #ffffff;">
+        <div class="container">
+            <div class="row text-center text-md-start">
+                <div class="col-md-3 mb-3 mb-md-0 text-center">
+                    <img src="Images/logo.png" alt="Logo" width="200">
                 </div>
-            </div>
 
-            <!-- Products Section -->
-            <div class="col-lg-3 col-md-6 mb-4">
-                <div class="footer-section">
-                    <h6 class="footer-title mb-3">OUR PRODUCTS</h6>
-                    <ul class="footer-list list-unstyled">
-                        <li class="mb-2">
-                            <a href="product-gallery.php?category=Frame" class="footer-link text-decoration-none">
-                                <i class="fas fa-glasses me-2 text-primary"></i>Eyeglass Frames
-                            </a>
-                        </li>
-                        <li class="mb-2">
-                            <a href="product-gallery.php?category=Sunglasses" class="footer-link text-decoration-none">
-                                <i class="fas fa-sun me-2 text-primary"></i>Sunglasses
-                            </a>
-                        </li>
-                        <li class="mb-2">
-                            <a href="product-gallery.php?category=Contact+Lenses" class="footer-link text-decoration-none">
-                                <i class="fas fa-eye me-2 text-primary"></i>Contact Lenses
-                            </a>
-                        </li>
-                        <li class="mb-2">
-                            <a href="product-gallery.php" class="footer-link text-decoration-none">
-                                <i class="fas fa-search me-2 text-primary"></i>All Products
-                            </a>
-                        </li>
+                <div class="col-md-3 mb-3 mb-md-0">
+                    <h6 class="fw-bold">PRODUCTS</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-dark text-decoration-none">Frames</a></li>
+                        <li><a href="#" class="text-dark text-decoration-none">Sunglasses</a></li>
                     </ul>
                 </div>
-            </div>
 
-            <!-- Quick Links Section -->
-            <div class="col-lg-3 col-md-6 mb-4">
-                <div class="footer-section">
-                    <h6 class="footer-title mb-3">QUICK LINKS</h6>
-                    <ul class="footer-list list-unstyled">
-                        <li class="mb-2">
-                            <a href="aboutus.php" class="footer-link text-decoration-none">
-                                <i class="fas fa-building me-2 text-primary"></i>About Us
-                            </a>
-                        </li>
-                        <li class="mb-2">
-                            <a href="ourservices.php" class="footer-link text-decoration-none">
-                                <i class="fas fa-concierge-bell me-2 text-primary"></i>Our Services
-                            </a>
-                        </li>
-                        <li class="mb-2">
-                            <a href="face-shape-detector.php" class="footer-link text-decoration-none">
-                                <i class="fas fa-user-circle me-2 text-primary"></i>Face Shape Detector
-                            </a>
-                        </li>
-                        <li class="mb-2">
-                            <a href="trackorder.php" class="footer-link text-decoration-none">
-                                <i class="fas fa-shipping-fast me-2 text-primary"></i>Track Your Order
-                            </a>
-                        </li>
+                <div class="col-md-3 mb-3 mb-md-0">
+                    <h6 class="fw-bold">About</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="aboutus.php" class="text-dark text-decoration-none">About Us</a></li>
+                        <li><a href="ourservices.php" class="text-dark text-decoration-none">Services</a></li>
                     </ul>
                 </div>
-            </div>
 
-            <!-- Contact Section -->
-            <div class="col-lg-3 col-md-6 mb-4">
-                <div class="footer-section">
-                    <h6 class="footer-title mb-3">CONTACT INFORMATION</h6>
-                    <div class="contact-info">
-                        <div class="contact-item mb-3">
-                            <div class="contact-icon">
-                                <i class="fas fa-map-marker-alt text-primary"></i>
-                            </div>
-                            <div class="contact-text">
-                                <strong>Main Address:</strong><br>
-                                #6 Rizal Avenue Extension,<br>
-                                Brgy. San Agustin, Malabon City
-                            </div>
-                        </div>
-                        
-                        <div class="contact-item mb-3">
-                            <div class="contact-icon">
-                                <i class="fas fa-phone text-primary"></i>
-                            </div>
-                            <div class="contact-text">
-                                <strong>Landline:</strong><br>
-                                (02) 7508-4792
-                            </div>
-                        </div>
-                        
-                        <div class="contact-item mb-3">
-                            <div class="contact-icon">
-                                <i class="fas fa-mobile-alt text-primary"></i>
-                            </div>
-                            <div class="contact-text">
-                                <strong>Mobile:</strong><br>
-                                0932-844-7068
-                            </div>
-                        </div>
-                        
-                        <div class="contact-item mb-3">
-                            <div class="contact-icon">
-                                <i class="fas fa-envelope text-primary"></i>
-                            </div>
-                            <div class="contact-text">
-                                <strong>Email:</strong><br>
-                                <a href="mailto:Santosoptical@gmail.com" class="footer-link">Santosoptical@gmail.com</a>
-                            </div>
-                        </div>
-                    </div>
+                <div class="col-md-3">
+                    <h6 class="fw-bold">CONTACT US!</h6>
+                    <p class="mb-1">Address: #6 Rizal Avenue Extension, Brgy. San Agustin, Malabon City</p>
+                    <p class="mb-1">Phone: 027-508-4792</p>
+                    <p class="mb-1">Cell: 0932-844-7068</p>
+                    <p>Email: <a href="mailto:Santosoptical@gmail.com" class="text-dark">Santosoptical@gmail.com</a></p>
                 </div>
             </div>
-        </div>
-
-        <!-- Business Hours -->
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="business-hours text-center">
-                    <h6 class="footer-title mb-3">BUSINESS HOURS</h6>
-                    <div class="row justify-content-center">
-                        <div class="col-auto">
-                            <span class="badge bg-primary me-2">Monday - Saturday</span>
-                            <span class="text-muted">8:00 AM - 7:00 PM</span>
-                        </div>
-                        <div class="col-auto">
-                            <span class="badge bg-secondary me-2">Sunday</span>
-                            <span class="text-muted">9:00 AM - 5:00 PM</span>
-                        </div>
-                    </div>
-                </div>
+            <div class="container-fluid text-center py-3" style="background-color: white">
+                <p class="m-0">COPYRIGHT &copy; SANTOS OPTICAL co., ltd. ALL RIGHTS RESERVED.</p>
             </div>
         </div>
+    </footer>
 
-        <!-- Copyright Section -->
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="copyright-section text-center py-3">
-                    <p class="m-0 text-muted">
-                        <i class="far fa-copyright me-1"></i>
-                        2024 Santos Optical Co., Ltd. All Rights Reserved. | 
-                        <span class="ms-2">Providing Quality Eyewear Since 2001</span>
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
-</footer>
-
-<style>
-/* Footer Styles */
-.footer-section {
-    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-    border-top: 3px solid #007bff;
-}
-
-.footer-title {
-    color: #2c3e50;
-    font-weight: 700;
-    font-size: 1.1rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border-bottom: 2px solid #007bff;
-    padding-bottom: 0.5rem;
-    display: inline-block;
-}
-
-.footer-brand h5 {
-    color: #2c3e50;
-    font-size: 1.3rem;
-}
-
-.footer-list li {
-    transition: transform 0.3s ease;
-}
-
-.footer-list li:hover {
-    transform: translateX(5px);
-}
-
-.footer-link {
-    color: #555 !important;
-    transition: all 0.3s ease;
-    font-size: 0.95rem;
-    display: block;
-    padding: 0.25rem 0;
-}
-
-.footer-link:hover {
-    color: #007bff !important;
-    transform: translateX(3px);
-}
-
-.contact-info {
-    margin-top: 0.5rem;
-}
-
-.contact-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-}
-
-.contact-icon {
-    width: 20px;
-    text-align: center;
-    margin-top: 2px;
-    flex-shrink: 0;
-}
-
-.contact-text {
-    flex: 1;
-    font-size: 0.9rem;
-    line-height: 1.4;
-    color: #555;
-}
-
-.contact-text strong {
-    color: #2c3e50;
-    font-size: 0.85rem;
-}
-
-.business-hours {
-    padding: 1rem;
-    background: rgba(0, 123, 255, 0.05);
-    border-radius: 10px;
-    border-left: 4px solid #007bff;
-}
-
-.copyright-section {
-    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-    color: white;
-    border-radius: 8px;
-    margin-top: 1rem;
-}
-
-.copyright-section p {
-    font-size: 0.9rem;
-    letter-spacing: 0.5px;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .footer-section {
-        text-align: center;
-    }
-    
-    .footer-brand {
-        text-align: center !important;
-    }
-    
-    .contact-item {
-        justify-content: center;
-        text-align: center;
-    }
-    
-    .contact-icon {
-        margin-top: 0;
-    }
-    
-    .business-hours .row {
-        flex-direction: column;
-        gap: 10px;
-    }
-}
-
-@media (max-width: 576px) {
-    .footer-title {
-        font-size: 1rem;
-    }
-    
-    .footer-link {
-        font-size: 0.9rem;
-    }
-    
-    .contact-text {
-        font-size: 0.85rem;
-    }
-}
-</style>
+        <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+        <script>
+            AOS.init({
+                duration: 1000, 
+                easing: 'ease-in-out',
+                once: true,
+                disable: window.innerWidth < 768 // Disable animations on mobile for better performance
+            });
             
             // Re-init AOS when window is resized
             window.addEventListener('resize', function() {
