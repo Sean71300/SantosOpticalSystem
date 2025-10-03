@@ -43,6 +43,10 @@ $salesData = getSalesOverviewData();
         .card-icon { font-size: 2rem; margin-bottom: 15px; }
         .stat-number { font-size: 2rem; font-weight: bold; }
         .recent-activity { max-height: 400px; overflow-y: auto; }
+        /* Equal-height helpers for admin view */
+        .equal-height-row { align-items: stretch; }
+        .equal-height { height: 100%; display: flex; flex-direction: column; }
+        .scroll-section { flex: 1 1 auto; overflow: auto; }
         .chart-container { height: 300px; width: 100%; }
         .card-icon.text-success { color: #28a745 !important; }
         .btn-outline-success { color: #28a745; border-color: #28a745; }
@@ -107,9 +111,9 @@ $salesData = getSalesOverviewData();
                 $isEmployeeOnly = ($ridLocal === 2) && !$isAdmin; 
             ?>
             <?php if ($isAdmin): ?>
-                <div class="row mt-4">
-                    <div class="col-md-7">
-                        <div class="dashboard-card">
+                <div class="row mt-4 equal-height-row">
+                    <div class="col-md-7 d-flex">
+                        <div class="dashboard-card equal-height">
                             <h5 id="sales-overview-title"><i class="fas fa-chart-line me-2"></i>Sales Overview</h5>
                             <hr class="border-1 border-black opacity-25">
                             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -136,8 +140,8 @@ $salesData = getSalesOverviewData();
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-5">
-                        <div class="dashboard-card recent-activity">    
+                    <div class="col-md-5 d-flex">
+                        <div class="dashboard-card equal-height">    
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h5 class="mb-0"><i class="fa-solid fa-circle-exclamation me-2"></i>Low Stocks</h5>
                                 <a href="<?php echo ($isAdmin) ? 'admin-inventory.php' : 'Employee-inventory.php'; ?>" class="btn btn-sm btn-outline-secondary">
@@ -145,28 +149,30 @@ $salesData = getSalesOverviewData();
                                 </a>
                             </div>
                             <hr class="border-1 border-black opacity-25">
-                            <ul class="list-group list-group-flush">
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <div class="row">
-                                        <?php
-                                        if (count($lowInventory) > 0) {
-                                            foreach ($lowInventory as $product) {
-                                                $img = !empty($product['ProductImage']) ? $product['ProductImage'] : 'Images/logo.png';
-                                                echo '<div class="container d-flex align-items-center">';
-                                                echo '<img src="' . htmlspecialchars($img) . '" alt="Product Image" style="height:100px; width:100px;" class="img-thumbnail">';
-                                                echo '<div class="fw-bold ms-3">';
-                                                echo htmlspecialchars($product['Model']);
-                                                echo "<br> Available Stocks: ".htmlspecialchars($product['Stocks']);
-                                                echo '</div>';
-                                                echo '</div>';
+                            <div class="scroll-section">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div class="row">
+                                            <?php
+                                            if (count($lowInventory) > 0) {
+                                                foreach ($lowInventory as $product) {
+                                                    $img = !empty($product['ProductImage']) ? $product['ProductImage'] : 'Images/logo.png';
+                                                    echo '<div class="container d-flex align-items-center">';
+                                                    echo '<img src="' . htmlspecialchars($img) . '" alt="Product Image" style="height:100px; width:100px;" class="img-thumbnail">';
+                                                    echo '<div class="fw-bold ms-3">';
+                                                    echo htmlspecialchars($product['Model']);
+                                                    echo "<br> Available Stocks: ".htmlspecialchars($product['Stocks']);
+                                                    echo '</div>';
+                                                    echo '</div>';
+                                                }
+                                            } else {
+                                                echo '<p class="text-center">No low stock products.</p>';
                                             }
-                                        } else {
-                                            echo '<p class="text-center">No low stock products.</p>';
-                                        }
-                                        ?>
-                                    </div>
-                                </li>
-                            </ul>
+                                            ?>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
