@@ -274,9 +274,11 @@ if (!is_numeric($orderCount)) { $orderCount = 0; }
                     <div class="dashboard-card mt-3">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Recent Activity</h5>
-                            <a href="logs.php" class="btn btn-sm btn-outline-secondary">
-                                <i class="fas fa-list me-1"></i> Show All Logs
-                            </a>
+                            <?php if (isset($_SESSION['roleid']) && (int)$_SESSION['roleid'] === 4): ?>
+                                <a href="logs.php" class="btn btn-sm btn-outline-secondary">
+                                    <i class="fas fa-list me-1"></i> Show All Logs
+                                </a>
+                            <?php endif; ?>
                         </div>
                         <hr class="border-1 border-black opacity-25">
                         <div class="list-group list-group-flush recent-activity-list" style="max-height:360px; overflow:auto; padding-right:6px;">

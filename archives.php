@@ -3,6 +3,14 @@ include_once 'setup.php';
 include 'ActivityTracker.php';  // Make sure this contains class ActivityTracker
 include 'loginChecker.php';
 
+// Only Super Admin (roleid 4) can access Archives
+if (session_status() === PHP_SESSION_NONE) { @session_start(); }
+$rid = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0;
+if ($rid !== 4) {
+    header('Location: Dashboard.php');
+    exit();
+}
+
 $logsPerPage = 10;
 $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($currentPage - 1) * $logsPerPage;

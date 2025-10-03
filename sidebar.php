@@ -74,6 +74,7 @@ if ($isAdmin) {
                 <span class="sidebar-item-text">Manage Branches</span>
             </a>
             <?php endif; ?>
+            <?php if ($rid === 4): ?>
             <a href="logs.php" class="sidebar-item <?php echo ($current_page == 'logs.php') ? 'active' : ''; ?>">
                 <i class="fas fa-clipboard-list"></i> 
                 <span class="sidebar-item-text">System Logs</span>
@@ -82,6 +83,7 @@ if ($isAdmin) {
                 <i class="fas fa-box-archive"></i> 
                 <span class="sidebar-item-text">Archives</span>
             </a>
+            <?php endif; ?>
         <?php endif; ?>
 
         <?php if ($isOptometrist): ?>
