@@ -225,10 +225,8 @@
                 <!-- Logo Section -->
                 <div class="col-lg-3 col-md-6 mb-4">
                     <div class="footer-brand text-center text-md-start">
-                        <!-- Placeholder for logo image -->
-                        <div class="mb-3" style="width: 160px; height: 80px; background-color: #e9ecef; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
-                            <span class="text-muted">Logo Placeholder</span>
-                        </div>
+                        <!-- Actual logo from your reference -->
+                        <img src="Images/logo.png" alt="Santos Optical Logo" width="160" class="mb-3">
                         <h5 class="fw-bold text-dark mb-2">Santos Optical</h5>
                         <p class="text-muted small">Quality eyewear and professional eye care services since 2001</p>
                     </div>
