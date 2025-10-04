@@ -2,12 +2,9 @@
 $current_page = basename($_SERVER['PHP_SELF']);
 
 // If the current user is an employee/admin/super-admin, don't render the public navigation.
-// This prevents employees and admins from viewing or clicking the public site navigation.
-// By default show Track Order link; we'll disable it for staff/admins
 $hideNav = false;
 $showTrackOrder = true;
 if (session_status() === PHP_SESSION_NONE) {
-    // session should already be started by the including page, but be defensive
     @session_start();
 }
 if (isset($_SESSION['user_type'])) {
@@ -17,7 +14,6 @@ if (isset($_SESSION['user_type'])) {
         $showTrackOrder = false;
     }
 }
-// roleid 1 -> admin, 2 -> employee in this app; additionally check any role name
 if (isset($_SESSION['roleid'])) {
     $rid = (int)$_SESSION['roleid'];
     if (in_array($rid, [1,2], true)) {
@@ -32,19 +28,54 @@ if (isset($_SESSION['role'])) {
         $showTrackOrder = false;
     }
 }
-
-// Don't completely return; instead conditionally hide specific links (Track Order)
-// We'll still render the rest of the navigation for consistency.
-// (This keeps the brand and other links visible on admin pages.)
 ?>
 
 <style>
-.navbar .nav-link.active {
-    position: relative;
-    font-weight: bold;
+/* Reset and consistent header styling */
+.forNavigationbar {
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+    background-color: #ffffff;
 }
 
-.navbar .nav-link.active::after {
+.navbar {
+    background-color: #ffffff !important;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e9ecef;
+    box-shadow: none !important;
+}
+
+.navbar-brand {
+    font-weight: 700;
+    color: #2c3e50 !important;
+    font-size: 1.25rem;
+}
+
+.navbar-brand img {
+    width: 60px;
+    height: 80px;
+    object-fit: contain;
+}
+
+.navbar-nav .nav-link {
+    color: #2c3e50 !important;
+    font-weight: 500;
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    transition: color 0.3s ease;
+}
+
+.navbar-nav .nav-link:hover {
+    color: #007bff !important;
+}
+
+.navbar-nav .nav-link.active {
+    position: relative;
+    font-weight: 600;
+}
+
+.navbar-nav .nav-link.active::after {
     content: '';
     position: absolute;
     bottom: 0;
@@ -56,20 +87,45 @@ if (isset($_SESSION['role'])) {
     border-radius: 2px;
 }
 
-/* Responsive adjustments for dropdown */
-@media (max-width: 992px) {
-    .navbar-nav {
-        align-items: flex-start;
-    }
-    
-    .dropdown {
-        margin-left: 0;
-        padding: 0.5rem 1rem;
-    }
-    
-    .dropdown-toggle::after {
-        margin-left: 0.5em;
-    }
+.navbar-toggler {
+    border: none;
+    padding: 0.25rem 0.5rem;
+}
+
+.navbar-toggler:focus {
+    box-shadow: none;
+    outline: none;
+}
+
+.dropdown-toggle {
+    background: none;
+    border: none;
+    color: #2c3e50 !important;
+    font-weight: 500;
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+}
+
+.dropdown-toggle:hover {
+    color: #007bff !important;
+}
+
+.dropdown-menu {
+    border: 1px solid #e9ecef;
+    border-radius: 0.375rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.dropdown-item {
+    padding: 0.5rem 1rem;
+    color: #2c3e50;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+    color: #007bff;
 }
 
 .logo {
@@ -80,123 +136,108 @@ if (isset($_SESSION['role'])) {
     margin-left: 5px;
 }
 
-/* Consistent header styling */
-.forNavigationbar {
-    position: relative;
-    z-index: 1030;
+/* Responsive adjustments */
+@media (max-width: 992px) {
+    .navbar-nav {
+        align-items: flex-start;
+        padding: 1rem 0;
+    }
+    
+    .nav-item {
+        width: 100%;
+    }
+    
+    .nav-link {
+        padding: 0.75rem 1rem !important;
+        border-bottom: 1px solid #f8f9fa;
+    }
+    
+    .dropdown {
+        width: 100%;
+        margin-left: 0;
+        padding: 0;
+    }
+    
+    .dropdown-toggle {
+        width: 100%;
+        text-align: left;
+        padding: 0.75rem 1rem !important;
+        border-bottom: 1px solid #f8f9fa;
+    }
+    
+    .dropdown-menu {
+        position: static !important;
+        transform: none !important;
+        width: 100%;
+        border: none;
+        box-shadow: none;
+    }
 }
 
-.navbar {
-    background-color: #ffffff !important;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    padding: 0.5rem 0;
-}
-
-.navbar-brand {
-    font-weight: 700;
-    color: #2c3e50 !important;
-}
-
-.navbar-nav .nav-link {
-    color: #2c3e50 !important;
-    font-weight: 500;
-    padding: 0.5rem 1rem;
-    transition: color 0.3s ease;
-}
-
-.navbar-nav .nav-link:hover {
-    color: #007bff !important;
-}
-
-.navbar-toggler {
-    border: none;
-    padding: 0.25rem 0.5rem;
-}
-
-.navbar-toggler:focus {
-    box-shadow: none;
-}
-
-.dropdown-toggle {
-    background: none;
-    border: none;
-    color: #2c3e50 !important;
-    font-weight: 500;
-}
-
-.dropdown-toggle:hover {
-    color: #007bff !important;
-}
-
-.dropdown-menu {
-    border: none;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    border-radius: 8px;
-}
-
-.dropdown-item {
-    padding: 0.5rem 1rem;
-    color: #2c3e50;
-    transition: background-color 0.3s ease;
-}
-
-.dropdown-item:hover {
-    background-color: #f8f9fa;
-    color: #007bff;
+@media (max-width: 768px) {
+    .navbar-brand {
+        font-size: 1.1rem;
+    }
+    
+    .navbar-brand img {
+        width: 50px;
+        height: 70px;
+    }
+    
+    .nav-link, .dropdown-toggle {
+        font-size: 0.9rem;
+    }
 }
 </style>
 
 <div class="forNavigationbar sticky-top">
     <nav class="navbar navbar-expand-lg navbar-light bg-white">
-        <div class="container-fluid">
-            <a class="navbar-brand fw-bold mx-3" href="index.php">
-                <img src="Images/logo.png" alt="Logo" width="60" height="80"> 
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="index.php">
+                <img src="Images/logo.png" alt="Logo"> 
                 Santos Optical
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav ps-5 fs-5 fw-bold ms-2 mb-lg-0 col d-flex justify-content-end">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link m-2 <?php echo ($current_page == 'face-shape-detector.php') ? 'active' : ''; ?>" href="face-shape-detector.php">DISCOVER YOUR BEST LOOK</a>
+                        <a class="nav-link <?php echo ($current_page == 'face-shape-detector.php') ? 'active' : ''; ?>" href="face-shape-detector.php">DISCOVER YOUR BEST LOOK</a>
                     </li>                
                     <li class="nav-item">
-                        <a class="nav-link m-2 <?php echo ($current_page == 'product-gallery.php') ? 'active' : ''; ?>" href="product-gallery.php">PRODUCTS</a>
+                        <a class="nav-link <?php echo ($current_page == 'product-gallery.php') ? 'active' : ''; ?>" href="product-gallery.php">PRODUCTS</a>
                     </li>
-                    <li class="nav-item m-2">
+                    <li class="nav-item">
                         <a class="nav-link <?php echo ($current_page == 'aboutus.php') ? 'active' : ''; ?>" href="aboutus.php">ABOUT</a>
                     </li> 
                     <?php if ($showTrackOrder): ?>
                     <li class="nav-item">
-                        <a class="nav-link m-2 <?php echo ($current_page == 'trackorder.php') ? 'active' : ''; ?>" href="trackorder.php">TRACK ORDER</a>
+                        <a class="nav-link <?php echo ($current_page == 'trackorder.php') ? 'active' : ''; ?>" href="trackorder.php">TRACK ORDER</a>
                     </li>
                     <?php endif; ?> 
                     <?php  
                     if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
-                        echo '<li class="nav-item m-2">';
-                        echo '<a class="nav-link ' . ($current_page == 'login.php' ? 'active' : '') . '" href="login.php">|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Login</a>';
+                        echo '<li class="nav-item">';
+                        echo '<a class="nav-link ' . ($current_page == 'login.php' ? 'active' : '') . '" href="login.php">| Login</a>';
                         echo '</li>';
                     }
                     else {
-                        echo '<div class="dropdown">';
-                        echo '<button class="btn dropdown-toggle fs-5 fw-bold" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">';
-                        echo '|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'. htmlspecialchars($_SESSION["full_name"]);
+                        echo '<li class="nav-item dropdown">';
+                        echo '<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">';
+                        echo '| ' . htmlspecialchars($_SESSION["full_name"]);
                         
-                        // Only show image if it exists (for employees)
                         if (isset($_SESSION["img"]) && $_SESSION["user_type"] !== 'customer') {
-                            echo '<img src="' . $_SESSION["img"] . '" class="logo">';
+                            echo '<img src="' . $_SESSION["img"] . '" class="logo ms-2">';
                         }
                         
-                        echo '</button>';
-                        echo '<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">';
+                        echo '</a>';
+                        echo '<ul class="dropdown-menu" aria-labelledby="navbarDropdown">';
                         
-                        // Menu items based on user type
                         if (isset($_SESSION["user_type"]) && $_SESSION["user_type"] == 'employee') {
                             if (isset($_SESSION["roleid"])) {
                                 $rIdLocal = (int)$_SESSION["roleid"];
                                 if ($rIdLocal === 4) {
-                                    // Super Admin
                                     echo '<li><a class="dropdown-item" href="Dashboard.php">Admin Panel</a></li>';
                                 } elseif ($rIdLocal === 1) {
                                     echo '<li><a class="dropdown-item" href="Dashboard.php">Admin page</a></li>';
@@ -205,7 +246,6 @@ if (isset($_SESSION['role'])) {
                                 }
                             }
                         }
-                        // If user_type isn't employee but role string indicates super admin/admin, show admin panel link
                         else if (isset($_SESSION["role"])) {
                             $rnameLocal = strtolower((string)$_SESSION["role"]);
                             if (in_array($rnameLocal, ['super admin', 'superadmin', 'admin', 'owner'], true)) {
@@ -217,9 +257,10 @@ if (isset($_SESSION['role'])) {
                             echo '<li><a class="dropdown-item" href="trackorder.php">Track Order</a></li>';
                         }
                         
+                        echo '<li><hr class="dropdown-divider"></li>';
                         echo '<li><a class="dropdown-item" href="logout.php">Log Out</a></li>';
                         echo '</ul>';
-                        echo '</div>';
+                        echo '</li>';
                     }
                     ?>                               
                 </ul>        
