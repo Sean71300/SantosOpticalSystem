@@ -50,7 +50,7 @@
                     else if ($isOptometrist) {
                         echo 
                             "
-                                <a class='btn btn-primary btn-sm' href='optometrist-medicalhistory.php?CustomerID={$row['CustomerID']}'>Medical History</a>
+                                <button class='btn btn-info btn-sm view-orders' data-customer-id='$row[CustomerID]'>Orders</button>
                             ";
                     } else {
                         echo "

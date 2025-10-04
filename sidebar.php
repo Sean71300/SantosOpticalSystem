@@ -127,10 +127,6 @@ if ($isAdmin) {
                 <i class="fas fa-users"></i> 
                 <span class="sidebar-item-text">Customer Information</span>
             </a>
-            <a href="optometrist-medicalhistory.php" class="sidebar-item <?php echo ($current_page == 'optometrist-medicalhistory.php') ? 'active' : ''; ?>">
-                <i class="fas fa-notes-medical"></i> 
-                <span class="sidebar-item-text">Medical History</span>
-            </a>
         <?php endif; ?>
 
         <?php if (!$isAdmin && !$isOptometrist): ?>

@@ -105,9 +105,11 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
             <div class="table-container">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h1><i class="fas fa-user-plus ms-2"></i> Customer Records</h1>
+                    <?php $rid = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0; if (in_array($rid, [1,4], true)) : ?>
                     <button class="btn btn-primary" id="newCustomerBtn" type="button">
                         <i class="fas fa-plus me-2"></i> New Customer
                     </button>
+                    <?php endif; ?>
                 </div>
                 
                 <div class="table-instructions alert alert-info" style="margin-bottom: 20px; padding: 10px 15px; border-radius: 4px;">
