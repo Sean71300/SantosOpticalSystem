@@ -22,8 +22,29 @@ include 'ActivityTracker.php';
 
         <div class="button-container">
             <a href="aboutus.php" class="nav-button">About Us</a>
-            <a href="ourservices.php" class="nav-button">Our Services</a>
+            <a href="ourservices.php" class="nav-button active">Our Services</a>
         </div>        
+        
+        <!-- Centered Content Sections -->
+        <div class="centered-section">
+            <h1>B2T1</h1>
+            <h2>ABOUT US</h2>
+            <p>Don't miss out on our exclusive Buy 2, Take 1 promo! When you purchase any two pairs of eyewear, you'll receive a third pair absolutely free. Whether you're looking for stylish frames, prescription glasses, or trendy sunglasses, now is the perfect time to upgrade your eyewear collection while enjoying great savings!</p>
+        </div>
+        
+        <div class="divider"></div>
+        
+        <div class="centered-section">
+            <h2>SERVICES</h2>
+            <p>At BVP Santos Optical, we are committed to delivering exceptional eye care and customer service. Guided by our core standards, we ensure a consistent and excellent experience across all our branches, providing quality eyewear and professional optical services you can trust.</p>
+        </div>
+        
+        <div class="divider"></div>
+        
+        <div class="centered-section">
+            <h2>OUR SERVICES</h2>
+            <p>We offer a comprehensive range of optical services including eye examinations, prescription glasses, contact lenses, and a wide selection of stylish frames and sunglasses to meet all your vision needs.</p>
+        </div>
             
         <div class="container-fluid">
             <div class="services-section">
