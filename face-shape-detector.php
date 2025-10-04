@@ -8,8 +8,7 @@ $result = '';
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $apiUrl = "http://69.62.77.137:5000/detect";
-    
+  $apiUrl = "http://72.60.210.48:5000/detect"; 
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $apiUrl);
     curl_setopt($ch, CURLOPT_POST, true);
