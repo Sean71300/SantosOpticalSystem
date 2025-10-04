@@ -87,7 +87,8 @@
             }
         }
 
-        $sql = "SELECT p.Model, b.BrandName, od.Quantity, oh.Created_dt 
+    $sql = "SELECT p.Model, b.BrandName, od.Quantity,
+        DATE_FORMAT(oh.Created_dt, '%M %e, %Y %l:%i %p') AS Created_dt 
                 FROM orderDetails od
                 JOIN Order_hdr oh ON od.OrderHdr_id = oh.Orderhdr_id
                 JOIN ProductBranchMaster pbm ON od.ProductBranchID = pbm.ProductBranchID
