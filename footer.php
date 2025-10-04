@@ -213,10 +213,7 @@
 </head>
 <body>
     <!-- Main content placeholder -->
-    <div class="container mt-5">
-        <h1 class="text-center mb-4">Santos Optical</h1>
-        <p class="text-center mb-5">This is a placeholder for the main content of the website.</p>
-    </div>
+ 
 
     <!-- Footer Section -->
     <footer class="footer-section py-5 mt-5">
