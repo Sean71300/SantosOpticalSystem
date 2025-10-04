@@ -345,7 +345,12 @@
             
             while ($row = $result->fetch_assoc()) {
                 echo '<div class="medical-record-card mb-4 p-4 border rounded">';
-                echo '<h5 class="mb-4"><i class="fas fa-calendar-day me-2"></i> '.htmlspecialchars($row['visit_date']).'</h5>';
+                $visitRaw = $row['visit_date'] ?? '';
+                $visitFmt = '';
+                if (!empty($visitRaw)) {
+                    try { $dt = new DateTime($visitRaw); $visitFmt = $dt->format('M j, Y'); } catch (Exception $e) { $visitFmt = $visitRaw; }
+                }
+                echo '<h5 class="mb-4"><i class="fas fa-calendar-day me-2"></i> '.htmlspecialchars($visitFmt ?: 'No date').'</h5>';
                 
                 // Basic Information
                 echo '<div class="row mb-3">';
