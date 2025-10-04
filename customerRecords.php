@@ -549,11 +549,13 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                                         <form id="medicalRecordFormInline" method="post" action="medical-records-funcs.php">
                                             <input type="hidden" name="customerID" value="${cid}">
                                             <div class="row mb-2">
-                                                <div class="col-md-4">
+                                                <div class="col-12">
                                                     <label class="form-label">Visit Date</label>
                                                     <input type="date" name="visit_date" class="form-control" required value="${new Date().toISOString().split('T')[0]}">
                                                 </div>
-                                                <div class="col-md-8">
+                                            </div>
+                                            <div class="row mb-2">
+                                                <div class="col-12">
                                                     <label class="form-label">Eye Condition</label>
                                                     <input type="text" name="eye_condition" class="form-control">
                                                 </div>
@@ -796,11 +798,13 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                         <form id="medicalRecordFormInline" method="post" action="medical-records-funcs.php">
                             <input type="hidden" name="customerID" value="${customerID}">
                             <div class="row mb-2">
-                                <div class="col-md-4">
+                                <div class="col-12">
                                     <label class="form-label">Visit Date</label>
                                     <input type="date" name="visit_date" class="form-control" required value="${new Date().toISOString().split('T')[0]}">
                                 </div>
-                                <div class="col-md-8">
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-12">
                                     <label class="form-label">Eye Condition</label>
                                     <input type="text" name="eye_condition" class="form-control">
                                 </div>
