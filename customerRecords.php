@@ -87,6 +87,14 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
             .sortable.active .sort-icon {
                 display: inline-block;                
             }
+
+            /* Wider modal for Super Admin profile (adds ~1-2 columns vs modal-xl) */
+            @media (min-width: 1200px) {
+                .modal-dialog.modal-xxl-sa { max-width: 1240px; }
+            }
+            @media (min-width: 1400px) {
+                .modal-dialog.modal-xxl-sa { max-width: 1320px; }
+            }
         </style>
     </head>
     <body>
@@ -227,7 +235,7 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
 
         <!-- Customer Profile / Edit modal (centered large dialog) -->
         <div class="modal fade" id="profileModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-dialog modal-xl modal-dialog-centered <?php echo (isset($_SESSION['roleid']) && $_SESSION['roleid'] === 4) ? 'modal-xxl-sa' : ''; ?>">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="profileModalTitle">Customer Profile</h5>
