@@ -1,239 +1,184 @@
 <?php
-include_once 'setup.php'; // Include the setup.php file
-include 'ActivityTracker.php';
+  include_once 'setup.php'; 
+  include 'ActivityTracker.php';
 ?>
-
 
 <!DOCTYPE html>
 <html>
     <head>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Our Services - Santos Optical</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>About Us</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
         <link rel="stylesheet" href="customCodes/custom.css">
         <link rel="stylesheet" href="customCodes/s1.css">
         <link rel="stylesheet" href="customCodes/s2.css">
         <link rel="shortcut icon" type="image/x-icon" href="Images/logo.png"/>
-        <style>
-            /* Fix alignment issues */
-            .button-container {
-                display: flex;
-                justify-content: center;
-                margin: 20px 0;
-            }
-            
-            .nav-button {
-                display: inline-block;
-                padding: 10px 20px;
-                margin: 0 10px;
-                background-color: #007bff;
-                color: white;
-                text-decoration: none;
-                border-radius: 5px;
-                transition: background-color 0.3s;
-            }
-            
-            .nav-button:hover {
-                background-color: #0056b3;
-                color: white;
-            }
-            
-            .services-section {
-                position: relative;
-                overflow: hidden;
-                margin-bottom: 50px;
-            }
-            
-            .services-img {
-                width: 100%;
-                height: auto;
-                display: block;
-            }
-            
-            .text-overlay {
-                position: absolute;
-                top: 50%;
-                left: 10%;
-                transform: translateY(-50%);
-                max-width: 500px;
-                padding: 30px;
-                color: white;
-                text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
-            }
-            
-            .services2-section, .services3-section, .services4-section, .services5-section {
-                position: relative;
-                overflow: hidden;
-                margin-bottom: 50px;
-                width: 100%;
-            }
-            
-            .text2-overlay, .text4-overlay {
-                position: absolute;
-                top: 50%;
-                right: 10%;
-                transform: translateY(-50%);
-                max-width: 500px;
-                padding: 30px;
-                color: white;
-                text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
-            }
-            
-            .text3-overlay, .text5-overlay {
-                position: absolute;
-                top: 50%;
-                left: 10%;
-                transform: translateY(-50%);
-                max-width: 500px;
-                padding: 30px;
-                color: white;
-                text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
-            }
-            
-            /* Remove excessive spacing */
-            .min-vh-100 {
-                min-height: auto !important;
-                padding: 40px 0;
-            }
-            
-            /* Responsive adjustments */
-            @media (max-width: 768px) {
-                .text-overlay, .text2-overlay, .text3-overlay, .text4-overlay, .text5-overlay {
-                    position: relative;
-                    top: auto;
-                    left: auto;
-                    right: auto;
-                    transform: none;
-                    max-width: 100%;
-                    margin: 20px;
-                    padding: 20px;
-                    color: #333;
-                    text-shadow: none;
-                }
-                
-                .services-section, .services2-section, .services3-section, 
-                .services4-section, .services5-section {
-                    margin-bottom: 30px;
-                }
-            }
-        </style>
     </head>
     <body>
-        <?php include "Navigation.php"?>        
-
+        <?php include "Navigation.php"?>
         <div class="button-container">
-            <a href="aboutus.php" class="nav-button">About Us</a>
-            <a href="ourservices.php" class="nav-button">Our Services</a>
-        </div>        
-            
-        <div class="container-fluid position-relative">
-            <div class="services-section">
-                <div class="text-overlay">
-                    <h2>SERVICES</h2><br>
-                    <p>At BVP Santos Optical, we are committed to delivering exceptional eye care and 
-                        customer service. Guided by our core standards, we ensure a consistent and excellent 
-                        experience across all our branches, providing quality eyewear and professional optical 
-                        services you can trust.</p>
-                </div>
-                <img src="Images/os1.png" alt="Services Image" class="services-img">
-            </div>
+            <a href="aboutus.php" class="nav-button" data-aos="zoom-in">About Us</a>
+            <a href="ourservices.php" class="nav-button" data-aos="zoom-in" data-aos-delay="200">Our Services</a>
         </div>
         
-        <div class="container-fluid">
-            <div class="services2-section">
-                <div class="text2-overlay">
-                    <h2>B2T1</h2><br>
-                    <p>Don't miss out on our exclusive Buy 2, Take 1 promo! When 
-                        you purchase any two pairs of eyewear, you'll receive a third 
-                        pair absolutely free. Whether you're looking for stylish frames, 
-                        prescription glasses, or trendy sunglasses, now is the perfect time 
-                        to upgrade your eyewear collection while enjoying great savings!</p>
+        <div class="container-fluid position-relative px-0">
+            <div class="aboutus-section" data-aos="fade-up">
+                <img src="Images/au1.png" alt="Services Image" class="services-img">
+            </div>
+        </div><br><br>
+
+        <div class="container">
+            <div class="aboutus2-section">
+                <h1>ABOUT US</h1>
+                <h5>Santos Optical Clinic emphasizes personalized customer service. 
+                    Services they offer include eye examinations and prescription glasses.</h5>
+            </div>
+        </div><br><br><br>
+
+        <div class="container my-6 doctor-section" style="background-color: aliceblue;" data-aos="slide-left">
+            <div class="row align-items-center text-center text-md-start">
+              <div class="col-md-4 mb-3 mb-md-2 d-flex justify-content-center">
+                <img src="Images/owner.png" alt="Doctor" class="img-fluid rounded shadow">
+              </div>
+              <div class="col-md-8">
+                <p class="fs-4">
+                  Santos Optical Clinic, owned by <b> Dr. Bien Ven P. Santos,</b> is a prominent provider of optical services,
+                  and has been serving its community since its establishment as a sole proprietorship in 2001.
+                </p>
+              </div>
+            </div>
+        </div><br><br> 
+
+        <div class="container" data-aos="fade-up">
+          <h2 class="aboutus-h2">SO BRANCHES</h2>
+          <div class="row justify-content-center g-4">
+              <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                <div class="branch-card" data-aos="fade-up" data-aos-delay="100">
+                  <div class="image-container">
+                    <a href="https://maps.app.goo.gl/8gff1kz1FyvZ6FCK8" target="_blank">
+                      <img src="Images/pascual st.jpg" alt="Pascual St, Malabon" class="branch-image">
+                      <img src="Images/loc.png" alt="Map Icon" class="map-icon">
+                    </a>
+                  </div>
+                  <div class="branch-info">
+                    <strong>SO Santos Optical SBP</strong><br>
+                    Near Malabon City Hall<br>
+                    Pascual St, Malabon<br>
+                    ☎️ 02 88183480<br>
+                    <small>Beside 7eleven Malabon City</small>
+                  </div>
                 </div>
-                <img src="Images/os2.png" alt="Services Image" class="services-img">
+              </div>
+
+              <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                <div class="branch-card" data-aos="fade-up" data-aos-delay="200">
+                  <div class="image-container">
+                    <a href="https://maps.app.goo.gl/FCzggs1hSusNxnMq7" target="_blank">
+                      <img src="Images/bayan.jpg" alt="Bayan, Malabon" class="branch-image">
+                      <img src="Images/loc.png" alt="Map Icon" class="map-icon">
+                    </a>
+                  </div>
+                  <div class="branch-info">
+                    <strong>SO Santos Optical Symaco</strong><br>
+                    In front of Mcdonalds<br>
+                    Bayan, Malabon<br>
+                    ☎️ 02 86321972<br>
+                    <small>Infront of MCDO Malabon City</small>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                <div class="branch-card" data-aos="fade-up" data-aos-delay="300">
+                  <div class="image-container">
+                    <a href="https://maps.app.goo.gl/JGjVQRtRNCQYwkus6" target="_blank">
+                      <img src="Images/quiapo.jpg" alt="Quiapo, Manila" class="branch-image">
+                      <img src="Images/loc.png" alt="Map Icon" class="map-icon">
+                    </a>
+                  </div>
+                  <div class="branch-info">
+                    <strong>SO Santos Optical Quiapo</strong><br>
+                    #536 Quiapo Boulevard<br>
+                    Manila<br>
+                    ☎️ 09328447068<br>
+                    <small>Near Reddoorz Hotel opposite side of Quiapo Church</small>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                <div class="branch-card" data-aos="fade-up" data-aos-delay="400">
+                  <div class="image-container">
+                    <a href="https://maps.app.goo.gl/riu7zr7VhunhW1Tq8" target="_blank">
+                      <img src="Images/tangos.png" alt="Tangos, Navotas" class="branch-image">
+                      <img src="Images/loc.png" alt="Map Icon" class="map-icon">
+                    </a>
+                  </div>
+                  <div class="branch-info">
+                    <strong>SO Santos Optical Tangos</strong><br>
+                    Near Tangos Market<br>
+                    Tangos, Navotas<br>
+                    ☎️ 09328447068<br>
+                    <small>Near Tangos Market Navotas City</small>
+                  </div>
+                </div>
+              </div>
+          </div>
+        </div>  
+    <footer class="py-5 border-top mt-5 pt-4" style="background-color: #ffffff; margin-top: 50px; border-color: #ffffff;">
+        <div class="container">
+            <div class="row text-center text-md-start">
+                <div class="col-md-3 mb-3 mb-md-0 text-center">
+                    <img src="Images/logo.png" alt="Logo" width="200">
+                </div>
+
+                <div class="col-md-3 mb-3 mb-md-0">
+                    <h6 class="fw-bold">PRODUCTS</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-dark text-decoration-none">Frames</a></li>
+                        <li><a href="#" class="text-dark text-decoration-none">Sunglasses</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-md-3 mb-3 mb-md-0">
+                    <h6 class="fw-bold">About</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="aboutus.php" class="text-dark text-decoration-none">About Us</a></li>
+                        <li><a href="ourservices.php" class="text-dark text-decoration-none">Services</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-md-3">
+                    <h6 class="fw-bold">CONTACT US!</h6>
+                    <p class="mb-1">Address: #6 Rizal Avenue Extension, Brgy. San Agustin, Malabon City</p>
+                    <p class="mb-1">Phone: 027-508-4792</p>
+                    <p class="mb-1">Cell: 0932-844-7068</p>
+                    <p>Email: <a href="mailto:Santosoptical@gmail.com" class="text-dark">Santosoptical@gmail.com</a></p>
+                </div>
+            </div>
+            <div class="container-fluid text-center py-3" style="background-color: white">
+                <p class="m-0">COPYRIGHT &copy; SANTOS OPTICAL co., ltd. ALL RIGHTS RESERVED.</p>
             </div>
         </div>
+    </footer>
 
-        <div class="container-fluid">
-            <div class="services3-section">
-                <div class="text3-overlay">
-                    <h2>Less than 30 minutes</h2><br>
-                    <p>Get your glasses ready in less than 30 minutes! We understand the value 
-                        of your time, which is why our skilled professionals work efficiently 
-                        to have your eyewear prepared as quickly as possible. With expertise 
-                        and precision, we ensure that your glasses are ready for you in no time 
-                        after purchase.</p>
-                </div>
-                <img src="Images/os3.png" alt="Services Image" class="services-img">
-            </div>
-        </div>
+        <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+        <script>
+            AOS.init({
+                duration: 1000, 
+                easing: 'ease-in-out',
+                once: true,
+                disable: window.innerWidth < 768 // Disable animations on mobile for better performance
+            });
+            
+            // Re-init AOS when window is resized
+            window.addEventListener('resize', function() {
+                AOS.refresh();
+            });
+        </script>
 
-        <div class="container-fluid">
-            <div class="services4-section">
-                <div class="text4-overlay">
-                    <h2>2 Years Frame Warranty!</h2><br>
-                    <p>We know how important peace of mind is when it comes to your eyewear. 
-                        That's why we offer a 2-year frame warranty to protect your glasses from 
-                        manufacturing defects and frame issues. If something goes wrong, 
-                        our team is here to fix it — fast, easy, and completely free. 
-                        With quality you can count on, you can wear your glasses with 
-                        confidence every day.</p>
-                </div>
-                <img src="Images/os4.png" alt="Services Image" class="services-img">
-            </div>
-        </div>
-
-        <div class="container-fluid">
-            <div class="services5-section">
-                <div class="text5-overlay">
-                    <h2>10-D Lens Guarantee</h2><br>
-                    <p>We know how important clear vision and peace of mind are when it comes to your eyewear. 
-                        That's why we offer a 10-day lens guarantee — giving you time to make sure your lenses 
-                        are just right. If you notice any issues, our team will make it right — quickly, easily, 
-                        and at no extra cost. With quality you can trust and support you can count on, you can 
-                        see the world with confidence.</p>
-                </div>
-                <img src="Images/os5.png" alt="Services Image" class="services-img">
-            </div>
-        </div>
-
-        <footer class="py-5 border-top mt-5 pt-4" style="background-color: #ffffff; margin-top: 50px; border-color: #ffffff;">
-            <div class="container">
-                <div class="row text-center text-md-start">
-                    <div class="col-md-3 mb-3 mb-md-0 text-center">
-                        <img src="Images/logo.png" alt="Logo" width="200">
-                    </div>
-
-                    <div class="col-md-3 mb-3 mb-md-0">
-                        <h6 class="fw-bold">PRODUCTS</h6>
-                        <ul class="list-unstyled">
-                            <li><a href="#" class="text-dark text-decoration-none">Frames</a></li>
-                            <li><a href="#" class="text-dark text-decoration-none">Sunglasses</a></li>
-                        </ul>
-                    </div>
-
-                    <div class="col-md-3 mb-3 mb-md-0">
-                        <h6 class="fw-bold">About</h6>
-                        <ul class="list-unstyled">
-                            <li><a href="aboutus.php" class="text-dark text-decoration-none">About Us</a></li>
-                            <li><a href="ourservices.php" class="text-dark text-decoration-none">Services</a></li>
-                        </ul>
-                    </div>
-
-                    <div class="col-md-3">
-                        <h6 class="fw-bold">CONTACT US!</h6>
-                        <p class="mb-1">Address: #6 Rizal Avenue Extension, Brgy. San Agustin, Malabon City</p>
-                        <p class="mb-1">Phone: 027-508-4792</p>
-                        <p class="mb-1">Cell: 0932-844-7068</p>
-                        <p>Email: <a href="mailto:Santosoptical@gmail.com" class="text-dark">Santosoptical@gmail.com</a></p>
-                    </div>
-                </div>
-                <div class="container-fluid text-center py-3" style="background-color: white">
-                    <p class="m-0">COPYRIGHT &copy; SANTOS OPTICAL co., ltd. ALL RIGHTS RESERVED.</p>
-                </div>
-            </div>
-        </footer>
-       
     </body>
 </html>
