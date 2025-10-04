@@ -6,9 +6,10 @@
         {
             $isAdmin = false;
             $isOptometrist = false;
-            $isAdmin = isset($_SESSION['roleid']) && $_SESSION['roleid'] === 1;
-            $isOptometrist = isset($_SESSION['roleid']) && $_SESSION['roleid'] === 3;        
-            $isSuperAdmin = isset($_SESSION['roleid']) && $_SESSION['roleid'] === 4;
+            $roleId = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0;
+            $isAdmin = ($roleId === 1);
+            $isOptometrist = ($roleId === 3);
+            $isSuperAdmin = ($roleId === 4);
             
             $customerData = "";
             $connection = connect();
@@ -145,8 +146,8 @@
             exit();
         }
 
-        $roleId = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0;
-        $isSuperAdmin = ($roleId === 4);
+    $roleId = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0;
+    $isSuperAdmin = ($roleId === 4);
 
         // Simple edit form
         echo '<div class="container-fluid">';
