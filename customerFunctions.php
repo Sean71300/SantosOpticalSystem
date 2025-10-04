@@ -154,8 +154,8 @@
         echo '<div class="container-fluid">';
         if ($isSuperAdmin) {
             echo '<div class="row">';
-            // LEFT: Customer info + Orders (25%)
-            echo '<div class="col-lg-3 col-md-4">';
+            // LEFT: Customer info + Orders (wider 2:3 ratio)
+            echo '<div class="col-lg-5 col-md-5">';
             echo '<form id="profileForm">';
             echo '<input type="hidden" name="CustomerID" value="'.htmlspecialchars($row['CustomerID']).'">';
             echo '<div class="row">';
@@ -183,8 +183,8 @@
             echo '</div>';
             echo '</div>'; // end LEFT col
 
-            // RIGHT: Medical history within a scrollable card (75%)
-            echo '<div class="col-lg-9 col-md-8">';
+            // RIGHT: Medical history within a scrollable card
+            echo '<div class="col-lg-7 col-md-7">';
             echo '<div class="card h-100">';
             echo '<div class="card-header d-flex justify-content-between align-items-center">';
             echo '<h5 class="mb-0"><i class="fas fa-notes-medical me-2"></i>Medical History</h5>';
