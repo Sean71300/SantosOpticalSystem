@@ -6,8 +6,8 @@
             <!-- Logo Section -->
             <div class="col-lg-3 col-md-6 mb-4">
                 <div class="footer-brand text-center text-md-start">
-                    <img src="Images/logo.png" alt="Santos Optical Logo" width="180" class="mb-3">
-                    <h5 class="fw-bold text-warning mb-2">Santos Optical</h5>
+                    <img src="Images/logo.png" alt="Santos Optical Logo" width="160" class="mb-3">
+                    <h5 class="fw-bold text-dark mb-2">Santos Optical</h5>
                     <p class="text-muted small">Quality eyewear and professional eye care services since 2001</p>
                 </div>
             </div>
@@ -19,22 +19,22 @@
                     <ul class="footer-list list-unstyled">
                         <li class="mb-2">
                             <a href="product-gallery.php?category=Frame" class="footer-link text-decoration-none">
-                                <i class="fas fa-glasses me-2 text-warning"></i>Eyeglass Frames
+                                <i class="fas fa-glasses me-2 text-muted"></i>Eyeglass Frames
                             </a>
                         </li>
                         <li class="mb-2">
                             <a href="product-gallery.php?category=Sunglasses" class="footer-link text-decoration-none">
-                                <i class="fas fa-sun me-2 text-warning"></i>Sunglasses
+                                <i class="fas fa-sun me-2 text-muted"></i>Sunglasses
                             </a>
                         </li>
                         <li class="mb-2">
                             <a href="product-gallery.php?category=Contact+Lenses" class="footer-link text-decoration-none">
-                                <i class="fas fa-eye me-2 text-warning"></i>Contact Lenses
+                                <i class="fas fa-eye me-2 text-muted"></i>Contact Lenses
                             </a>
                         </li>
                         <li class="mb-2">
                             <a href="product-gallery.php" class="footer-link text-decoration-none">
-                                <i class="fas fa-search me-2 text-warning"></i>All Products
+                                <i class="fas fa-search me-2 text-muted"></i>All Products
                             </a>
                         </li>
                     </ul>
@@ -48,22 +48,22 @@
                     <ul class="footer-list list-unstyled">
                         <li class="mb-2">
                             <a href="aboutus.php" class="footer-link text-decoration-none">
-                                <i class="fas fa-building me-2 text-warning"></i>About Us
+                                <i class="fas fa-building me-2 text-muted"></i>About Us
                             </a>
                         </li>
                         <li class="mb-2">
                             <a href="ourservices.php" class="footer-link text-decoration-none">
-                                <i class="fas fa-concierge-bell me-2 text-warning"></i>Our Services
+                                <i class="fas fa-concierge-bell me-2 text-muted"></i>Our Services
                             </a>
                         </li>
                         <li class="mb-2">
                             <a href="face-shape-detector.php" class="footer-link text-decoration-none">
-                                <i class="fas fa-user-circle me-2 text-warning"></i>Face Shape Detector
+                                <i class="fas fa-user-circle me-2 text-muted"></i>Face Shape Detector
                             </a>
                         </li>
                         <li class="mb-2">
                             <a href="trackorder.php" class="footer-link text-decoration-none">
-                                <i class="fas fa-shipping-fast me-2 text-warning"></i>Track Your Order
+                                <i class="fas fa-shipping-fast me-2 text-muted"></i>Track Your Order
                             </a>
                         </li>
                     </ul>
@@ -77,7 +77,7 @@
                     <div class="contact-info">
                         <div class="contact-item mb-3">
                             <div class="contact-icon">
-                                <i class="fas fa-map-marker-alt text-danger"></i>
+                                <i class="fas fa-map-marker-alt text-dark"></i>
                             </div>
                             <div class="contact-text">
                                 <strong>Main Address:</strong><br>
@@ -88,7 +88,7 @@
                         
                         <div class="contact-item mb-3">
                             <div class="contact-icon">
-                                <i class="fas fa-phone text-danger"></i>
+                                <i class="fas fa-phone text-dark"></i>
                             </div>
                             <div class="contact-text">
                                 <strong>Landline:</strong><br>
@@ -98,7 +98,7 @@
                         
                         <div class="contact-item mb-3">
                             <div class="contact-icon">
-                                <i class="fas fa-mobile-alt text-danger"></i>
+                                <i class="fas fa-mobile-alt text-dark"></i>
                             </div>
                             <div class="contact-text">
                                 <strong>Mobile:</strong><br>
@@ -108,7 +108,7 @@
                         
                         <div class="contact-item mb-3">
                             <div class="contact-icon">
-                                <i class="fas fa-envelope text-danger"></i>
+                                <i class="fas fa-envelope text-dark"></i>
                             </div>
                             <div class="contact-text">
                                 <strong>Email:</strong><br>
@@ -127,11 +127,11 @@
                     <h6 class="footer-title mb-3">BUSINESS HOURS</h6>
                     <div class="row justify-content-center">
                         <div class="col-auto">
-                            <span class="badge bg-warning text-dark me-2">Monday - Saturday</span>
+                            <span class="badge bg-light text-dark border me-2">Monday - Saturday</span>
                             <span class="text-muted">8:00 AM - 7:00 PM</span>
                         </div>
                         <div class="col-auto">
-                            <span class="badge bg-danger me-2">Sunday</span>
+                            <span class="badge bg-light text-dark border me-2">Sunday</span>
                             <span class="text-muted">9:00 AM - 5:00 PM</span>
                         </div>
                     </div>
@@ -143,7 +143,7 @@
         <div class="row mt-4">
             <div class="col-12">
                 <div class="copyright-section text-center py-3">
-                    <p class="m-0 text-white">
+                    <p class="m-0 text-muted">
                         <i class="far fa-copyright me-1"></i>
                         2024 Santos Optical Co., Ltd. All Rights Reserved. | 
                         <span class="ms-2">Providing Quality Eyewear Since 2001</span>
@@ -155,52 +155,41 @@
 </footer>
 
 <style>
-/* Footer Styles - Yellow, Red & White Theme */
+/* Footer Styles - Clean White Theme */
 .footer-section {
-    background: linear-gradient(135deg, #ffffff 0%, #fff9e6 50%, #ffffff 100%);
-    border-top: 4px solid #ffc107;
+    background: #ffffff;
+    border-top: 1px solid #e9ecef;
     position: relative;
 }
 
-.footer-section::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, #ffc107, #dc3545, #ffc107);
-}
-
 .footer-title {
-    color: #dc3545;
-    font-weight: 700;
-    font-size: 1.1rem;
+    color: #2c3e50;
+    font-weight: 600;
+    font-size: 1rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    border-bottom: 2px solid #ffc107;
+    border-bottom: 2px solid #dee2e6;
     padding-bottom: 0.5rem;
     display: inline-block;
 }
 
 .footer-brand h5 {
-    color: #dc3545;
-    font-size: 1.3rem;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    color: #2c3e50;
+    font-size: 1.2rem;
 }
 
 .footer-list li {
-    transition: transform 0.3s ease;
+    transition: transform 0.2s ease;
 }
 
 .footer-list li:hover {
-    transform: translateX(5px);
+    transform: translateX(3px);
 }
 
 .footer-link {
-    color: #666 !important;
-    transition: all 0.3s ease;
-    font-size: 0.95rem;
+    color: #6c757d !important;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
     display: block;
     padding: 0.25rem 0;
     border-left: 2px solid transparent;
@@ -208,10 +197,10 @@
 }
 
 .footer-link:hover {
-    color: #dc3545 !important;
-    transform: translateX(3px);
-    border-left-color: #ffc107;
-    background: linear-gradient(90deg, rgba(255,193,7,0.1), transparent);
+    color: #2c3e50 !important;
+    transform: translateX(2px);
+    border-left-color: #6c757d;
+    background-color: #f8f9fa;
 }
 
 .contact-info {
@@ -221,9 +210,9 @@
 .contact-item {
     display: flex;
     align-items: flex-start;
-    gap: 12px;
-    padding: 8px 0;
-    border-bottom: 1px solid rgba(255,193,7,0.2);
+    gap: 10px;
+    padding: 6px 0;
+    border-bottom: 1px solid #f8f9fa;
 }
 
 .contact-item:last-child {
@@ -231,62 +220,61 @@
 }
 
 .contact-icon {
-    width: 20px;
+    width: 16px;
     text-align: center;
-    margin-top: 2px;
+    margin-top: 3px;
     flex-shrink: 0;
 }
 
 .contact-text {
     flex: 1;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     line-height: 1.4;
-    color: #666;
+    color: #6c757d;
 }
 
 .contact-text strong {
-    color: #dc3545;
-    font-size: 0.85rem;
+    color: #2c3e50;
+    font-size: 0.8rem;
 }
 
 .business-hours {
-    padding: 1.5rem;
-    background: linear-gradient(135deg, #fff3cd 0%, #fff9e6 100%);
-    border-radius: 15px;
-    border: 2px solid #ffc107;
-    box-shadow: 0 4px 15px rgba(255,193,7,0.1);
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
 }
 
 .business-hours .badge {
-    font-size: 0.8rem;
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
+    font-size: 0.75rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 15px;
+    border: 1px solid #dee2e6;
 }
 
 .copyright-section {
-    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-    color: white;
-    border-radius: 10px;
+    background: #f8f9fa;
+    color: #6c757d;
+    border-radius: 6px;
     margin-top: 1rem;
-    border: 2px solid #ffc107;
-    box-shadow: 0 4px 15px rgba(220,53,69,0.2);
+    border: 1px solid #e9ecef;
 }
 
 .copyright-section p {
-    font-size: 0.9rem;
-    letter-spacing: 0.5px;
-    font-weight: 500;
+    font-size: 0.85rem;
+    letter-spacing: 0.3px;
+    font-weight: 400;
 }
 
 /* Hover effects */
 .footer-link:hover i {
-    transform: scale(1.2);
-    transition: transform 0.3s ease;
+    color: #2c3e50;
+    transition: color 0.2s ease;
 }
 
 .contact-item:hover .contact-icon {
-    transform: scale(1.1);
-    transition: transform 0.3s ease;
+    color: #2c3e50;
+    transition: color 0.2s ease;
 }
 
 /* Responsive Design */
@@ -310,37 +298,41 @@
     
     .business-hours .row {
         flex-direction: column;
-        gap: 10px;
+        gap: 8px;
     }
     
     .footer-link {
         border-left: none;
-        border-bottom: 2px solid transparent;
+        border-bottom: 1px solid transparent;
         padding-left: 0;
-        padding-bottom: 4px;
+        padding-bottom: 3px;
     }
     
     .footer-link:hover {
         border-left-color: transparent;
-        border-bottom-color: #ffc107;
+        border-bottom-color: #6c757d;
     }
 }
 
 @media (max-width: 576px) {
     .footer-title {
-        font-size: 1rem;
-    }
-    
-    .footer-link {
         font-size: 0.9rem;
     }
     
-    .contact-text {
+    .footer-link {
         font-size: 0.85rem;
     }
     
+    .contact-text {
+        font-size: 0.8rem;
+    }
+    
     .business-hours {
-        padding: 1rem;
+        padding: 0.8rem;
+    }
+    
+    .footer-brand img {
+        width: 140px;
     }
 }
 </style>
