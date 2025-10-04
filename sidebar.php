@@ -3,11 +3,20 @@ include_once 'setup.php';
 // Ensure a session is started so we can read $_SESSION values
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
 $link = connect();
-$branchCode = isset($_SESSION['branchCode']) ? $_SESSION['branchCode'] : '';
-
 $branch = null;
-// Only query the database when we actually have a branch code
-if (!empty($branchCode)) {
+// Prefer storing branch name in session at login to avoid repeated DB lookups
+$branchNameFromSession = $_SESSION['branchName'] ?? '';
+
+// Support both session key variants in the codebase
+$branchCode = '';
+if (isset($_SESSION['branchCode'])) {
+    $branchCode = $_SESSION['branchCode'];
+} elseif (isset($_SESSION['branchcode'])) {
+    $branchCode = $_SESSION['branchcode'];
+}
+
+// If branch name wasn't stored at login, resolve it from DB when we have a code
+if (empty($branchNameFromSession) && !empty($branchCode)) {
     $sql = "SELECT * FROM BranchMaster WHERE BranchCode = ?";
     $stmt = $link->prepare($sql);
     if ($stmt) {
@@ -16,10 +25,10 @@ if (!empty($branchCode)) {
         $result = $stmt->get_result();
         $branch = $result->fetch_assoc();
         $stmt->close();
-    } else {
-        // optional: handle prepare error (log, display fallback)
-        $branch = null;
     }
+} elseif (!empty($branchNameFromSession)) {
+    // Build a minimal branch array so existing code that uses $branch['BranchName'] keeps working
+    $branch = ['BranchName' => $branchNameFromSession];
 }
 
 

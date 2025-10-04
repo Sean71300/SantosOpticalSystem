@@ -55,7 +55,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['cancel'])) {
                             $_SESSION["number"] = $number;
                             $_SESSION["roleid"] = $roleid;
                             $_SESSION["username"] = $username;
+                            // Normalize session keys: some files expect lowercase 'branchcode',
+                            // others expect camelCase 'branchCode'. Set both for compatibility.
                             $_SESSION["branchcode"] = $branchcode;
+                            $_SESSION["branchCode"] = $branchcode;
+
+                            // Attempt to resolve and store the BranchName to avoid extra DB lookups in sidebar
+                            $branchName = '';
+                            $bstmt = mysqli_prepare($link, "SELECT BranchName FROM BranchMaster WHERE BranchCode = ? LIMIT 1");
+                            if ($bstmt) {
+                                mysqli_stmt_bind_param($bstmt, 's', $branchcode);
+                                if (mysqli_stmt_execute($bstmt)) {
+                                    mysqli_stmt_bind_result($bstmt, $bn);
+                                    if (mysqli_stmt_fetch($bstmt)) {
+                                        $branchName = $bn;
+                                    }
+                                }
+                                mysqli_stmt_close($bstmt);
+                            }
+                            $_SESSION['branchName'] = $branchName;
                             $_SESSION["status"] = $status;
                             $_SESSION["upd_by"] = $upd_by;
                             $_SESSION["upd_dt"] = $upd_dt;
