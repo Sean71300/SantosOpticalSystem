@@ -1,359 +1,324 @@
-<?php
-?>
-<footer class="footer-section py-5 mt-5">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Santos Optical - Navigation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #1a6bb3 0%, #0d4d8c 100%);
+            color: white;
+            padding: 20px 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-radius: 0 0 15px 15px;
+            margin-bottom: 30px;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+        
+        .logo {
+            font-size: 2.5rem;
+            margin-right: 15px;
+            color: #fff;
+        }
+        
+        .logo-text {
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        
+        .tagline {
+            text-align: center;
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+        
+        .nav-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        .nav-section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            flex: 1;
+            min-width: 250px;
+            max-width: 350px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .nav-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+        
+        .section-title {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #eaeaea;
+            color: #1a6bb3;
+        }
+        
+        .section-title i {
+            font-size: 1.5rem;
+            margin-right: 12px;
+            width: 30px;
+            text-align: center;
+        }
+        
+        .section-title h2 {
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+        
+        .nav-links {
+            list-style: none;
+        }
+        
+        .nav-links li {
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .nav-links li a {
+            text-decoration: none;
+            color: #555;
+            font-weight: 500;
+            transition: color 0.2s ease, transform 0.2s ease;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 8px 5px;
+            border-radius: 6px;
+        }
+        
+        .nav-links li a:hover {
+            color: #1a6bb3;
+            background-color: #f0f7ff;
+            transform: translateX(5px);
+        }
+        
+        .nav-links li i {
+            margin-right: 12px;
+            width: 20px;
+            text-align: center;
+            color: #1a6bb3;
+        }
+        
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .contact-item {
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .contact-item i {
+            margin-right: 15px;
+            margin-top: 3px;
+            color: #1a6bb3;
+            font-size: 1.2rem;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .contact-text {
+            flex: 1;
+        }
+        
+        .contact-text p {
+            margin-bottom: 3px;
+        }
+        
+        .contact-label {
+            font-weight: 600;
+            color: #444;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .nav-section {
+                width: 100%;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo-container">
+                <i class="fas fa-glasses logo"></i>
+                <h1 class="logo-text">SANTOS OPTICAL</h1>
+            </div>
+            <p class="tagline">Clear Vision for a Better Life</p>
+        </div>
+    </header>
+    
     <div class="container">
-        <div class="row g-4">
-            <!-- Logo Section -->
-            <div class="col-lg-3 col-md-6 mb-4">
-                <div class="footer-brand text-center text-md-start">
-                    <img src="Images/logo.png" alt="Santos Optical Logo" width="160" class="mb-3">
-                    <h5 class="fw-bold text-dark mb-2">Santos Optical</h5>
-                    <p class="text-muted small">Quality eyewear and professional eye care services since 2001</p>
-                </div>
-            </div>
-
+        <div class="nav-container">
             <!-- Products Section -->
-            <div class="col-lg-3 col-md-6 mb-4">
-                <div class="footer-section">
-                    <h6 class="footer-title mb-3">OUR PRODUCTS</h6>
-                    <ul class="footer-list list-unstyled">
-                        <li class="mb-2">
-                            <a href="product-gallery.php?category=Frame" class="footer-link text-decoration-none">
-                                <i class="fas fa-glasses me-2"></i>Eyeglass Frames
-                            </a>
-                        </li>
-                        <li class="mb-2">
-                            <a href="product-gallery.php?category=Sunglasses" class="footer-link text-decoration-none">
-                                <i class="fas fa-sun me-2"></i>Sunglasses
-                            </a>
-                        </li>
-                        <li class="mb-2">
-                            <a href="product-gallery.php?category=Contact+Lenses" class="footer-link text-decoration-none">
-                                <i class="fas fa-eye me-2"></i>Contact Lenses
-                            </a>
-                        </li>
-                        <li class="mb-2">
-                            <a href="product-gallery.php" class="footer-link text-decoration-none">
-                                <i class="fas fa-search me-2"></i>All Products
-                            </a>
-                        </li>
-                    </ul>
+            <div class="nav-section">
+                <div class="section-title">
+                    <i class="fas fa-shopping-bag"></i>
+                    <h2>OUR PRODUCTS</h2>
                 </div>
+                <ul class="nav-links">
+                    <li>
+                        <a href="#">
+                            <i class="fas fa-glasses"></i>
+                            Eyeglass Frames
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <i class="fas fa-sun"></i>
+                            Sunglasses
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <i class="fas fa-eye"></i>
+                            Contact Lenses
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <i class="fas fa-th-large"></i>
+                            All Products
+                        </a>
+                    </li>
+                </ul>
             </div>
-
+            
             <!-- Quick Links Section -->
-            <div class="col-lg-3 col-md-6 mb-4">
-                <div class="footer-section">
-                    <h6 class="footer-title mb-3">QUICK LINKS</h6>
-                    <ul class="footer-list list-unstyled">
-                        <li class="mb-2">
-                            <a href="aboutus.php" class="footer-link text-decoration-none">
-                                <i class="fas fa-building me-2"></i>About Us
-                            </a>
-                        </li>
-                        <li class="mb-2">
-                            <a href="ourservices.php" class="footer-link text-decoration-none">
-                                <i class="fas fa-concierge-bell me-2"></i>Our Services
-                            </a>
-                        </li>
-                        <li class="mb-2">
-                            <a href="face-shape-detector.php" class="footer-link text-decoration-none">
-                                <i class="fas fa-user-circle me-2"></i>Face Shape Detector
-                            </a>
-                        </li>
-                        <li class="mb-2">
-                            <a href="trackorder.php" class="footer-link text-decoration-none">
-                                <i class="fas fa-shipping-fast me-2"></i>Track Your Order
-                            </a>
-                        </li>
-                    </ul>
+            <div class="nav-section">
+                <div class="section-title">
+                    <i class="fas fa-link"></i>
+                    <h2>QUICK LINKS</h2>
                 </div>
+                <ul class="nav-links">
+                    <li>
+                        <a href="#">
+                            <i class="fas fa-info-circle"></i>
+                            About Us
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <i class="fas fa-concierge-bell"></i>
+                            Our Services
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <i class="fas fa-user-circle"></i>
+                            Face Shape Detector
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <i class="fas fa-shipping-fast"></i>
+                            Track Your Order
+                        </a>
+                    </li>
+                </ul>
             </div>
-
-            <!-- Contact Section -->
-            <div class="col-lg-3 col-md-6 mb-4">
-                <div class="footer-section">
-                    <h6 class="footer-title mb-3">CONTACT INFORMATION</h6>
-                    <div class="contact-info">
-                        <div class="contact-item mb-3">
-                            <div class="contact-icon">
-                                <i class="fas fa-map-marker-alt"></i>
-                            </div>
-                            <div class="contact-text">
-                                <strong>Main Address:</strong><br>
-                                #6 Rizal Avenue Extension,<br>
-                                Brgy. San Agustin, Malabon City
-                            </div>
-                        </div>
-                        
-                        <div class="contact-item mb-3">
-                            <div class="contact-icon">
-                                <i class="fas fa-phone"></i>
-                            </div>
-                            <div class="contact-text">
-                                <strong>Landline:</strong><br>
-                                (02) 7508-4792
-                            </div>
-                        </div>
-                        
-                        <div class="contact-item mb-3">
-                            <div class="contact-icon">
-                                <i class="fas fa-mobile-alt"></i>
-                            </div>
-                            <div class="contact-text">
-                                <strong>Mobile:</strong><br>
-                                0932-844-7068
-                            </div>
-                        </div>
-                        
-                        <div class="contact-item mb-3">
-                            <div class="contact-icon">
-                                <i class="fas fa-envelope"></i>
-                            </div>
-                            <div class="contact-text">
-                                <strong>Email:</strong><br>
-                                <a href="mailto:Santosoptical@gmail.com" class="footer-link">Santosoptical@gmail.com</a>
-                            </div>
+            
+            <!-- Contact Information Section -->
+            <div class="nav-section">
+                <div class="section-title">
+                    <i class="fas fa-address-card"></i>
+                    <h2>CONTACT INFORMATION</h2>
+                </div>
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div class="contact-text">
+                            <p class="contact-label">Main Address:</p>
+                            <p>#6 Rizai Avenue Extension, Bray. San Agustin, Malabon City</p>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Business Hours -->
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="business-hours text-center">
-                    <h6 class="footer-title mb-3">BUSINESS HOURS</h6>
-                    <div class="row justify-content-center">
-                        <div class="col-auto">
-                            <span class="badge bg-light text-dark border me-2">Monday - Saturday</span>
-                            <span class="text-muted">8:00 AM - 7:00 PM</span>
-                        </div>
-                        <div class="col-auto">
-                            <span class="badge bg-light text-dark border me-2">Sunday</span>
-                            <span class="text-muted">9:00 AM - 5:00 PM</span>
+                    <div class="contact-item">
+                        <i class="fas fa-phone-alt"></i>
+                        <div class="contact-text">
+                            <p class="contact-label">Landline:</p>
+                            <p>(02) 7508-4792</p>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Copyright Section -->
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="copyright-section text-center py-3">
-                    <p class="m-0 text-muted">
-                        <i class="far fa-copyright me-1"></i>
-                        2024 Santos Optical Co., Ltd. All Rights Reserved. | 
-                        <span class="ms-2">Providing Quality Eyewear Since 2001</span>
-                    </p>
+                    <div class="contact-item">
+                        <i class="fas fa-mobile-alt"></i>
+                        <div class="contact-text">
+                            <p class="contact-label">Mobile:</p>
+                            <p>0932-844-7068</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-envelope"></i>
+                        <div class="contact-text">
+                            <p class="contact-label">Email:</p>
+                            <p>Santosoptical@gmail.com</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</footer>
-
-<style>
-/* Footer Styles - Matching Product Gallery Design */
-.footer-section {
-    background: #ffffff;
-    border-top: 1px solid #e9ecef;
-}
-
-.footer-title {
-    color: #2c3e50;
-    font-weight: 600;
-    font-size: 1rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border-bottom: 2px solid #dee2e6;
-    padding-bottom: 0.5rem;
-    display: inline-block;
-}
-
-.footer-brand h5 {
-    color: #2c3e50;
-    font-size: 1.2rem;
-}
-
-/* EXACT Product Gallery Icon Styling */
-.footer-list li {
-    transition: all 0.3s ease;
-}
-
-.footer-link {
-    color: #6c757d !important;
-    transition: all 0.3s ease;
-    font-size: 0.9rem;
-    display: block;
-    padding: 0.5rem 0;
-    text-decoration: none;
-}
-
-.footer-link:hover {
-    color: #007bff !important;
-    transform: translateX(5px);
-    text-decoration: none;
-}
-
-.footer-link i {
-    color: #6c757d;
-    width: 20px;
-    text-align: center;
-    transition: all 0.3s ease;
-}
-
-.footer-link:hover i {
-    color: #007bff;
-}
-
-/* Contact Section Matching Product Gallery */
-.contact-info {
-    margin-top: 0.5rem;
-}
-
-.contact-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 8px 0;
-    border-bottom: 1px solid #f8f9fa;
-    transition: all 0.3s ease;
-}
-
-.contact-item:hover {
-    background-color: #f8f9fa;
-    border-radius: 4px;
-}
-
-.contact-item:last-child {
-    border-bottom: none;
-}
-
-.contact-icon {
-    width: 20px;
-    text-align: center;
-    margin-top: 3px;
-    flex-shrink: 0;
-    color: #6c757d;
-    transition: all 0.3s ease;
-}
-
-.contact-item:hover .contact-icon {
-    color: #007bff;
-}
-
-.contact-text {
-    flex: 1;
-    font-size: 0.85rem;
-    line-height: 1.4;
-    color: #6c757d;
-}
-
-.contact-text strong {
-    color: #2c3e50;
-    font-size: 0.8rem;
-}
-
-.contact-item:hover .contact-text {
-    color: #495057;
-}
-
-.contact-item:hover .contact-text strong {
-    color: #007bff;
-}
-
-/* Business Hours */
-.business-hours {
-    padding: 1rem;
-    background: #f8f9fa;
-    border-radius: 8px;
-    border: 1px solid #e9ecef;
-}
-
-.business-hours .badge {
-    font-size: 0.75rem;
-    padding: 0.4rem 0.8rem;
-    border-radius: 15px;
-    border: 1px solid #dee2e6;
-    background: #ffffff;
-}
-
-/* Copyright Section */
-.copyright-section {
-    background: #f8f9fa;
-    color: #6c757d;
-    border-radius: 6px;
-    margin-top: 1rem;
-    border: 1px solid #e9ecef;
-}
-
-.copyright-section p {
-    font-size: 0.85rem;
-    letter-spacing: 0.3px;
-    font-weight: 400;
-}
-
-.copyright-section i {
-    color: #6c757d;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .footer-section {
-        text-align: center;
-    }
     
-    .footer-brand {
-        text-align: center !important;
-    }
-    
-    .contact-item {
-        justify-content: center;
-        text-align: center;
-        flex-direction: column;
-        gap: 8px;
-    }
-    
-    .contact-icon {
-        margin-top: 0;
-    }
-    
-    .business-hours .row {
-        flex-direction: column;
-        gap: 8px;
-    }
-    
-    .footer-link {
-        text-align: center;
-        padding: 0.4rem 0;
-    }
-    
-    .footer-link:hover {
-        transform: translateY(-2px);
-    }
-}
-
-@media (max-width: 576px) {
-    .footer-title {
-        font-size: 0.9rem;
-    }
-    
-    .footer-link {
-        font-size: 0.85rem;
-    }
-    
-    .contact-text {
-        font-size: 0.8rem;
-    }
-    
-    .business-hours {
-        padding: 0.8rem;
-    }
-    
-    .footer-brand img {
-        width: 140px;
-    }
-}
-</style>
+    <footer>
+        <div class="container">
+            <p>&copy; 2023 Santos Optical. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>
