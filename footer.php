@@ -19,22 +19,22 @@
                     <ul class="footer-list list-unstyled">
                         <li class="mb-2">
                             <a href="product-gallery.php?category=Frame" class="footer-link text-decoration-none">
-                                <i class="fas fa-glasses me-2 text-muted"></i>Eyeglass Frames
+                                <i class="fas fa-glasses me-2"></i>Eyeglass Frames
                             </a>
                         </li>
                         <li class="mb-2">
                             <a href="product-gallery.php?category=Sunglasses" class="footer-link text-decoration-none">
-                                <i class="fas fa-sun me-2 text-muted"></i>Sunglasses
+                                <i class="fas fa-sun me-2"></i>Sunglasses
                             </a>
                         </li>
                         <li class="mb-2">
                             <a href="product-gallery.php?category=Contact+Lenses" class="footer-link text-decoration-none">
-                                <i class="fas fa-eye me-2 text-muted"></i>Contact Lenses
+                                <i class="fas fa-eye me-2"></i>Contact Lenses
                             </a>
                         </li>
                         <li class="mb-2">
                             <a href="product-gallery.php" class="footer-link text-decoration-none">
-                                <i class="fas fa-search me-2 text-muted"></i>All Products
+                                <i class="fas fa-search me-2"></i>All Products
                             </a>
                         </li>
                     </ul>
@@ -48,22 +48,22 @@
                     <ul class="footer-list list-unstyled">
                         <li class="mb-2">
                             <a href="aboutus.php" class="footer-link text-decoration-none">
-                                <i class="fas fa-building me-2 text-muted"></i>About Us
+                                <i class="fas fa-building me-2"></i>About Us
                             </a>
                         </li>
                         <li class="mb-2">
                             <a href="ourservices.php" class="footer-link text-decoration-none">
-                                <i class="fas fa-concierge-bell me-2 text-muted"></i>Our Services
+                                <i class="fas fa-concierge-bell me-2"></i>Our Services
                             </a>
                         </li>
                         <li class="mb-2">
                             <a href="face-shape-detector.php" class="footer-link text-decoration-none">
-                                <i class="fas fa-user-circle me-2 text-muted"></i>Face Shape Detector
+                                <i class="fas fa-user-circle me-2"></i>Face Shape Detector
                             </a>
                         </li>
                         <li class="mb-2">
                             <a href="trackorder.php" class="footer-link text-decoration-none">
-                                <i class="fas fa-shipping-fast me-2 text-muted"></i>Track Your Order
+                                <i class="fas fa-shipping-fast me-2"></i>Track Your Order
                             </a>
                         </li>
                     </ul>
@@ -77,7 +77,7 @@
                     <div class="contact-info">
                         <div class="contact-item mb-3">
                             <div class="contact-icon">
-                                <i class="fas fa-map-marker-alt text-dark"></i>
+                                <i class="fas fa-map-marker-alt"></i>
                             </div>
                             <div class="contact-text">
                                 <strong>Main Address:</strong><br>
@@ -88,7 +88,7 @@
                         
                         <div class="contact-item mb-3">
                             <div class="contact-icon">
-                                <i class="fas fa-phone text-dark"></i>
+                                <i class="fas fa-phone"></i>
                             </div>
                             <div class="contact-text">
                                 <strong>Landline:</strong><br>
@@ -98,7 +98,7 @@
                         
                         <div class="contact-item mb-3">
                             <div class="contact-icon">
-                                <i class="fas fa-mobile-alt text-dark"></i>
+                                <i class="fas fa-mobile-alt"></i>
                             </div>
                             <div class="contact-text">
                                 <strong>Mobile:</strong><br>
@@ -108,7 +108,7 @@
                         
                         <div class="contact-item mb-3">
                             <div class="contact-icon">
-                                <i class="fas fa-envelope text-dark"></i>
+                                <i class="fas fa-envelope"></i>
                             </div>
                             <div class="contact-text">
                                 <strong>Email:</strong><br>
@@ -155,7 +155,7 @@
 </footer>
 
 <style>
-/* Footer Styles - Clean White Theme */
+/* Footer Styles - Clean White Theme with Product Gallery Icon Design */
 .footer-section {
     background: #ffffff;
     border-top: 1px solid #e9ecef;
@@ -186,21 +186,34 @@
     transform: translateX(3px);
 }
 
+/* Updated Icon Styling to match Product Gallery */
 .footer-link {
     color: #6c757d !important;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     font-size: 0.9rem;
     display: block;
-    padding: 0.25rem 0;
+    padding: 0.5rem 0;
     border-left: 2px solid transparent;
-    padding-left: 8px;
+    padding-left: 12px;
 }
 
 .footer-link:hover {
-    color: #2c3e50 !important;
-    transform: translateX(2px);
-    border-left-color: #6c757d;
-    background-color: #f8f9fa;
+    color: #007bff !important;
+    transform: translateX(5px);
+    border-left-color: #007bff;
+    background: linear-gradient(90deg, rgba(0,123,255,0.05), transparent);
+}
+
+.footer-link i {
+    color: #6c757d;
+    width: 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.footer-link:hover i {
+    color: #007bff;
+    transform: scale(1.1);
 }
 
 .contact-info {
@@ -210,9 +223,17 @@
 .contact-item {
     display: flex;
     align-items: flex-start;
-    gap: 10px;
-    padding: 6px 0;
+    gap: 12px;
+    padding: 8px 0;
     border-bottom: 1px solid #f8f9fa;
+    transition: all 0.2s ease;
+}
+
+.contact-item:hover {
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    padding-left: 8px;
+    padding-right: 8px;
 }
 
 .contact-item:last-child {
@@ -220,10 +241,17 @@
 }
 
 .contact-icon {
-    width: 16px;
+    width: 20px;
     text-align: center;
     margin-top: 3px;
     flex-shrink: 0;
+    color: #6c757d;
+    transition: all 0.3s ease;
+}
+
+.contact-item:hover .contact-icon {
+    color: #007bff;
+    transform: scale(1.1);
 }
 
 .contact-text {
@@ -250,6 +278,7 @@
     padding: 0.4rem 0.8rem;
     border-radius: 15px;
     border: 1px solid #dee2e6;
+    background: #ffffff;
 }
 
 .copyright-section {
@@ -266,15 +295,21 @@
     font-weight: 400;
 }
 
-/* Hover effects */
-.footer-link:hover i {
-    color: #2c3e50;
-    transition: color 0.2s ease;
+.copyright-section i {
+    color: #6c757d;
 }
 
-.contact-item:hover .contact-icon {
-    color: #2c3e50;
-    transition: color 0.2s ease;
+/* Enhanced hover effects matching product gallery */
+.footer-link:hover {
+    text-decoration: none;
+}
+
+.contact-item:hover .contact-text {
+    color: #495057;
+}
+
+.contact-item:hover .contact-text strong {
+    color: #007bff;
 }
 
 /* Responsive Design */
@@ -290,6 +325,8 @@
     .contact-item {
         justify-content: center;
         text-align: center;
+        flex-direction: column;
+        gap: 8px;
     }
     
     .contact-icon {
@@ -303,14 +340,16 @@
     
     .footer-link {
         border-left: none;
-        border-bottom: 1px solid transparent;
+        border-bottom: 2px solid transparent;
         padding-left: 0;
-        padding-bottom: 3px;
+        padding-bottom: 8px;
+        text-align: center;
     }
     
     .footer-link:hover {
         border-left-color: transparent;
-        border-bottom-color: #6c757d;
+        border-bottom-color: #007bff;
+        background: linear-gradient(180deg, rgba(0,123,255,0.05), transparent);
     }
 }
 
@@ -321,6 +360,7 @@
     
     .footer-link {
         font-size: 0.85rem;
+        padding: 0.4rem 0;
     }
     
     .contact-text {
@@ -333,6 +373,10 @@
     
     .footer-brand img {
         width: 140px;
+    }
+    
+    .contact-item {
+        padding: 6px 0;
     }
 }
 </style>
