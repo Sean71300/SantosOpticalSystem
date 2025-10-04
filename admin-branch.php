@@ -304,8 +304,8 @@ if ($rid !== 4) {
             </div>
             
             <div class="table-container">
-                <table class="table table-hover">
-                    <thead>
+                <table class="table table-hover text-center">
+                    <thead class="table-light">
                         <tr>
                             <th>Branch Name</th>
                             <th>Branch Location</th>
