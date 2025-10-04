@@ -3,7 +3,6 @@ include_once 'setup.php'; // Include the setup.php file
 include 'ActivityTracker.php';
 ?>
 
-
 <!DOCTYPE html>
 <html>
     <head>
@@ -17,85 +16,140 @@ include 'ActivityTracker.php';
         <link rel="stylesheet" href="customCodes/custom.css">
         <link rel="shortcut icon" type="image/x-icon" href="Images/logo.png"/>
         <link rel="stylesheet" href="customCodes/s2.css">
+        <style>
+            /* Additional styles for side-by-side layout */
+            .service-row {
+                display: flex;
+                align-items: center;
+                min-height: 100vh;
+                padding: 50px 0;
+            }
+            
+            .service-text {
+                flex: 1;
+                padding: 30px;
+            }
+            
+            .service-image {
+                flex: 1;
+                text-align: center;
+            }
+            
+            .service-image img {
+                max-width: 100%;
+                height: auto;
+                border-radius: 10px;
+            }
+            
+            /* Alternate layout for visual variety */
+            .service-row:nth-child(even) {
+                flex-direction: row-reverse;
+            }
+            
+            @media (max-width: 768px) {
+                .service-row {
+                    flex-direction: column;
+                }
+                
+                .service-row:nth-child(even) {
+                    flex-direction: column;
+                }
+            }
+        </style>
     </head>
-        <body>
+    <body>
         <?php include "Navigation.php"?>        
 
+        <div class="button-container">
+            <a href="aboutus.php" class="nav-button">About Us</a>
+            <a href="ourservices.php" class="nav-button">Our Services</a>
+        </div>        
+            
+        <!-- Services Section 1 -->
+        <div class="container-fluid">
+            <div class="service-row">
+                <div class="service-text">
+                    <h2>SERVICES</h2>
+                    <p>At BVP Santos Optical, we are committed to delivering exceptional eye care and 
+                        customer service. Guided by our core standards, we ensure a consistent and excellent 
+                        experience across all our branches, providing quality eyewear and professional optical 
+                        services you can trust.</p>
+                </div>
+                <div class="service-image">
+                    <img src="Images/os1.png" alt="Services Image">
+                </div>
+            </div>
+        </div>
         
-            <div class="button-container">
-                <a href="aboutus.php" class="nav-button">About Us</a>
-                <a href="ourservices.php" class="nav-button">Our Services</a>
-            </div>        
-            
-            <div class="container-fluid position-relative">
-                <div class="services-section">
-                    <div class="text-overlay">
-                        <h2>SERVICES</h2><br>
-                        <p>At BVP Santos Optical, we are committed to delivering exceptional eye care and 
-                            customer service. Guided by our core standards, we ensure a consistent and excellent 
-                            experience across all our branches, providing quality eyewear and professional optical 
-                            services you can trust.</p>
-                    </div>
-                    <img src="Images/os1.png" alt="Services Image" class="services-img">
+        <!-- Services Section 2 -->
+        <div class="container-fluid">
+            <div class="service-row">
+                <div class="service-text">
+                    <h2>B2T1</h2>
+                    <p>Don't miss out on our exclusive Buy 2, Take 1 promo! When 
+                        you purchase any two pairs of eyewear, you'll receive a third 
+                        pair absolutely free. Whether you're looking for stylish frames, 
+                        prescription glasses, or trendy sunglasses, now is the perfect time 
+                        to upgrade your eyewear collection while enjoying great savings!</p>
+                </div>
+                <div class="service-image">
+                    <img src="Images/os2.png" alt="Services Image">
                 </div>
             </div>
-            
-            <div class="d-flex justify-content-center align-items-center min-vh-100">
-                <div class="services2-section">
-                    <div class="text2-overlay">
-                        <h2>B2T1</h2><br>
-                        <p>Don't miss out on our exclusive Buy 2, Take 1 promo! When 
-                            you purchase any two pairs of eyewear, you’ll receive a third 
-                            pair absolutely free. Whether you're looking for stylish frames, 
-                            prescription glasses, or trendy sunglasses, now is the perfect time 
-                            to upgrade your eyewear collection while enjoying great savings!</p>
-                    </div>
-                    <img src="Images/os2.png" alt="Services Image" class="services-img">
-                </div>
-            </div>
+        </div>
 
-            <div class="d-flex justify-content-center align-items-center min-vh-100">
-                <div class="services3-section">
-                    <div class="text3-overlay">
-                        <h2>Less than 30 minutes</h2><br>
-                        <p>Get your glasses ready in less than 30 minutes! We understand the value 
-                            of your time, which is why our skilled professionals work efficiently 
-                            to have your eyewear prepared as quickly as possible. With expertise 
-                            and precision, we ensure that your glasses are ready for you in no time 
-                            after purchase.</p>
-                    </div>
-                    <img src="Images/os3.png" alt="Services Image" class="services-img">
+        <!-- Services Section 3 -->
+        <div class="container-fluid">
+            <div class="service-row">
+                <div class="service-text">
+                    <h2>Less than 30 minutes</h2>
+                    <p>Get your glasses ready in less than 30 minutes! We understand the value 
+                        of your time, which is why our skilled professionals work efficiently 
+                        to have your eyewear prepared as quickly as possible. With expertise 
+                        and precision, we ensure that your glasses are ready for you in no time 
+                        after purchase.</p>
+                </div>
+                <div class="service-image">
+                    <img src="Images/os3.png" alt="Services Image">
                 </div>
             </div>
+        </div>
 
-            <div class="d-flex justify-content-center align-items-center min-vh-100">
-                <div class="services4-section">
-                    <div class="text4-overlay">
-                        <h2>2 Years Frame Warranty!</h2><br>
-                        <p>We know how important peace of mind is when it comes to your eyewear. 
-                            That’s why we offer a 2-year frame warranty to protect your glasses from 
-                            manufacturing defects and frame issues. If something goes wrong, 
-                            our team is here to fix it — fast, easy, and completely free. 
-                            With quality you can count on, you can wear your glasses with 
-                            confidence every day.</p>
-                    </div>
-                    <img src="Images/os4.png" alt="Services Image" class="services-img">
+        <!-- Services Section 4 -->
+        <div class="container-fluid">
+            <div class="service-row">
+                <div class="service-text">
+                    <h2>2 Years Frame Warranty!</h2>
+                    <p>We know how important peace of mind is when it comes to your eyewear. 
+                        That's why we offer a 2-year frame warranty to protect your glasses from 
+                        manufacturing defects and frame issues. If something goes wrong, 
+                        our team is here to fix it — fast, easy, and completely free. 
+                        With quality you can count on, you can wear your glasses with 
+                        confidence every day.</p>
+                </div>
+                <div class="service-image">
+                    <img src="Images/os4.png" alt="Services Image">
                 </div>
             </div>
+        </div>
 
-            <div class="d-flex justify-content-center align-items-center min-vh-100">
-                <div class="services5-section">
-                    <div class="text5-overlay">
-                        <h2>10-D Lens Guarantee</h2><br>
-                        <p>We know how important clear vision and peace of mind are when it comes to your eyewear. 
-                            That’s why we offer a 10-day lens guarantee — giving you time to make sure your lenses 
-                            are just right. If you notice any issues, our team will make it right — quickly, easily, 
-                            and at no extra cost. With quality you can trust and support you can count on, you can 
-                            see the world with confidence.</p>
-                    </div>
-                    <img src="Images/os5.png" alt="Services Image" class="services-img">
+        <!-- Services Section 5 -->
+        <div class="container-fluid">
+            <div class="service-row">
+                <div class="service-text">
+                    <h2>10-D Lens Guarantee</h2>
+                    <p>We know how important clear vision and peace of mind are when it comes to your eyewear. 
+                        That's why we offer a 10-day lens guarantee — giving you time to make sure your lenses 
+                        are just right. If you notice any issues, our team will make it right — quickly, easily, 
+                        and at no extra cost. With quality you can trust and support you can count on, you can 
+                        see the world with confidence.</p>
+                </div>
+                <div class="service-image">
+                    <img src="Images/os5.png" alt="Services Image">
                 </div>
             </div>
-      <?php include 'footer.php'; ?>
+        </div>
+
+        <?php include 'footer.php'; ?>
     </body>
 </html>
