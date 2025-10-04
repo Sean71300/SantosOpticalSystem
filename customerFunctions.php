@@ -187,39 +187,11 @@
             echo '<div class="col-lg-4 col-md-5">';
             echo '<div class="d-flex justify-content-between align-items-center mb-2">';
             echo '<h5 class="mb-0"><i class="fas fa-notes-medical me-2"></i>Medical History</h5>';
-            echo '<button type="button" class="btn btn-sm btn-primary">new Medical History</button>';
+            echo '<button type="button" id="newMedicalBtn" data-customer-id="'.htmlspecialchars($customerID).'" class="btn btn-sm btn-primary">new Medical History</button>';
             echo '</div>';
             echo '<div id="medicalRecordsArea">';
-            // Render compact medical records list
-            $stmtMH = $conn->prepare("SELECT history_id, visit_date, eye_condition, visual_acuity_right, visual_acuity_left, additional_notes FROM customerMedicalHistory WHERE CustomerID = ? ORDER BY visit_date DESC");
-            if ($stmtMH) {
-                $stmtMH->bind_param('s', $customerID);
-                if ($stmtMH->execute()) {
-                    $resMH = $stmtMH->get_result();
-                    if ($resMH && $resMH->num_rows > 0) {
-                        while ($mh = $resMH->fetch_assoc()) {
-                            echo '<div class="border rounded p-2 mb-2">';
-                            echo '<div class="fw-semibold">'.htmlspecialchars($mh['visit_date']).'</div>';
-                            $ec = isset($mh['eye_condition']) && $mh['eye_condition'] !== '' ? htmlspecialchars($mh['eye_condition']) : 'No condition recorded';
-                            echo '<div class="small text-muted">'.$ec.'</div>';
-                            $vaR = !empty($mh['visual_acuity_right']) ? htmlspecialchars($mh['visual_acuity_right']) : '-';
-                            $vaL = !empty($mh['visual_acuity_left']) ? htmlspecialchars($mh['visual_acuity_left']) : '-';
-                            echo '<div class="small">VA R/L: '.$vaR.' / '.$vaL.'</div>';
-                            if (!empty($mh['additional_notes'])) {
-                                echo '<div class="small text-muted">'.nl2br(htmlspecialchars($mh['additional_notes'])).'</div>';
-                            }
-                            echo '</div>';
-                        }
-                    } else {
-                        echo '<div class="alert alert-info">No medical records found for this customer.</div>';
-                    }
-                } else {
-                    echo '<div class="alert alert-warning">Unable to load medical records.</div>';
-                }
-                $stmtMH->close();
-            } else {
-                echo '<div class="alert alert-warning">Unable to load medical records.</div>';
-            }
+            // Render detailed medical records (embedded style without its own header)
+            getMedicalRecords($customerID, true);
             echo '</div>'; // medicalRecordsArea
             echo '</div>'; // end RIGHT col
             echo '</div>'; // end row
@@ -257,7 +229,8 @@
     // Endpoint to return rendered medical records (so profile modal can load them)
     if (isset($_GET['action']) && $_GET['action'] === 'getCustomerMedicalRecords' && isset($_GET['customerID'])) {
         header('Content-Type: text/html; charset=utf-8');
-        getMedicalRecords($_GET['customerID']);
+        $embed = isset($_GET['embed']) && $_GET['embed'] == '1';
+        getMedicalRecords($_GET['customerID'], $embed);
         exit();
     }
 
@@ -344,7 +317,7 @@
     
     //Medical Records
 
-    function getMedicalRecords($customerID) {
+    function getMedicalRecords($customerID, $embed = false) {
         $connection = connect();
     
         $sql = "SELECT * FROM customerMedicalHistory WHERE CustomerID = ? ORDER BY visit_date DESC";
@@ -355,14 +328,14 @@
         $result = $stmt->get_result();
     
         if ($result->num_rows > 0) {
-            echo '<div class="form-container">';
-            echo '<div class="d-flex justify-content-between align-items-center mb-4">';
-            echo '<h3><i class="fas fa-calendar-check me-2"></i> Medical History Records</h3>';
-            // Use data-customer-id only; avoid data-bs-* attributes so native Bootstrap
-            // doesn't attempt to open a modal automatically (we manage this via JS).
-            echo '<button class="btn btn-primary me-2" data-customer-id="'.$customerID.'">';
-            echo '<i class="fas fa-plus me-2"></i> Add Record</button>';
-            echo '</div>';
+            if (!$embed) {
+                echo '<div class="form-container">';
+                echo '<div class="d-flex justify-content-between align-items-center mb-4">';
+                echo '<h3><i class="fas fa-calendar-check me-2"></i> Medical History Records</h3>';
+                echo '<button class="btn btn-primary me-2" data-customer-id="'.$customerID.'">';
+                echo '<i class="fas fa-plus me-2"></i> Add Record</button>';
+                echo '</div>';
+            }
             
             while ($row = $result->fetch_assoc()) {
                 echo '<div class="medical-record-card mb-4 p-4 border rounded">';
@@ -468,14 +441,18 @@
                 
                 echo '</div>'; // Close medical-record-card
             }
-            echo '</div>'; // Close form-container
+            if (!$embed) { echo '</div>'; } // Close form-container only when not embedded
         } else {
-            echo '<div class="d-flex justify-content-between align-items-center mb-4">';
-            echo '<h3><i class="fas fa-calendar-check me-2"></i> Medical History Records</h3>';
-                echo '<button class="btn btn-primary me-2" data-customer-id="'.$customerID.'">';
-            echo '<i class="fas fa-plus me-2"></i> Add Record</button>';
-            echo '</div>';
-            echo '<div class="alert alert-info">No medical records found for this customer.</div>';
+            if (!$embed) {
+                echo '<div class="d-flex justify-content-between align-items-center mb-4">';
+                echo '<h3><i class="fas fa-calendar-check me-2"></i> Medical History Records</h3>';
+                    echo '<button class="btn btn-primary me-2" data-customer-id="'.$customerID.'">';
+                echo '<i class="fas fa-plus me-2"></i> Add Record</button>';
+                echo '</div>';
+                echo '<div class="alert alert-info">No medical records found for this customer.</div>';
+            } else {
+                echo '<div class="alert alert-info">No medical records found for this customer.</div>';
+            }
         }
         $stmt->close();
         $connection->close();

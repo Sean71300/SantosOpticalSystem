@@ -507,7 +507,7 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                     const modal = new bootstrap.Modal(document.getElementById('profileModal'));
                     modal.show();
 
-                    // Fetch profile form (returns edit form + Orders table placeholder)
+                    // Fetch profile form (returns edit form + Orders table placeholder; Super Admin also includes right-side medical history)
                     fetch('customerFunctions.php?action=getCustomerProfile&customerID=' + encodeURIComponent(customerID))
                     .then(r => r.text())
                     .then(html => {
@@ -529,6 +529,120 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                                     tbody.appendChild(tr);
                                 });
                             });
+                    }).then(() => {
+                        // Wire up the right-pane New Medical History button to inject inline form
+                        const modalEl = document.getElementById('profileModal');
+                        const btnNew = modalEl ? modalEl.querySelector('#newMedicalBtn') : null;
+                        if (btnNew) {
+                            btnNew.addEventListener('click', function(ev){
+                                ev.preventDefault();
+                                const cid = this.getAttribute('data-customer-id');
+                                const area = document.getElementById('medicalRecordsArea');
+                                if (!area) return;
+                                if (document.getElementById('medicalRecordFormInline')) {
+                                    document.getElementById('medicalRecordFormInline').scrollIntoView({behavior:'smooth'});
+                                    return;
+                                }
+                                const formHtml = `
+                                    <div class="card mb-3 p-3" id="addRecordInline">
+                                        <h5>Add Medical Record</h5>
+                                        <form id="medicalRecordFormInline" method="post" action="medical-records-funcs.php">
+                                            <input type="hidden" name="customerID" value="${cid}">
+                                            <div class="row mb-2">
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Visit Date</label>
+                                                    <input type="date" name="visit_date" class="form-control" required value="${new Date().toISOString().split('T')[0]}">
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <label class="form-label">Eye Condition</label>
+                                                    <input type="text" name="eye_condition" class="form-control">
+                                                </div>
+                                            </div>
+                                            <div class="row mb-2">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Systemic Diseases</label>
+                                                    <input type="text" name="systemic_diseases" class="form-control">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Pupillary Distance (mm)</label>
+                                                    <input type="number" step="0.01" name="pupillary_distance" class="form-control">
+                                                </div>
+                                            </div>
+                                            <div class="row mb-2">
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Visual Acuity (Right)</label>
+                                                    <input type="text" name="visual_acuity_right" class="form-control">
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Visual Acuity (Left)</label>
+                                                    <input type="text" name="visual_acuity_left" class="form-control">
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Intraocular Pressure - Right (mmHg)</label>
+                                                    <input type="number" step="0.01" name="intraocular_pressure_right" class="form-control">
+                                                </div>
+                                            </div>
+                                            <div class="row mb-2">
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Intraocular Pressure - Left (mmHg)</label>
+                                                    <input type="number" step="0.01" name="intraocular_pressure_left" class="form-control">
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Refraction (Right)</label>
+                                                    <input type="text" name="refraction_right" class="form-control">
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Refraction (Left)</label>
+                                                    <input type="text" name="refraction_left" class="form-control">
+                                                </div>
+                                            </div>
+                                            <div class="row mb-2">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Current Medications</label>
+                                                    <textarea name="current_medications" class="form-control" rows="2"></textarea>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Allergies</label>
+                                                    <textarea name="allergies" class="form-control" rows="2"></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="row mb-2">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Family Eye History</label>
+                                                    <textarea name="family_eye_history" class="form-control" rows="2"></textarea>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Previous Eye Surgeries</label>
+                                                    <textarea name="previous_eye_surgeries" class="form-control" rows="2"></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="row mb-2">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Corneal Topography</label>
+                                                    <textarea name="corneal_topography" class="form-control" rows="2"></textarea>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Fundus Examination</label>
+                                                    <textarea name="fundus_examination" class="form-control" rows="2"></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="row mb-2">
+                                                <div class="col-12">
+                                                    <label class="form-label">Additional Notes</label>
+                                                    <textarea name="additional_notes" class="form-control" rows="3"></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex gap-2 justify-content-end">
+                                                <button type="button" id="cancelAddInline" class="btn btn-secondary">Cancel</button>
+                                                <button type="submit" class="btn btn-primary">Save Record</button>
+                                            </div>
+                                        </form>
+                                    </div>`;
+                                const container = document.createElement('div');
+                                container.innerHTML = formHtml;
+                                area.prepend(container);
+                            });
+                        }
                     })
                     .catch(err => { body.innerHTML = '<div class="alert alert-danger">Error loading profile.</div>'; console.error(err); });
                 });
@@ -629,7 +743,7 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                                             if (profileModalEl) {
                                                 const profileInstance = bootstrap.Modal.getOrCreateInstance(profileModalEl);
                                                 profileInstance.show();
-                                                fetch('customerFunctions.php?action=getCustomerMedicalRecords&customerID=' + encodeURIComponent(customerID))
+                                                fetch('customerFunctions.php?action=getCustomerMedicalRecords&customerID=' + encodeURIComponent(customerID) + '&embed=1')
                                                     .then(r=>r.text()).then(html=>{ const area = document.getElementById('medicalRecordsArea'); if (area) area.innerHTML = html; })
                                                     .catch(e=>console.error('Failed to refresh medical records', e));
                                             }
@@ -644,7 +758,7 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                                             const profileInstance = bootstrap.Modal.getOrCreateInstance(profileModalEl);
                                             profileInstance.show();
                                             const customerID = fd.get('customerID');
-                                            fetch('customerFunctions.php?action=getCustomerMedicalRecords&customerID=' + encodeURIComponent(customerID))
+                                            fetch('customerFunctions.php?action=getCustomerMedicalRecords&customerID=' + encodeURIComponent(customerID) + '&embed=1')
                                                 .then(r=>r.text()).then(html=>{ const area = document.getElementById('medicalRecordsArea'); if (area) area.innerHTML = html; })
                                                 .catch(e=>console.error('Failed to refresh medical records', e));
                                         }
