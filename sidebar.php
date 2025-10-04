@@ -124,7 +124,7 @@ if ($isAdmin) {
 
         <?php if ($isOptometrist): ?>
             <a href="customerRecords.php" class="sidebar-item <?php echo ($current_page == 'customerRecords.php') ? 'active' : ''; ?>">
-                <i class="fas fa-users"></i> 
+                <i class="fas fa-clipboard-list"></i> 
                 <span class="sidebar-item-text">Customer's Medical History</span>
             </a>
         <?php endif; ?>
