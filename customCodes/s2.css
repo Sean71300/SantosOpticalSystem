@@ -1,7 +1,8 @@
 body {
-    background-color: #f0ebea;
-}
-.navbar {
+            background-color: #f0ebea;
+            font-family: 'Arial', sans-serif;
+        }
+        .navbar {
             padding: 10px 20px;
             position: sticky;
             top: 0;
@@ -67,6 +68,42 @@ body {
             background-color: #666;
         }
         
+        /* Centered Content Sections */
+        .centered-section {
+            text-align: center;
+            padding: 60px 20px;
+            margin: 0 auto;
+            max-width: 800px;
+        }
+        
+        .centered-section h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .centered-section h2 {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 25px;
+            color: #333;
+        }
+        
+        .centered-section p {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            color: #555;
+            margin-bottom: 30px;
+        }
+        
+        .divider {
+            height: 2px;
+            background: linear-gradient(to right, transparent, #ddd, transparent);
+            margin: 50px auto;
+            max-width: 800px;
+        }
+        
         /* Service Sections */
         .services-section, .services2-section, .services3-section, 
         .services4-section, .services5-section {
@@ -124,9 +161,10 @@ body {
             line-height: 1.6;
         }
 
-        footer h5 {
+        footer h6 {
             letter-spacing: 1px;
             font-size: 16px;
+            font-weight: bold;
         }
 
         footer ul li {
@@ -144,6 +182,18 @@ body {
 
         /* Responsive Design */
         @media (max-width: 768px) {
+            .centered-section {
+                padding: 40px 15px;
+            }
+            
+            .centered-section h1 {
+                font-size: 2rem;
+            }
+            
+            .centered-section h2 {
+                font-size: 1.7rem;
+            }
+            
             .services-section, .services2-section, .services3-section, 
             .services4-section, .services5-section {
                 max-height: none;
@@ -176,4 +226,16 @@ body {
             .nav-button + .nav-button {
                 border-left: none;
                 border-top: 2px solid white;
+            }
+            
+            .centered-section h1 {
+                font-size: 1.8rem;
+            }
+            
+            .centered-section h2 {
+                font-size: 1.5rem;
+            }
+            
+            .centered-section p {
+                font-size: 1rem;
             }
