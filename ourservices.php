@@ -58,10 +58,9 @@ include 'ActivityTracker.php';
                 left: 10%;
                 transform: translateY(-50%);
                 max-width: 500px;
-                background: rgba(255, 255, 255, 0.85);
                 padding: 30px;
-                border-radius: 10px;
-                box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+                color: white;
+                text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
             }
             
             .services2-section, .services3-section, .services4-section, .services5-section {
@@ -77,10 +76,9 @@ include 'ActivityTracker.php';
                 right: 10%;
                 transform: translateY(-50%);
                 max-width: 500px;
-                background: rgba(255, 255, 255, 0.85);
                 padding: 30px;
-                border-radius: 10px;
-                box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+                color: white;
+                text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
             }
             
             .text3-overlay, .text5-overlay {
@@ -89,10 +87,9 @@ include 'ActivityTracker.php';
                 left: 10%;
                 transform: translateY(-50%);
                 max-width: 500px;
-                background: rgba(255, 255, 255, 0.85);
                 padding: 30px;
-                border-radius: 10px;
-                box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+                color: white;
+                text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
             }
             
             /* Remove excessive spacing */
@@ -112,6 +109,8 @@ include 'ActivityTracker.php';
                     max-width: 100%;
                     margin: 20px;
                     padding: 20px;
+                    color: #333;
+                    text-shadow: none;
                 }
                 
                 .services-section, .services2-section, .services3-section, 
