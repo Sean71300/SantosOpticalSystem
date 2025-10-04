@@ -155,11 +155,10 @@
 </footer>
 
 <style>
-/* Footer Styles - Clean White Theme with Product Gallery Icon Design */
+/* Footer Styles - Matching Product Gallery Design */
 .footer-section {
     background: #ffffff;
     border-top: 1px solid #e9ecef;
-    position: relative;
 }
 
 .footer-title {
@@ -178,30 +177,24 @@
     font-size: 1.2rem;
 }
 
+/* EXACT Product Gallery Icon Styling */
 .footer-list li {
-    transition: transform 0.2s ease;
+    transition: all 0.3s ease;
 }
 
-.footer-list li:hover {
-    transform: translateX(3px);
-}
-
-/* Updated Icon Styling to match Product Gallery */
 .footer-link {
     color: #6c757d !important;
     transition: all 0.3s ease;
     font-size: 0.9rem;
     display: block;
     padding: 0.5rem 0;
-    border-left: 2px solid transparent;
-    padding-left: 12px;
+    text-decoration: none;
 }
 
 .footer-link:hover {
     color: #007bff !important;
     transform: translateX(5px);
-    border-left-color: #007bff;
-    background: linear-gradient(90deg, rgba(0,123,255,0.05), transparent);
+    text-decoration: none;
 }
 
 .footer-link i {
@@ -213,9 +206,9 @@
 
 .footer-link:hover i {
     color: #007bff;
-    transform: scale(1.1);
 }
 
+/* Contact Section Matching Product Gallery */
 .contact-info {
     margin-top: 0.5rem;
 }
@@ -226,14 +219,12 @@
     gap: 12px;
     padding: 8px 0;
     border-bottom: 1px solid #f8f9fa;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
 }
 
 .contact-item:hover {
     background-color: #f8f9fa;
     border-radius: 4px;
-    padding-left: 8px;
-    padding-right: 8px;
 }
 
 .contact-item:last-child {
@@ -251,7 +242,6 @@
 
 .contact-item:hover .contact-icon {
     color: #007bff;
-    transform: scale(1.1);
 }
 
 .contact-text {
@@ -266,6 +256,15 @@
     font-size: 0.8rem;
 }
 
+.contact-item:hover .contact-text {
+    color: #495057;
+}
+
+.contact-item:hover .contact-text strong {
+    color: #007bff;
+}
+
+/* Business Hours */
 .business-hours {
     padding: 1rem;
     background: #f8f9fa;
@@ -281,6 +280,7 @@
     background: #ffffff;
 }
 
+/* Copyright Section */
 .copyright-section {
     background: #f8f9fa;
     color: #6c757d;
@@ -297,19 +297,6 @@
 
 .copyright-section i {
     color: #6c757d;
-}
-
-/* Enhanced hover effects matching product gallery */
-.footer-link:hover {
-    text-decoration: none;
-}
-
-.contact-item:hover .contact-text {
-    color: #495057;
-}
-
-.contact-item:hover .contact-text strong {
-    color: #007bff;
 }
 
 /* Responsive Design */
@@ -339,17 +326,12 @@
     }
     
     .footer-link {
-        border-left: none;
-        border-bottom: 2px solid transparent;
-        padding-left: 0;
-        padding-bottom: 8px;
         text-align: center;
+        padding: 0.4rem 0;
     }
     
     .footer-link:hover {
-        border-left-color: transparent;
-        border-bottom-color: #007bff;
-        background: linear-gradient(180deg, rgba(0,123,255,0.05), transparent);
+        transform: translateY(-2px);
     }
 }
 
@@ -360,7 +342,6 @@
     
     .footer-link {
         font-size: 0.85rem;
-        padding: 0.4rem 0;
     }
     
     .contact-text {
@@ -373,10 +354,6 @@
     
     .footer-brand img {
         width: 140px;
-    }
-    
-    .contact-item {
-        padding: 6px 0;
     }
 }
 </style>
