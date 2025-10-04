@@ -8,6 +8,7 @@
             $isOptometrist = false;
             $isAdmin = isset($_SESSION['roleid']) && $_SESSION['roleid'] === 1;
             $isOptometrist = isset($_SESSION['roleid']) && $_SESSION['roleid'] === 3;        
+            $isSuperAdmin = isset($_SESSION['roleid']) && $_SESSION['roleid'] === 4;
             
             $customerData = "";
             $connection = connect();
@@ -35,12 +36,12 @@
                     <td>$row[CustomerContact]</td>
                     <td>";
                         
-                    if ($isAdmin)
+                    if ($isAdmin || $isSuperAdmin)
                         {
                             echo 
                             "
                                 <button class='btn btn-primary btn-sm profile-btn' data-customer-id='{$row['CustomerID']}'>Profile</button>
-                                <button class='btn btn-danger btn-sm delete-btn' data-customer-id='{$row['CustomerID']}' data-customer-name=".htmlspecialchars($row['CustomerName']).">Remove</button>
+                                <button class='btn btn-danger btn-sm delete-btn' data-customer-id='{$row['CustomerID']}' data-customer-name='".htmlspecialchars($row['CustomerName'], ENT_QUOTES)."'>Remove</button>
 
                             ";
                         }
@@ -119,17 +120,15 @@
     }
 
     // Handle AJAX request for customer orders
-    if (isset($_GET['action'])) {
+    if (isset($_GET['action']) && $_GET['action'] === 'getCustomerOrders' && isset($_GET['customerID'])) {
         header('Content-Type: application/json');
-        if ($_GET['action'] === 'getCustomerOrders' && isset($_GET['customerID'])) {
-            $customerID = $_GET['customerID'];
-            $orders = getCustomerOrders($customerID);
-            echo json_encode($orders);
-            exit();
-        }
+        $customerID = $_GET['customerID'];
+        $orders = getCustomerOrders($customerID);
+        echo json_encode($orders);
+        exit();
     }
 
-    // Return HTML snippet for profile modal (edit form + orders list)
+    // Return HTML snippet for profile modal (edit form + orders list; include medical history for Super Admin)
     if (isset($_GET['action']) && $_GET['action'] === 'getCustomerProfile' && isset($_GET['customerID'])) {
         $customerID = $_GET['customerID'];
         $conn = connect();
@@ -145,6 +144,9 @@
             echo '<div class="alert alert-danger">Customer not found.</div>';
             exit();
         }
+
+        $roleId = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0;
+        $isSuperAdmin = ($roleId === 4);
 
         // Simple edit form
         echo '<div class="container-fluid">';
@@ -174,6 +176,15 @@
         echo '</table>';
         echo '</div>';
         echo '</div>';
+
+        // For Super Admin, include Medical History section inline as well
+        if ($isSuperAdmin) {
+            echo '<hr>';
+            echo '<div class="mt-3" id="medicalRecordsArea">';
+            // Render medical records directly
+            getMedicalRecords($customerID);
+            echo '</div>';
+        }
         echo '</div>';
         exit();
     }

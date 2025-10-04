@@ -106,10 +106,14 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                     <strong>Instructions:</strong>
                     <ul style="margin-bottom: 0; padding-left: 20px;">
                         <li>To add a customer, click the button at the top right.</li>
-                        <?php if ($isAdmin): ?>
-                            <li>To edit or remove customer, click the Profile or Remove button at the 'Actions' column.</li>
+                        <?php 
+                        $isAdmin = isset($_SESSION['roleid']) && $_SESSION['roleid'] === 1; 
+                        $isSuperAdmin = isset($_SESSION['roleid']) && $_SESSION['roleid'] === 4; 
+                        if ($isAdmin || $isSuperAdmin): ?>
+                            <li>To view and edit a customer, open the Profile; you can also Remove the customer from the 'Actions' column.</li>
+                        <?php else: ?>
+                            <li>To check their orders, click the Orders button at the 'Actions' column.</li>
                         <?php endif; ?>
-                        <li>To check their order, click the Order button at the 'Actions' column.</li>
                         <li>Click any column header to sort the table in ascending/descending order.</li>
                     </ul>
                 </div>
