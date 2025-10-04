@@ -154,8 +154,8 @@
         echo '<div class="container-fluid">';
         if ($isSuperAdmin) {
             echo '<div class="row">';
-            // LEFT: Customer info + Orders
-            echo '<div class="col-lg-8 col-md-7">';
+            // LEFT: Customer info + Orders (reduced to 5 cols to give more space to Medical History)
+            echo '<div class="col-lg-5 col-md-6">';
             echo '<form id="profileForm">';
             echo '<input type="hidden" name="CustomerID" value="'.htmlspecialchars($row['CustomerID']).'">';
             echo '<div class="row">';
@@ -183,16 +183,18 @@
             echo '</div>';
             echo '</div>'; // end LEFT col
 
-            // RIGHT: Medical history with button (no function yet)
-            echo '<div class="col-lg-4 col-md-5">';
-            echo '<div class="d-flex justify-content-between align-items-center mb-2">';
+            // RIGHT: Medical history within a scrollable card
+            echo '<div class="col-lg-7 col-md-6">';
+            echo '<div class="card h-100">';
+            echo '<div class="card-header d-flex justify-content-between align-items-center">';
             echo '<h5 class="mb-0"><i class="fas fa-notes-medical me-2"></i>Medical History</h5>';
-            echo '<button type="button" id="newMedicalBtn" data-customer-id="'.htmlspecialchars($customerID).'" class="btn btn-sm btn-primary">new Medical History</button>';
+            echo '<button type="button" id="newMedicalBtn" data-customer-id="'.htmlspecialchars($customerID).'" class="btn btn-sm btn-primary">New Medical History</button>';
             echo '</div>';
-            echo '<div id="medicalRecordsArea">';
+            echo '<div class="card-body p-3" id="medicalRecordsArea" style="max-height:65vh; overflow-y:auto;">';
             // Render detailed medical records (embedded style without its own header)
             getMedicalRecords($customerID, true);
-            echo '</div>'; // medicalRecordsArea
+            echo '</div>'; // card-body / medicalRecordsArea
+            echo '</div>'; // card
             echo '</div>'; // end RIGHT col
             echo '</div>'; // end row
         } else {
