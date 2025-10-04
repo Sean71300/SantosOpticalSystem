@@ -149,41 +149,104 @@
     $roleId = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0;
     $isSuperAdmin = ($roleId === 4);
 
-        // Simple edit form
+        // Layout: two columns when Super Admin, otherwise simple single column
         echo '<div class="container-fluid">';
-        echo '<form id="profileForm">';
-        echo '<input type="hidden" name="CustomerID" value="'.htmlspecialchars($row['CustomerID']).'">';
-        echo '<div class="row">';
-        echo '<div class="col-md-6">';
-        echo '<div class="mb-3"><label class="form-label">Name</label><input type="text" name="CustomerName" class="form-control" value="'.htmlspecialchars($row['CustomerName']).'"></div>';
-        echo '<div class="mb-3"><label class="form-label">Address</label><input type="text" name="CustomerAddress" class="form-control" value="'.htmlspecialchars($row['CustomerAddress']).'"></div>';
-        echo '<div class="mb-3"><label class="form-label">Contact</label><input type="text" name="CustomerContact" class="form-control" value="'.htmlspecialchars($row['CustomerContact']).'"></div>';
-        echo '</div>';
-        echo '<div class="col-md-6">';
-        echo '<div class="mb-3"><label class="form-label">Info</label><textarea name="CustomerInfo" class="form-control">'.htmlspecialchars($row['CustomerInfo']).'</textarea></div>';
-        echo '<div class="mb-3"><label class="form-label">Notes</label><textarea name="Notes" class="form-control">'.htmlspecialchars($row['Notes']).'</textarea></div>';
-        echo '</div>';
-        echo '</div>';
-        echo '</form>';
-
-        // Append Orders area (no inline script; page JS will fetch and populate)
-        echo '<hr>';
-        echo '<div class="mt-2">';
-        echo '<h5><i class="fas fa-receipt me-2"></i>Orders</h5>';
-        echo '<div class="table-responsive">';
-        echo '<table class="table table-sm align-middle">';
-        echo '<thead class="table-light"><tr><th>Product</th><th>Brand</th><th>Qty</th><th>Ordered At</th></tr></thead>';
-        echo '<tbody id="ordersTableBodyProfile"><tr><td colspan="4" class="text-center">Loading orders...</td></tr></tbody>';
-        echo '</table>';
-        echo '</div>';
-        echo '</div>';
-
-        // For Super Admin, include Medical History section inline as well
         if ($isSuperAdmin) {
+            echo '<div class="row">';
+            // LEFT: Customer info + Orders
+            echo '<div class="col-lg-8 col-md-7">';
+            echo '<form id="profileForm">';
+            echo '<input type="hidden" name="CustomerID" value="'.htmlspecialchars($row['CustomerID']).'">';
+            echo '<div class="row">';
+            echo '<div class="col-md-6">';
+            echo '<div class="mb-3"><label class="form-label">Name</label><input type="text" name="CustomerName" class="form-control" value="'.htmlspecialchars($row['CustomerName']).'"></div>';
+            echo '<div class="mb-3"><label class="form-label">Address</label><input type="text" name="CustomerAddress" class="form-control" value="'.htmlspecialchars($row['CustomerAddress']).'"></div>';
+            echo '<div class="mb-3"><label class="form-label">Contact</label><input type="text" name="CustomerContact" class="form-control" value="'.htmlspecialchars($row['CustomerContact']).'"></div>';
+            echo '</div>';
+            echo '<div class="col-md-6">';
+            echo '<div class="mb-3"><label class="form-label">Info</label><textarea name="CustomerInfo" class="form-control">'.htmlspecialchars($row['CustomerInfo']).'</textarea></div>';
+            echo '<div class="mb-3"><label class="form-label">Notes</label><textarea name="Notes" class="form-control">'.htmlspecialchars($row['Notes']).'</textarea></div>';
+            echo '</div>';
+            echo '</div>';
+            echo '</form>';
+            // Orders below the form
             echo '<hr>';
-            echo '<div class="mt-3" id="medicalRecordsArea">';
-            // Render medical records directly
-            getMedicalRecords($customerID);
+            echo '<div class="mt-2">';
+            echo '<h5><i class="fas fa-receipt me-2"></i>Orders</h5>';
+            echo '<div class="table-responsive">';
+            echo '<table class="table table-sm align-middle">';
+            echo '<thead class="table-light"><tr><th>Product</th><th>Brand</th><th>Qty</th><th>Ordered At</th></tr></thead>';
+            echo '<tbody id="ordersTableBodyProfile"><tr><td colspan="4" class="text-center">Loading orders...</td></tr></tbody>';
+            echo '</table>';
+            echo '</div>';
+            echo '</div>';
+            echo '</div>'; // end LEFT col
+
+            // RIGHT: Medical history with button (no function yet)
+            echo '<div class="col-lg-4 col-md-5">';
+            echo '<div class="d-flex justify-content-between align-items-center mb-2">';
+            echo '<h5 class="mb-0"><i class="fas fa-notes-medical me-2"></i>Medical History</h5>';
+            echo '<button type="button" class="btn btn-sm btn-primary">new Medical History</button>';
+            echo '</div>';
+            echo '<div id="medicalRecordsArea">';
+            // Render compact medical records list
+            $stmtMH = $conn->prepare("SELECT history_id, visit_date, eye_condition, visual_acuity_right, visual_acuity_left, additional_notes FROM customerMedicalHistory WHERE CustomerID = ? ORDER BY visit_date DESC");
+            if ($stmtMH) {
+                $stmtMH->bind_param('s', $customerID);
+                if ($stmtMH->execute()) {
+                    $resMH = $stmtMH->get_result();
+                    if ($resMH && $resMH->num_rows > 0) {
+                        while ($mh = $resMH->fetch_assoc()) {
+                            echo '<div class="border rounded p-2 mb-2">';
+                            echo '<div class="fw-semibold">'.htmlspecialchars($mh['visit_date']).'</div>';
+                            $ec = isset($mh['eye_condition']) && $mh['eye_condition'] !== '' ? htmlspecialchars($mh['eye_condition']) : 'No condition recorded';
+                            echo '<div class="small text-muted">'.$ec.'</div>';
+                            $vaR = !empty($mh['visual_acuity_right']) ? htmlspecialchars($mh['visual_acuity_right']) : '-';
+                            $vaL = !empty($mh['visual_acuity_left']) ? htmlspecialchars($mh['visual_acuity_left']) : '-';
+                            echo '<div class="small">VA R/L: '.$vaR.' / '.$vaL.'</div>';
+                            if (!empty($mh['additional_notes'])) {
+                                echo '<div class="small text-muted">'.nl2br(htmlspecialchars($mh['additional_notes'])).'</div>';
+                            }
+                            echo '</div>';
+                        }
+                    } else {
+                        echo '<div class="alert alert-info">No medical records found for this customer.</div>';
+                    }
+                } else {
+                    echo '<div class="alert alert-warning">Unable to load medical records.</div>';
+                }
+                $stmtMH->close();
+            } else {
+                echo '<div class="alert alert-warning">Unable to load medical records.</div>';
+            }
+            echo '</div>'; // medicalRecordsArea
+            echo '</div>'; // end RIGHT col
+            echo '</div>'; // end row
+        } else {
+            // Non-Super Admin: original single-column layout (form + orders stacked)
+            echo '<form id="profileForm">';
+            echo '<input type="hidden" name="CustomerID" value="'.htmlspecialchars($row['CustomerID']).'">';
+            echo '<div class="row">';
+            echo '<div class="col-md-6">';
+            echo '<div class="mb-3"><label class="form-label">Name</label><input type="text" name="CustomerName" class="form-control" value="'.htmlspecialchars($row['CustomerName']).'"></div>';
+            echo '<div class="mb-3"><label class="form-label">Address</label><input type="text" name="CustomerAddress" class="form-control" value="'.htmlspecialchars($row['CustomerAddress']).'"></div>';
+            echo '<div class="mb-3"><label class="form-label">Contact</label><input type="text" name="CustomerContact" class="form-control" value="'.htmlspecialchars($row['CustomerContact']).'"></div>';
+            echo '</div>';
+            echo '<div class="col-md-6">';
+            echo '<div class="mb-3"><label class="form-label">Info</label><textarea name="CustomerInfo" class="form-control">'.htmlspecialchars($row['CustomerInfo']).'</textarea></div>';
+            echo '<div class="mb-3"><label class="form-label">Notes</label><textarea name="Notes" class="form-control">'.htmlspecialchars($row['Notes']).'</textarea></div>';
+            echo '</div>';
+            echo '</div>';
+            echo '</form>';
+            echo '<hr>';
+            echo '<div class="mt-2">';
+            echo '<h5><i class="fas fa-receipt me-2"></i>Orders</h5>';
+            echo '<div class="table-responsive">';
+            echo '<table class="table table-sm align-middle">';
+            echo '<thead class="table-light"><tr><th>Product</th><th>Brand</th><th>Qty</th><th>Ordered At</th></tr></thead>';
+            echo '<tbody id="ordersTableBodyProfile"><tr><td colspan="4" class="text-center">Loading orders...</td></tr></tbody>';
+            echo '</table>';
+            echo '</div>';
             echo '</div>';
         }
         echo '</div>';
