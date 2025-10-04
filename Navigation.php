@@ -27,7 +27,7 @@ if (isset($_SESSION['roleid'])) {
 }
 if (isset($_SESSION['role'])) {
     $rname = strtolower((string)$_SESSION['role']);
-    if (in_array($rname, ['admin', 'super admin', 'superadmin'], true)) {
+    if (in_array($rname, ['admin', 'super admin', 'superadmin', 'owner'], true)) {
         $hideNav = true;
         $showTrackOrder = false;
     }
@@ -79,10 +79,75 @@ if (isset($_SESSION['role'])) {
     object-fit: cover;
     margin-left: 5px;
 }
+
+/* Consistent header styling */
+.forNavigationbar {
+    position: relative;
+    z-index: 1030;
+}
+
+.navbar {
+    background-color: #ffffff !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 0.5rem 0;
+}
+
+.navbar-brand {
+    font-weight: 700;
+    color: #2c3e50 !important;
+}
+
+.navbar-nav .nav-link {
+    color: #2c3e50 !important;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    transition: color 0.3s ease;
+}
+
+.navbar-nav .nav-link:hover {
+    color: #007bff !important;
+}
+
+.navbar-toggler {
+    border: none;
+    padding: 0.25rem 0.5rem;
+}
+
+.navbar-toggler:focus {
+    box-shadow: none;
+}
+
+.dropdown-toggle {
+    background: none;
+    border: none;
+    color: #2c3e50 !important;
+    font-weight: 500;
+}
+
+.dropdown-toggle:hover {
+    color: #007bff !important;
+}
+
+.dropdown-menu {
+    border: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    border-radius: 8px;
+}
+
+.dropdown-item {
+    padding: 0.5rem 1rem;
+    color: #2c3e50;
+    transition: background-color 0.3s ease;
+}
+
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+    color: #007bff;
+}
 </style>
 
 <div class="forNavigationbar sticky-top">
-    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+    <nav class="navbar navbar-expand-lg navbar-light bg-white">
         <div class="container-fluid">
             <a class="navbar-brand fw-bold mx-3" href="index.php">
                 <img src="Images/logo.png" alt="Logo" width="60" height="80"> 
@@ -143,7 +208,7 @@ if (isset($_SESSION['role'])) {
                         // If user_type isn't employee but role string indicates super admin/admin, show admin panel link
                         else if (isset($_SESSION["role"])) {
                             $rnameLocal = strtolower((string)$_SESSION["role"]);
-                            if (in_array($rnameLocal, ['super admin', 'superadmin', 'admin'], true)) {
+                            if (in_array($rnameLocal, ['super admin', 'superadmin', 'admin', 'owner'], true)) {
                                 echo '<li><a class="dropdown-item" href="Dashboard.php">Admin Panel</a></li>';
                             }
                         }
