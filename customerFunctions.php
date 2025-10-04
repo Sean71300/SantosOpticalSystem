@@ -1,4 +1,5 @@
 <?php
+    if (session_status() === PHP_SESSION_NONE) { session_start(); }
     include_once 'setup.php'; 
 
     //read all row from database table
