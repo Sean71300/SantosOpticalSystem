@@ -626,13 +626,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <p>
                         <?php
                         $celebrities = [
-                            'SQUARE' => "You share your face shape with strong-featured stars like Angelina Jolie and Brad Pitt!",
-                            'ROUND' => "Your face shape is similar to charming celebrities like Emma Stone and Leonardo DiCaprio!",
-                            'OBLONG' => "You have the elegant proportions seen on stars like Sarah Jessica Parker and Jude Law!",
-                            'DIAMOND' => "Your striking features match stars like Rihanna and Johnny Depp!",
-                            'V-TRIANGLE' => "You share this distinctive shape with stars like Reese Witherspoon and Chris Hemsworth!",
-                            'A-TRIANGLE' => "Your soft angles are similar to celebrities like Jennifer Aniston and Ryan Gosling!",
-                            'RECTANGLE' => "Your strong bone structure matches stars like Keira Knightley and Idris Elba!"
+                            'SQUARE' => "You share your face shape with strong-featured stars like Angelina Jolie, Tom Cruise, Angel Locsin, and Dingdong Dantes!",
+                            'ROUND' => "Your face shape is similar to charming celebrities like Selena Gomez, Channing Tatum, Nadine Lustre, and James Reid!",
+                            'OBLONG' => "You have the elegant proportions seen on stars like Gigi Hadid, Ben Affleck, Liza Soberano, and Piolo Pascual!",
+                            'DIAMOND' => "Your striking features match stars like Rihanna, Ryan Reynolds, Heart Evangelista, and Alden Richards!",
+                            'V-TRIANGLE' => "You share this distinctive shape with stars like Scarlett Johansson, Chris Hemsworth, Anne Curtis, and Coco Martin!",
+                            'A-TRIANGLE' => "Your soft angles are similar to celebrities like Jennifer Lopez, Zac Efron, Kathryn Bernardo, and Daniel Padilla!",
+                            'RECTANGLE' => "Your strong bone structure matches stars like Olivia Wilde, Henry Cavill, Marian Rivera, and Richard Gutierrez!"
                         ];
                         echo htmlspecialchars($celebrities[$result] ?? "Your face shape is seen on many Hollywood A-listers!");
                         ?>
