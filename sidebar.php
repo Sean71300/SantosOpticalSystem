@@ -1,4 +1,15 @@
 <?php
+include 'setup.php';
+
+$branchCode = isset($_SESSION['branchCode']) ? $_SESSION['branchCode'] : '';
+$sql = "SELECT * FROM BranchMaster WHERE BranchCode = ?";
+$stmt = $link->prepare($sql);
+$stmt->bind_param('s', $branchCode);
+$stmt->execute();
+$result = $stmt->get_result();
+$branch = $result->fetch_assoc();
+
+
 // Set panel title based on role
 $panel = " Panel";
 $rid = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0;
@@ -31,7 +42,10 @@ if ($isAdmin) {
     
     <!-- Sidebar Header -->
     <div class="sidebar-header text-center mt-4">
-        <h4><i class="fas fa-cog"></i> <?php echo $panel ?></h4>
+        <h4>
+            <i class="fas fa-cog"></i> <?php echo $panel ?>
+            <h6 class="mt-2"><?php echo htmlspecialchars($branch['BranchName'] ?? 'No Branch'); ?></h6>
+        </h4>
     </div>
     
     <!-- Sidebar Menu -->
