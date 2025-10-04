@@ -1,270 +1,100 @@
 <?php
-$current_page = basename($_SERVER['PHP_SELF']);
-
-// If the current user is an employee/admin/super-admin, don't render the public navigation.
-$hideNav = false;
-$showTrackOrder = true;
-if (session_status() === PHP_SESSION_NONE) {
-    @session_start();
-}
-if (isset($_SESSION['user_type'])) {
-    $ut = strtolower((string)$_SESSION['user_type']);
-    if ($ut === 'employee' || $ut === 'admin') {
-        $hideNav = true;
-        $showTrackOrder = false;
-    }
-}
-if (isset($_SESSION['roleid'])) {
-    $rid = (int)$_SESSION['roleid'];
-    if (in_array($rid, [1,2], true)) {
-        $hideNav = true;
-        $showTrackOrder = false;
-    }
-}
-if (isset($_SESSION['role'])) {
-    $rname = strtolower((string)$_SESSION['role']);
-    if (in_array($rname, ['admin', 'super admin', 'superadmin', 'owner'], true)) {
-        $hideNav = true;
-        $showTrackOrder = false;
-    }
-}
+include_once 'setup.php'; // Include the setup.php file
+include 'ActivityTracker.php';
 ?>
 
-<style>
-/* Reset and consistent header styling */
-.forNavigationbar {
-    position: sticky;
-    top: 0;
-    z-index: 1030;
-    background-color: #ffffff;
-}
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Navbar Example</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+        <link rel="stylesheet" href="customCodes/custom.css">
+        <link rel="stylesheet" href="customCodes/s1.css">
+        <link rel="stylesheet" href="customCodes/custom.css">
+        <link rel="shortcut icon" type="image/x-icon" href="Images/logo.png"/>
+        <link rel="stylesheet" href="customCodes/s2.css">
+    </head>
+    <body>
+        <?php include "Navigation.php"?>        
 
-.navbar {
-    background-color: #ffffff !important;
-    padding: 0.5rem 0;
-    border-bottom: 1px solid #e9ecef;
-    box-shadow: none !important;
-}
+        <div class="button-container">
+            <a href="aboutus.php" class="nav-button">About Us</a>
+            <a href="ourservices.php" class="nav-button">Our Services</a>
+        </div>        
+            
+        <div class="container-fluid position-relative">
+            <div class="services-section">
+                <div class="text-overlay">
+                    <h2>SERVICES</h2><br>
+                    <p>At BVP Santos Optical, we are committed to delivering exceptional eye care and 
+                        customer service. Guided by our core standards, we ensure a consistent and excellent 
+                        experience across all our branches, providing quality eyewear and professional optical 
+                        services you can trust.</p>
+                </div>
+                <img src="Images/os1.png" alt="Services Image" class="services-img">
+            </div>
+        </div>
+        
+        <div class="d-flex justify-content-center align-items-center min-vh-100">
+            <div class="services2-section">
+                <div class="text2-overlay">
+                    <h2>B2T1</h2><br>
+                    <p>Don't miss out on our exclusive Buy 2, Take 1 promo! When 
+                        you purchase any two pairs of eyewear, you'll receive a third 
+                        pair absolutely free. Whether you're looking for stylish frames, 
+                        prescription glasses, or trendy sunglasses, now is the perfect time 
+                        to upgrade your eyewear collection while enjoying great savings!</p>
+                </div>
+                <img src="Images/os2.png" alt="Services Image" class="services-img">
+            </div>
+        </div>
 
-.navbar-brand {
-    font-weight: 700;
-    color: #2c3e50 !important;
-    font-size: 1.25rem;
-}
+        <div class="d-flex justify-content-center align-items-center min-vh-100">
+            <div class="services3-section">
+                <div class="text3-overlay">
+                    <h2>Less than 30 minutes</h2><br>
+                    <p>Get your glasses ready in less than 30 minutes! We understand the value 
+                        of your time, which is why our skilled professionals work efficiently 
+                        to have your eyewear prepared as quickly as possible. With expertise 
+                        and precision, we ensure that your glasses are ready for you in no time 
+                        after purchase.</p>
+                </div>
+                <img src="Images/os3.png" alt="Services Image" class="services-img">
+            </div>
+        </div>
 
-.navbar-brand img {
-    width: 60px;
-    height: 80px;
-    object-fit: contain;
-}
+        <div class="d-flex justify-content-center align-items-center min-vh-100">
+            <div class="services4-section">
+                <div class="text4-overlay">
+                    <h2>2 Years Frame Warranty!</h2><br>
+                    <p>We know how important peace of mind is when it comes to your eyewear. 
+                        That's why we offer a 2-year frame warranty to protect your glasses from 
+                        manufacturing defects and frame issues. If something goes wrong, 
+                        our team is here to fix it — fast, easy, and completely free. 
+                        With quality you can count on, you can wear your glasses with 
+                        confidence every day.</p>
+                </div>
+                <img src="Images/os4.png" alt="Services Image" class="services-img">
+            </div>
+        </div>
 
-.navbar-nav .nav-link {
-    color: #2c3e50 !important;
-    font-weight: 500;
-    font-size: 1rem;
-    padding: 0.5rem 1rem;
-    transition: color 0.3s ease;
-}
+        <div class="d-flex justify-content-center align-items-center min-vh-100">
+            <div class="services5-section">
+                <div class="text5-overlay">
+                    <h2>10-D Lens Guarantee</h2><br>
+                    <p>We know how important clear vision and peace of mind are when it comes to your eyewear. 
+                        That's why we offer a 10-day lens guarantee — giving you time to make sure your lenses 
+                        are just right. If you notice any issues, our team will make it right — quickly, easily, 
+                        and at no extra cost. With quality you can trust and support you can count on, you can 
+                        see the world with confidence.</p>
+                </div>
+                <img src="Images/os5.png" alt="Services Image" class="services-img">
+            </div>
+        </div>
 
-.navbar-nav .nav-link:hover {
-    color: #007bff !important;
-}
-
-.navbar-nav .nav-link.active {
-    position: relative;
-    font-weight: 600;
-}
-
-.navbar-nav .nav-link.active::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 50%;
-    height: 3px; 
-    background-color: #FFD700; 
-    border-radius: 2px;
-}
-
-.navbar-toggler {
-    border: none;
-    padding: 0.25rem 0.5rem;
-}
-
-.navbar-toggler:focus {
-    box-shadow: none;
-    outline: none;
-}
-
-.dropdown-toggle {
-    background: none;
-    border: none;
-    color: #2c3e50 !important;
-    font-weight: 500;
-    font-size: 1rem;
-    padding: 0.5rem 1rem;
-}
-
-.dropdown-toggle:hover {
-    color: #007bff !important;
-}
-
-.dropdown-menu {
-    border: 1px solid #e9ecef;
-    border-radius: 0.375rem;
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-}
-
-.dropdown-item {
-    padding: 0.5rem 1rem;
-    color: #2c3e50;
-    font-size: 0.9rem;
-    transition: all 0.2s ease;
-}
-
-.dropdown-item:hover {
-    background-color: #f8f9fa;
-    color: #007bff;
-}
-
-.logo {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin-left: 5px;
-}
-
-/* Responsive adjustments */
-@media (max-width: 992px) {
-    .navbar-nav {
-        align-items: flex-start;
-        padding: 1rem 0;
-    }
-    
-    .nav-item {
-        width: 100%;
-    }
-    
-    .nav-link {
-        padding: 0.75rem 1rem !important;
-        border-bottom: 1px solid #f8f9fa;
-    }
-    
-    .dropdown {
-        width: 100%;
-        margin-left: 0;
-        padding: 0;
-    }
-    
-    .dropdown-toggle {
-        width: 100%;
-        text-align: left;
-        padding: 0.75rem 1rem !important;
-        border-bottom: 1px solid #f8f9fa;
-    }
-    
-    .dropdown-menu {
-        position: static !important;
-        transform: none !important;
-        width: 100%;
-        border: none;
-        box-shadow: none;
-    }
-}
-
-@media (max-width: 768px) {
-    .navbar-brand {
-        font-size: 1.1rem;
-    }
-    
-    .navbar-brand img {
-        width: 50px;
-        height: 70px;
-    }
-    
-    .nav-link, .dropdown-toggle {
-        font-size: 0.9rem;
-    }
-}
-</style>
-
-<div class="forNavigationbar sticky-top">
-    <nav class="navbar navbar-expand-lg navbar-light bg-white">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="index.php">
-                <img src="Images/logo.png" alt="Logo"> 
-                Santos Optical
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link <?php echo ($current_page == 'face-shape-detector.php') ? 'active' : ''; ?>" href="face-shape-detector.php">DISCOVER YOUR BEST LOOK</a>
-                    </li>                
-                    <li class="nav-item">
-                        <a class="nav-link <?php echo ($current_page == 'product-gallery.php') ? 'active' : ''; ?>" href="product-gallery.php">PRODUCTS</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link <?php echo ($current_page == 'aboutus.php') ? 'active' : ''; ?>" href="aboutus.php">ABOUT</a>
-                    </li> 
-                    <?php if ($showTrackOrder): ?>
-                    <li class="nav-item">
-                        <a class="nav-link <?php echo ($current_page == 'trackorder.php') ? 'active' : ''; ?>" href="trackorder.php">TRACK ORDER</a>
-                    </li>
-                    <?php endif; ?> 
-                    <?php  
-                    if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
-                        echo '<li class="nav-item">';
-                        echo '<a class="nav-link ' . ($current_page == 'login.php' ? 'active' : '') . '" href="login.php">| Login</a>';
-                        echo '</li>';
-                    }
-                    else {
-                        echo '<li class="nav-item dropdown">';
-                        echo '<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">';
-                        echo '| ' . htmlspecialchars($_SESSION["full_name"]);
-                        
-                        if (isset($_SESSION["img"]) && $_SESSION["user_type"] !== 'customer') {
-                            echo '<img src="' . $_SESSION["img"] . '" class="logo ms-2">';
-                        }
-                        
-                        echo '</a>';
-                        echo '<ul class="dropdown-menu" aria-labelledby="navbarDropdown">';
-                        
-                        if (isset($_SESSION["user_type"]) && $_SESSION["user_type"] == 'employee') {
-                            if (isset($_SESSION["roleid"])) {
-                                $rIdLocal = (int)$_SESSION["roleid"];
-                                if ($rIdLocal === 4) {
-                                    echo '<li><a class="dropdown-item" href="Dashboard.php">Admin Panel</a></li>';
-                                } elseif ($rIdLocal === 1) {
-                                    echo '<li><a class="dropdown-item" href="Dashboard.php">Admin page</a></li>';
-                                } elseif ($rIdLocal === 2) {
-                                    echo '<li><a class="dropdown-item" href="Dashboard.php">Employee page</a></li>';
-                                }
-                            }
-                        }
-                        else if (isset($_SESSION["role"])) {
-                            $rnameLocal = strtolower((string)$_SESSION["role"]);
-                            if (in_array($rnameLocal, ['super admin', 'superadmin', 'admin', 'owner'], true)) {
-                                echo '<li><a class="dropdown-item" href="Dashboard.php">Admin Panel</a></li>';
-                            }
-                        }
-                        else if (isset($_SESSION["user_type"]) && $_SESSION["user_type"] == 'customer') {
-                            echo '<li><a class="dropdown-item" href="customer_dashboard.php">Medical History</a></li>';
-                            echo '<li><a class="dropdown-item" href="trackorder.php">Track Order</a></li>';
-                        }
-                        
-                        echo '<li><hr class="dropdown-divider"></li>';
-                        echo '<li><a class="dropdown-item" href="logout.php">Log Out</a></li>';
-                        echo '</ul>';
-                        echo '</li>';
-                    }
-                    ?>                               
-                </ul>        
-            </div>                    
-        </div>                   
-    </nav>
-</div>
+        <?php include 'footer.php'; ?>
+    </body>
+</html>
