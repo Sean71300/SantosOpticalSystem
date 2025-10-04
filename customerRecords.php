@@ -503,24 +503,27 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                     const modal = new bootstrap.Modal(document.getElementById('profileModal'));
                     modal.show();
 
-                    // Fetch profile form (reuse a small endpoint on customerFunctions.php)
-                    fetch('customerFunctions.php?action=getCustomerProfile&customerID=' + customerID)
+                    // Fetch profile form (returns edit form + Orders table placeholder)
+                    fetch('customerFunctions.php?action=getCustomerProfile&customerID=' + encodeURIComponent(customerID))
                     .then(r => r.text())
                     .then(html => {
                         body.innerHTML = html;
-                        // The server returns a <script> to fetch medical records, but
-                        // scripts inside HTML inserted via innerHTML won't execute.
-                        // Fetch medical records explicitly here so they appear in the modal.
-                        fetch('customerFunctions.php?action=getCustomerMedicalRecords&customerID=' + customerID)
-                            .then(r2 => r2.text())
-                            .then(medHtml => {
-                                const area = document.getElementById('medicalRecordsArea');
-                                if (area) area.innerHTML = medHtml;
-                            })
-                            .catch(e => {
-                                console.error('Error loading medical records', e);
-                                const area = document.getElementById('medicalRecordsArea');
-                                if (area) area.innerHTML = '<div class="alert alert-danger">Error loading medical records</div>';
+                        // Populate Orders list inside the profile modal (branch-scoped server side)
+                        return fetch('customerFunctions.php?action=getCustomerOrders&customerID=' + encodeURIComponent(customerID))
+                            .then(r => r.json())
+                            .then(orders => {
+                                const tbody = document.getElementById('ordersTableBodyProfile');
+                                if (!tbody) return;
+                                tbody.innerHTML = '';
+                                if (!orders || !orders.length) {
+                                    tbody.innerHTML = '<tr><td colspan="4" class="text-center">No orders found for this customer</td></tr>';
+                                    return;
+                                }
+                                orders.forEach(o => {
+                                    const tr = document.createElement('tr');
+                                    tr.innerHTML = `<td>${o.Model || 'N/A'}</td><td>${o.BrandName || 'N/A'}</td><td>${o.Quantity || 'N/A'}</td><td>${o.Created_dt || 'N/A'}</td>`;
+                                    tbody.appendChild(tr);
+                                });
                             });
                     })
                     .catch(err => { body.innerHTML = '<div class="alert alert-danger">Error loading profile.</div>'; console.error(err); });

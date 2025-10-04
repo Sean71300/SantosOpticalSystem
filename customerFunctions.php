@@ -64,6 +64,26 @@
         $connection = connect();
         $orders = array();
 
+        // Determine if current user is restricted to a branch (Admin=1, Employee=2)
+        $roleId = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0;
+        $sessionBranch = isset($_SESSION['branchcode']) ? (string)$_SESSION['branchcode'] : '';
+        $username = isset($_SESSION['username']) ? (string)$_SESSION['username'] : '';
+        $isRestrictedRole = in_array($roleId, [1,2], true);
+
+        if ($isRestrictedRole && $sessionBranch === '' && $username !== '') {
+            if ($st = $connection->prepare("SELECT BranchCode FROM employee WHERE LoginName = ? LIMIT 1")) {
+                $st->bind_param('s', $username);
+                if ($st->execute()) {
+                    $rs = $st->get_result();
+                    if ($rs && ($r = $rs->fetch_assoc())) {
+                        $_SESSION['branchcode'] = (string)$r['BranchCode'];
+                        $sessionBranch = $_SESSION['branchcode'];
+                    }
+                }
+                $st->close();
+            }
+        }
+
         $sql = "SELECT p.Model, b.BrandName, od.Quantity, oh.Created_dt 
                 FROM orderDetails od
                 JOIN Order_hdr oh ON od.OrderHdr_id = oh.Orderhdr_id
@@ -71,10 +91,20 @@
                 JOIN productMstr p ON pbm.ProductID = p.ProductID
                 JOIN brandMaster b ON p.BrandID = b.BrandID
                 WHERE oh.CustomerID = ?";
+
+        $types = 's';
+        $params = [$customerID];
+        if ($isRestrictedRole && $sessionBranch !== '') {
+            $sql .= " AND oh.BranchCode = ?";
+            $types .= 's';
+            $params[] = $sessionBranch;
+        }
         
-    $stmt = $connection->prepare($sql);
-    // CustomerID may be alphanumeric (generated IDs), bind as string to avoid converting to 0
-    $stmt->bind_param("s", $customerID);
+        $stmt = $connection->prepare($sql);
+        if ($stmt === false) {
+            return [];
+        }
+        $stmt->bind_param($types, ...$params);
         $stmt->execute();
         $result = $stmt->get_result();
 
@@ -99,7 +129,7 @@
         }
     }
 
-    // Return HTML snippet for profile modal (edit form + medical history)
+    // Return HTML snippet for profile modal (edit form + orders list)
     if (isset($_GET['action']) && $_GET['action'] === 'getCustomerProfile' && isset($_GET['customerID'])) {
         $customerID = $_GET['customerID'];
         $conn = connect();
@@ -133,14 +163,18 @@
         echo '</div>';
         echo '</form>';
 
-        // Append medical records area
-        echo '<hr><div id="medicalRecordsArea">';
-        // reuse existing function to echo medical records
+        // Append Orders area (no inline script; page JS will fetch and populate)
+        echo '<hr>';
+        echo '<div class="mt-2">';
+        echo '<h5><i class="fas fa-receipt me-2"></i>Orders</h5>';
+        echo '<div class="table-responsive">';
+        echo '<table class="table table-sm align-middle">';
+        echo '<thead class="table-light"><tr><th>Product</th><th>Brand</th><th>Qty</th><th>Ordered At</th></tr></thead>';
+        echo '<tbody id="ordersTableBodyProfile"><tr><td colspan="4" class="text-center">Loading orders...</td></tr></tbody>';
+        echo '</table>';
         echo '</div>';
         echo '</div>';
-
-        // Load medical records via a small script so we don't duplicate code server-side
-        echo '<script>fetch("customerFunctions.php?action=getCustomerMedicalRecords&customerID='.rawurlencode($customerID).'").then(r=>r.text()).then(html=>{document.getElementById("medicalRecordsArea").innerHTML = html;}).catch(e=>{console.error(e);document.getElementById("medicalRecordsArea").innerHTML = "<div class=\"alert alert-danger\">Error loading medical records</div>";});</script>';
+        echo '</div>';
         exit();
     }
 
