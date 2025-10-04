@@ -1,100 +1,164 @@
 <?php
-include_once 'setup.php'; // Include the setup.php file
-include 'ActivityTracker.php';
+$current_page = basename($_SERVER['PHP_SELF']);
+
+// If the current user is an employee/admin/super-admin, don't render the public navigation.
+// This prevents employees and admins from viewing or clicking the public site navigation.
+// By default show Track Order link; we'll disable it for staff/admins
+$hideNav = false;
+$showTrackOrder = true;
+if (session_status() === PHP_SESSION_NONE) {
+    // session should already be started by the including page, but be defensive
+    @session_start();
+}
+if (isset($_SESSION['user_type'])) {
+    $ut = strtolower((string)$_SESSION['user_type']);
+    if ($ut === 'employee' || $ut === 'admin') {
+        $hideNav = true;
+        $showTrackOrder = false;
+    }
+}
+// roleid 1 -> admin, 2 -> employee in this app; additionally check any role name
+if (isset($_SESSION['roleid'])) {
+    $rid = (int)$_SESSION['roleid'];
+    if (in_array($rid, [1,2], true)) {
+        $hideNav = true;
+        $showTrackOrder = false;
+    }
+}
+if (isset($_SESSION['role'])) {
+    $rname = strtolower((string)$_SESSION['role']);
+    if (in_array($rname, ['admin', 'super admin', 'superadmin'], true)) {
+        $hideNav = true;
+        $showTrackOrder = false;
+    }
+}
+
+// Don't completely return; instead conditionally hide specific links (Track Order)
+// We'll still render the rest of the navigation for consistency.
+// (This keeps the brand and other links visible on admin pages.)
 ?>
 
-<!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Navbar Example</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-        <link rel="stylesheet" href="customCodes/custom.css">
-        <link rel="stylesheet" href="customCodes/s1.css">
-        <link rel="stylesheet" href="customCodes/custom.css">
-        <link rel="shortcut icon" type="image/x-icon" href="Images/logo.png"/>
-        <link rel="stylesheet" href="customCodes/s2.css">
-    </head>
-    <body>
-        <?php include "Navigation.php"?>        
+<style>
+.navbar .nav-link.active {
+    position: relative;
+    font-weight: bold;
+}
 
-        <div class="button-container">
-            <a href="aboutus.php" class="nav-button">About Us</a>
-            <a href="ourservices.php" class="nav-button">Our Services</a>
-        </div>        
-            
-        <div class="container-fluid position-relative">
-            <div class="services-section">
-                <div class="text-overlay">
-                    <h2>SERVICES</h2><br>
-                    <p>At BVP Santos Optical, we are committed to delivering exceptional eye care and 
-                        customer service. Guided by our core standards, we ensure a consistent and excellent 
-                        experience across all our branches, providing quality eyewear and professional optical 
-                        services you can trust.</p>
-                </div>
-                <img src="Images/os1.png" alt="Services Image" class="services-img">
-            </div>
-        </div>
-        
-        <div class="d-flex justify-content-center align-items-center min-vh-100">
-            <div class="services2-section">
-                <div class="text2-overlay">
-                    <h2>B2T1</h2><br>
-                    <p>Don't miss out on our exclusive Buy 2, Take 1 promo! When 
-                        you purchase any two pairs of eyewear, you'll receive a third 
-                        pair absolutely free. Whether you're looking for stylish frames, 
-                        prescription glasses, or trendy sunglasses, now is the perfect time 
-                        to upgrade your eyewear collection while enjoying great savings!</p>
-                </div>
-                <img src="Images/os2.png" alt="Services Image" class="services-img">
-            </div>
-        </div>
+.navbar .nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50%;
+    height: 3px; 
+    background-color: #FFD700; 
+    border-radius: 2px;
+}
 
-        <div class="d-flex justify-content-center align-items-center min-vh-100">
-            <div class="services3-section">
-                <div class="text3-overlay">
-                    <h2>Less than 30 minutes</h2><br>
-                    <p>Get your glasses ready in less than 30 minutes! We understand the value 
-                        of your time, which is why our skilled professionals work efficiently 
-                        to have your eyewear prepared as quickly as possible. With expertise 
-                        and precision, we ensure that your glasses are ready for you in no time 
-                        after purchase.</p>
-                </div>
-                <img src="Images/os3.png" alt="Services Image" class="services-img">
-            </div>
-        </div>
+/* Responsive adjustments for dropdown */
+@media (max-width: 992px) {
+    .navbar-nav {
+        align-items: flex-start;
+    }
+    
+    .dropdown {
+        margin-left: 0;
+        padding: 0.5rem 1rem;
+    }
+    
+    .dropdown-toggle::after {
+        margin-left: 0.5em;
+    }
+}
 
-        <div class="d-flex justify-content-center align-items-center min-vh-100">
-            <div class="services4-section">
-                <div class="text4-overlay">
-                    <h2>2 Years Frame Warranty!</h2><br>
-                    <p>We know how important peace of mind is when it comes to your eyewear. 
-                        That's why we offer a 2-year frame warranty to protect your glasses from 
-                        manufacturing defects and frame issues. If something goes wrong, 
-                        our team is here to fix it — fast, easy, and completely free. 
-                        With quality you can count on, you can wear your glasses with 
-                        confidence every day.</p>
-                </div>
-                <img src="Images/os4.png" alt="Services Image" class="services-img">
-            </div>
-        </div>
+.logo {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-left: 5px;
+}
+</style>
 
-        <div class="d-flex justify-content-center align-items-center min-vh-100">
-            <div class="services5-section">
-                <div class="text5-overlay">
-                    <h2>10-D Lens Guarantee</h2><br>
-                    <p>We know how important clear vision and peace of mind are when it comes to your eyewear. 
-                        That's why we offer a 10-day lens guarantee — giving you time to make sure your lenses 
-                        are just right. If you notice any issues, our team will make it right — quickly, easily, 
-                        and at no extra cost. With quality you can trust and support you can count on, you can 
-                        see the world with confidence.</p>
-                </div>
-                <img src="Images/os5.png" alt="Services Image" class="services-img">
-            </div>
-        </div>
-
-        <?php include 'footer.php'; ?>
-    </body>
-</html>
+<div class="forNavigationbar sticky-top">
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold mx-3" href="index.php">
+                <img src="Images/logo.png" alt="Logo" width="60" height="80"> 
+                Santos Optical
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav ps-5 fs-5 fw-bold ms-2 mb-lg-0 col d-flex justify-content-end">
+                    <li class="nav-item">
+                        <a class="nav-link m-2 <?php echo ($current_page == 'face-shape-detector.php') ? 'active' : ''; ?>" href="face-shape-detector.php">DISCOVER YOUR BEST LOOK</a>
+                    </li>                
+                    <li class="nav-item">
+                        <a class="nav-link m-2 <?php echo ($current_page == 'product-gallery.php') ? 'active' : ''; ?>" href="product-gallery.php">PRODUCTS</a>
+                    </li>
+                    <li class="nav-item m-2">
+                        <a class="nav-link <?php echo ($current_page == 'aboutus.php') ? 'active' : ''; ?>" href="aboutus.php">ABOUT</a>
+                    </li> 
+                    <?php if ($showTrackOrder): ?>
+                    <li class="nav-item">
+                        <a class="nav-link m-2 <?php echo ($current_page == 'trackorder.php') ? 'active' : ''; ?>" href="trackorder.php">TRACK ORDER</a>
+                    </li>
+                    <?php endif; ?> 
+                    <?php  
+                    if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
+                        echo '<li class="nav-item m-2">';
+                        echo '<a class="nav-link ' . ($current_page == 'login.php' ? 'active' : '') . '" href="login.php">|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Login</a>';
+                        echo '</li>';
+                    }
+                    else {
+                        echo '<div class="dropdown">';
+                        echo '<button class="btn dropdown-toggle fs-5 fw-bold" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">';
+                        echo '|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'. htmlspecialchars($_SESSION["full_name"]);
+                        
+                        // Only show image if it exists (for employees)
+                        if (isset($_SESSION["img"]) && $_SESSION["user_type"] !== 'customer') {
+                            echo '<img src="' . $_SESSION["img"] . '" class="logo">';
+                        }
+                        
+                        echo '</button>';
+                        echo '<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">';
+                        
+                        // Menu items based on user type
+                        if (isset($_SESSION["user_type"]) && $_SESSION["user_type"] == 'employee') {
+                            if (isset($_SESSION["roleid"])) {
+                                $rIdLocal = (int)$_SESSION["roleid"];
+                                if ($rIdLocal === 4) {
+                                    // Super Admin
+                                    echo '<li><a class="dropdown-item" href="Dashboard.php">Admin Panel</a></li>';
+                                } elseif ($rIdLocal === 1) {
+                                    echo '<li><a class="dropdown-item" href="Dashboard.php">Admin page</a></li>';
+                                } elseif ($rIdLocal === 2) {
+                                    echo '<li><a class="dropdown-item" href="Dashboard.php">Employee page</a></li>';
+                                }
+                            }
+                        }
+                        // If user_type isn't employee but role string indicates super admin/admin, show admin panel link
+                        else if (isset($_SESSION["role"])) {
+                            $rnameLocal = strtolower((string)$_SESSION["role"]);
+                            if (in_array($rnameLocal, ['super admin', 'superadmin', 'admin'], true)) {
+                                echo '<li><a class="dropdown-item" href="Dashboard.php">Admin Panel</a></li>';
+                            }
+                        }
+                        else if (isset($_SESSION["user_type"]) && $_SESSION["user_type"] == 'customer') {
+                            echo '<li><a class="dropdown-item" href="customer_dashboard.php">Medical History</a></li>';
+                            echo '<li><a class="dropdown-item" href="trackorder.php">Track Order</a></li>';
+                        }
+                        
+                        echo '<li><a class="dropdown-item" href="logout.php">Log Out</a></li>';
+                        echo '</ul>';
+                        echo '</div>';
+                    }
+                    ?>                               
+                </ul>        
+            </div>                    
+        </div>                   
+    </nav>
+</div>
