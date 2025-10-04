@@ -1,7 +1,8 @@
 <?php
 include_once 'setup.php';
-
+$link = connect();
 $branchCode = isset($_SESSION['branchCode']) ? $_SESSION['branchCode'] : '';
+
 $sql = "SELECT * FROM BranchMaster WHERE BranchCode = ?";
 $stmt = $link->prepare($sql);
 $stmt->bind_param('s', $branchCode);
