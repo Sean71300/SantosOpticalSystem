@@ -1,14 +1,26 @@
 <?php
 include_once 'setup.php';
+// Ensure a session is started so we can read $_SESSION values
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
 $link = connect();
 $branchCode = isset($_SESSION['branchCode']) ? $_SESSION['branchCode'] : '';
 
-$sql = "SELECT * FROM BranchMaster WHERE BranchCode = ?";
-$stmt = $link->prepare($sql);
-$stmt->bind_param('s', $branchCode);
-$stmt->execute();
-$result = $stmt->get_result();
-$branch = $result->fetch_assoc();
+$branch = null;
+// Only query the database when we actually have a branch code
+if (!empty($branchCode)) {
+    $sql = "SELECT * FROM BranchMaster WHERE BranchCode = ?";
+    $stmt = $link->prepare($sql);
+    if ($stmt) {
+        $stmt->bind_param('s', $branchCode);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $branch = $result->fetch_assoc();
+        $stmt->close();
+    } else {
+        // optional: handle prepare error (log, display fallback)
+        $branch = null;
+    }
+}
 
 
 // Set panel title based on role
