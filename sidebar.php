@@ -1,5 +1,5 @@
 <?php
-include 'setup.php';
+include_once 'setup.php';
 
 $branchCode = isset($_SESSION['branchCode']) ? $_SESSION['branchCode'] : '';
 $sql = "SELECT * FROM BranchMaster WHERE BranchCode = ?";
