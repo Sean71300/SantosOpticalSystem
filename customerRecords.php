@@ -158,6 +158,7 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
+                        <div style="max-height:65vh; overflow-y:auto;">
                         <table class="table">
                             <thead>
                                 <tr>
@@ -171,6 +172,7 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                                 <!-- Orders will be populated here by JavaScript -->
                             </tbody>
                         </table>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

@@ -174,8 +174,8 @@
             echo '<hr>';
             echo '<div class="mt-2">';
             echo '<h5><i class="fas fa-receipt me-2"></i>Orders</h5>';
-            echo '<div class="table-responsive">';
-            echo '<table class="table table-sm align-middle">';
+            echo '<div class="table-responsive" style="max-height:40vh; overflow-y:auto;">';
+            echo '<table class="table table-sm align-middle mb-0">';
             echo '<thead class="table-light"><tr><th>Product</th><th>Brand</th><th>Qty</th><th>Ordered At</th></tr></thead>';
             echo '<tbody id="ordersTableBodyProfile"><tr><td colspan="4" class="text-center">Loading orders...</td></tr></tbody>';
             echo '</table>';
@@ -216,8 +216,8 @@
             echo '<hr>';
             echo '<div class="mt-2">';
             echo '<h5><i class="fas fa-receipt me-2"></i>Orders</h5>';
-            echo '<div class="table-responsive">';
-            echo '<table class="table table-sm align-middle">';
+            echo '<div class="table-responsive" style="max-height:40vh; overflow-y:auto;">';
+            echo '<table class="table table-sm align-middle mb-0">';
             echo '<thead class="table-light"><tr><th>Product</th><th>Brand</th><th>Qty</th><th>Ordered At</th></tr></thead>';
             echo '<tbody id="ordersTableBodyProfile"><tr><td colspan="4" class="text-center">Loading orders...</td></tr></tbody>';
             echo '</table>';
