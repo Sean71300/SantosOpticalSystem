@@ -10,8 +10,6 @@ include 'setup.php';
                     <td class='align-middle'>" . htmlspecialchars($row['BranchName']) . "</td>
                     <td class='align-middle'>" . htmlspecialchars($row['BranchLocation']) . "</td>
                     <td class='align-middle'>" . htmlspecialchars($row['ContactNo']) . "</td>
-                    </tr>
-                    <tr>
                     <td class='align-middle'>
                         <form method='post'>
                             <input type='hidden' name='branchCode' value='" . htmlspecialchars($row['BranchCode']) . "'>
