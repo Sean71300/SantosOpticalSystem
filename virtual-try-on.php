@@ -1639,7 +1639,7 @@
         faceTrackingActive = true;
         if (!isCalibrated && frameCount > 10) calibrateStraightPosition(results.multiFaceLandmarks[0]);
         results.multiFaceLandmarks.forEach(drawGlasses);
-        updateStatus(`Active - ${FRAMES[currentFrame].label} (${currentColorName})`, "online");
+        updateStatus(`Active - ${FRAMES[currentFrame].label} ${currentMaterial} ${currentColorName}`, "online");
       } else {
         faceTrackingActive = false;
         updateStatus("Looking for face...", "loading");
@@ -1723,7 +1723,7 @@
       let caption = '';
       try {
         const frameLabel = (FRAMES && FRAMES[currentFrame] && FRAMES[currentFrame].label) ? FRAMES[currentFrame].label : currentFrame;
-        caption = `${frameLabel} - ${currentMaterial} (${currentColorName || currentColor}) `;
+        caption = `${frameLabel} ${currentMaterial} ${currentColorName || currentColor} `;
       } catch (e) {
         caption = `${currentColorName || currentColor} - ${currentMaterial}`;
       }
