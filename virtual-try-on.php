@@ -11,9 +11,6 @@ $shape = isset($_GET['shape']) ? htmlspecialchars($_GET['shape']) : 'Unknown';
   <!-- Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
-  <!-- Preload frame for faster load -->
-  <link rel="preload" as="image" href="https://santosopticalclinic.com/Images/frames/ashape-frame-removebg-preview.png">
-
   <style>
     body {
       background: #fafafa;
@@ -39,7 +36,12 @@ $shape = isset($_GET['shape']) ? htmlspecialchars($_GET['shape']) : 'Unknown';
       top: 0;
       left: 0;
       z-index: 2;
-      pointer-events: none; /* only overlay is non-interactive */
+      pointer-events: none;
+    }
+
+    button, a.btn {
+      position: relative;
+      z-index: 3;
     }
 
     .debug {
@@ -54,11 +56,6 @@ $shape = isset($_GET['shape']) ? htmlspecialchars($_GET['shape']) : 'Unknown';
       padding: 8px;
       height: 150px;
       overflow-y: auto;
-    }
-
-    button, a.btn {
-      position: relative;
-      z-index: 3; /* ensure button stays on top */
     }
   </style>
 </head>
@@ -80,71 +77,42 @@ $shape = isset($_GET['shape']) ? htmlspecialchars($_GET['shape']) : 'Unknown';
     <div class="debug" id="debug"></div>
   </div>
 
-  <!-- MediaPipe & FaceMesh -->
+  <!-- MediaPipe -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/face_mesh.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3/camera_utils.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
 
   <script>
     const debugBox = document.getElementById('debug');
-    const log = msg => {
-      console.log(msg);
-      debugBox.innerHTML += msg + '<br>';
-      debugBox.scrollTop = debugBox.scrollHeight;
-    };
+    const log = msg => { console.log(msg); debugBox.innerHTML += msg + '<br>'; debugBox.scrollTop = debugBox.scrollHeight; };
 
     const video = document.getElementById('video');
     const canvas = document.getElementById('overlay');
     const ctx = canvas.getContext('2d');
 
-    // ✅ Preload and decode glasses image
     const glassesImg = new Image();
     glassesImg.src = "https://santosopticalclinic.com/Images/frames/ashape-frame-removebg-preview.png";
-    glassesImg.decoding = "async";
-    glassesImg.loading = "eager";
-
-    glassesImg.onload = () => log("✅ Glasses image loaded: " + glassesImg.src);
+    glassesImg.onload = () => log("✅ Glasses image loaded.");
 
     async function startCamera() {
-      log("📸 Requesting camera access...");
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { width: { ideal: 1280 }, height: { ideal: 720 } }
-        });
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 1280 }, height: { ideal: 720 } } });
         video.srcObject = stream;
 
         video.onloadedmetadata = () => {
-          log("✅ Camera permission granted");
-
+          log("✅ Camera ready");
           if (typeof Camera === "undefined") {
-            log("❌ Camera class not defined. Check camera_utils.js path.");
+            log("❌ Camera class not found.");
             return;
           }
-
-          try {
-            let lastTime = 0;
-            const fpsLimit = 20;
-
-            const camera = new Camera(video, {
-              onFrame: async () => {
-                const now = performance.now();
-                if (now - lastTime > 1000 / fpsLimit) {
-                  lastTime = now;
-                  await faceMesh.send({ image: video });
-                }
-              },
-              width: 600,
-              height: 450
-            });
-            camera.start();
-            log("🎥 Camera started successfully!");
-          } catch (err) {
-            log("❌ Camera failed: " + err);
-          }
+          const camera = new Camera(video, {
+            onFrame: async () => { await faceMesh.send({ image: video }); },
+            width: 600,
+            height: 450
+          });
+          camera.start();
         };
       } catch (error) {
-        log("🚫 Camera access error: " + error.message);
-        alert("Camera access was blocked or failed. Please allow camera permissions.");
+        alert("Camera access was blocked or failed.");
       }
     }
 
@@ -165,7 +133,7 @@ $shape = isset($_GET['shape']) ? htmlspecialchars($_GET['shape']) : 'Unknown';
         const landmarks = results.multiFaceLandmarks[0];
         const leftEye = landmarks[33];
         const rightEye = landmarks[263];
-        const noseBridge = landmarks[168]; // between eyes
+        const noseBridge = landmarks[168];
 
         const dx = rightEye.x - leftEye.x;
         const dy = rightEye.y - leftEye.y;
@@ -174,22 +142,17 @@ $shape = isset($_GET['shape']) ? htmlspecialchars($_GET['shape']) : 'Unknown';
         const centerX = (leftEye.x + rightEye.x) / 2 * canvas.width;
         const centerY = (leftEye.y + rightEye.y) / 2 * canvas.height;
 
-        const glassesWidth = eyeDist * 2.2;
-        const glassesHeight = glassesWidth * 0.4;
+        // Adjusted for realistic fit ↓↓↓
+        const glassesWidth = eyeDist * 2.6;   // slightly wider (was 2.2)
+        const glassesHeight = glassesWidth * 0.45; // adjusted height ratio
 
-        const noseY = noseBridge.y * canvas.height;
-        const dynamicYOffset = (noseY - centerY) * 0.8;
+        // Move slightly lower on the face ↓↓↓
+        const yOffset = (noseBridge.y * canvas.height - centerY) * 1.2 + 15;
 
         ctx.save();
-        ctx.translate(centerX, centerY);
+        ctx.translate(centerX, centerY + yOffset);
         ctx.rotate(Math.atan2(dy, dx));
-        ctx.drawImage(
-          glassesImg,
-          -glassesWidth / 2,
-          -glassesHeight / 2 + dynamicYOffset,
-          glassesWidth,
-          glassesHeight
-        );
+        ctx.drawImage(glassesImg, -glassesWidth / 2, -glassesHeight / 2, glassesWidth, glassesHeight);
         ctx.restore();
       }
     });
