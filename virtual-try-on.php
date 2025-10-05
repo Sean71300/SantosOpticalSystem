@@ -1164,7 +1164,7 @@
           <div class="card-body">
             <a href="https://santosopticalclinic.com/face-shape-detector.php" class="btn-face-shape" target="_blank">
               <i class="fas fa-face-smile"></i>
-              <span>Click here to figure out your face shape</span>
+              <span>CLICK HERE to figure out your face shape</span>
             </a>
             <div class="frame-grid">
               <button class="frame-btn active" data-frame="A-TRIANGLE">

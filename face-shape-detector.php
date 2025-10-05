@@ -198,7 +198,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     
     .btn-quiz {
-        background: var(--primary);
+        background: linear-gradient(135deg, var(--secondary), #00b3a0);
         color: white;
         border: none;
         padding: 15px 40px;
