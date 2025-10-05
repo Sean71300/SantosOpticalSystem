@@ -464,6 +464,46 @@
       margin-bottom: 5px;
     }
     
+    /* Color Picker Styles */
+    .color-picker-container {
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid var(--border);
+    }
+    
+    .color-picker-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .color-picker-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .color-preview {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      border: 2px solid var(--border);
+      cursor: pointer;
+    }
+    
+    .color-input {
+      flex: 1;
+      height: 40px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      padding: 0 12px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    
     /* Mobile optimizations */
     @media (max-width: 767px) {
       .app-container {
@@ -530,6 +570,16 @@
       
       .action-buttons .btn {
         width: 100%;
+      }
+      
+      .color-picker-wrapper {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .color-preview {
+        width: 100%;
+        height: 50px;
       }
     }
     
@@ -637,59 +687,79 @@
               <div class="color-group-title">Classic Colors</div>
               <div class="color-grid">
                 <div class="color-option">
-                  <div class="color-btn active" style="background: #2c2c2c;" data-color="#2c2c2c" data-color-name="Black"></div>
-                  <div class="color-label">Black</div>
+                  <div class="color-btn active" style="background: #1a1a1a;" data-color="#1a1a1a" data-color-name="Jet Black"></div>
+                  <div class="color-label">Jet Black</div>
                 </div>
                 <div class="color-option">
-                  <div class="color-btn" style="background: #6c757d;" data-color="#6c757d" data-color-name="Gray"></div>
-                  <div class="color-label">Gray</div>
+                  <div class="color-btn" style="background: #2c2c2c;" data-color="#2c2c2c" data-color-name="Charcoal"></div>
+                  <div class="color-label">Charcoal</div>
                 </div>
                 <div class="color-option">
-                  <div class="color-btn" style="background: #8B4513;" data-color="#8B4513" data-color-name="Tortoise"></div>
+                  <div class="color-btn" style="background: #4a4a4a;" data-color="#4a4a4a" data-color-name="Graphite"></div>
+                  <div class="color-label">Graphite</div>
+                </div>
+                <div class="color-option">
+                  <div class="color-btn" style="background: #5d4037;" data-color="#5d4037" data-color-name="Dark Brown"></div>
+                  <div class="color-label">Dark Brown</div>
+                </div>
+                <div class="color-option">
+                  <div class="color-btn" style="background: #795548;" data-color="#795548" data-color-name="Tortoise"></div>
                   <div class="color-label">Tortoise</div>
                 </div>
                 <div class="color-option">
-                  <div class="color-btn" style="background: #A52A2A;" data-color="#A52A2A" data-color-name="Brown"></div>
-                  <div class="color-label">Brown</div>
+                  <div class="color-btn" style="background: #8d6e63;" data-color="#8d6e63" data-color-name="Light Brown"></div>
+                  <div class="color-label">Light Brown</div>
                 </div>
                 <div class="color-option">
-                  <div class="color-btn" style="background: linear-gradient(45deg, #c0c0c0, #e8e8e8);" data-color="#c0c0c0" data-color-name="Silver"></div>
+                  <div class="color-btn" style="background: linear-gradient(45deg, #b0bec5, #78909c);" data-color="#b0bec5" data-color-name="Silver"></div>
                   <div class="color-label">Silver</div>
                 </div>
                 <div class="color-option">
-                  <div class="color-btn" style="background: linear-gradient(45deg, #daa520, #b8860b);" data-color="#daa520" data-color-name="Gold"></div>
+                  <div class="color-btn" style="background: linear-gradient(45deg, #ffd700, #b8860b);" data-color="#ffd700" data-color-name="Gold"></div>
                   <div class="color-label">Gold</div>
+                </div>
+                <div class="color-option">
+                  <div class="color-btn" style="background: linear-gradient(45deg, #e0e0e0, #9e9e9e);" data-color="#e0e0e0" data-color-name="Platinum"></div>
+                  <div class="color-label">Platinum</div>
                 </div>
               </div>
             </div>
             
             <div class="color-group">
-              <div class="color-group-title">Vibrant Colors</div>
+              <div class="color-group-title">Premium Colors</div>
               <div class="color-grid">
                 <div class="color-option">
-                  <div class="color-btn" style="background: #1a73e8;" data-color="#1a73e8" data-color-name="Blue"></div>
-                  <div class="color-label">Blue</div>
+                  <div class="color-btn" style="background: #0d47a1;" data-color="#0d47a1" data-color-name="Navy Blue"></div>
+                  <div class="color-label">Navy Blue</div>
                 </div>
                 <div class="color-option">
-                  <div class="color-btn" style="background: #dc3545;" data-color="#dc3545" data-color-name="Red"></div>
-                  <div class="color-label">Red</div>
+                  <div class="color-btn" style="background: #004d40;" data-color="#004d40" data-color-name="Forest Green"></div>
+                  <div class="color-label">Forest Green</div>
                 </div>
                 <div class="color-option">
-                  <div class="color-btn" style="background: #28a745;" data-color="#28a745" data-color-name="Green"></div>
-                  <div class="color-label">Green</div>
+                  <div class="color-btn" style="background: #6a1b9a;" data-color="#6a1b9a" data-color-name="Royal Purple"></div>
+                  <div class="color-label">Royal Purple</div>
                 </div>
                 <div class="color-option">
-                  <div class="color-btn" style="background: #ffc107;" data-color="#ffc107" data-color-name="Yellow"></div>
-                  <div class="color-label">Yellow</div>
+                  <div class="color-btn" style="background: #b71c1c;" data-color="#b71c1c" data-color-name="Burgundy"></div>
+                  <div class="color-label">Burgundy</div>
                 </div>
                 <div class="color-option">
-                  <div class="color-btn" style="background: #6f42c1;" data-color="#6f42c1" data-color-name="Purple"></div>
-                  <div class="color-label">Purple</div>
+                  <div class="color-btn" style="background: #e65100;" data-color="#e65100" data-color-name="Amber"></div>
+                  <div class="color-label">Amber</div>
                 </div>
                 <div class="color-option">
-                  <div class="color-btn" style="background: #e83e8c;" data-color="#e83e8c" data-color-name="Pink"></div>
-                  <div class="color-label">Pink</div>
+                  <div class="color-btn" style="background: #263238;" data-color="#263238" data-color-name="Gunmetal"></div>
+                  <div class="color-label">Gunmetal</div>
                 </div>
+              </div>
+            </div>
+
+            <div class="color-picker-container">
+              <div class="color-picker-label">Custom Color</div>
+              <div class="color-picker-wrapper">
+                <div class="color-preview" id="colorPreview" style="background-color: #1a1a1a;"></div>
+                <input type="color" id="colorPicker" class="color-input" value="#1a1a1a">
               </div>
             </div>
 
@@ -795,6 +865,8 @@
     const frameButtons = document.querySelectorAll('.frame-btn');
     const colorButtons = document.querySelectorAll('.color-btn');
     const materialButtons = document.querySelectorAll('.material-btn');
+    const colorPicker = document.getElementById('colorPicker');
+    const colorPreview = document.getElementById('colorPreview');
 
     // Frame definitions
     const FRAMES = {
@@ -841,8 +913,8 @@
     let glassesHeightRatio = 0.7;
     let verticalOffset = 0;
     let currentFrame = 'A-TRIANGLE';
-    let currentColor = '#2c2c2c';
-    let currentColorName = 'Black';
+    let currentColor = '#1a1a1a';
+    let currentColorName = 'Jet Black';
     let currentMaterial = 'Plain';
 
     // Cache for textures to avoid regeneration
@@ -895,11 +967,12 @@
       const b = parseInt(hex.substr(4, 2), 16);
       
       if (materialType === 'Plain') {
-        // Plain plastic/matte texture
+        // More realistic plain material with subtle variations
+        // Create base gradient
         const gradient = textureCtx.createLinearGradient(0, 0, width, height);
-        gradient.addColorStop(0, `rgb(${Math.max(0, r-30)}, ${Math.max(0, g-30)}, ${Math.max(0, b-30)})`);
+        gradient.addColorStop(0, `rgb(${Math.max(0, r-15)}, ${Math.max(0, g-15)}, ${Math.max(0, b-15)})`);
         gradient.addColorStop(0.5, baseColor);
-        gradient.addColorStop(1, `rgb(${Math.min(255, r+20)}, ${Math.min(255, g+20)}, ${Math.min(255, b+20)})`);
+        gradient.addColorStop(1, `rgb(${Math.min(255, r+10)}, ${Math.min(255, g+10)}, ${Math.min(255, b+10)})`);
         
         textureCtx.fillStyle = gradient;
         textureCtx.fillRect(0, 0, width, height);
@@ -907,35 +980,58 @@
         // Add subtle noise for texture (optimized)
         const imageData = textureCtx.getImageData(0, 0, width, height);
         const data = imageData.data;
-        for (let i = 0; i < data.length; i += 16) { // Process every 4th pixel for performance
-          const noise = (Math.random() - 0.5) * 15;
+        for (let i = 0; i < data.length; i += 8) { // Process every 2nd pixel for performance
+          const noise = (Math.random() - 0.5) * 8; // Reduced noise for more realistic look
           data[i] = Math.max(0, Math.min(255, data[i] + noise));
           data[i + 1] = Math.max(0, Math.min(255, data[i + 1] + noise));
           data[i + 2] = Math.max(0, Math.min(255, data[i + 2] + noise));
         }
         textureCtx.putImageData(imageData, 0, 0);
         
+        // Add subtle highlights for more realistic appearance
+        const highlight = textureCtx.createLinearGradient(0, 0, width * 0.3, height * 0.3);
+        highlight.addColorStop(0, 'rgba(255,255,255,0.1)');
+        highlight.addColorStop(1, 'rgba(255,255,255,0)');
+        textureCtx.fillStyle = highlight;
+        textureCtx.fillRect(0, 0, width * 0.3, height * 0.3);
+        
       } else if (materialType === 'Pattern') {
-        // Optimized Pattern texture - use larger blocks
-        const blockSize = 4; // Process in 4x4 blocks for performance
-        for (let x = 0; x < width; x += blockSize) {
-          for (let y = 0; y < height; y += blockSize) {
-            const value = Math.sin(x * 0.05) * Math.cos(y * 0.05) * 40;
-            const PatternR = Math.max(0, Math.min(255, r + value));
-            const PatternG = Math.max(0, Math.min(255, g + value));
-            const PatternB = Math.max(0, Math.min(255, b + value));
-            
-            textureCtx.fillStyle = `rgb(${PatternR}, ${PatternG}, ${PatternB})`;
-            textureCtx.fillRect(x, y, blockSize, blockSize);
-          }
+        // More sophisticated pattern texture
+        // Base color with subtle gradient
+        const baseGradient = textureCtx.createLinearGradient(0, 0, width, height);
+        baseGradient.addColorStop(0, `rgb(${Math.max(0, r-10)}, ${Math.max(0, g-10)}, ${Math.max(0, b-10)})`);
+        baseGradient.addColorStop(1, `rgb(${Math.min(255, r+10)}, ${Math.min(255, g+10)}, ${Math.min(255, b+10)})`);
+        
+        textureCtx.fillStyle = baseGradient;
+        textureCtx.fillRect(0, 0, width, height);
+        
+        // Add geometric pattern (subtle)
+        textureCtx.strokeStyle = `rgba(${Math.max(0, r-30)}, ${Math.max(0, g-30)}, ${Math.max(0, b-30)}, 0.15)`;
+        textureCtx.lineWidth = 1;
+        
+        // Draw grid pattern
+        const gridSize = 8;
+        for (let x = 0; x < width; x += gridSize) {
+          textureCtx.beginPath();
+          textureCtx.moveTo(x, 0);
+          textureCtx.lineTo(x, height);
+          textureCtx.stroke();
+        }
+        for (let y = 0; y < height; y += gridSize) {
+          textureCtx.beginPath();
+          textureCtx.moveTo(0, y);
+          textureCtx.lineTo(width, y);
+          textureCtx.stroke();
         }
         
-        // Add Pattern shine
-        const shine = textureCtx.createLinearGradient(0, 0, width, height);
-        shine.addColorStop(0, 'rgba(255,255,255,0.4)');
-        shine.addColorStop(0.5, 'rgba(255,255,255,0.1)');
-        shine.addColorStop(1, 'rgba(255,255,255,0)');
-        textureCtx.fillStyle = shine;
+        // Add subtle highlights
+        const highlightGradient = textureCtx.createRadialGradient(
+          width * 0.3, height * 0.3, 0,
+          width * 0.3, height * 0.3, width * 0.5
+        );
+        highlightGradient.addColorStop(0, 'rgba(255,255,255,0.08)');
+        highlightGradient.addColorStop(1, 'rgba(255,255,255,0)');
+        textureCtx.fillStyle = highlightGradient;
         textureCtx.fillRect(0, 0, width, height);
       }
       
@@ -944,155 +1040,188 @@
       return textureCanvas;
     }
 
-    function drawGlasses(landmarks) {
+    function applyColorAndMaterialToFrame(frameImg, color, materialType) {
+      const tempCanvas = document.createElement('canvas');
+      const tempCtx = tempCanvas.getContext('2d');
+      
+      tempCanvas.width = frameImg.width;
+      tempCanvas.height = frameImg.height;
+      
+      // Draw original frame to preserve transparency
+      tempCtx.drawImage(frameImg, 0, 0);
+      
+      // Get image data to identify non-transparent pixels
+      const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+      const data = imageData.data;
+      
+      // Create material texture
+      const texture = createMaterialTexture(tempCanvas.width, tempCanvas.height, color, materialType);
+      
+      // Draw the texture only on non-transparent areas
+      tempCtx.globalCompositeOperation = 'source-in';
+      tempCtx.drawImage(texture, 0, 0);
+      tempCtx.globalCompositeOperation = 'source-over';
+      
+      return tempCanvas;
+    }
+
+    function drawGlasses(landmarks, frameType, color, materialType) {
+      if (!glassesLoaded || !glassesImages[frameType]) return;
+      
+      const frameImg = glassesImages[frameType];
+      const coloredFrame = applyColorAndMaterialToFrame(frameImg, color, materialType);
+      
+      // Calculate position based on face landmarks
       const leftEye = landmarks[33];
       const rightEye = landmarks[263];
-      let headAngle = calculateHeadAngle(landmarks);
+      const nose = landmarks[1];
       
-      if (isCalibrated) headAngle += angleOffset;
+      if (!leftEye || !rightEye || !nose) return;
       
-      const eyeDist = Math.hypot(
-        rightEye.x * canvasElement.width - leftEye.x * canvasElement.width,
-        rightEye.y * canvasElement.height - leftEye.y * canvasElement.height
+      const eyeDistance = Math.sqrt(
+        Math.pow(rightEye.x - leftEye.x, 2) + 
+        Math.pow(rightEye.y - leftEye.y, 2)
       );
-
-      const glassesWidth = eyeDist * glassesSizeMultiplier;
-      const glassesHeight = glassesWidth * glassesHeightRatio;
-      let centerX = (leftEye.x * canvasElement.width + rightEye.x * canvasElement.width) / 2;
-      let centerY = (leftEye.y * canvasElement.height + rightEye.y * canvasElement.height) / 2;
-      centerY += verticalOffset;
-
-      if (centerX > 0 && centerY > 0 && glassesWidth > 10 && glassesImages[currentFrame]) {
-        canvasCtx.save();
-        canvasCtx.translate(centerX, centerY);
-        canvasCtx.rotate(headAngle);
-        
-        // Create temporary canvas for the frame
-        const tempCanvas = document.createElement('canvas');
-        const tempCtx = tempCanvas.getContext('2d');
-        const frameWidth = Math.max(50, glassesImages[currentFrame].width); // Minimum size for texture quality
-        const frameHeight = Math.max(30, glassesImages[currentFrame].height);
-        tempCanvas.width = frameWidth;
-        tempCanvas.height = frameHeight;
-        
-        // Draw original frame to get the shape
-        tempCtx.drawImage(glassesImages[currentFrame], 0, 0, frameWidth, frameHeight);
-        
-        // Create material texture
-        const textureCanvas = createMaterialTexture(frameWidth, frameHeight, currentColor, currentMaterial);
-        
-        // Apply texture using the frame as a mask
-        tempCtx.globalCompositeOperation = 'source-in';
-        tempCtx.drawImage(textureCanvas, 0, 0);
-        
-        // Draw the final textured glasses
-        canvasCtx.drawImage(
-          tempCanvas,
-          -glassesWidth / 2,
-          -glassesHeight / 2,
-          glassesWidth,
-          glassesHeight
-        );
-        
-        canvasCtx.restore();
-      }
+      
+      const glassesWidth = eyeDistance * glassesSizeMultiplier;
+      const glassesHeight = glassesWidth * (coloredFrame.height / coloredFrame.width) * glassesHeightRatio;
+      
+      const centerX = (leftEye.x + rightEye.x) / 2;
+      const centerY = (leftEye.y + rightEye.y) / 2 + verticalOffset / canvasElement.height;
+      
+      const headAngle = calculateHeadAngle(landmarks) + angleOffset;
+      
+      canvasCtx.save();
+      canvasCtx.translate(
+        centerX * canvasElement.width,
+        centerY * canvasElement.height
+      );
+      canvasCtx.rotate(headAngle);
+      
+      canvasCtx.drawImage(
+        coloredFrame,
+        -glassesWidth / 2 * canvasElement.width,
+        -glassesHeight / 2 * canvasElement.height,
+        glassesWidth * canvasElement.width,
+        glassesHeight * canvasElement.height
+      );
+      
+      canvasCtx.restore();
     }
 
-    async function onResults(results) {
-      if (!glassesLoaded || isProcessing) return;
+    function onResultsFaceMesh(results) {
+      if (!isProcessing) return;
+      
       frameCount++;
-      if (isMobile && frameCount % 3 !== 0) return;
-
-      isProcessing = true;
+      
       canvasCtx.save();
       canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-      canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
-
+      
       if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
-        faceTrackingActive = true;
-        if (!isCalibrated && frameCount > 10) calibrateStraightPosition(results.multiFaceLandmarks[0]);
-        results.multiFaceLandmarks.forEach(drawGlasses);
-        updateStatus(`Active - ${FRAMES[currentFrame].label} (${currentColorName})`, "online");
+        if (!faceTrackingActive) {
+          faceTrackingActive = true;
+          updateStatus('Face detected - Tracking active', 'online');
+        }
+        
+        // Draw face landmarks (optional - for debugging)
+        // drawingUtils.drawConnectors(canvasCtx, results.multiFaceLandmarks[0], drawingUtils.FACEMESH_TESSELATION, 
+        //   {color: '#C0C0C070', lineWidth: 1});
+        
+        // Draw glasses on the first detected face
+        drawGlasses(results.multiFaceLandmarks[0], currentFrame, currentColor, currentMaterial);
+        
+        // Auto-calibrate on first frame if not calibrated
+        if (!isCalibrated && frameCount < 10) {
+          calibrateStraightPosition(results.multiFaceLandmarks[0]);
+        }
       } else {
-        faceTrackingActive = false;
-        updateStatus("Looking for face...", "loading");
+        if (faceTrackingActive) {
+          faceTrackingActive = false;
+          updateStatus('No face detected', 'offline');
+        }
       }
-
+      
       canvasCtx.restore();
-      isProcessing = false;
-    }
-
-    function resizeCanvasToDisplay() {
-      const container = canvasElement.parentElement;
-      canvasElement.width = container.clientWidth;
-      canvasElement.height = container.clientHeight;
-    }
-
-    async function initializeFaceMesh() {
-      return new Promise((resolve) => {
-        faceMesh = new FaceMesh({
-          locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+      
+      // Continue processing
+      if (isProcessing) {
+        requestAnimationFrame(() => {
+          faceMesh.send({image: videoElement});
         });
-        faceMesh.setOptions({
-          maxNumFaces: 1, refineLandmarks: false, minDetectionConfidence: 0.7, minTrackingConfidence: 0.5
-        });
-        faceMesh.onResults(onResults);
-        faceMesh.initialize().then(resolve).catch(resolve);
-      });
+      }
     }
 
     async function startCamera() {
       try {
-        updateStatus("Requesting camera access...", "loading");
+        updateStatus('Initializing camera...', 'loading');
         cameraOverlay.classList.remove('d-none');
+        startBtn.disabled = true;
         
-        const constraints = {
-          video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 }, aspectRatio: { ideal: 4/3 } }
-        };
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        videoElement.srcObject = stream;
-        
-        return new Promise((resolve) => {
-          videoElement.onloadedmetadata = () => {
-            videoElement.play().then(() => {
-              cameraOverlay.classList.add('d-none');
-              resolve(stream);
-            });
-          };
+        // Initialize face mesh
+        faceMesh = new FaceMesh({
+          locateFile: (file) => {
+            return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
+          }
         });
-      } catch (err) {
+        
+        faceMesh.setOptions({
+          maxNumFaces: 1,
+          refineLandmarks: true,
+          minDetectionConfidence: 0.5,
+          minTrackingConfidence: 0.5
+        });
+        
+        faceMesh.onResults(onResultsFaceMesh);
+        
+        // Start camera
+        camera = new Camera(videoElement, {
+          onFrame: async () => {
+            if (isProcessing) {
+              await faceMesh.send({image: videoElement});
+            }
+          },
+          width: 640,
+          height: 480
+        });
+        
+        await camera.start();
+        
+        // Set canvas size to match video
+        canvasElement.width = videoElement.videoWidth;
+        canvasElement.height = videoElement.videoHeight;
+        
         cameraOverlay.classList.add('d-none');
-        throw err;
+        calibrateBtn.classList.remove('d-none');
+        updateStatus('Camera active - Ready for try-on', 'online');
+        isProcessing = true;
+        
+      } catch (error) {
+        console.error('Error starting camera:', error);
+        updateStatus('Camera error: ' + error.message, 'offline');
+        cameraOverlay.classList.add('d-none');
+        startBtn.disabled = false;
       }
     }
 
-    // Event listeners for frame selection
-    frameButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        frameButtons.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        currentFrame = btn.dataset.frame;
-      });
-    });
+    function stopCamera() {
+      if (camera) {
+        camera.stop();
+        camera = null;
+      }
+      isProcessing = false;
+      faceTrackingActive = false;
+      updateStatus('Camera is off', 'offline');
+      startBtn.disabled = false;
+      calibrateBtn.classList.add('d-none');
+    }
 
-    // Event listeners for color selection - FIXED: Don't change material
-    colorButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        colorButtons.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        currentColor = btn.dataset.color;
-        currentColorName = btn.dataset.colorName;
-        // DON'T change material when selecting color - keep current material
-      });
-    });
-
-    // Event listeners for material selection
-    materialButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        materialButtons.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        currentMaterial = btn.dataset.material;
-      });
+    // Event Listeners
+    startBtn.addEventListener('click', startCamera);
+    
+    calibrateBtn.addEventListener('click', () => {
+      isCalibrated = false;
+      angleOffset = 0;
+      updateStatus('Recalibrating...', 'loading');
     });
 
     sizeSlider.addEventListener('input', (e) => {
@@ -1101,7 +1230,7 @@
     });
 
     heightDown.addEventListener('click', () => {
-      glassesHeightRatio = Math.max(0.4, glassesHeightRatio - 0.05);
+      glassesHeightRatio = Math.max(0.5, glassesHeightRatio - 0.05);
       updateHeightDisplay();
     });
 
@@ -1111,58 +1240,63 @@
     });
 
     positionDown.addEventListener('click', () => {
-      verticalOffset += 2;
+      verticalOffset += 5;
       updatePositionDisplay();
     });
 
     positionUp.addEventListener('click', () => {
-      verticalOffset -= 2;
+      verticalOffset -= 5;
       updatePositionDisplay();
     });
 
-    calibrateBtn.addEventListener('click', () => {
-      if (faceTrackingActive) {
-        isCalibrated = false;
-        updateStatus("Recalibrating... Look straight", "loading");
-        setTimeout(() => updateStatus("Recalibrated!", "online"), 1000);
-      }
+    frameButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        frameButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFrame = btn.dataset.frame;
+      });
     });
 
-    startBtn.addEventListener('click', async () => {
-      try {
-        startBtn.disabled = true;
-        updateStatus("Initializing...", "loading");
-
-        await initializeFaceMesh();
-        const stream = await startCamera();
+    colorButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        colorButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentColor = btn.dataset.color;
+        currentColorName = btn.dataset.colorName;
+        colorPicker.value = currentColor;
+        colorPreview.style.backgroundColor = currentColor;
         
-        resizeCanvasToDisplay();
-        calibrateBtn.classList.remove('d-none');
-        updateHeightDisplay();
-        updatePositionDisplay();
-
-        camera = new Camera(videoElement, {
-          onFrame: async () => {
-            if (faceMesh && !isProcessing) await faceMesh.send({ image: videoElement });
-          }, width: 320, height: 240
-        });
-
-        await camera.start();
-        updateStatus("Ready! Try different frames and colors", "online");
-
-        window.addEventListener('resize', resizeCanvasToDisplay);
-      } catch (err) {
-        startBtn.disabled = false;
-        let errorMsg = "Failed to start camera";
-        if (err.name === 'NotAllowedError') errorMsg = "Camera permission denied";
-        else if (err.name === 'NotFoundError') errorMsg = "No camera found";
-        updateStatus(errorMsg, "offline");
-      }
+        // Clear texture cache when color changes to force regeneration
+        textureCache.clear();
+      });
     });
 
-    // Initialize
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    window.addEventListener('load', () => setTimeout(initializeFaceMesh, 1000));
+    materialButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        materialButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentMaterial = btn.dataset.material;
+        
+        // Clear texture cache when material changes to force regeneration
+        textureCache.clear();
+      });
+    });
+
+    colorPicker.addEventListener('input', (e) => {
+      currentColor = e.target.value;
+      colorPreview.style.backgroundColor = currentColor;
+      currentColorName = 'Custom';
+      
+      // Update active color button state
+      colorButtons.forEach(b => b.classList.remove('active'));
+      
+      // Clear texture cache when color changes to force regeneration
+      textureCache.clear();
+    });
+
+    // Initialize displays
+    updateHeightDisplay();
+    updatePositionDisplay();
   </script>
 </body>
 </html>
