@@ -1022,6 +1022,7 @@
             <div class="control-group">
               <div class="control-label" style="justify-content:space-between;">
                 <div style="display:flex; align-items:center; gap:8px;"><span>Frame Size</span>
+                  <small class="text-muted">Drag to change the frame size</small>
                   <button id="sizeResetIcon" class="btn btn-outline-secondary btn-sm" title="Reset size"><i class="fas fa-undo"></i></button>
                 </div>
               </div>
@@ -1033,12 +1034,12 @@
                 <span class="control-value" id="sizeValue">2.4x</span>
               </div>
               <hr />
-              <small class="text-muted">Drag to change the frame size</small>
             </div>
 
             <div class="control-group">
               <div class="control-label" style="justify-content:space-between;">
                 <div style="display:flex; align-items:center; gap:8px;"><span>Frame Height</span>
+                  <small class="text-muted">Adjust frame proportions</small>
                   <button id="heightResetIcon" class="btn btn-outline-secondary btn-sm" title="Reset height"><i class="fas fa-undo"></i></button>
                 </div>
               </div>
@@ -1048,12 +1049,12 @@
                 <button class="btn btn-outline-primary position-btn" id="heightUp" aria-label="Increase height"><i class="fas fa-plus"></i></button>
               </div>
               <hr />
-              <small class="text-muted">Adjust frame proportions</small>
             </div>
 
             <div class="control-group">
               <div class="control-label" style="justify-content:space-between;">
                 <div style="display:flex; align-items:center; gap:8px;"><span>Vertical Position</span>
+                    <small class="text-muted">Move frames higher or lower on face</small>
                   <button id="positionResetIcon" class="btn btn-outline-secondary btn-sm" title="Reset vertical position"><i class="fas fa-undo"></i></button>
                 </div>
               </div>
@@ -1063,7 +1064,6 @@
                 <button class="btn btn-outline-primary position-btn" id="positionUp" aria-label="Move up"><i class="fas fa-arrow-up"></i></button>
               </div>
               <hr />
-              <small class="text-muted">Move frames higher or lower on face</small>
             </div>
           </div>
         </div>
