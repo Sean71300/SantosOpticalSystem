@@ -124,6 +124,8 @@ $offset = ($page-1)*$perPage;
 $search = _get_scalar('search');
 $branch = _get_scalar('branch');
 $status = _get_scalar('status');
+// Canonical base query params for building links/redirects
+$baseQuery = ['search'=>$search,'branch'=>$branch,'status'=>$status];
 
 // Role-based branch scope (1=Admin,2=Employee)
 $rid = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0;
@@ -163,15 +165,29 @@ if ($having!=='') {
     $countSql = "SELECT COUNT(*) total FROM Order_hdr oh LEFT JOIN customer c ON c.CustomerID=oh.CustomerID $whereSql";
     $cs = $conn->prepare($countSql); _bind($cs,$types,$params); $cs->execute(); $total=(int)($cs->get_result()->fetch_assoc()['total']??0); $cs->close();
 }
-$totalPages = max(1, (int)ceil($total/$perPage)); if ($page>$totalPages){ $page=$totalPages; $offset=($page-1)*$perPage; }
+$totalPages = max(1, (int)ceil($total/$perPage));
+if ($page>$totalPages){
+    $page=$totalPages; $offset=($page-1)*$perPage;
+}
+// Debug trace to help diagnose pagination mismatches on user reports
+_order_log("REQ page=$page total=$total totalPages=$totalPages offset=$offset search='".str_replace(["\n","\r"],' ', $search)."' branch='".$branch."' status='".$status."' having=".($having!==''?'1':'0'));
 
 // Headers
+// Use a stable ordering with a tiebreaker
+$orderBy = "ORDER BY oh.Created_dt DESC, oh.Orderhdr_id DESC";
 if ($having!=='') {
-    $sql = "SELECT oh.Orderhdr_id, oh.CustomerID, oh.BranchCode, oh.Created_dt, oh.Created_by, c.CustomerName FROM Order_hdr oh JOIN orderDetails od ON od.OrderHdr_id=oh.Orderhdr_id LEFT JOIN customer c ON c.CustomerID=oh.CustomerID $whereSql GROUP BY oh.Orderhdr_id HAVING $having ORDER BY oh.Created_dt DESC LIMIT ".(int)$perPage." OFFSET ".(int)$offset;
+    $sql = "SELECT oh.Orderhdr_id, oh.CustomerID, oh.BranchCode, oh.Created_dt, oh.Created_by, c.CustomerName FROM Order_hdr oh JOIN orderDetails od ON od.OrderHdr_id=oh.Orderhdr_id LEFT JOIN customer c ON c.CustomerID=oh.CustomerID $whereSql GROUP BY oh.Orderhdr_id HAVING $having $orderBy LIMIT ".(int)$offset.", ".(int)$perPage;
 } else {
-    $sql = "SELECT oh.Orderhdr_id, oh.CustomerID, oh.BranchCode, oh.Created_dt, oh.Created_by, c.CustomerName FROM Order_hdr oh LEFT JOIN customer c ON c.CustomerID=oh.CustomerID $whereSql ORDER BY oh.Created_dt DESC LIMIT ".(int)$perPage." OFFSET ".(int)$offset;
+    $sql = "SELECT oh.Orderhdr_id, oh.CustomerID, oh.BranchCode, oh.Created_dt, oh.Created_by, c.CustomerName FROM Order_hdr oh LEFT JOIN customer c ON c.CustomerID=oh.CustomerID $whereSql $orderBy LIMIT ".(int)$offset.", ".(int)$perPage;
 }
 $stmt = $conn->prepare($sql); $p=$params; $t=$types; _bind($stmt,$t,$p); $stmt->execute(); $headers=$stmt->get_result()->fetch_all(MYSQLI_ASSOC); $stmt->close();
+
+// If we somehow got an empty page while there are results, clamp to last page
+if (!$headers && $total>0 && $page>1) {
+    _order_log("Empty page $page with total=$total; redirecting to last page=$totalPages");
+    header('Location: order.php?'.http_build_query(array_merge($baseQuery,['page'=>$totalPages])));
+    exit;
+}
 
 // AJAX: details by id (independent of current page)
 if (isset($_GET['action']) && $_GET['action']==='details' && isset($_GET['id'])) {
@@ -310,12 +326,12 @@ body { background:#f5f7fa; padding-top:60px; }
             </table>
         </div>
                 <nav class="mt-3"><ul class="pagination justify-content-center">
-                        <?php $base=['search'=>$search,'branch'=>$branch,'status'=>$status]; if($page>1): ?>
-                        <li class="page-item"><a class="page-link" href="?<?= http_build_query(array_merge($base,['page'=>$page-1])) ?>">&laquo;</a></li>
+                        <?php if($page>1): ?>
+                        <li class="page-item"><a class="page-link" href="?<?= http_build_query(array_merge($baseQuery,['page'=>$page-1])) ?>">&laquo;</a></li>
                         <?php endif; for($i=1;$i<=$totalPages;$i++): ?>
-                        <li class="page-item <?= $i==$page?'active':'' ?>"><a class="page-link" href="?<?= http_build_query(array_merge($base,['page'=>$i])) ?>"><?= $i ?></a></li>
+                        <li class="page-item <?= $i==$page?'active':'' ?>"><a class="page-link" href="?<?= http_build_query(array_merge($baseQuery,['page'=>$i])) ?>"><?= $i ?></a></li>
                         <?php endfor; if($page<$totalPages): ?>
-                        <li class="page-item"><a class="page-link" href="?<?= http_build_query(array_merge($base,['page'=>$page+1])) ?>">&raquo;</a></li>
+                        <li class="page-item"><a class="page-link" href="?<?= http_build_query(array_merge($baseQuery,['page'=>$page+1])) ?>">&raquo;</a></li>
                         <?php endif; ?>
                 </ul></nav>
         <?php endif; ?>
