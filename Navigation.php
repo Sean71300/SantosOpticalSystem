@@ -87,7 +87,7 @@ if (isset($_SESSION['role'])) {
     transform: translateY(10px);
 }
 /* Small chevron indicator to show there's a dropdown */
-.user-chevron { width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-left: 6px; transform: translateY(30px); }
+.user-chevron { width: 20px; height: 20px; display: inline-block; vertical-align: middle; margin-left: 6px; transform: translateY(3px); }
 /* Ensure dropdown appears above other elements */
 .dropdown-menu { z-index: 2000; }
 /* Force visible when JS adds .show (defensive against conflicting CSS) */
