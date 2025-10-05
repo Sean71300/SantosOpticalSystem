@@ -21,6 +21,10 @@ $shape = isset($_GET['shape']) ? htmlspecialchars($_GET['shape']) : 'Unknown';
       text-align: center;
       padding-top: 30px;
     }
+    #video {
+  pointer-events: none;
+  }
+
     #video, #overlay {
       position: absolute;
       left: 50%;
