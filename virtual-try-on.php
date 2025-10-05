@@ -1233,7 +1233,7 @@
                       <div class="accordion-body">
                         <div class="color-grid">
                           <div class="color-option">
-                            <div class="color-btn active" style="background: #1a1a1a;" data-color="#1a1a1a" data-color-name="Matte Black"></div>
+                            <div class="color-btn active" style="background: #1a1a1a;" data-color="#1a1a1a" data-color-name="Black"></div>
                             <div class="color-label">Black</div>
                           </div>
                           <div class="color-option">
@@ -1441,7 +1441,7 @@
     let verticalOffset = 0;
     let currentFrame = 'A-TRIANGLE';
     let currentColor = '#1a1a1a';
-    let currentColorName = 'Matte Black';
+    let currentColorName = 'Black';
     let currentMaterial = 'Matte';
 
     const textureCache = new Map();
