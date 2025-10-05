@@ -1723,7 +1723,7 @@
       let caption = '';
       try {
         const frameLabel = (FRAMES && FRAMES[currentFrame] && FRAMES[currentFrame].label) ? FRAMES[currentFrame].label : currentFrame;
-        caption = `${frameLabel} - ${currentColorName || currentColor} - ${currentMaterial}`;
+        caption = `${frameLabel} - ${currentMaterial} - ${currentColorName || currentColor} `;
       } catch (e) {
         caption = `${currentColorName || currentColor} - ${currentMaterial}`;
       }
