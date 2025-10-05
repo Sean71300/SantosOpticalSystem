@@ -134,6 +134,46 @@
     let isProcessing = false;
     let frameCount = 0;
 
+    function calculateHeadAngle(landmarks) {
+      // Use nose tip and points between eyes to calculate head rotation
+      const noseTip = landmarks[1];
+      const leftEyeInner = landmarks[133];
+      const rightEyeInner = landmarks[362];
+      
+      // Calculate angle between eyes
+      const deltaX = rightEyeInner.x - leftEyeInner.x;
+      const deltaY = rightEyeInner.y - leftEyeInner.y;
+      const angle = Math.atan2(deltaY, deltaX);
+      
+      return angle;
+    }
+
+    function calculateFaceCenter(landmarks) {
+      // Use multiple points for more stable center calculation
+      const leftEye = landmarks[33];
+      const rightEye = landmarks[263];
+      const noseTip = landmarks[1];
+      const mouthCenter = landmarks[13];
+      
+      const centerX = (leftEye.x + rightEye.x + noseTip.x + mouthCenter.x) / 4;
+      const centerY = (leftEye.y + rightEye.y + noseTip.y + mouthCenter.y) / 4;
+      
+      return {
+        x: centerX * canvasElement.width,
+        y: centerY * canvasElement.height
+      };
+    }
+
+    function calculateEyeDistance(landmarks) {
+      const leftEye = landmarks[33];
+      const rightEye = landmarks[263];
+      
+      return Math.hypot(
+        rightEye.x * canvasElement.width - leftEye.x * canvasElement.width,
+        rightEye.y * canvasElement.height - leftEye.y * canvasElement.height
+      );
+    }
+
     async function onResults(results) {
       if (!results.multiFaceLandmarks || !glassesLoaded || isProcessing) return;
 
@@ -153,28 +193,40 @@
       canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
 
       for (const landmarks of results.multiFaceLandmarks) {
-        const leftEye = landmarks[33];
-        const rightEye = landmarks[263];
-
-        const eyeDist = Math.hypot(
-          rightEye.x * canvasElement.width - leftEye.x * canvasElement.width,
-          rightEye.y * canvasElement.height - leftEye.y * canvasElement.height
-        );
-
+        // Calculate head rotation angle
+        const headAngle = calculateHeadAngle(landmarks);
+        
+        // Calculate face center for more stable positioning
+        const faceCenter = calculateFaceCenter(landmarks);
+        
+        // Calculate eye distance for glasses size
+        const eyeDist = calculateEyeDistance(landmarks);
+        
         const glassesWidth = eyeDist * 2.2;
         const glassesHeight = glassesWidth * 0.5;
-        const centerX = (leftEye.x * canvasElement.width + rightEye.x * canvasElement.width) / 2;
-        const centerY = (leftEye.y * canvasElement.height + rightEye.y * canvasElement.height) / 2;
 
         // Only draw if we have valid coordinates
-        if (centerX > 0 && centerY > 0 && glassesWidth > 10) {
+        if (faceCenter.x > 0 && faceCenter.y > 0 && glassesWidth > 10) {
+          // Save the current context
+          canvasCtx.save();
+          
+          // Move to the center of where we want to draw the glasses
+          canvasCtx.translate(faceCenter.x, faceCenter.y);
+          
+          // Rotate the context by the head angle
+          canvasCtx.rotate(headAngle);
+          
+          // Draw the glasses centered at (0,0) after translation
           canvasCtx.drawImage(
             glassesImg,
-            centerX - glassesWidth / 2,
-            centerY - glassesHeight / 2,
+            -glassesWidth / 2,
+            -glassesHeight / 2,
             glassesWidth,
             glassesHeight
           );
+          
+          // Restore the context to remove rotation and translation
+          canvasCtx.restore();
         }
       }
 
@@ -202,8 +254,8 @@
         // Optimized settings for mobile
         faceMesh.setOptions({
           maxNumFaces: 1,
-          refineLandmarks: false, // Disable refinement for better performance
-          minDetectionConfidence: 0.7, // Higher confidence threshold
+          refineLandmarks: true, // Keep true for better rotation detection
+          minDetectionConfidence: 0.7,
           minTrackingConfidence: 0.5
         });
 
@@ -233,7 +285,7 @@
             width: { ideal: isMobile ? 640 : 1280 },
             height: { ideal: isMobile ? 480 : 960 },
             aspectRatio: { ideal: 4/3 },
-            frameRate: { ideal: isMobile ? 24 : 30 }, // Lower FPS for mobile
+            frameRate: { ideal: isMobile ? 24 : 30 },
             facingMode: 'user'
           }
         };
@@ -256,7 +308,7 @@
                 await faceMesh.send({ image: videoElement });
               }
             },
-            width: isMobile ? 320 : 640, // Lower resolution for processing on mobile
+            width: isMobile ? 320 : 640,
             height: isMobile ? 240 : 480
           });
           
