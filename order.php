@@ -360,7 +360,7 @@ body { background:#f5f7fa; padding-top:60px; }
     </div>
     <?php if ($restrictedRole): ?>
         <div class="mb-3">
-            <span class="badge bg-secondary-subtle text-secondary border">Assigned Branch: <?= htmlspecialchars($assignedBranchName ?: ($_SESSION['branchcode'] ?? 'Unknown')) ?></span>
+            <span class="bg-secondary-subtle text-secondary border rounded-3 px-3 py-2 fs-4 fw-semibold">Branch: <?= htmlspecialchars($assignedBranchName ?: ($_SESSION['branchcode'] ?? 'Unknown')) ?></span>
         </div>
     <?php endif; ?>
     
