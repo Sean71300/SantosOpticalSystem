@@ -697,15 +697,6 @@
       margin-top: 6px;
       font-size: 0.92rem;
     }
-
-    /* Make horizontal separators in Adjust Fit visible and subtle */
-    .center-column .card-body hr {
-      border: 0;
-      height: 1px;
-      background: rgba(0,0,0,0.06);
-      margin: 12px 0;
-      width: 90%;
-    }
     
     .status-indicator {
       display: inline-flex;
@@ -1074,7 +1065,6 @@
               <div style="display:flex; justify-content:center; margin-top:8px;">
                 <span class="control-value" id="sizeValue">2.4x</span>
               </div>
-        <hr>
             </div>
 
             <div class="control-group">
@@ -1090,7 +1080,6 @@
                 <span class="control-value" id="heightValue">70%</span>
                 <button class="btn btn-outline-primary position-btn" id="heightUp" aria-label="Increase height"><i class="fas fa-plus"></i></button>
               </div>
-        <hr>
             </div>
 
             <div class="control-group">
@@ -1106,7 +1095,6 @@
                 <span class="control-value" id="positionValue">0px</span>
                 <button class="btn btn-outline-primary position-btn" id="positionUp" aria-label="Move up"><i class="fas fa-arrow-up"></i></button>
               </div>
-        <hr>
             </div>
           </div>
         </div>
