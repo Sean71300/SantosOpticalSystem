@@ -1625,11 +1625,17 @@
 
     // Snapshot functionality (reusable)
     function showSnapshotFromCanvas() {
+      // Create a higher-resolution snapshot so saved images are good size
       const snapshotCanvas = document.createElement('canvas');
-      snapshotCanvas.width = canvasElement.width;
-      snapshotCanvas.height = canvasElement.height;
+      // Prefer at least 800px wide or twice the display canvas width for better quality
+      const targetWidth = Math.round(Math.max(800, canvasElement.width * 2));
+      const aspect = canvasElement.width && canvasElement.height ? (canvasElement.height / canvasElement.width) : (3/4);
+      const targetHeight = Math.round(targetWidth * aspect);
+      snapshotCanvas.width = targetWidth;
+      snapshotCanvas.height = targetHeight;
       const ctx = snapshotCanvas.getContext('2d');
-      ctx.drawImage(canvasElement, 0, 0);
+      // drawImage will scale the current display canvas into the larger snapshot canvas
+      ctx.drawImage(canvasElement, 0, 0, snapshotCanvas.width, snapshotCanvas.height);
 
       const dataUrl = snapshotCanvas.toDataURL('image/png');
       snapshotImage.src = dataUrl;
