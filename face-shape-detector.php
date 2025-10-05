@@ -180,10 +180,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             justify-content: center;
             align-items: center;
         }
-        
+
         .upload-area:hover {
             border-color: var(--primary);
             background: rgba(255, 241, 244, 0.8);
+            transform: scale(1.02);
+        }
+
+        .upload-area:active {
+            transform: scale(0.98);
         }
         
         .upload-icon {
@@ -578,27 +583,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         .upload-option {
-            padding: 12px 25px;
-            border-radius: 50px;
-            background: white;
-            border: 2px solid #f0f0f0;
+            padding: 10px 20px;
+            border-radius: 8px;
+            background: transparent;
+            border: none;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
             gap: 8px;
+            color: #666;
+            border-bottom: 3px solid transparent;
         }
         
         .upload-option:hover {
-            border-color: var(--primary);
             color: var(--primary);
+            background: rgba(255, 62, 108, 0.05);
         }
         
         .upload-option.active {
-            border-color: var(--primary);
-            background: var(--primary);
-            color: white;
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            background: transparent;
         }
         
         .camera-instructions {
@@ -693,15 +700,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="quiz-container">
         <?php if (!$showResults): ?>
         <div class="quiz-card" data-aos="fade-up">
-            <h2 class="text-center mb-4">Upload a photo or snap a quick selfie to get started.</h2>
-            <p class="text-center mb-4">Make sure it's clear, front-facing, and taken in good lighting. For best results, remove your glasses.</p>
-            
-            <div class="upload-options">
-                <div class="upload-option active" id="uploadOption">
-                    <i class="fas fa-upload"></i> Upload Photo
-                </div>
-                <div class="upload-option" id="cameraOption">
-                    <i class="fas fa-camera"></i> Take Photo
+            <div id="uploadPrompt">
+                <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                <h4>Click Here to Upload Your Photo</h4>
+                <p class="text-muted">or drag & drop your image file</p>
+                <div class="supported-formats mt-3">
+                    <span class="badge bg-light text-dark me-1">JPEG</span>
+                    <span class="badge bg-light text-dark me-1">PNG</span>
+                    <span class="badge bg-light text-dark">Max 5MB</span>
                 </div>
             </div>
             
