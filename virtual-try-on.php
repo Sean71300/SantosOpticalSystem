@@ -698,8 +698,8 @@
                 <span>Material Effect</span>
               </div>
               <div class="material-controls">
-                <button class="material-btn active" data-material="realistic">Realistic</button>
-                <button class="material-btn" data-material="metallic">Metallic</button>
+                <button class="material-btn active" data-material="Plain">Plain</button>
+                <button class="material-btn" data-material="Pattern">Pattern</button>
               </div>
             </div>
           </div>
@@ -843,7 +843,7 @@
     let currentFrame = 'A-TRIANGLE';
     let currentColor = '#2c2c2c';
     let currentColorName = 'Black';
-    let currentMaterial = 'realistic';
+    let currentMaterial = 'Plain';
 
     // Cache for textures to avoid regeneration
     const textureCache = new Map();
@@ -894,8 +894,8 @@
       const g = parseInt(hex.substr(2, 2), 16);
       const b = parseInt(hex.substr(4, 2), 16);
       
-      if (materialType === 'realistic') {
-        // Realistic plastic/matte texture
+      if (materialType === 'Plain') {
+        // Plain plastic/matte texture
         const gradient = textureCtx.createLinearGradient(0, 0, width, height);
         gradient.addColorStop(0, `rgb(${Math.max(0, r-30)}, ${Math.max(0, g-30)}, ${Math.max(0, b-30)})`);
         gradient.addColorStop(0.5, baseColor);
@@ -915,22 +915,22 @@
         }
         textureCtx.putImageData(imageData, 0, 0);
         
-      } else if (materialType === 'metallic') {
-        // Optimized metallic texture - use larger blocks
+      } else if (materialType === 'Pattern') {
+        // Optimized Pattern texture - use larger blocks
         const blockSize = 4; // Process in 4x4 blocks for performance
         for (let x = 0; x < width; x += blockSize) {
           for (let y = 0; y < height; y += blockSize) {
             const value = Math.sin(x * 0.05) * Math.cos(y * 0.05) * 40;
-            const metallicR = Math.max(0, Math.min(255, r + value));
-            const metallicG = Math.max(0, Math.min(255, g + value));
-            const metallicB = Math.max(0, Math.min(255, b + value));
+            const PatternR = Math.max(0, Math.min(255, r + value));
+            const PatternG = Math.max(0, Math.min(255, g + value));
+            const PatternB = Math.max(0, Math.min(255, b + value));
             
-            textureCtx.fillStyle = `rgb(${metallicR}, ${metallicG}, ${metallicB})`;
+            textureCtx.fillStyle = `rgb(${PatternR}, ${PatternG}, ${PatternB})`;
             textureCtx.fillRect(x, y, blockSize, blockSize);
           }
         }
         
-        // Add metallic shine
+        // Add Pattern shine
         const shine = textureCtx.createLinearGradient(0, 0, width, height);
         shine.addColorStop(0, 'rgba(255,255,255,0.4)');
         shine.addColorStop(0.5, 'rgba(255,255,255,0.1)');
