@@ -73,18 +73,20 @@
     }
     
     @media (min-width: 992px) {
-      /* 3-column layout: camera(left, tall) | center(col2) | frames(col3)
-         grid rows: top and bottom. Camera spans both rows. */
+      /* 4-column desktop layout with two explicit rows so columns align neatly.
+         Row heights are fixed to match card heights; camera will fill the row height
+         (so it appears the same height as adjacent cards). */
       .main-content {
-        grid-template-columns: 220px 280px 420px 240px; /* camera (thin/tall) | adjust (narrow) | frames+material | colors */
-        grid-auto-rows: auto;
+        grid-template-columns: 220px 320px 420px 260px; /* camera | adjust | frames | colors/material */
+        grid-template-rows: 420px 420px; /* two rows of equal card height */
         gap: 18px;
       }
       .left-column, .center-column, .frames-column, .right-column { display: block; }
-      .left-column { grid-column: 1; grid-row: 1 / span 2; }
+      /* place each major column in the first row so camera does NOT span both rows */
+      .left-column { grid-column: 1; grid-row: 1; }
       .center-column { grid-column: 2; grid-row: 1; }
-      .frames-column { grid-column: 3; grid-row: 1 / span 2; }
-      .right-column { grid-column: 4; grid-row: 1 / span 2; }
+      .frames-column { grid-column: 3; grid-row: 1; }
+      .right-column { grid-column: 4; grid-row: 1; }
     }
     
     .camera-section {
@@ -101,12 +103,9 @@
       border-radius: 20px;
       overflow: hidden;
       box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-      aspect-ratio: 2/3; /* tall and thin */
-      /* tall but constrained to viewport so other columns remain visible */
-      min-height: calc(70vh);
-      max-height: calc(100vh - 120px);
-      max-width: 220px; /* thin */
+      height: 100%;
       width: 100%;
+      max-width: none;
     }
 
     /* CTA over camera */
@@ -238,6 +237,17 @@
       position: absolute;
       top: 0;
       left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ensure camera media elements fill the camera container */
+    .camera-container > video,
+    .camera-container > canvas {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
     }
     
     .camera-overlay {
@@ -299,6 +309,7 @@
       margin-bottom: 20px;
       overflow: visible;
       transition: transform 0.3s ease;
+      height: 100%; /* fill grid row height */
     }
 
     /* Keep the Adjust Fit card compact so it doesn't push Material/Colors offscreen */
