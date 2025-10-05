@@ -1017,9 +1017,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="share-btn twitter" onclick="shareResults('twitter')" title="Share on Twitter">
                             <i class="fab fa-twitter"></i>
                         </div>
-                        <div class="share-btn whatsapp" onclick="shareResults('whatsapp')" title="Share on WhatsApp">
-                            <i class="fab fa-whatsapp"></i>
-                        </div>
                         <div class="share-btn link" onclick="copyLink()" title="Copy Link">
                             <i class="fas fa-link"></i>
                         </div>
