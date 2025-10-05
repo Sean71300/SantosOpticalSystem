@@ -57,11 +57,12 @@ include 'setup.php';
                             </div>
                             <div class="mb-3">
                                 <label for="contactNo" class="form-label">Contact Number</label>
-                                <input type="text" class="form-control" id="contactNo" name="contactNo" required>
+                                <input type="text" class="form-control" id="contactNo" name="contactNo" required inputmode="numeric" pattern="[0-9]*" maxlength="15" oninput="this.value=this.value.replace(/[^0-9]/g,\'\')">
+                                <div class="form-text">Numbers only.</div>
                             </div>
                             <hr>
                             <div class="modal-footer">
-                                <button type="submit" class="btn btn-success w-25" name="addBtn">Add Branch</button>
+                                <button type="submit" class="btn btn-success w-25" name="addBranchBtn">Add Branch</button>
                                 <button type="button" class="btn btn-danger w-25" data-bs-dismiss="modal">Cancel</button>
                             </div>
                         </form>
@@ -84,11 +85,11 @@ include 'setup.php';
         $stmt = mysqli_stmt_execute($stmt);
         if ($stmt) {
             echo 
-            '<div class="modal fade" id="addBranchModal" tabindex="-1" aria-labelledby="addBranchModalLabel" aria-hidden="true">
+            '<div class="modal fade" id="addBranchModalSuccess" tabindex="-1" aria-labelledby="addBranchModalSuccessLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered" role="document">
                     <div class="modal-content bg-secondary-subtle">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="addBranchModalLabel">Success</h5>
+                            <h5 class="modal-title" id="addBranchModalSuccessLabel">Success</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body" style="margin-top: -1.5rem;">
@@ -104,11 +105,11 @@ include 'setup.php';
             </div>';
         } else {
             echo
-            '<div class="modal fade" id="addBranchModal" tabindex="-1" aria-labelledby="addBranchModalLabel" aria-hidden="true">
+            '<div class="modal fade" id="addBranchModalSuccess" tabindex="-1" aria-labelledby="addBranchModalSuccessLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered" role="document">
                     <div class="modal-content bg-secondary-subtle">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="addBranchModalLabel">Error</h5>
+                            <h5 class="modal-title" id="addBranchModalSuccessLabel">Error</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body" style="margin-top: -1.5rem;">
