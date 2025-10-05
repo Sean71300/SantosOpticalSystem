@@ -87,16 +87,23 @@
       /* hide native scrollbar for WebKit while still allowing scroll */
       .main-content::-webkit-scrollbar { height: 8px; }
       .main-content::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 6px; }
+      .main-content {
+        flex-wrap: nowrap;
+      }
       .main-content > div {
         flex: 0 0 auto; /* each column is a fixed-width 'car' */
+        display: flex;
+        align-items: stretch;
+        height: 520px; /* ensure left-column also matches card height */
       }
-      .left-column { min-width: 260px; }
+  .left-column { min-width: 180px; }
+  .left-column .camera-section { flex: 1; display: flex; align-items: center; justify-content: center; }
       .center-column { min-width: 340px; }
       .frames-column { min-width: 460px; }
       .right-column { min-width: 280px; }
-      /* keep cards filling the car height */
-      .card { height: 420px; }
-      .camera-container { height: 100%; }
+  /* keep cards filling the car height */
+  .card { height: 520px; }
+  .camera-container { height: 100%; max-width: 220px; margin-left: auto; margin-right: auto; }
     }
     
     .camera-section {
@@ -1176,10 +1183,7 @@
             <!-- Material Effect removed from here and relocated to the right-column -->
           </div>
         </div>
-      </div>
-  </div>
-
-  <div class="right-column">
+      <div class="right-column">
         <!-- Material Effect moved to the right column (step 4) -->
         <div class="card mb-3">
           <div class="card-header">
