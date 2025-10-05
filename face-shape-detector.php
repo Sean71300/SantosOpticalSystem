@@ -367,76 +367,72 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     <div class="quiz-container">
         <?php if (!$showResults): ?>
-        <div class="quiz-card" data-aos="fade-up">
-            <h2 class="text-center mb-4">Upload a photo or snap a quick selfie to get started.</h2>
-            <p class="text-center mb-2">Make sure it's clear, front-facing, and taken in good lighting. For best results, remove your glasses.</p>
-            
-            <p class="text-center text-muted mb-3" style="font-size: 0.9rem;">Choose your method:</p>
-            <div class="upload-options">
-                <div class="upload-option" id="uploadOption">
-                    <i class="fas fa-upload"></i> Upload Photo
+        <p class="text-center text-muted mb-3" style="font-size: 0.9rem;">Choose your method:</p>
+        <div class="upload-options">
+            <div class="upload-option active" id="cameraOption">
+                <i class="fas fa-camera"></i> Take Photo
+            </div>
+            <div class="upload-option" id="uploadOption">
+                <i class="fas fa-upload"></i> Upload Photo
+            </div>
+        </div>
+
+        <div id="fileUploadSection" style="display: none;">
+            <form method="post" enctype="multipart/form-data" id="quizForm">
+                <div class="upload-area" id="uploadArea">
+                    <div id="uploadPrompt">
+                        <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                        <h4>Click Here to Upload Your Photo</h4>
+                        <p class="text-muted">or drag & drop your image file</p>
+                        <div class="supported-formats mt-3">
+                            <span class="badge bg-light text-dark me-1">JPEG</span>
+                            <span class="badge bg-light text-dark me-1">PNG</span>
+                            <span class="badge bg-light text-dark">Max 5MB</span>
+                        </div>
+                    </div>
+                    
+                    <div class="image-preview-container" id="imagePreviewContainer">
+                        <img id="previewImage" class="preview-image" src="" alt="Your uploaded photo">
+                        <button type="button" class="btn btn-outline-secondary mt-3" id="changeImageBtn">
+                            <i class="fas fa-redo me-1"></i> Change Photo
+                        </button>
+                    </div>
+                    
+                    <input type="file" name="face_image" accept="image/*" class="d-none" id="fileInput" required>
                 </div>
-                <div class="upload-option active" id="cameraOption">
-                    <i class="fas fa-camera"></i> Take Photo
+                
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-quiz" id="analyzeBtn" disabled>
+                        <i class="fas fa-search me-2"></i> Analyze My Face Shape
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div id="cameraSection">
+            <div class="camera-instructions">
+                <div class="instruction-step permission-step">
+                    <div class="step-number">1</div>
+                    <p>Allow camera access when prompted to use this feature</p>
+                </div>
+                <div class="instruction-step">
+                    <div class="step-number">2</div>
+                    <p>Position your face in the center</p>
+                </div>
+                <div class="instruction-step">
+                    <div class="step-number">3</div>
+                    <p>Make sure lighting is even</p>
+                </div>
+                <div class="instruction-step">
+                    <div class="step-number">4</div>
+                    <p>Keep a neutral expression</p>
                 </div>
             </div>
             
-            <div id="fileUploadSection">
-                <form method="post" enctype="multipart/form-data" id="quizForm">
-                    <div class="upload-area" id="uploadArea">
-                        <div id="uploadPrompt">
-                            <i class="fas fa-cloud-upload-alt upload-icon"></i>
-                            <h4>Click Here to Upload Your Photo</h4>
-                            <p class="text-muted">or drag & drop your image file</p>
-                            <div class="supported-formats mt-3">
-                                <span class="badge bg-light text-dark me-1">JPEG</span>
-                                <span class="badge bg-light text-dark me-1">PNG</span>
-                                <span class="badge bg-light text-dark">Max 5MB</span>
-                            </div>
-                        </div>
-                        
-                        <div class="image-preview-container" id="imagePreviewContainer">
-                            <img id="previewImage" class="preview-image" src="" alt="Your uploaded photo">
-                            <button type="button" class="btn btn-outline-secondary mt-3" id="changeImageBtn">
-                                <i class="fas fa-redo me-1"></i> Change Photo
-                            </button>
-                        </div>
-                        
-                        <input type="file" name="face_image" accept="image/*" class="d-none" id="fileInput" required>
-                    </div>
-                    
-                    <div class="text-center mt-4">
-                        <button type="submit" class="btn btn-quiz" id="analyzeBtn" disabled>
-                            <i class="fas fa-search me-2"></i> Analyze My Face Shape
-                        </button>
-                    </div>
-                </form>
-            </div>        
-            <div id="cameraSection" style="display: none;">
-                <div class="camera-instructions">
-                    <div class="instruction-step permission-step">
-                        <div class="step-number">1</div>
-                        <p>Allow camera access when prompted to use this feature</p>
-                    </div>
-                    <div class="instruction-step">
-                        <div class="step-number">2</div>
-                        <p>Position your face in the center</p>
-                    </div>
-                    <div class="instruction-step">
-                        <div class="step-number">3</div>
-                        <p>Make sure lighting is even</p>
-                    </div>
-                    <div class="instruction-step">
-                        <div class="step-number">4</div>
-                        <p>Keep a neutral expression</p>
-                    </div>
-                </div>
-                
-                <div class="text-center">
-                    <button class="btn btn-quiz" id="openCameraBtn">
-                        <i class="fas fa-camera me-2"></i> Open Camera
-                    </button>
-                </div>
+            <div class="text-center">
+                <button class="btn btn-quiz" id="openCameraBtn">
+                    <i class="fas fa-camera me-2"></i> Open Camera
+                </button>
             </div>
         </div>
         <?php else: ?>
