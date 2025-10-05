@@ -720,7 +720,7 @@
               <div class="material-controls">
                 <button class="material-btn active" data-material="Matte">Matte</button>
                 <button class="material-btn" data-material="Glossy">Glossy</button>
-                <button class="material-btn" data-material="Acetate">Acetate</button>
+                <button class="material-btn" data-material="Pattern">Pattern</button>
               </div>
             </div>
           </div>
@@ -949,30 +949,27 @@
         textureCtx.fillStyle = reflection;
         textureCtx.fillRect(0, 0, width, height);
         
-      } else if (materialType === 'Acetate') {
-        const gradient = textureCtx.createLinearGradient(0, 0, width, height);
-        gradient.addColorStop(0, `rgb(${Math.min(255, r+20)}, ${Math.min(255, g+20)}, ${Math.min(255, b+20)})`);
-        gradient.addColorStop(0.5, baseColor);
-        gradient.addColorStop(1, `rgb(${Math.max(0, r-20)}, ${Math.max(0, g-20)}, ${Math.max(0, b-20)})`);
-        
-        textureCtx.fillStyle = gradient;
-        textureCtx.fillRect(0, 0, width, height);
-        
-        for (let i = 0; i < width; i += 3) {
-          const opacity = Math.random() * 0.08 + 0.02;
-          const variation = Math.sin(i * 0.1) * 15;
-          textureCtx.fillStyle = `rgba(${r + variation}, ${g + variation}, ${b + variation}, ${opacity})`;
-          textureCtx.fillRect(i, 0, 2, height);
+      } else if (materialType === 'Pattern') {
+        // Original Pattern texture with metallic/wood grain effect
+        const blockSize = 4;
+        for (let x = 0; x < width; x += blockSize) {
+          for (let y = 0; y < height; y += blockSize) {
+            const value = Math.sin(x * 0.05) * Math.cos(y * 0.05) * 40;
+            const patternR = Math.max(0, Math.min(255, r + value));
+            const patternG = Math.max(0, Math.min(255, g + value));
+            const patternB = Math.max(0, Math.min(255, b + value));
+            
+            textureCtx.fillStyle = `rgb(${patternR}, ${patternG}, ${patternB})`;
+            textureCtx.fillRect(x, y, blockSize, blockSize);
+          }
         }
         
-        const translucent = textureCtx.createRadialGradient(
-          width * 0.5, height * 0.5, 0,
-          width * 0.5, height * 0.5, width * 0.7
-        );
-        translucent.addColorStop(0, 'rgba(255, 255, 255, 0.15)');
-        translucent.addColorStop(0.6, 'rgba(255, 255, 255, 0.05)');
-        translucent.addColorStop(1, 'rgba(0, 0, 0, 0.05)');
-        textureCtx.fillStyle = translucent;
+        // Add pattern shine
+        const shine = textureCtx.createLinearGradient(0, 0, width, height);
+        shine.addColorStop(0, 'rgba(255,255,255,0.3)');
+        shine.addColorStop(0.5, 'rgba(255,255,255,0.1)');
+        shine.addColorStop(1, 'rgba(255,255,255,0)');
+        textureCtx.fillStyle = shine;
         textureCtx.fillRect(0, 0, width, height);
       }
       
