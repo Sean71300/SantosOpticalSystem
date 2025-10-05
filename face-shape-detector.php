@@ -1,5 +1,68 @@
 <?php
 include 'ActivityTracker.php';
+require_once 'connect.php';
+
+/**
+ * Get recommended frames for a specific face shape from the database
+ */
+function getRecommendedFrames($shapeID, $limit = 3) {
+    $conn = connect();
+    
+    $sql = "SELECT DISTINCT p.*, 
+            (SELECT GROUP_CONCAT(DISTINCT b.BranchName SEPARATOR ', ') 
+             FROM ProductBranchMaster pb 
+             JOIN BranchMaster b ON pb.BranchCode = b.BranchCode 
+             WHERE pb.ProductID = p.ProductID 
+             AND (pb.Avail_FL = 'Available' OR pb.Avail_FL IS NULL)
+             AND pb.Stocks > 0) as AvailableBranches,
+            (SELECT SUM(pb.Stocks) 
+             FROM ProductBranchMaster pb 
+             WHERE pb.ProductID = p.ProductID 
+             AND (pb.Avail_FL = 'Available' OR pb.Avail_FL IS NULL)) as TotalStocks,
+            br.BrandName
+            FROM productMstr p
+            LEFT JOIN brandMaster br ON p.BrandID = br.BrandID
+            LEFT JOIN archives a ON (p.ProductID = a.TargetID AND a.TargetType = 'product')
+            WHERE p.ShapeID = ?
+            AND (p.Avail_FL = 'Available' OR p.Avail_FL IS NULL)
+            AND a.ArchiveID IS NULL
+            AND p.CategoryType IN ('Frame', 'Sunglasses')
+            HAVING TotalStocks > 0
+            ORDER BY TotalStocks DESC, p.Model ASC
+            LIMIT ?";
+    
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ii", $shapeID, $limit);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    $frames = [];
+    while ($row = $result->fetch_assoc()) {
+        $frames[] = $row;
+    }
+    
+    $stmt->close();
+    $conn->close();
+    
+    return $frames;
+}
+
+/**
+ * Map detected face shape names to database ShapeID
+ */
+function mapShapeToID($detectedShape) {
+    $shapeMap = [
+        'SQUARE'      => 5,
+        'ROUND'       => 4,
+        'OBLONG'      => 1,
+        'DIAMOND'     => 3,
+        'V-TRIANGLE'  => 2,
+        'A-TRIANGLE'  => 6,
+        'RECTANGLE'   => 7
+    ];
+    
+    return $shapeMap[$detectedShape] ?? 1;
+}
 
 // face-shape-detector.php
 $pageTitle = "What's Your Face Shape? | Santos Optical";
@@ -309,6 +372,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             overflow: hidden;
             box-shadow: 0 5px 20px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
+            cursor: pointer;
         }
         
         .frame-item:hover {
@@ -867,63 +931,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         ?>
                     </div>
                     
-                    <div class="frame-showcase">
-                        <?php
-                        $frameExamples = [
-                            'SQUARE' => [
-                                ['file' => 'square1.jpg', 'name' => 'Round Classic', 'style' => 'Soft & Timeless'],
-                                ['file' => 'square2.jpg', 'name' => 'Oval Elite', 'style' => 'Elegant & Refined'],
-                                ['file' => 'square3.jpg', 'name' => 'Circle Modern', 'style' => 'Bold & Contemporary']
-                            ],
-                            'ROUND' => [
-                                ['file' => 'round1.jpg', 'name' => 'Rectangle Pro', 'style' => 'Sharp & Professional'],
-                                ['file' => 'round2.jpg', 'name' => 'Square Edge', 'style' => 'Structured & Strong'],
-                                ['file' => 'round3.jpg', 'name' => 'Wayfarer Classic', 'style' => 'Iconic & Cool']
-                            ],
-                            'OBLONG' => [
-                                ['file' => 'oblong1.jpg', 'name' => 'Browline Bold', 'style' => 'Vintage & Distinguished'],
-                                ['file' => 'oblong2.jpg', 'name' => 'Decorative Luxe', 'style' => 'Ornate & Stylish'],
-                                ['file' => 'oblong3.jpg', 'name' => 'Aviator Classic', 'style' => 'Adventurous & Wide']
-                            ],
-                            'DIAMOND' => [
-                                ['file' => 'diamond1.jpg', 'name' => 'Cat-Eye Chic', 'style' => 'Dramatic & Feminine'],
-                                ['file' => 'diamond2.jpg', 'name' => 'Oval Delicate', 'style' => 'Subtle & Graceful'],
-                                ['file' => 'diamond3.jpg', 'name' => 'Butterfly Glam', 'style' => 'Striking & Bold']
-                            ],
-                            'V-TRIANGLE' => [
-                                ['file' => 'vshape1.jpg', 'name' => 'Browline Premium', 'style' => 'Statement Top'],
-                                ['file' => 'vshape2.jpg', 'name' => 'Clubmaster Icon', 'style' => 'Retro & Smart'],
-                                ['file' => 'vshape3.jpg', 'name' => 'Half-Rim Modern', 'style' => 'Minimalist & Light']
-                            ],
-                            'A-TRIANGLE' => [
-                                ['file' => 'ashape1.jpg', 'name' => 'Rounded Square', 'style' => 'Balanced & Soft'],
-                                ['file' => 'ashape2.jpg', 'name' => 'Soft Rectangle', 'style' => 'Gentle & Refined'],
-                                ['file' => 'a-triangle3.jpg', 'name' => 'Wayfarer Soft', 'style' => 'Casual & Friendly']
-                            ],
-                            'RECTANGLE' => [
-                                ['file' => 'rectangle1.jpg', 'name' => 'Round Bold', 'style' => 'Smooth & Friendly'],
-                                ['file' => 'rectangle2.jpg', 'name' => 'Oval Large', 'style' => 'Soft & Oversized'],
-                                ['file' => 'rectangle3.jpg', 'name' => 'Oversized Chic', 'style' => 'Fashion-Forward']
-                            ]
-                        ];
-                        
-                        $frames = $frameExamples[$result] ?? [
-                            ['file' => 'classic-frame1.jpg', 'name' => 'Classic Style', 'style' => 'Timeless'],
-                            ['file' => 'classic-frame2.jpg', 'name' => 'Modern Look', 'style' => 'Contemporary'],
-                            ['file' => 'classic-frame3.jpg', 'name' => 'Premium Pick', 'style' => 'Elegant']
-                        ];
-                        
-                        foreach ($frames as $frame) {
-                            echo '<div class="frame-item">';
-                            echo '<img src="Images/frames/'.htmlspecialchars($frame['file']).'" alt="'.htmlspecialchars($frame['name']).'">';
-                            echo '<div class="frame-info">';
-                            echo '<h6>'.htmlspecialchars($frame['name']).'</h6>';
-                            echo '<p>'.htmlspecialchars($frame['style']).'</p>';
-                            echo '</div>';
-                            echo '</div>';
-                        }
-                        ?>
-                    </div>
+                    <?php
+                    // Get the ShapeID for the detected face shape
+                    $shapeID = mapShapeToID($result);
+                    
+                    // Get recommended frames from database
+                    $recommendedFrames = getRecommendedFrames($shapeID, 3);
+                    ?>
+                    
+                    <?php if (!empty($recommendedFrames)): ?>
+                        <div class="frame-showcase">
+                            <?php foreach ($recommendedFrames as $frame): ?>
+                                <?php
+                                // Format price
+                                $price = $frame['Price'];
+                                $numeric_price = preg_replace('/[^0-9.]/', '', $price);
+                                $formatted_price = is_numeric($numeric_price) ? '₱' . number_format((float)$numeric_price, 2) : '₱0.00';
+                                
+                                // Determine style description based on category
+                                $styleDesc = ($frame['CategoryType'] === 'Sunglasses') ? 'Sunglasses' : $frame['Material'];
+                                ?>
+                                
+                                <div class="frame-item" onclick="window.location.href='product-gallery.php?page=1&shape=<?php echo $shapeID; ?>'">
+                                    <img src="<?php echo htmlspecialchars($frame['ProductImage']); ?>" 
+                                         alt="<?php echo htmlspecialchars($frame['Model']); ?>">
+                                    <div class="frame-info">
+                                        <h6><?php echo htmlspecialchars($frame['Model']); ?></h6>
+                                        <p><?php echo htmlspecialchars($styleDesc); ?></p>
+                                        <p class="text-muted small"><?php echo htmlspecialchars($formatted_price); ?></p>
+                                        <?php if ($frame['AvailableBranches']): ?>
+                                            <p class="text-success small">
+                                                <i class="fas fa-check-circle"></i> In Stock
+                                            </p>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php else: ?>
+                        <div class="alert alert-info mt-3">
+                            <i class="fas fa-info-circle"></i> 
+                            We're currently updating our inventory for your face shape. 
+                            Please visit our store or <a href="product-gallery.php">browse all products</a>.
+                        </div>
+                    <?php endif; ?>
                 </div>
                 
                 <!-- Primary CTA -->
@@ -931,16 +982,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <h3><i class="fas fa-shopping-bag me-2"></i> Ready to Find Your Perfect Frames?</h3>
                     <p>Explore our curated collection designed specifically for <?= htmlspecialchars($result) ?> face shapes</p>
                     <?php
-                    $shopLinks = [
-                        'SQUARE'      => 'https://santosopticalclinic.com/product-gallery.php?page=1&shape=5',
-                        'ROUND'       => 'https://santosopticalclinic.com/product-gallery.php?page=1&shape=4',
-                        'OBLONG'      => 'https://santosopticalclinic.com/product-gallery.php?page=1&shape=1',
-                        'DIAMOND'     => 'https://santosopticalclinic.com/product-gallery.php?page=1&shape=3',
-                        'V-TRIANGLE'  => 'https://santosopticalclinic.com/product-gallery.php?page=1&shape=2',
-                        'A-TRIANGLE'  => 'https://santosopticalclinic.com/product-gallery.php?page=1&shape=6',
-                        'RECTANGLE'   => 'https://santosopticalclinic.com/product-gallery.php?page=1&shape=7'
-                    ];
-                    $shopUrl = $shopLinks[$result] ?? 'product-gallery.php';
+                    $shapeID = mapShapeToID($result);
+                    $shopUrl = 'product-gallery.php?page=1&shape=' . $shapeID;
                     ?>
                     <a href="<?= htmlspecialchars($shopUrl) ?>" class="btn-shop-now">
                         Shop Recommended Frames
