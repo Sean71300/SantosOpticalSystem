@@ -102,7 +102,7 @@ if (!is_numeric($orderCount)) { $orderCount = 0; }
             </div>
             <?php else: ?>
             <!-- Optometrist: show Medical History card instead of Customers/Inventory/Orders -->
-            <div class="col-md-3">
+            <div class="col-md-12">
                 <div class="dashboard-card">
                     <div class="card-icon text-primary"><i class="fas fa-notes-medical"></i></div>
                     <h5>Medical History</h5>
