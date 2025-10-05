@@ -10,7 +10,8 @@ $frame = isset($_GET['frame']) ? htmlspecialchars($_GET['frame']) : 'ashape';
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
   body {
-    background-color: #f8f9fa;
+    margin: 0;
+    background-color: #000;
     overflow: hidden;
     font-family: 'Poppins', sans-serif;
   }
@@ -43,7 +44,7 @@ $frame = isset($_GET['frame']) ? htmlspecialchars($_GET['frame']) : 'ashape';
   }
   .control-buttons {
     position: absolute;
-    bottom: 20px;
+    bottom: 25px;
     width: 100%;
     display: flex;
     justify-content: center;
@@ -55,6 +56,18 @@ $frame = isset($_GET['frame']) ? htmlspecialchars($_GET['frame']) : 'ashape';
     padding: 0.6rem 1.5rem;
     font-weight: 500;
   }
+  #statusText {
+    position: absolute;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    padding: 5px 15px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    z-index: 10;
+  }
 </style>
 </head>
 <body>
@@ -65,6 +78,8 @@ $frame = isset($_GET['frame']) ? htmlspecialchars($_GET['frame']) : 'ashape';
     <a href="result.php" class="btn btn-outline-light btn-sm">← Back to Results</a>
   </div>
 
+  <div id="statusText">Initializing camera...</div>
+
   <video id="videoInput" autoplay muted playsinline></video>
   <canvas id="outputCanvas"></canvas>
 
@@ -74,12 +89,16 @@ $frame = isset($_GET['frame']) ? htmlspecialchars($_GET['frame']) : 'ashape';
   </div>
 </div>
 
+<!-- MediaPipe + Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/face_mesh.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675469200/camera_utils.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 <script>
 const videoElement = document.getElementById('videoInput');
 const canvasElement = document.getElementById('outputCanvas');
 const canvasCtx = canvasElement.getContext('2d');
+const statusText = document.getElementById('statusText');
 
 let glassesLoaded = false;
 const glassesImg = new Image();
@@ -87,6 +106,7 @@ glassesImg.src = "Images/frames/<?php echo $frame; ?>-frame-removebg-preview.png
 glassesImg.onload = () => { 
   glassesLoaded = true; 
   console.log("✅ Glasses image loaded:", glassesImg.src);
+  statusText.textContent = "Glasses loaded — please allow camera access";
 };
 
 // Initialize FaceMesh
@@ -115,29 +135,49 @@ async function onResults(results) {
 
   const centerX = (leftEye.x + rightEye.x) / 2 * canvasElement.width;
   const centerY = (leftEye.y + rightEye.y) / 2 * canvasElement.height;
-  const width = Math.abs(rightEye.x - leftEye.x) * canvasElement.width * 2;
+  const width = Math.abs(rightEye.x - leftEye.x) * canvasElement.width * 2.2;
   const height = width / 3;
 
   canvasCtx.save();
   canvasCtx.translate(centerX, centerY);
-  canvasCtx.drawImage(glassesImg, -width/2, -height/2, width, height);
+  canvasCtx.drawImage(glassesImg, -width / 2, -height / 2, width, height);
   canvasCtx.restore();
+
+  statusText.textContent = "✅ Face detected — Try-On active";
 }
 
-// Camera Setup
+// Improved Camera Setup with Debug Info
 let camera;
 async function startCamera() {
   try {
+    console.log("Requesting camera access...");
+    statusText.textContent = "Requesting camera access...";
+
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    videoElement.srcObject = stream;
+
+    console.log("✅ Camera permission granted");
+    statusText.textContent = "Camera permission granted. Loading FaceMesh...";
+
     camera = new Camera(videoElement, {
-      onFrame: async () => await faceMesh.send({ image: videoElement }),
+      onFrame: async () => {
+        await faceMesh.send({ image: videoElement });
+      },
       width: 1280,
       height: 720
     });
+
     await camera.start();
-    console.log("✅ Camera started");
+    console.log("✅ Camera started successfully");
+    statusText.textContent = "Camera active — move your face into view";
   } catch (error) {
     console.error("❌ Camera failed:", error);
-    alert("Camera access was blocked or failed.");
+    let message = "Camera access was blocked or failed.";
+    if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+      message += " Please use HTTPS or localhost.";
+    }
+    alert(message);
+    statusText.textContent = "❌ Camera access denied — please check permissions.";
   }
 }
 startCamera();
@@ -151,10 +191,11 @@ document.getElementById("captureBtn").addEventListener("click", () => {
   link.click();
 });
 
-// Change Frame Button (future use)
+// Change Frame Button (for future use)
 document.getElementById("changeFrame").addEventListener("click", () => {
   alert("Frame changing feature coming soon!");
 });
 </script>
+
 </body>
 </html>
