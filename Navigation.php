@@ -79,6 +79,11 @@ if (isset($_SESSION['role'])) {
     object-fit: cover;
     margin-left: 5px;
 }
+/* Ensure dropdown appears above other elements */
+.dropdown-menu { z-index: 2000; }
+/* Force visible when JS adds .show (defensive against conflicting CSS) */
+.dropdown-menu.show { display: block !important; }
+.dropdown-menu { display: none; }
 </style>
 
 <div class="forNavigationbar sticky-top">
@@ -125,32 +130,49 @@ if (isset($_SESSION['role'])) {
                         echo '</a>';
                         echo '<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">';
                         
-                        // Menu items based on user type
-                        if (isset($_SESSION["user_type"]) && $_SESSION["user_type"] == 'employee') {
-                            if (isset($_SESSION["roleid"])) {
-                                $rIdLocal = (int)$_SESSION["roleid"];
-                                if ($rIdLocal === 4) {
-                                    // Super Admin
-                                    echo '<li><a class="dropdown-item" href="Dashboard.php">Admin Panel</a></li>';
-                                } elseif ($rIdLocal === 1) {
-                                    echo '<li><a class="dropdown-item" href="Dashboard.php">Admin page</a></li>';
-                                } elseif ($rIdLocal === 2) {
-                                    echo '<li><a class="dropdown-item" href="Dashboard.php">Employee page</a></li>';
-                                }
+                        // Compute the primary menu item (role + page) and render it along with Logout
+                        $firstLabel = '';
+                        $firstHref = '#';
+                        if (isset($_SESSION["user_type"]) && $_SESSION["user_type"] === 'employee') {
+                            $rIdLocal = isset($_SESSION["roleid"]) ? (int)$_SESSION["roleid"] : 0;
+                            switch ($rIdLocal) {
+                                case 4:
+                                    $firstLabel = 'Super Admin Page';
+                                    $firstHref = 'Dashboard.php';
+                                    break;
+                                case 1:
+                                    $firstLabel = 'Admin Page';
+                                    $firstHref = 'Dashboard.php';
+                                    break;
+                                case 2:
+                                    $firstLabel = 'Employee Page';
+                                    $firstHref = 'Dashboard.php';
+                                    break;
+                                case 3:
+                                    $firstLabel = 'Optometrist Page';
+                                    $firstHref = 'Dashboard.php';
+                                    break;
+                                default:
+                                    $firstLabel = 'Dashboard';
+                                    $firstHref = 'Dashboard.php';
+                                    break;
                             }
-                        }
-                        // If user_type isn't employee but role string indicates super admin/admin, show admin panel link
-                        else if (isset($_SESSION["role"])) {
+                        } elseif (isset($_SESSION["user_type"]) && $_SESSION["user_type"] === 'customer') {
+                            $firstLabel = 'Customer Dashboard';
+                            $firstHref = 'customer_dashboard.php';
+                        } elseif (isset($_SESSION["role"])) {
+                            // fallback by role string
                             $rnameLocal = strtolower((string)$_SESSION["role"]);
                             if (in_array($rnameLocal, ['super admin', 'superadmin', 'admin'], true)) {
-                                echo '<li><a class="dropdown-item" href="Dashboard.php">Admin Panel</a></li>';
+                                $firstLabel = 'Admin Panel';
+                                $firstHref = 'Dashboard.php';
                             }
                         }
-                        else if (isset($_SESSION["user_type"]) && $_SESSION["user_type"] == 'customer') {
-                            echo '<li><a class="dropdown-item" href="customer_dashboard.php">Medical History</a></li>';
-                            echo '<li><a class="dropdown-item" href="trackorder.php">Track Order</a></li>';
+
+                        if ($firstLabel !== '') {
+                            echo '<li><a class="dropdown-item" href="' . htmlspecialchars($firstHref) . '">' . htmlspecialchars($firstLabel) . '</a></li>';
                         }
-                        
+
                         echo '<li><a class="dropdown-item" href="logout.php">Log Out</a></li>';
                         echo '</ul>';
                         echo '</li>';
@@ -161,3 +183,12 @@ if (isset($_SESSION['role'])) {
         </div>                   
     </nav>
 </div>
+        <script>
+        // Ensure the Bootstrap dropdown is instantiated and ready to toggle on click.
+        document.addEventListener('DOMContentLoaded', function() {
+            var userToggle = document.getElementById('userDropdown');
+            if (userToggle && typeof bootstrap !== 'undefined' && bootstrap.Dropdown) {
+                try { bootstrap.Dropdown.getOrCreateInstance(userToggle); } catch (e) { console.error('Dropdown init error', e); }
+            }
+        });
+        </script>
