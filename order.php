@@ -128,6 +128,29 @@ $status = _get_scalar('status');
 // Role info (no enforced branch scoping; interactive branch filter remains)
 $rid = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0;
 $restrictedRole = in_array($rid,[1,2],true);
+if ($restrictedRole) {
+    // Ensure session branch exists; try EmployeeID first, then LoginName
+    if (empty($_SESSION['branchcode'])) {
+        if (!empty($_SESSION['id'])) {
+            $st = $conn->prepare('SELECT BranchCode FROM employee WHERE EmployeeID = ? LIMIT 1');
+            if ($st) {
+                $st->bind_param('i', $_SESSION['id']);
+                if ($st->execute()) { $r = $st->get_result()->fetch_assoc(); if ($r && !empty($r['BranchCode'])) { $_SESSION['branchcode'] = $r['BranchCode']; } }
+                $st->close();
+            }
+        }
+        if (empty($_SESSION['branchcode']) && !empty($_SESSION['username'])) {
+            $st = $conn->prepare('SELECT BranchCode FROM employee WHERE LoginName = ? LIMIT 1');
+            if ($st) {
+                $st->bind_param('s', $_SESSION['username']);
+                if ($st->execute()) { $r = $st->get_result()->fetch_assoc(); if ($r && !empty($r['BranchCode'])) { $_SESSION['branchcode'] = $r['BranchCode']; } }
+                $st->close();
+            }
+        }
+    }
+    // Enforce branch scope for Admin/Employee regardless of UI selection
+    if (!empty($_SESSION['branchcode'])) { $branch = $_SESSION['branchcode']; }
+}
 
 // No locked-branch display name needed when interactive filter is used
 
@@ -205,10 +228,11 @@ if (!$headers && $total>0 && $page>1) {
 if (isset($_GET['action']) && $_GET['action']==='details' && isset($_GET['id'])) {
     header('Content-Type: application/json');
     $id = trim($_GET['id']);
-    // Fetch without branch enforcement (interactive filter controls access)
+    // Enforce branch scope for Admin/Employee in details fetch
     $sqlH = 'SELECT oh.Orderhdr_id, oh.CustomerID, oh.BranchCode, oh.Created_dt, c.CustomerName FROM Order_hdr oh LEFT JOIN customer c ON c.CustomerID=oh.CustomerID WHERE oh.Orderhdr_id=?';
+    if ($restrictedRole && !empty($_SESSION['branchcode'])) { $sqlH .= ' AND oh.BranchCode=?'; }
     $st = $conn->prepare($sqlH);
-    $st->bind_param('s',$id);
+    if ($restrictedRole && !empty($_SESSION['branchcode'])) { $st->bind_param('ss',$id,$_SESSION['branchcode']); } else { $st->bind_param('s',$id); }
     $st->execute(); $hdr=$st->get_result()->fetch_assoc(); $st->close();
     if(!$hdr){ echo json_encode(['error'=>'Order not found']); exit; }
 
