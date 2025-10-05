@@ -1639,7 +1639,7 @@
         faceTrackingActive = true;
         if (!isCalibrated && frameCount > 10) calibrateStraightPosition(results.multiFaceLandmarks[0]);
         results.multiFaceLandmarks.forEach(drawGlasses);
-        updateStatus(`Active - ${FRAMES[currentFrame].label} ${currentMaterial} ${currentColorName}`, "online");
+        updateStatus(`${FRAMES[currentFrame].label} ${currentMaterial} ${currentColorName}`, "online");
       } else {
         faceTrackingActive = false;
         updateStatus("Looking for face...", "loading");
