@@ -55,18 +55,14 @@
         height: 85vh;
         min-height: 500px;
         max-height: 800px;
-        transition: transform 1s ease-in-out;
+        transition: transform 0.5s ease-in-out;
     }
     
     .carousel-item img {
         width: 100%;
         height: 100%;
         object-fit: contain;
-        transition: transform 1.2s ease-out;
-    }
-    
-    .carousel-item.active img {
-        transform: scale(1.05);
+        transition: all 0.5s ease-out;
     }
     
     /* Enhanced Vision Statement with Brand Colors */

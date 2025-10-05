@@ -124,20 +124,30 @@ $offset = ($page-1)*$perPage;
 $search = _get_scalar('search');
 $branch = _get_scalar('branch');
 $status = _get_scalar('status');
-// Canonical base query params for building links/redirects
-$baseQuery = ['search'=>$search,'branch'=>$branch,'status'=>$status];
 
 // Role-based branch scope (1=Admin,2=Employee)
 $rid = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0;
 $restrictedRole = in_array($rid,[1,2],true);
 if ($restrictedRole) {
-    if (empty($_SESSION['branchcode']) && !empty($_SESSION['username'])) {
-        $st = $conn->prepare('SELECT BranchCode FROM employee WHERE LoginName = ? LIMIT 1');
-        $st->bind_param('s', $_SESSION['username']);
-        $st->execute(); $r = $st->get_result()->fetch_assoc(); $st->close();
-        if ($r && !empty($r['BranchCode'])) { $_SESSION['branchcode'] = $r['BranchCode']; }
+    // Try to populate session branch from multiple reliable sources
+    if (empty($_SESSION['branchcode'])) {
+        // 1) Lookup by logged-in employee ID, if available
+        if (!empty($_SESSION['id'])) {
+            $st = $conn->prepare('SELECT BranchCode FROM employee WHERE EmployeeID = ? LIMIT 1');
+            $st->bind_param('i', $_SESSION['id']);
+            if ($st->execute()) { $r = $st->get_result()->fetch_assoc(); if ($r && !empty($r['BranchCode'])) $_SESSION['branchcode'] = $r['BranchCode']; }
+            $st->close();
+        }
+        // 2) Fallback: lookup by username/login name
+        if (empty($_SESSION['branchcode']) && !empty($_SESSION['username'])) {
+            $st = $conn->prepare('SELECT BranchCode FROM employee WHERE LoginName = ? LIMIT 1');
+            $st->bind_param('s', $_SESSION['username']);
+            if ($st->execute()) { $r = $st->get_result()->fetch_assoc(); if ($r && !empty($r['BranchCode'])) $_SESSION['branchcode'] = $r['BranchCode']; }
+            $st->close();
+        }
     }
     $branch = $_SESSION['branchcode'] ?? $branch;
+    if (empty($branch)) { _order_log('Warning: restricted role has no BranchCode in session and lookups failed.'); }
 }
 
 // Resolve a display name for the selected/locked branch (used to show a static control for Admin/Employee)
@@ -152,6 +162,17 @@ if (!empty($branch)) {
 // Branches list
 $branches = [];
 if ($rs = $conn->query('SELECT BranchCode, BranchName FROM BranchMaster ORDER BY BranchName')) { while($row=$rs->fetch_assoc()) $branches[]=$row; }
+
+// Canonical base query params for building links/redirects (compute AFTER branch scoping)
+$baseQuery = ['search'=>$search,'branch'=>$branch,'status'=>$status];
+
+// Prebuild status options HTML to avoid inline PHP rendering issues
+$statuses = ['Pending','Completed','Cancelled','Returned','Claimed'];
+$statusOptionsHtml = '<option value="">All Statuses</option>';
+foreach ($statuses as $sOpt) {
+    $sel = ($status === $sOpt) ? ' selected' : '';
+    $statusOptionsHtml .= '<option value="'.htmlspecialchars($sOpt).'"'.$sel.'>'.$sOpt.'</option>';
+}
 
 // Where
 $where=[]; $params=[]; $types='';
@@ -205,9 +226,9 @@ if (isset($_GET['action']) && $_GET['action']==='details' && isset($_GET['id']))
     $id = trim($_GET['id']);
     // Enforce branch scope for restricted roles
     $sqlH = 'SELECT oh.Orderhdr_id, oh.CustomerID, oh.BranchCode, oh.Created_dt, c.CustomerName FROM Order_hdr oh LEFT JOIN customer c ON c.CustomerID=oh.CustomerID WHERE oh.Orderhdr_id=?';
-    if (in_array($rid,[1,2],true) && !empty($_SESSION['branchcode'])) { $sqlH .= ' AND oh.BranchCode=?'; }
+    if ($restrictedRole && !empty($_SESSION['branchcode'])) { $sqlH .= ' AND oh.BranchCode=?'; }
     $st = $conn->prepare($sqlH);
-    if (in_array($rid,[1,2],true) && !empty($_SESSION['branchcode'])) { $st->bind_param('ss',$id,$_SESSION['branchcode']); } else { $st->bind_param('s',$id); }
+    if ($restrictedRole && !empty($_SESSION['branchcode'])) { $st->bind_param('ss',$id,$_SESSION['branchcode']); } else { $st->bind_param('s',$id); }
     $st->execute(); $hdr=$st->get_result()->fetch_assoc(); $st->close();
     if(!$hdr){ echo json_encode(['error'=>'Order not found']); exit; }
 
@@ -307,10 +328,7 @@ body { background:#f5f7fa; padding-top:60px; }
                 <div class="col-md-3">
                     <label class="form-label">Filter by Status</label>
                     <select name="status" class="form-select">
-                        <option value="">All Statuses</option>
-                        <?php foreach(['Pending','Completed','Cancelled','Returned','Claimed'] as $s): ?>
-                        <option value="<?= $s ?>" <?= $status===$s?'selected':'' ?>><?= $s ?></option>
-                        <?php endforeach; ?>
+                        <?= $statusOptionsHtml ?>
                     </select>
                 </div>
                 <div class="col-md-1 d-grid">
