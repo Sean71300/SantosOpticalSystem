@@ -1653,12 +1653,58 @@
       // Prefer at least 800px wide or twice the display canvas width for better quality
       const targetWidth = Math.round(Math.max(800, canvasElement.width * 2));
       const aspect = canvasElement.width && canvasElement.height ? (canvasElement.height / canvasElement.width) : (3/4);
-      const targetHeight = Math.round(targetWidth * aspect);
+      const photoHeight = Math.round(targetWidth * aspect);
+      const captionHeight = Math.round(Math.max(72, targetWidth * 0.08)); // caption band height
+      const targetHeight = photoHeight + captionHeight;
       snapshotCanvas.width = targetWidth;
       snapshotCanvas.height = targetHeight;
       const ctx = snapshotCanvas.getContext('2d');
-      // drawImage will scale the current display canvas into the larger snapshot canvas
-      ctx.drawImage(canvasElement, 0, 0, snapshotCanvas.width, snapshotCanvas.height);
+      // drawImage will scale the current display canvas into the photo area at the top
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, snapshotCanvas.width, snapshotCanvas.height);
+      ctx.drawImage(canvasElement, 0, 0, canvasElement.width, canvasElement.height, 0, 0, targetWidth, photoHeight);
+
+      // Compose caption text from current frame and color
+      let caption = '';
+      try {
+        const frameLabel = (FRAMES && FRAMES[currentFrame] && FRAMES[currentFrame].label) ? FRAMES[currentFrame].label : currentFrame;
+        caption = `${frameLabel} (${currentColorName || currentColor})`;
+      } catch (e) {
+        caption = currentColorName || currentColor || '';
+      }
+
+      // Draw caption band background
+      ctx.fillStyle = 'rgba(0,0,0,0.75)';
+      ctx.fillRect(0, photoHeight, targetWidth, captionHeight);
+
+      // Draw caption text centered
+      ctx.fillStyle = '#fff';
+      ctx.textBaseline = 'middle';
+      const fontSize = Math.round(captionHeight * 0.42);
+      ctx.font = `bold ${fontSize}px Arial`;
+      // wrap if needed
+      const maxWidth = targetWidth - 40;
+      const measured = ctx.measureText(caption);
+      if (measured.width <= maxWidth) {
+        ctx.fillText(caption, targetWidth / 2 - measured.width / 2, photoHeight + captionHeight / 2);
+      } else {
+        // simple two-line wrap
+        const words = caption.split(' ');
+        let line = '';
+        const lines = [];
+        words.forEach(w => {
+          const test = line ? (line + ' ' + w) : w;
+          if (ctx.measureText(test).width <= maxWidth) line = test; else { lines.push(line); line = w; }
+        });
+        if (line) lines.push(line);
+        // draw up to 2 lines centered
+        const startY = photoHeight + captionHeight / 2 - (lines.length - 1) * (fontSize / 2);
+        for (let i = 0; i < Math.min(2, lines.length); i++) {
+          const txt = lines[i];
+          const w = ctx.measureText(txt).width;
+          ctx.fillText(txt, targetWidth / 2 - w / 2, startY + i * (fontSize * 0.95));
+        }
+      }
 
       const dataUrl = snapshotCanvas.toDataURL('image/png');
       snapshotImage.src = dataUrl;
