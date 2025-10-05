@@ -1,330 +1,405 @@
 <?php
+// Fresh implementation of Orders Management page
+// - Robust GET sanitization
+// - Filter by search / branch / status (status computed at DB level)
+// - Server-side pagination
+// - AJAX order details endpoint handled inline
+
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
+
+// Simple runtime logger to capture fatal errors that cause HTTP 500.
+function _order_log($msg) {
+    $logDir = __DIR__ . DIRECTORY_SEPARATOR . 'logs';
+    if (!is_dir($logDir)) @mkdir($logDir, 0755, true);
+    $file = $logDir . DIRECTORY_SEPARATOR . 'order_debug.log';
+    $time = date('Y-m-d H:i:s');
+    @file_put_contents($file, "[{$time}] " . $msg . PHP_EOL, FILE_APPEND);
+}
+
+set_error_handler(function($severity, $message, $file, $line) {
+    _order_log("PHP Error: {$message} in {$file}:{$line} (severity={$severity})");
+    // let normal error handling continue
+    return false;
+});
+
+set_exception_handler(function($ex){
+    _order_log("Uncaught Exception: " . $ex->getMessage() . " in " . $ex->getFile() . ":" . $ex->getLine());
+    http_response_code(500);
+    echo "<h3>Server error</h3><p>Check logs/order_debug.log for details.</p>";
+    exit;
+});
+
+register_shutdown_function(function(){
+    $err = error_get_last();
+    if ($err && in_array($err['type'], [E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_PARSE])) {
+        _order_log("Shutdown error: " . json_encode($err));
+        http_response_code(500);
+        echo "<h3>Server shutdown error</h3><p>Check logs/order_debug.log for details.</p>";
+        exit;
+    }
+});
 include_once 'setup.php';
-include 'ActivityTracker.php'; 
 include 'loginChecker.php';
 
-// Helper: bind params to mysqli_stmt using references (safe for dynamic arrays)
+// Helpers
+function _get_scalar($key) {
+    if (!isset($_GET[$key])) return '';
+    $v = $_GET[$key];
+    if (is_array($v)) return reset($v);
+    return trim((string)$v);
+}
+
 function bind_params_stmt($stmt, $types, $params) {
     if (empty($params)) return;
-    // mysqli::bind_param requires parameters passed by reference
     $refs = [];
-    foreach ($params as $k => $v) {
-        $refs[$k] = &$params[$k];
-    }
+    foreach ($params as $k => $v) { $refs[$k] = &$params[$k]; }
     array_unshift($refs, $types);
     return call_user_func_array([$stmt, 'bind_param'], $refs);
 }
 
-function getOrderHeaders($conn, $search = '', $branch = '', $status = '', $limit = 10, $offset = 0) {
-    $query = "SELECT Orderhdr_id, CustomerID, BranchCode, Created_dt, Created_by FROM Order_hdr";
-    
-    $where = [];
-    $params = [];
-    $types = '';
-    
-    if (!empty($search)) {
-        $customerIds = [];
-        $customerQuery = "SELECT CustomerID FROM customer WHERE CustomerName LIKE ?";
-    $stmt = $conn->prepare($customerQuery);
-    $searchParam = '%' . $search . '%';
-    $stmt->bind_param('s', $searchParam);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        while ($row = $result->fetch_assoc()) {
-            $customerIds[] = $row['CustomerID'];
-        }
-        $stmt->close();
-        
-        if (!empty($customerIds)) {
-            $placeholders = implode(',', array_fill(0, count($customerIds), '?'));
-            $where[] = "(Orderhdr_id LIKE ? OR CustomerID IN ($placeholders))";
-            $params[] = '%' . $search . '%';
-            // customer IDs are treated as strings in many parts of the app
-            $params = array_merge($params, $customerIds);
-            $types .= 's' . str_repeat('s', count($customerIds));
-        } else {
-            $where[] = "Orderhdr_id LIKE ?";
-            $params[] = '%' . $search . '%';
-            $types .= 's';
+$conn = connect();
+if (!$conn) die('DB connection error');
+
+// Pagination & filter inputs
+$perPage = 10;
+$page = max(1, (int)($_GET['page'] ?? 1));
+$offset = ($page - 1) * $perPage;
+$search = _get_scalar('search');
+$branch = _get_scalar('branch');
+$status = _get_scalar('status');
+
+// Fetch branches for the branch filter
+$branches = [];
+$brRes = $conn->query("SELECT BranchCode, BranchName FROM BranchMaster ORDER BY BranchName");
+if ($brRes) while ($r = $brRes->fetch_assoc()) $branches[] = $r;
+
+// Role-based branch scoping: employees/admins see only their branch
+$roleId = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0;
+if (in_array($roleId, [1,2], true)) {
+    $sessionBranch = $_SESSION['branchcode'] ?? '';
+    if (empty($sessionBranch)) {
+        $st = $conn->prepare("SELECT BranchCode FROM employee WHERE LoginName = ? LIMIT 1");
+        if ($st && isset($_SESSION['username'])) {
+            $st->bind_param('s', $_SESSION['username']);
+            $st->execute();
+            $res = $st->get_result();
+            if ($row = $res->fetch_assoc()) { $_SESSION['branchcode'] = $row['BranchCode']; }
+            $st->close();
         }
     }
-    
-    if (!empty($branch)) {
-        $where[] = "BranchCode = ?";
-        $params[] = $branch;
-        $types .= 's';
-    }
-    
-    if (!empty($where)) {
-        $query .= " WHERE " . implode(' AND ', $where);
-    }
-
-    // If status filtering is requested, we must apply it BEFORE pagination.
-    // orderDetails contains item-level statuses; the existing getOrderStatus() helper
-    // computes an order's overall status. To paginate correctly we fetch all
-    // matching headers, compute their statuses, then slice the array for the
-    // requested page (offset/limit).
-    if (!empty($status)) {
-        $query .= " ORDER BY Created_dt DESC";
-        $stmt = $conn->prepare($query);
-        if (!empty($params)) {
-            bind_params_stmt($stmt, $types, $params);
-        }
-        $stmt->execute();
-        $result = $stmt->get_result();
-
-        $allOrders = [];
-        while ($header = $result->fetch_assoc()) {
-            $header['CustomerName'] = getCustomerName($conn, $header['CustomerID']);
-            $allOrders[] = $header;
-        }
-        $stmt->close();
-
-        $filteredOrders = [];
-        foreach ($allOrders as $order) {
-            $orderStatus = getOrderStatus($conn, $order['Orderhdr_id']);
-            if ($orderStatus === $status) {
-                $filteredOrders[] = $order;
-            }
-        }
-
-        // Return the requested page slice
-        return array_slice($filteredOrders, $offset, $limit ?: null);
-    }
-
-    // No status filter: apply LIMIT/OFFSET in SQL for performance
-    $query .= " ORDER BY Created_dt DESC LIMIT ? OFFSET ?";
-    $params[] = $limit;
-    $params[] = $offset;
-    $types .= 'ii';
-
-    $stmt = $conn->prepare($query);
-    if (!empty($params)) {
-        bind_params_stmt($stmt, $types, $params);
-    }
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $orders = [];
-
-    while ($header = $result->fetch_assoc()) {
-        $customerName = getCustomerName($conn, $header['CustomerID']);
-        $header['CustomerName'] = $customerName;
-        $orders[] = $header;
-    }
-
-    $stmt->close();
-    return $orders;
+    $branch = $_SESSION['branchcode'] ?? $branch;
 }
 
-function getOrderStatus($conn, $orderId) {
-    $query = "SELECT Status FROM orderDetails WHERE OrderHdr_id = ?";
-    $stmt = $conn->prepare($query);
-    // Order IDs might be non-integer in some setups; bind as string to be safe
-    $stmt->bind_param('s', $orderId);
+// Build where conditions (for header-level filters)
+$where = [];
+$params = [];
+$types = '';
+if ($search !== '') {
+    // search against Orderhdr_id or customer name
+    $where[] = "(oh.Orderhdr_id LIKE ? OR c.CustomerName LIKE ?)";
+    $params[] = "%$search%"; $params[] = "%$search%"; $types .= 'ss';
+}
+if ($branch !== '') {
+    $where[] = "oh.BranchCode = ?";
+    $params[] = $branch; $types .= 's';
+}
+$whereSql = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
+
+// Map requested status to HAVING condition
+$having = '';
+switch ($status) {
+    case 'Completed': $having = "SUM(od.Status != 'Completed') = 0"; break;
+    case 'Cancelled': $having = "SUM(od.Status != 'Cancelled') = 0"; break;
+    case 'Returned':  $having = "SUM(od.Status != 'Returned') = 0"; break;
+    case 'Claimed':   $having = "SUM(od.Status != 'Claimed') = 0"; break;
+    case 'Pending':
+        $having = "NOT (SUM(od.Status != 'Completed') = 0 OR SUM(od.Status != 'Cancelled') = 0 OR SUM(od.Status != 'Returned') = 0 OR SUM(od.Status != 'Claimed') = 0)";
+        break;
+    default: $having = '';
+}
+
+// Count total matching orders
+if ($having !== '') {
+    $countSql = "SELECT COUNT(*) as total FROM (SELECT oh.Orderhdr_id FROM Order_hdr oh JOIN orderDetails od ON od.OrderHdr_id = oh.Orderhdr_id LEFT JOIN customer c ON c.CustomerID = oh.CustomerID $whereSql GROUP BY oh.Orderhdr_id HAVING $having) t";
+    $countStmt = $conn->prepare($countSql);
+    if (!empty($params)) bind_params_stmt($countStmt, $types, $params);
+    $countStmt->execute();
+    $total = (int)($countStmt->get_result()->fetch_assoc()['total'] ?? 0);
+    $countStmt->close();
+} else {
+    $countSql = "SELECT COUNT(*) as total FROM Order_hdr oh LEFT JOIN customer c ON c.CustomerID = oh.CustomerID $whereSql";
+    $countStmt = $conn->prepare($countSql);
+    if (!empty($params)) bind_params_stmt($countStmt, $types, $params);
+    $countStmt->execute();
+    $total = (int)($countStmt->get_result()->fetch_assoc()['total'] ?? 0);
+    $countStmt->close();
+}
+
+$totalPages = max(1, (int)ceil($total / $perPage));
+if ($page > $totalPages) { $page = $totalPages; $offset = ($page-1)*$perPage; }
+
+// Fetch headers for current page
+if ($having !== '') {
+    $sql = "SELECT oh.Orderhdr_id, oh.CustomerID, oh.BranchCode, oh.Created_dt, oh.Created_by, c.CustomerName
+            FROM Order_hdr oh
+            JOIN orderDetails od ON od.OrderHdr_id = oh.Orderhdr_id
+            LEFT JOIN customer c ON c.CustomerID = oh.CustomerID
+            $whereSql
+            GROUP BY oh.Orderhdr_id
+            HAVING $having
+            ORDER BY oh.Created_dt DESC
+            LIMIT ? OFFSET ?";
+    $stmt = $conn->prepare($sql);
+    $params2 = $params; $types2 = $types . 'ii';
+    $params2[] = $perPage; $params2[] = $offset;
+    if (!empty($params2)) bind_params_stmt($stmt, $types2, $params2);
     $stmt->execute();
-    $result = $stmt->get_result();
-    
-    $completeCount = 0;
-    $cancelledCount = 0;
-    $returnedCount = 0;
-    $claimedCount = 0;
-    $totalItems = 0;
-    
-    while ($row = $result->fetch_assoc()) {
+    $res = $stmt->get_result();
+    $headers = $res->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+} else {
+    $sql = "SELECT oh.Orderhdr_id, oh.CustomerID, oh.BranchCode, oh.Created_dt, oh.Created_by, c.CustomerName
+            FROM Order_hdr oh
+            LEFT JOIN customer c ON c.CustomerID = oh.CustomerID
+            $whereSql
+            ORDER BY oh.Created_dt DESC
+            LIMIT ? OFFSET ?";
+    $stmt = $conn->prepare($sql);
+    $params2 = $params; $types2 = $types . 'ii';
+    $params2[] = $perPage; $params2[] = $offset;
+    if (!empty($params2)) bind_params_stmt($stmt, $types2, $params2);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    $headers = $res->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+}
+
+// Build orders array with details and computed status
+$orders = [];
+foreach ($headers as $h) {
+    $orderId = $h['Orderhdr_id'];
+    // fetch details
+    $dStmt = $conn->prepare("SELECT od.Quantity, od.Status, od.ProductBranchID, p.Model, p.Price, p.CategoryType, b.BrandName FROM orderDetails od JOIN ProductBranchMaster pb ON od.ProductBranchID = pb.ProductBranchID JOIN productMstr p ON pb.ProductID = p.ProductID JOIN brandMaster b ON p.BrandID = b.BrandID WHERE od.OrderHdr_id = ?");
+    $dStmt->bind_param('s', $orderId);
+    $dStmt->execute();
+    $details = $dStmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $dStmt->close();
+
+    // compute order status same as earlier logic
+    $complete = $cancel = $returned = $claimed = 0; $totalItems = 0;
+    foreach ($details as $det) {
         $totalItems++;
-        if ($row['Status'] === 'Completed') {
-            $completeCount++;
-        } elseif ($row['Status'] === 'Cancelled') {
-            $cancelledCount++;
-        } elseif ($row['Status'] === 'Returned') {
-            $returnedCount++;
-        } elseif ($row['Status'] === 'Claimed') {
-            $claimedCount++;
+        switch ($det['Status']) {
+            case 'Completed': $complete++; break;
+            case 'Cancelled': $cancel++; break;
+            case 'Returned': $returned++; break;
+            case 'Claimed': $claimed++; break;
         }
     }
-    
-    $stmt->close();
-    
-    if ($completeCount === $totalItems && $totalItems > 0) {
-        return 'Completed';
-    } elseif ($cancelledCount === $totalItems && $totalItems > 0) {
-        return 'Cancelled';
-    } elseif ($returnedCount === $totalItems && $totalItems > 0) {
-        return 'Returned';
-    } elseif ($claimedCount === $totalItems && $totalItems > 0) {
-        return 'Claimed';
-    }
-    return 'Pending';
+    if ($totalItems > 0) {
+        if ($complete === $totalItems) $orderStatus = 'Completed';
+        elseif ($cancel === $totalItems) $orderStatus = 'Cancelled';
+        elseif ($returned === $totalItems) $orderStatus = 'Returned';
+        elseif ($claimed === $totalItems) $orderStatus = 'Claimed';
+        else $orderStatus = 'Pending';
+    } else { $orderStatus = 'Pending'; }
+
+    // fetch branch name
+    $bStmt = $conn->prepare("SELECT BranchName FROM BranchMaster WHERE BranchCode = ?");
+    $bStmt->bind_param('s', $h['BranchCode']);
+    $bStmt->execute();
+    $bName = $bStmt->get_result()->fetch_assoc()['BranchName'] ?? '';
+    $bStmt->close();
+
+    $orders[] = [
+        'Orderhdr_id' => $orderId,
+        'CustomerName' => $h['CustomerName'] ?? 'Unknown',
+        'BranchName' => $bName,
+        'Created_dt' => $h['Created_dt'],
+        'Status' => $orderStatus,
+        'Details' => $details
+    ];
 }
 
-function getCustomerName($conn, $customerId) {
-    $query = "SELECT CustomerName FROM customer WHERE CustomerID = ?";
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param('s', $customerId);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $row = $result->fetch_assoc();
-    $stmt->close();
-    return $row ? $row['CustomerName'] : 'Unknown';
+// If this is an AJAX request for details, respond JSON
+if (isset($_GET['action']) && $_GET['action'] === 'details' && isset($_GET['id'])) {
+    header('Content-Type: application/json');
+    $id = $_GET['id'];
+    foreach ($orders as $o) if ($o['Orderhdr_id'] == $id) { echo json_encode($o); exit; }
+    echo json_encode(['error' => 'Order not found']); exit;
 }
 
-function getCustomerID($conn, $OrderId) {
-    $query = "SELECT CustomerID FROM Order_hdr WHERE Orderhdr_id = ?";
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param('s', $OrderId);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $row = $result->fetch_assoc();
-    $stmt->close();
-    return $row ? $row['CustomerID'] : 'Unknown';
-}
+// HTML
+?><!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<title>Orders Management</title>
+<style>
+body { background:#f5f7fa; padding-top:60px; }
+.main-container { margin: 0 auto; max-width: 1200px; }
+.card-round { border-radius: 10px; }
+.badge-status { padding: .4em .6em; border-radius: .5rem; }
+</style>
+</head>
+<body>
+<?php include 'sidebar.php'; ?>
+<div class="main-container mx-auto px-3">
+    <div class="d-flex justify-content-between align-items-center mb-4 mt-2">
+        <h2><i class="fas fa-shopping-cart me-2"></i> Orders Management</h2>
+        <button class="btn btn-primary" onclick="location.href='orderCreate.php'"><i class="fas fa-plus me-1"></i> Add New Order</button>
+    </div>
 
-function getBranchName($conn, $branchCode) {
-    $query = "SELECT BranchName FROM BranchMaster WHERE BranchCode = ?";
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param('s', $branchCode);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $row = $result->fetch_assoc();
-    $stmt->close();
-    return $row ? $row['BranchName'] : 'Unknown';
-}
+    <div class="card card-round p-4 mb-4">
+        <form method="get" action="order.php">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-5">
+                    <label class="form-label">Search</label>
+                    <input name="search" value="<?= htmlspecialchars($search) ?>" class="form-control" placeholder="Search orders or customers...">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Filter by Branch</label>
+                    <select name="branch" class="form-select">
+                        <option value="">All Branches</option>
+                        <?php foreach ($branches as $br): ?>
+                            <option value="<?= htmlspecialchars($br['BranchCode']) ?>" <?= $branch == $br['BranchCode'] ? 'selected' : '' ?>><?= htmlspecialchars($br['BranchName']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Filter by Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">All Statuses</option>
+                        <?php foreach (['Pending','Completed','Cancelled','Returned','Claimed'] as $s): ?>
+                            <option value="<?= $s ?>" <?= $status === $s ? 'selected' : '' ?>><?= $s ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-md-1 d-grid">
+                    <button class="btn btn-primary"> <i class="fas fa-filter"></i> Filter</button>
+                </div>
+            </div>
+        </form>
+    </div>
 
-function getBranchLocation($conn, $branchCode) {
-    $query = "SELECT BranchLocation FROM BranchMaster WHERE BranchCode = ?";
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param('s', $branchCode);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $row = $result->fetch_assoc();
-    $stmt->close();
-    return $row ? $row['BranchLocation'] : 'Unknown';
-}
+    <div class="card card-round p-3 mb-4">
+        <?php if (empty($orders)): ?>
+            <div class="alert alert-info"> <i class="fas fa-info-circle me-2"></i> No orders found.</div>
+        <?php else: ?>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr><th>Order ID</th><th>Customer</th><th>Branch</th><th>Date</th><th>Status</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($orders as $o): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($o['Orderhdr_id']) ?></td>
+                                <td><?= htmlspecialchars($o['CustomerName']) ?></td>
+                                <td><?= htmlspecialchars($o['BranchName']) ?></td>
+                                <td><?= date('M j, Y', strtotime($o['Created_dt'])) ?></td>
+                                <td><span class="badge badge-status <?= strtolower($o['Status']) ?>"><?= htmlspecialchars($o['Status']) ?></span></td>
+                                <td><button class="btn btn-sm btn-outline-primary" onclick="showDetails('<?= htmlspecialchars($o['Orderhdr_id']) ?>')">View</button></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
 
-function getBranchContact($conn, $branchCode) {
-    $query = "SELECT ContactNo FROM BranchMaster WHERE BranchCode = ?";
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param('s', $branchCode);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $row = $result->fetch_assoc();
-    $stmt->close();
-    return $row ? $row['ContactNo'] : 'Unknown';
-}
+            <nav class="mt-3">
+                <ul class="pagination justify-content-center">
+                    <?php
+                        $base = ['search'=>$search,'branch'=>$branch,'status'=>$status];
+                        if ($page>1):
+                    ?>
+                    <li class="page-item"><a class="page-link" href="?<?= http_build_query(array_merge($base,['page'=>$page-1])) ?>">&laquo;</a></li>
+                    <?php endif; ?>
+                    <?php for ($i=1;$i<=$totalPages;$i++): ?>
+                        <li class="page-item <?= $i==$page ? 'active':'' ?>"><a class="page-link" href="?<?= http_build_query(array_merge($base,['page'=>$i])) ?>"><?= $i ?></a></li>
+                    <?php endfor; ?>
+                    <?php if ($page<$totalPages): ?>
+                        <li class="page-item"><a class="page-link" href="?<?= http_build_query(array_merge($base,['page'=>$page+1])) ?>">&raquo;</a></li>
+                    <?php endif; ?>
+                </ul>
+            </nav>
+        <?php endif; ?>
+    </div>
+</div>
 
-function getEmployeeName($conn, $loginName) {
-    $query = "SELECT EmployeeName FROM employee WHERE LoginName = ?";
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param('s', $loginName);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $row = $result->fetch_assoc();
-    $stmt->close();
-    return $row ? $row['EmployeeName'] : 'Unknown';
-}
+<!-- Details modal (Bootstrap) -->
+<div class="modal fade" id="orderDetailsModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Order Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="orderDetailsBody">Loading...</div>
+      <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Close</button></div>
+    </div>
+  </div>
+</div>
 
-function getOrderDetails($conn, $orderId) {
-    $query = "SELECT od.Quantity, od.Status, od.ProductBranchID, p.ProductID, p.Model, p.Price, p.CategoryType, b.BrandName 
-              FROM orderDetails od
-              JOIN ProductBranchMaster pb ON od.ProductBranchID = pb.ProductBranchID
-              JOIN productMstr p ON pb.ProductID = p.ProductID
-              JOIN brandMaster b ON p.BrandID = b.BrandID
-              WHERE od.OrderHdr_id = ?";
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param('s', $orderId);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $details = [];
-    
-    while ($row = $result->fetch_assoc()) {
-        $price = str_replace('₱', '', $row['Price']);
-        $row['Price'] = (float)$price;
-        $row['Quantity'] = (int)$row['Quantity'];
-        $details[] = $row;
-    }
-    
-    $stmt->close();
-    return $details;
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function showDetails(id){
+    const modal = new bootstrap.Modal(document.getElementById('orderDetailsModal'));
+    const body = document.getElementById('orderDetailsBody');
+    body.innerHTML = '<div class="text-center py-4">Loading...</div>';
+    fetch(`order.php?action=details&id=${encodeURIComponent(id)}`)
+      .then(r=>r.json())
+      .then(data=>{
+          if (data.error) { body.innerHTML = '<div class="alert alert-danger">'+data.error+'</div>'; return; }
+          let html = `<div class="row"><div class="col-md-6"><h6>Order Info</h6><p><strong>ID:</strong> ${data.Orderhdr_id}</p><p><strong>Date:</strong> ${new Date(data.Created_dt).toLocaleString()}</p></div><div class="col-md-6"><h6>Customer</h6><p>${data.CustomerName}</p></div></div>`;
+          html += '<h6 class="mt-3">Items</h6><div class="table-responsive"><table class="table table-sm"><thead><tr><th>Product</th><th>Brand</th><th>Category</th><th>Price</th><th>Qty</th><th>Status</th></tr></thead><tbody>';
+          data.Details.forEach(d=>{
+              html += `<tr><td>${d.Model||'N/A'}</td><td>${d.BrandName||'N/A'}</td><td>${d.CategoryType||'N/A'}</td><td>₱${parseFloat(d.Price||0).toFixed(2)}</td><td>${d.Quantity||0}</td><td>${d.Status||''}</td></tr>`;
+          });
+          html += '</tbody></table></div>';
+          body.innerHTML = html; modal.show();
+      }).catch(e=>{ body.innerHTML = '<div class="alert alert-danger">Error loading details</div>'; });
 }
-
-function countOrderHeaders($conn, $search = '', $branch = '', $status = '') {
-    $query = "SELECT COUNT(Orderhdr_id) as total FROM Order_hdr";
-    
-    $where = [];
-    $params = [];
-    $types = '';
-    
-    if (!empty($search)) {
-        $customerIds = [];
-        $customerQuery = "SELECT CustomerID FROM customer WHERE CustomerName LIKE ?";
-        $stmt = $conn->prepare($customerQuery);
-        $searchParam = '%' . $search . '%';
-        $stmt->bind_param('s', $searchParam);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        while ($row = $result->fetch_assoc()) {
-            $customerIds[] = $row['CustomerID'];
-        }
-        $stmt->close();
-        
-        if (!empty($customerIds)) {
-            $placeholders = implode(',', array_fill(0, count($customerIds), '?'));
-            $where[] = "(Orderhdr_id LIKE ? OR CustomerID IN ($placeholders))";
-            $params[] = '%' . $search . '%';
-            $params = array_merge($params, $customerIds);
-            // treat IDs as strings across the app for consistency
-            $types .= 's' . str_repeat('s', count($customerIds));
-        } else {
-            $where[] = "Orderhdr_id LIKE ?";
-            $params[] = '%' . $search . '%';
-            $types .= 's';
-        }
-    }
-    
-    if (!empty($branch)) {
-        $where[] = "BranchCode = ?";
-        $params[] = $branch;
-        $types .= 's';
-    }
-    
-    if (!empty($where)) {
-        $query .= " WHERE " . implode(' AND ', $where);
-    }
-    
-    $stmt = $conn->prepare($query);
-    if (!empty($params)) {
-        $stmt->bind_param($types, ...$params);
-    }
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $row = $result->fetch_assoc();
-    $stmt->close();
-    
-    $total = $row ? $row['total'] : 0;
+</script>
+</body>
+</html>
     
     if (!empty($status)) {
-        $filteredCount = 0;
-        $allOrdersQuery = "SELECT Orderhdr_id FROM Order_hdr" . (!empty($where) ? " WHERE " . implode(' AND ', $where) : "");
-        $allStmt = $conn->prepare($allOrdersQuery);
-        
-        if (!empty($params)) {
-            bind_params_stmt($allStmt, $types, $params);
+        // Use a grouped query to count orders matching the computed status
+        switch ($status) {
+            case 'Completed':
+                $having = "SUM(od.Status != 'Completed') = 0";
+                break;
+            case 'Cancelled':
+                $having = "SUM(od.Status != 'Cancelled') = 0";
+                break;
+            case 'Returned':
+                $having = "SUM(od.Status != 'Returned') = 0";
+                break;
+            case 'Claimed':
+                $having = "SUM(od.Status != 'Claimed') = 0";
+                break;
+            default:
+                $having = "NOT (SUM(od.Status != 'Completed') = 0 OR SUM(od.Status != 'Cancelled') = 0 OR SUM(od.Status != 'Returned') = 0 OR SUM(od.Status != 'Claimed') = 0)";
         }
-        
-        $allStmt->execute();
-        $allResult = $allStmt->get_result();
-        
-        while ($order = $allResult->fetch_assoc()) {
-            $orderStatus = getOrderStatus($conn, $order['Orderhdr_id']);
-            if ($orderStatus === $status) {
-                $filteredCount++;
-            }
+
+        $countQuery = "SELECT COUNT(*) as total FROM (SELECT oh.Orderhdr_id FROM Order_hdr oh JOIN orderDetails od ON od.OrderHdr_id = oh.Orderhdr_id";
+        if (!empty($where)) {
+            $countQuery .= " WHERE " . implode(' AND ', $where);
         }
-        
-        $allStmt->close();
-        return $filteredCount;
+        $countQuery .= " GROUP BY oh.Orderhdr_id HAVING " . $having . ") as t";
+
+        $countStmt = $conn->prepare($countQuery);
+        $params2 = $params;
+        if (!empty($params2)) {
+            bind_params_stmt($countStmt, $types, $params2);
+        }
+        $countStmt->execute();
+        $res = $countStmt->get_result()->fetch_assoc();
+        $countStmt->close();
+        return (int)($res['total'] ?? 0);
     }
     
     return $total;
@@ -527,9 +602,17 @@ $ordersPerPage = 10;
 $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($currentPage - 1) * $ordersPerPage;
 
-$search = $_GET['search'] ?? '';
-$branch = $_GET['branch'] ?? '';
-$status = $_GET['status'] ?? '';
+// Ensure GET parameters are scalars (avoid array injection causing warnings)
+function _get_scalar($key) {
+    if (!isset($_GET[$key])) return '';
+    $v = $_GET[$key];
+    if (is_array($v)) return reset($v);
+    return $v;
+}
+
+$search = _get_scalar('search');
+$branch = _get_scalar('branch');
+$status = _get_scalar('status');
 
 // Enforce branch scoping for Admins (roleid = 1) and Employees (roleid = 2)
 $roleId = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0;
@@ -563,6 +646,17 @@ $conn = connect();
 $orderHeaders = getOrderHeaders($conn, $search, $branch, $status, $ordersPerPage, $offset);
 $totalOrders = countOrderHeaders($conn, $search, $branch, $status);
 $totalPages = ceil($totalOrders / $ordersPerPage);
+
+// Defensive fallback: if there are orders overall but the requested page returned
+// no headers (possible edge-case when filters/pagination mismatch), reset to
+// page 1 and fetch again so the user still sees results instead of "No orders found".
+if (empty($orderHeaders) && $totalOrders > 0) {
+    $currentPage = 1;
+    $offset = 0;
+    $orderHeaders = getOrderHeaders($conn, $search, $branch, $status, $ordersPerPage, $offset);
+    // Recompute totalPages just in case
+    $totalPages = ceil($totalOrders / $ordersPerPage);
+}
 
 $orders = [];
 foreach ($orderHeaders as $header) {
