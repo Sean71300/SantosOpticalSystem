@@ -1024,7 +1024,8 @@
             <!-- Re-center placed bottom-right inside camera for better discoverability -->
             <div class="camera-bottom-actions">
               <button id="calibrateBtn" class="btn btn-outline-secondary btn-sm" title="Re-center">
-                <i class="fas fa-sync-alt me-1"></i>
+                <i class="fas fa-sync-alt me-1" aria-hidden="true"></i>
+                <i class="fas fa-glasses ms-1" aria-hidden="true" title="Align glasses"></i>
               </button>
             </div>
             <!-- small camera status badge (moved inside camera) -->
