@@ -324,11 +324,13 @@ if ($rid !== 4) {
             addBranchModal();
 
             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                if (isset($_POST['confirmDeleteBtn'])) {
+                    confirmDeleteBranch();
+                }
                 if (isset($_POST['addBranchBtn'])) {
                     addBranch();
                 }
-                else
-                if (isset($_POST['editBranchBtn'])) {
+                elseif (isset($_POST['editBranchBtn'])) {
                     editBranch();
                 }
                 elseif (isset($_POST['deleteBranchBtn'])) {
@@ -356,6 +358,11 @@ if ($rid !== 4) {
             <?php elseif (isset($_POST['deleteBranchBtn'])): ?>
                 var deleteModalEl = document.getElementById('deleteBranchModal');
                 if (deleteModalEl) { new bootstrap.Modal(deleteModalEl).show(); }
+            <?php elseif (isset($_POST['confirmDeleteBtn'])): ?>
+                // confirmDeleteBranch() outputs the modal with id 'deleteBranchModal' (success/error),
+                // so show the same element here.
+                var confirmDeleteModalEl = document.getElementById('deleteBranchModal');
+                if (confirmDeleteModalEl) { new bootstrap.Modal(confirmDeleteModalEl).show(); }
             <?php endif; ?>
         });
     </script>

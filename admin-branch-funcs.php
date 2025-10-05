@@ -124,6 +124,7 @@ include 'setup.php';
                 </div>
             </div>';
         }
+        mysqli_close($link);
     }
     function editBranch(){
         $branchCode = $_POST['branchCode'] ?? '';
