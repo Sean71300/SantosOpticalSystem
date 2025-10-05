@@ -971,12 +971,9 @@
 
             <!-- Top actions: Save & Calibrate -->
             <div class="camera-top-actions">
-              <button id="saveBtn" class="btn btn-outline-primary btn-sm me-2" title="Save">
-                <i class="fas fa-save me-1"></i>Save
+              <button id="calibrateBtn" class="btn btn-outline-primary btn-sm" title="Re-center">
+                <i class="fas fa-sync-alt me-1"></i>Re-center
               </button>
-                      <button id="calibrateBtn" class="btn btn-outline-primary btn-sm" title="Re-center">
-                        <i class="fas fa-sync-alt me-1"></i>Re-center
-                      </button>
             </div>
 
                     <!-- Standalone camera step badge (outside the white pill) -->
