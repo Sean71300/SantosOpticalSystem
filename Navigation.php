@@ -145,7 +145,7 @@ if (isset($_SESSION['role'])) {
                         if (isset($_SESSION['user_type']) && $_SESSION['user_type'] === 'employee') {
                             $rIdLocal = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0;
                             switch ($rIdLocal) {
-                                case 4: $firstLabel = 'Super Admin Page'; $firstHref = 'Dashboard.php'; break;
+                                case 4: $firstLabel = 'Admin Page'; $firstHref = 'Dashboard.php'; break;
                                 case 1: $firstLabel = 'Admin Page'; $firstHref = 'Dashboard.php'; break;
                                 case 2: $firstLabel = 'Employee Page'; $firstHref = 'Dashboard.php'; break;
                                 case 3: $firstLabel = 'Optometrist Page'; $firstHref = 'Dashboard.php'; break;
