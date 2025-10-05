@@ -697,41 +697,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <p class="text-center mb-4">Make sure it's clear, front-facing, and taken in good lighting. For best results, remove your glasses.</p>
             
             <div class="upload-options">
-                <div class="upload-option active" id="cameraOption">
-                    <i class="fas fa-camera"></i> Take Photo
-                </div>
-                <div class="upload-option" id="uploadOption">
+                <div class="upload-option active" id="uploadOption">
                     <i class="fas fa-upload"></i> Upload Photo
+                </div>
+                <div class="upload-option" id="cameraOption">
+                    <i class="fas fa-camera"></i> Take Photo
                 </div>
             </div>
             
-            <div id="cameraSection" style="display: none;">
-                <div class="camera-instructions">
-                    <div class="instruction-step permission-step">
-                        <div class="step-number">1</div>
-                        <p>Allow camera access when prompted to use this feature</p>
-                    </div>
-                    <div class="instruction-step">
-                        <div class="step-number">2</div>
-                        <p>Position your face in the center</p>
-                    </div>
-                    <div class="instruction-step">
-                        <div class="step-number">3</div>
-                        <p>Make sure lighting is even</p>
-                    </div>
-                    <div class="instruction-step">
-                        <div class="step-number">4</div>
-                        <p>Keep a neutral expression</p>
-                    </div>
-                </div>
-                
-                <div class="text-center">
-                    <button class="btn btn-quiz" id="openCameraBtn">
-                        <i class="fas fa-camera me-2"></i> Open Camera
-                    </button>
-                </div>
-            </div>
-
             <div id="fileUploadSection">
                 <form method="post" enctype="multipart/form-data" id="quizForm">
                     <div class="upload-area" id="uploadArea">
@@ -764,6 +737,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </form>
             </div>
             
+            <div id="cameraSection" style="display: none;">
+                <div class="camera-instructions">
+                    <div class="instruction-step permission-step">
+                        <div class="step-number">1</div>
+                        <p>Allow camera access when prompted to use this feature</p>
+                    </div>
+                    <div class="instruction-step">
+                        <div class="step-number">2</div>
+                        <p>Position your face in the center</p>
+                    </div>
+                    <div class="instruction-step">
+                        <div class="step-number">3</div>
+                        <p>Make sure lighting is even</p>
+                    </div>
+                    <div class="instruction-step">
+                        <div class="step-number">4</div>
+                        <p>Keep a neutral expression</p>
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    <button class="btn btn-quiz" id="openCameraBtn">
+                        <i class="fas fa-camera me-2"></i> Open Camera
+                    </button>
+                </div>
+            </div>
         </div>
         <?php else: ?>
         <div class="result-card">
