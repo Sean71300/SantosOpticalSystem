@@ -373,10 +373,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             <p class="text-center text-muted mb-3" style="font-size: 0.9rem;">Choose your method:</p>
             <div class="upload-options">
-                <div class="upload-option active" id="uploadOption">
+                <div class="upload-option" id="uploadOption">
                     <i class="fas fa-upload"></i> Upload Photo
                 </div>
-                <div class="upload-option" id="cameraOption">
+                <div class="upload-option active" id="cameraOption">
                     <i class="fas fa-camera"></i> Take Photo
                 </div>
             </div>
