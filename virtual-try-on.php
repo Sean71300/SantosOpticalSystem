@@ -103,8 +103,10 @@
       overflow: hidden;
       box-shadow: 0 10px 30px rgba(0,0,0,0.15);
       aspect-ratio: 4/3;
-      min-height: 280px; /* smaller camera to mimic mobile footprint */
-      max-width: 360px;
+      /* make camera tall but keep it constrained to viewport so bottom row remains visible */
+      min-height: 60vh;
+      max-height: calc(100vh - 120px);
+      max-width: 420px;
     }
 
     /* CTA over camera */
@@ -298,6 +300,12 @@
       overflow: visible;
       transition: transform 0.3s ease;
     }
+
+    /* Keep the Adjust Fit card compact so it doesn't push Material/Colors offscreen */
+    .center-column .card {
+      max-height: 540px;
+      overflow: auto;
+    }
     
     .card:hover {
       transform: translateY(-2px);
@@ -390,8 +398,6 @@
       grid-template-columns: repeat(2, minmax(60px, 1fr));
       gap: 8px;
       margin-top: 10px;
-      max-height: 520px;
-      overflow: auto;
     }
 
     /* Vertical frames list for right column */
@@ -462,8 +468,6 @@
       grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
       gap: 8px;
       margin-top: 10px;
-      max-height: 420px;
-      overflow: auto;
     }
     
     .color-btn {
