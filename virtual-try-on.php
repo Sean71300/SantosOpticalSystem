@@ -103,14 +103,15 @@
     }
     
       .camera-container {
-      position: relative;
-      background: black;
-      border-radius: 20px;
-      overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-      aspect-ratio: 4/3;
-      min-height: 340px; /* slightly reduced so frames fit the viewport better and right column gains space */
-    }
+        position: relative;
+        background: black;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        /* Use portrait 9:16 aspect to emulate a selfie screen */
+        aspect-ratio: 9/16;
+        min-height: 640px; /* ensure enough vertical room for a portrait canvas */
+      }
 
     /* CTA over camera */
     .camera-cta {
@@ -1572,9 +1573,17 @@
     }
 
     function resizeCanvasToDisplay() {
-      const container = canvasElement.parentElement;
-      canvasElement.width = container.clientWidth;
-      canvasElement.height = container.clientHeight;
+      // Fix the render buffer to a 9:16 selfie resolution (1080x1920) for consistent proportions
+      const DPR = window.devicePixelRatio || 1;
+      const targetWidth = 1080; // logical pixels
+      const targetHeight = 1920;
+      canvasElement.width = Math.round(targetWidth * DPR);
+      canvasElement.height = Math.round(targetHeight * DPR);
+      // keep CSS sizing responsive — make canvas fill its container while preserving aspect
+      canvasElement.style.width = '100%';
+      canvasElement.style.height = '100%';
+      // update drawing context scale
+      canvasCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
     }
 
     async function initializeFaceMesh() {
