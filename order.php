@@ -295,7 +295,7 @@ function countOrderHeaders($conn, $search = '', $branch = '', $status = '') {
     
     $stmt = $conn->prepare($query);
     if (!empty($params)) {
-        $stmt->bind_param($types, ...$params);
+        bind_params_stmt($stmt, $types, $params);
     }
     $stmt->execute();
     $result = $stmt->get_result();
@@ -527,9 +527,17 @@ $ordersPerPage = 10;
 $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($currentPage - 1) * $ordersPerPage;
 
-$search = $_GET['search'] ?? '';
-$branch = $_GET['branch'] ?? '';
-$status = $_GET['status'] ?? '';
+// Ensure GET parameters are scalars (avoid array injection causing warnings)
+function _get_scalar($key) {
+    if (!isset($_GET[$key])) return '';
+    $v = $_GET[$key];
+    if (is_array($v)) return reset($v);
+    return $v;
+}
+
+$search = _get_scalar('search');
+$branch = _get_scalar('branch');
+$status = _get_scalar('status');
 
 // Enforce branch scoping for Admins (roleid = 1) and Employees (roleid = 2)
 $roleId = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0;
