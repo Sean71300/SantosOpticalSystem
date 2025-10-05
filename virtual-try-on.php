@@ -885,11 +885,36 @@
       .card-body {
         padding: 15px;
       }
+
+      /* Mobile: freeze the camera panel (like Excel freeze) so it stays visible while scrolling other cards */
+      .camera-section {
+        position: -webkit-sticky;
+        position: sticky;
+        top: 10px;
+        z-index: 25;
+        background: transparent;
+      }
+
+      /* Ensure the container that holds all other cards scrolls if needed */
+      .main-content { overflow-y: auto; }
       
       .frame-grid {
         grid-template-columns: repeat(4, 1fr);
         gap: 8px;
       }
+
+    /* when JS toggles camera-fixed on mobile */
+    .camera-fixed {
+      position: fixed !important;
+      top: 10px !important;
+      left: 10px;
+      right: 10px;
+      z-index: 9999;
+      width: calc(100% - 20px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.01);
+    }
       
       .frame-btn {
         padding: 6px;
@@ -1896,6 +1921,30 @@
     window.addEventListener('load', () => {
       setTimeout(initializeFaceMesh, 1000);
     });
+
+    // Mobile sticky fallback: ensure camera-section stays visible while scrolling other cards
+    (function() {
+      const cameraSection = document.querySelector('.camera-section');
+      if (!cameraSection) return;
+
+      function onScroll() {
+        if (window.innerWidth > 767) {
+          cameraSection.classList.remove('camera-fixed');
+          return;
+        }
+        const rect = cameraSection.getBoundingClientRect();
+        if (rect.top <= 10) {
+          cameraSection.classList.add('camera-fixed');
+        } else {
+          cameraSection.classList.remove('camera-fixed');
+        }
+      }
+
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onScroll);
+      // initial check
+      onScroll();
+    })();
   </script>
 </body>
 </html>
