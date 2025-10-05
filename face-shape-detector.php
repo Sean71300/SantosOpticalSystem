@@ -201,7 +201,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             width: 200px;
             height: 200px;
             object-fit: cover;
-            border-radius: 12px; /* Changed from 50% to make it square with slightly rounded corners */
+            border-radius: 50%;
             border: 5px solid white;
             box-shadow: 0 5px 20px rgba(0,0,0,0.1);
             margin: 20px auto;
