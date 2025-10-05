@@ -290,7 +290,7 @@ if ($rid !== 4) {
         <div class="main-content">
             <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
                 <h1><i class="fas fa-boxes me-2"></i> Branches</h1>
-                <button class="btn btn-primary" role="button">
+                <button class="btn btn-primary" name="addBranchBtn">
                     <i class="fas fa-plus me-2"></i> Add New Branch
                 </button>            
             </div>
@@ -340,7 +340,10 @@ if ($rid !== 4) {
             });
         // Modal handling
         document.addEventListener('DOMContentLoaded', function() {
-            <?php if (isset($_POST['editBranchBtn'])): ?>
+            <?php if (isset($_POST['addBranchBtn'])): ?>
+                var addModal = new bootstrap.Modal(document.getElementById('addBranchModal'));
+                addModal.show();               
+            <?php elseif (isset($_POST['editBranchBtn'])): ?>
                 var editModal = new bootstrap.Modal(document.getElementById('editBranchModal'));
                 editModal.show();
             <?php elseif (isset($_POST['deleteBranchBtn'])): ?>
