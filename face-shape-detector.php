@@ -1031,8 +1031,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <a href="virtual-try-on.php?shape=<?= urlencode($result) ?>" class="btn btn-quiz">
                             <i class="fas fa-camera me-2"></i> Check out Virtual Try-On! 
                         </a>
-                        <div class="virtual-tryon-guide mt-2">
-                        </div>
                 </div>
             <?php endif; ?>
         </div>
