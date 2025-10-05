@@ -161,6 +161,19 @@ if ($rs = $conn->query('SELECT BranchCode, BranchName FROM BranchMaster ORDER BY
 // Canonical base query params for building links/redirects (compute AFTER branch scoping)
 $baseQuery = ['search'=>$search,'branch'=>$branch,'status'=>$status];
 
+// Resolve a display name for the selected/locked branch (used to show a static control for Admin/Employee)
+$branchDisplayName = '';
+if (!empty($branch)) {
+    $bnStmt = $conn->prepare('SELECT BranchName FROM BranchMaster WHERE BranchCode = ? LIMIT 1');
+    if ($bnStmt) {
+        $bnStmt->bind_param('s', $branch);
+        if ($bnStmt->execute()) {
+            $branchDisplayName = ($bnStmt->get_result()->fetch_assoc()['BranchName'] ?? '');
+        }
+        $bnStmt->close();
+    }
+}
+
 // Prebuild status options HTML to avoid inline PHP rendering issues
 $statuses = ['Pending','Completed','Cancelled','Returned','Claimed'];
 $statusOptionsHtml = '<option value="">All Statuses</option>';
@@ -360,12 +373,18 @@ body { background:#f5f7fa; padding-top:60px; }
                 </div>
                 <div class="col-lg-3 col-md-6">
                     <label class="form-label">Filter by Branch</label>
-                    <select name="branch" class="form-select">
-                        <option value="">All Branches</option>
-                        <?php foreach($branches as $br): ?>
-                        <option value="<?= htmlspecialchars($br['BranchCode']) ?>" <?= $branch==$br['BranchCode']?'selected':'' ?>><?= htmlspecialchars($br['BranchName']) ?></option>
-                        <?php endforeach; ?>
-                    </select>
+                    <?php if ($restrictedRole): ?>
+                        <input class="form-control" value="<?= htmlspecialchars($branchDisplayName ?: $branch) ?>" readonly>
+                        <input type="hidden" name="branch" value="<?= htmlspecialchars($branch) ?>">
+                        <div class="form-text">Locked to your branch</div>
+                    <?php else: ?>
+                        <select name="branch" class="form-select">
+                            <option value="">All Branches</option>
+                            <?php foreach($branches as $br): ?>
+                            <option value="<?= htmlspecialchars($br['BranchCode']) ?>" <?= $branch==$br['BranchCode']?'selected':'' ?>><?= htmlspecialchars($br['BranchName']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    <?php endif; ?>
                 </div>
                 <div class="col-lg-3 col-md-6">
                     <label class="form-label">Filter by Status</label>
