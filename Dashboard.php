@@ -12,6 +12,8 @@ if (isset($_SESSION['roleid'])) {
         $isAdmin = true;
     }
 }
+// Super admin flag (roleid 4) — used to show Recent Activity only for super admins
+$isSuperAdmin = (isset($_SESSION['roleid']) && (int)$_SESSION['roleid'] === 4);
 
 // Get all counts
 $customerCount = getCustomerCount();
@@ -270,8 +272,8 @@ if (!is_numeric($orderCount)) { $orderCount = 0; }
                 </div>
             <?php endif; ?>
 
-            <?php if ($isAdmin): ?>
-                    <div class="dashboard-card mt-3">
+        <?php if ($isSuperAdmin): ?>
+            <div class="dashboard-card mt-3">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Recent Activity</h5>
                             <?php if (isset($_SESSION['roleid']) && (int)$_SESSION['roleid'] === 4): ?>
