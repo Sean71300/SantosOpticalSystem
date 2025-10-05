@@ -280,7 +280,7 @@
                             </li>
                             <li class="mb-2">
                                 <a href="virtual-try-on.php" class="footer-link text-decoration-none">
-                                    <i class="fas fa-glasses ms-1"></i>Virtual Try-On
+                                    <i class="fas fa-glasses ms-1 me-2"></i>Virtual Try-On
                                 </a>
                             </li>
                             <li class="mb-2">
