@@ -15,249 +15,7 @@
 
   <style>
     :root {
-      --primary: #FF3E6C;
-      --secondary: #00C8B3;
-      --dark: #333333;
-      --light: #F8F9FA;
-      --border: #dee2e6;
-    }
-    
-    * {
-      box-sizing: border-box;
-    }
-    
-    body {
-      background-color: #FFF5F7;
-      color: var(--dark);
-      font-family: 'Montserrat', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0;
-      padding: 0;
-      min-height: 100vh;
-    }
-    
-    .app-container {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 20px 18px; /* slightly larger horizontal padding for breathing room */
-      overflow: visible;
-    }
-    
-    .header {
-      text-align: center;
-      padding: 40px 0;
-      background: linear-gradient(135deg, #FF3E6C, #FF6B8B);
-      color: white;
-      margin-bottom: 30px;
-      border-radius: 0 0 20px 20px;
-      box-shadow: 0 4px 20px rgba(255, 62, 108, 0.2);
-    }
-    
-    .header h1 {
-      font-weight: 800;
-      font-size: 2.5rem;
-      margin-bottom: 5px;
-      text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
-    }
-    
-    .header p {
-      font-size: 1.2rem;
-      opacity: 0.9;
-      margin-bottom: 0;
-    }
-    
-    /* step-wizard styles removed (wizard UI moved/removed) */
-    
-    .main-content {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 20px;
-    }
-    
-    @media (min-width: 992px) {
-      /* Train layout: horizontal scrollable row of cards (train cars) */
-      .main-content {
-        display: flex;
-        flex-direction: row;
-        gap: 24px; /* increased gap for better horizontal spacing */
-        overflow-x: auto;
-        scroll-behavior: smooth;
-        align-items: stretch;
-        padding-bottom: 8px;
-        padding-left: 6px; /* small offset so first car doesn't stick to edge */
       }
-      /* hide native scrollbar while keeping scrolling available */
-      .main-content {
-        -ms-overflow-style: none; /* IE and Edge */
-        scrollbar-width: none; /* Firefox */
-      }
-      .main-content::-webkit-scrollbar { display: none; } /* Chrome, Safari */
-      .main-content {
-        flex-wrap: nowrap;
-      }
-      .main-content > div {
-        flex: 0 0 auto; /* each column is a fixed-width 'car' */
-        display: flex;
-        align-items: stretch;
-        height: 520px; /* ensure left-column also matches card height */
-        padding: 6px; /* small internal padding so cards don't touch edges */
-      }
-  .left-column { min-width: 180px; }
-  .left-column .camera-section { flex: 1; display: flex; align-items: center; justify-content: center; padding: 6px; }
-      .center-column { min-width: 340px; }
-  .frames-column { min-width: 460px; padding-right: 18px; }
-  .right-column { min-width: 280px; padding-left: 12px; }
-  /* keep cards filling the car height */
-  .card { height: 520px; }
-  .camera-container { height: 100%; max-width: 220px; margin-left: auto; margin-right: auto; }
-    }
-    
-    .camera-section {
-      position: relative;
-      align-self: stretch;
-    }
-    
-    .controls-section {
-      position: relative;
-    }
-    
-    .camera-container {
-      position: relative;
-      background: black;
-      border-radius: 20px;
-      overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-      height: 100%;
-      width: 100%;
-      max-width: none;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* CTA over camera */
-    .camera-cta {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 30;
-      pointer-events: none; /* allow underlying elements until button enabled */
-    }
-    .camera-cta button { pointer-events: auto; }
-    .camera-cta .btn {
-      padding: 18px 28px;
-      font-size: 1.05rem;
-      border-radius: 999px;
-      box-shadow: 0 10px 30px rgba(255,62,108,0.25);
-      transform: translateY(0);
-      transition: transform 220ms ease, box-shadow 220ms ease;
-      background: linear-gradient(135deg, var(--primary), #FF2B5D);
-    }
-    .camera-cta .btn:active { transform: translateY(1px) scale(0.995); }
-    .camera-cta .btn:hover { transform: translateY(-4px); }
-    @keyframes pulseCTA { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
-    .camera-cta .btn.pulse { animation: pulseCTA 2.2s infinite; }
-
-    .camera-top-actions {
-      position: absolute;
-      top: 12px;
-      right: 58px; /* moved slightly left to avoid colliding with step badge */
-      left: auto;
-      z-index: 35;
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      background: rgba(255,255,255,0.95);
-      padding: 6px;
-      border-radius: 999px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-    }
-    .camera-top-actions .btn-sm {
-      background: white;
-      color: var(--dark);
-      border-radius: 999px;
-      padding: 6px 10px;
-      font-weight: 700;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-    }
-
-    /* Camera status badge (top-left inside camera) */
-    .camera-status {
-      position: absolute;
-      left: 12px;
-      top: 12px;
-      z-index: 40;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 10px;
-      border-radius: 18px;
-      font-size: 13px;
-      font-weight: 700;
-      color: #fff;
-      background: rgba(0,0,0,0.45);
-      backdrop-filter: blur(4px);
-    }
-    .camera-status.status-online { background: rgba(16,185,129,0.95); }
-    .camera-status.status-offline { background: rgba(220,38,38,0.9); }
-
-    /* Right column split: frames (left) + colors (right) */
-    .right-column-inner {
-      display: grid;
-      grid-template-columns: 1fr 240px;
-      gap: 12px;
-    }
-    .frames-area .frame-grid {
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-    }
-    .frames-column .frame-btn, .frames-area .frame-btn { padding: 6px; }
-    .frames-column .frame-img, .frames-area .frame-img { width: 48px; height: 32px; }
-    .frames-column .frame-label { font-size: 11px; }
-  .frames-column .card-body { padding-right: 18px; }
-
-  /* colors area should visually match other cards (use primary gradient) */
-  .colors-area .card { box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
-  .colors-area .card-header { background: linear-gradient(135deg, var(--primary), #FF2B5D); }
-  .colors-area .card-header, .colors-area .card-header * { color: #111 !important; }
-  /* frames column simple wrapper */
-  .frames-column { }
-
-    /* Step badges used in place of tooltip icons */
-    .step-badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--secondary), #00bfa8); /* complementary to primary */
-      color: #fff;
-      font-weight: 800;
-      font-size: 13px;
-      margin-left: 8px;
-      box-shadow: 0 8px 22px rgba(0,0,0,0.12);
-      border: 2px solid rgba(255,255,255,0.12);
-    }
-
-    /* ensure step 5 (colors) uses white text like other badges */
-    .colors-area .step-badge { color: #fff !important; }
-
-    .camera-step-badge {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      z-index: 45;
-      display: inline-block;
-      pointer-events: none;
-    }
-    
-    video, canvas {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
     
     #outputCanvas {
       position: absolute;
@@ -338,10 +96,12 @@
       height: 100%; /* fill grid row height */
     }
 
-    /* Keep the Adjust Fit card compact so it doesn't push Material/Colors offscreen */
+    /* Keep the Adjust Fit card filling its car without showing an internal scrollbar */
     .center-column .card {
-      max-height: 420px;
-      overflow: auto;
+      height: 100%;
+      overflow: hidden; /* hide internal scrollbar */
+      display: flex;
+      flex-direction: column;
     }
     
     .card:hover {
@@ -362,6 +122,10 @@
     
     .card-body {
       padding: 16px 14px; /* consistent horizontal padding */
+    }
+    /* For center-column card allow internal scrolling without showing outer scrollbar */
+    .center-column .card .card-body {
+      overflow: auto;
     }
     
     .btn-primary {
@@ -896,6 +660,25 @@
         grid-template-columns: 1fr;
       }
     }
+
+    /* Desktop: make camera take ~2/3 and sidebar ~1/3 */
+    @media (min-width: 992px) {
+      .main-content {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 20px;
+        align-items: start;
+      }
+
+      .camera-container {
+        min-height: 520px;
+      }
+
+      .sidebar .card-body {
+        max-height: 480px;
+        overflow-y: auto;
+      }
+    }
     
     @media (max-width: 767px) {
       .app-container {
@@ -1146,7 +929,7 @@
       </div>
 
 
-      <div class="frames-column">
+  <div class="frames-column">
         <div class="card">
           <div class="card-header">
             <span><i class="fas fa-glasses me-2"></i>Frame Styles</span>
@@ -1190,7 +973,8 @@
             <!-- Material Effect removed from here and relocated to the right-column -->
           </div>
         </div>
-      <div class="right-column">
+      <div class="sidebar">
+        <div class="right-column">
         <!-- Material Effect moved to the right column (step 4) -->
         <div class="card mb-3">
           <div class="card-header">
@@ -1324,6 +1108,7 @@
             </div>
           </div>
         </div>
+      </div>
     </div>
   </div>
 
