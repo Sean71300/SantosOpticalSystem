@@ -79,11 +79,21 @@ if (isset($_SESSION['role'])) {
     object-fit: cover;
     margin-left: 5px;
 }
+/* Slightly lower the username text in the navbar so it lines up better with the bar */
+#userDropdown {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transform: translateY(10px);
+}
 /* Ensure dropdown appears above other elements */
 .dropdown-menu { z-index: 2000; }
 /* Force visible when JS adds .show (defensive against conflicting CSS) */
 .dropdown-menu.show { display: block !important; }
 .dropdown-menu { display: none; }
+/* Anchor dropdown to its parent nav item and ensure it isn't clipped */
+.nav-item.dropdown { position: relative; }
+.nav-item.dropdown .dropdown-menu { position: absolute; top: 100%; right: 0; left: auto; min-width: 10rem; pointer-events: auto; }
 </style>
 
 <div class="forNavigationbar sticky-top">
@@ -192,3 +202,16 @@ if (isset($_SESSION['role'])) {
             }
         });
         </script>
+        <?php if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true): ?>
+        <script>
+        // DEBUG: print server-side session values to console to help diagnose missing menu items
+        try {
+            console.groupCollapsed('Navigation debug');
+            console.log('session_full_name:', <?php echo json_encode($_SESSION['full_name'] ?? null); ?>);
+            console.log('session_user_type:', <?php echo json_encode($_SESSION['user_type'] ?? null); ?>);
+            console.log('session_roleid:', <?php echo json_encode(isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : null); ?>);
+            console.log('session_role:', <?php echo json_encode($_SESSION['role'] ?? null); ?>);
+            console.groupEnd();
+        } catch(e) { console.error('Nav debug error', e); }
+        </script>
+        <?php endif; ?>
