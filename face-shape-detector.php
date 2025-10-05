@@ -697,11 +697,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <p class="text-center mb-4">Make sure it's clear, front-facing, and taken in good lighting. For best results, remove your glasses.</p>
             
             <div class="upload-options">
-                <div class="upload-option active" id="uploadOption">
-                    <i class="fas fa-upload"></i> Upload Photo
-                </div>
-                <div class="upload-option" id="cameraOption">
+                <div class="upload-option active" id="cameraOption">
                     <i class="fas fa-camera"></i> Take Photo
+                </div>
+                <div class="upload-option" id="uploadOption">
+                    <i class="fas fa-upload"></i> Upload Photo
                 </div>
             </div>
             
