@@ -318,7 +318,37 @@ if ($rid !== 4) {
                     </tbody>
                 </table>
             </div>
-
         </div>
+
+        <?php
+            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                if (isset($_POST['editBranchBtn'])) {
+                    editBranch();
+                }
+                elseif (isset($_POST['deleteBranchBtn'])) {
+                    deleteBranch();
+                }
+            }   
+        ?>
     </body>
+
+    <script>
+        // Mobile menu toggle
+            document.getElementById('menuToggle').addEventListener('click', function() {
+                const sidebar = document.querySelector('.sidebar');
+                sidebar.classList.toggle('active');
+            });
+        // Modal handling
+        document.addEventListener('DOMContentLoaded', function() {
+            <?php if (isset($_POST['editBranchBtn'])): ?>
+                var editModal = new bootstrap.Modal(document.getElementById('editBranchModal'));
+                editModal.show();
+            <?php elseif (isset($_POST['deleteBranchBtn'])): ?>
+                var deleteModal = new bootstrap.Modal(document.getElementById('deleteBranchModal'));
+                deleteModal.show();
+            <?php endif; ?>
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.min.js"></script>
 </html>
