@@ -167,11 +167,11 @@ $totalPages = max(1, (int)ceil($total/$perPage)); if ($page>$totalPages){ $page=
 
 // Headers
 if ($having!=='') {
-    $sql = "SELECT oh.Orderhdr_id, oh.CustomerID, oh.BranchCode, oh.Created_dt, oh.Created_by, c.CustomerName FROM Order_hdr oh JOIN orderDetails od ON od.OrderHdr_id=oh.Orderhdr_id LEFT JOIN customer c ON c.CustomerID=oh.CustomerID $whereSql GROUP BY oh.Orderhdr_id HAVING $having ORDER BY oh.Created_dt DESC LIMIT ? OFFSET ?";
+    $sql = "SELECT oh.Orderhdr_id, oh.CustomerID, oh.BranchCode, oh.Created_dt, oh.Created_by, c.CustomerName FROM Order_hdr oh JOIN orderDetails od ON od.OrderHdr_id=oh.Orderhdr_id LEFT JOIN customer c ON c.CustomerID=oh.CustomerID $whereSql GROUP BY oh.Orderhdr_id HAVING $having ORDER BY oh.Created_dt DESC LIMIT ".(int)$perPage." OFFSET ".(int)$offset;
 } else {
-    $sql = "SELECT oh.Orderhdr_id, oh.CustomerID, oh.BranchCode, oh.Created_dt, oh.Created_by, c.CustomerName FROM Order_hdr oh LEFT JOIN customer c ON c.CustomerID=oh.CustomerID $whereSql ORDER BY oh.Created_dt DESC LIMIT ? OFFSET ?";
+    $sql = "SELECT oh.Orderhdr_id, oh.CustomerID, oh.BranchCode, oh.Created_dt, oh.Created_by, c.CustomerName FROM Order_hdr oh LEFT JOIN customer c ON c.CustomerID=oh.CustomerID $whereSql ORDER BY oh.Created_dt DESC LIMIT ".(int)$perPage." OFFSET ".(int)$offset;
 }
-$stmt = $conn->prepare($sql); $p=$params; $t=$types.'ii'; $p[]=$perPage; $p[]=$offset; _bind($stmt,$t,$p); $stmt->execute(); $headers=$stmt->get_result()->fetch_all(MYSQLI_ASSOC); $stmt->close();
+$stmt = $conn->prepare($sql); $p=$params; $t=$types; _bind($stmt,$t,$p); $stmt->execute(); $headers=$stmt->get_result()->fetch_all(MYSQLI_ASSOC); $stmt->close();
 
 // AJAX: details by id (independent of current page)
 if (isset($_GET['action']) && $_GET['action']==='details' && isset($_GET['id'])) {
