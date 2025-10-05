@@ -85,6 +85,13 @@
       .center-column { grid-column: 2 / 3; }
       .frames-column { grid-column: 3 / 4; }
       .right-column { grid-column: 4 / 5; }
+      /* Add breathing room: shift right-column content slightly left on desktop */
+      .right-column {
+        padding-left: 12px;
+      }
+      .right-column .card {
+        margin-right: 6px; /* keep cards slightly inset from the very right edge */
+      }
     }
     
     .camera-section {
@@ -402,28 +409,27 @@
       display: flex;
       flex-direction: row;
       align-items: center;
-      gap: 10px;
-      padding: 8px 10px;
-      border-radius: 10px;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 12px;
       background: white;
     }
-    .right-column .frame-img { width: 56px; height: 32px; }
-    .right-column .frame-label { font-size: 12px; text-align: left; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .right-column .frame-img { width: 64px; height: 36px; }
+    .right-column .frame-label { font-size: 13px; text-align: left; flex: 1; }
     .right-column .frame-btn .frame-meta { font-size: 12px; color: #6c757d; }
     .right-column .frame-btn:hover { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
     
     .frame-btn {
       background: white;
       border: 2px solid var(--border);
-      border-radius: 10px;
-      padding: 4px 6px;
+      border-radius: 12px;
+      padding: 6px;
       cursor: pointer;
-      transition: all 0.25s ease;
+      transition: all 0.3s ease;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 4px;
-      min-width: 60px;
+      gap: 5px;
     }
     
     .frame-btn:hover {
@@ -441,8 +447,8 @@
     }
     
     .frame-img {
-      width: 36px;
-      height: 20px;
+      width: 40px;
+      height: 24px;
       object-fit: contain;
     }
     
@@ -451,11 +457,7 @@
       font-weight: 700;
       color: var(--dark);
       text-align: center;
-      line-height: 1.1;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 100%;
+      line-height: 1.2;
     }
     
     .color-grid {
