@@ -21,23 +21,27 @@ $shape = isset($_GET['shape']) ? htmlspecialchars($_GET['shape']) : 'Unknown';
       text-align: center;
       padding-top: 30px;
     }
-    #video {
-  pointer-events: none;
-  }
 
-    #video, #overlay {
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-      border-radius: 12px;
-    }
     #tryon-container {
       position: relative;
       display: inline-block;
+      margin-bottom: 20px;
     }
+
+    #video {
+      border-radius: 12px;
+      z-index: 1;
+      position: relative;
+    }
+
     #overlay {
-      pointer-events: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 2;
+      pointer-events: none; /* only overlay is non-interactive */
     }
+
     .debug {
       font-size: 0.9rem;
       color: #555;
@@ -50,6 +54,11 @@ $shape = isset($_GET['shape']) ? htmlspecialchars($_GET['shape']) : 'Unknown';
       padding: 8px;
       height: 150px;
       overflow-y: auto;
+    }
+
+    button, a.btn {
+      position: relative;
+      z-index: 3; /* ensure button stays on top */
     }
   </style>
 </head>
@@ -98,40 +107,45 @@ $shape = isset($_GET['shape']) ? htmlspecialchars($_GET['shape']) : 'Unknown';
 
     async function startCamera() {
       log("📸 Requesting camera access...");
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: { ideal: 1280 }, height: { ideal: 720 } }
-      });
-      video.srcObject = stream;
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { width: { ideal: 1280 }, height: { ideal: 720 } }
+        });
+        video.srcObject = stream;
 
-      video.onloadedmetadata = () => {
-        log("✅ Camera permission granted");
+        video.onloadedmetadata = () => {
+          log("✅ Camera permission granted");
 
-        if (typeof Camera === "undefined") {
-          log("❌ Camera class not defined. Check camera_utils.js path.");
-          return;
-        }
+          if (typeof Camera === "undefined") {
+            log("❌ Camera class not defined. Check camera_utils.js path.");
+            return;
+          }
 
-        try {
-          let lastTime = 0;
-          const fpsLimit = 20;
+          try {
+            let lastTime = 0;
+            const fpsLimit = 20;
 
-          const camera = new Camera(video, {
-            onFrame: async () => {
-              const now = performance.now();
-              if (now - lastTime > 1000 / fpsLimit) {
-                lastTime = now;
-                await faceMesh.send({ image: video });
-              }
-            },
-            width: 600,
-            height: 450
-          });
-          camera.start();
-          log("🎥 Camera started successfully!");
-        } catch (err) {
-          log("❌ Camera failed: " + err);
-        }
-      };
+            const camera = new Camera(video, {
+              onFrame: async () => {
+                const now = performance.now();
+                if (now - lastTime > 1000 / fpsLimit) {
+                  lastTime = now;
+                  await faceMesh.send({ image: video });
+                }
+              },
+              width: 600,
+              height: 450
+            });
+            camera.start();
+            log("🎥 Camera started successfully!");
+          } catch (err) {
+            log("❌ Camera failed: " + err);
+          }
+        };
+      } catch (error) {
+        log("🚫 Camera access error: " + error.message);
+        alert("Camera access was blocked or failed. Please allow camera permissions.");
+      }
     }
 
     const faceMesh = new FaceMesh({
@@ -151,7 +165,7 @@ $shape = isset($_GET['shape']) ? htmlspecialchars($_GET['shape']) : 'Unknown';
         const landmarks = results.multiFaceLandmarks[0];
         const leftEye = landmarks[33];
         const rightEye = landmarks[263];
-        const noseBridge = landmarks[168]; // Between the eyes
+        const noseBridge = landmarks[168]; // between eyes
 
         const dx = rightEye.x - leftEye.x;
         const dy = rightEye.y - leftEye.y;
@@ -160,11 +174,9 @@ $shape = isset($_GET['shape']) ? htmlspecialchars($_GET['shape']) : 'Unknown';
         const centerX = (leftEye.x + rightEye.x) / 2 * canvas.width;
         const centerY = (leftEye.y + rightEye.y) / 2 * canvas.height;
 
-        // Glasses size
         const glassesWidth = eyeDist * 2.2;
         const glassesHeight = glassesWidth * 0.4;
 
-        // Dynamic Y offset based on nose bridge position
         const noseY = noseBridge.y * canvas.height;
         const dynamicYOffset = (noseY - centerY) * 0.8;
 
