@@ -802,6 +802,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <img src="<?= htmlspecialchars($image) ?>" alt="<?= htmlspecialchars($result) ?> face shape" class="result-image">
                 </div>
                 
+                <!-- Fun Facts - Collapsible (Moved Higher) -->
+                <div class="fun-facts-toggle" onclick="toggleFunFacts()">
+                    <div class="toggle-header">
+                        <h4><i class="fas fa-star me-2"></i> Fun Facts About Your Face Shape</h4>
+                        <i class="fas fa-chevron-down toggle-icon" id="toggleIcon"></i>
+                    </div>
+                    <p style="font-size: 0.9rem; color: #666; margin: 10px 0 0 0;">Celebrity matches, personality traits & interesting tidbits</p>
+                    
+                    <div class="fun-facts-content" id="funFactsContent">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="fact-card">
+                                    <h5><i class="fas fa-user-tie"></i> Celebrity Match</h5>
+                                    <p>
+                                        <?php
+                                        $celebrities = [
+                                            'SQUARE' => "You share your face shape with strong-featured stars like Angelina Jolie, Dwayne Johnson, Angel Locsin, and Dingdong Dantes!",
+                                            'ROUND' => "Your face shape is similar to charming celebrities like Selena Gomez, Leonardo DiCaprio, Nadine Lustre, and James Reid!",
+                                            'OBLONG' => "You have the elegant proportions seen on stars like Sarah Jessica Parker, Adam Levine, Liza Soberano, and Piolo Pascual!",
+                                            'DIAMOND' => "Your striking features match stars like Rihanna, Ryan Gosling, Heart Evangelista, and Alden Richards!",
+                                            'V-TRIANGLE' => "You share this distinctive shape with stars like Scarlett Johansson, Chris Hemsworth, Anne Curtis, and Coco Martin!",
+                                            'A-TRIANGLE' => "Your soft angles are similar to celebrities like Reese Witherspoon, Zac Efron, Kathryn Bernardo, and Daniel Padilla!",
+                                            'RECTANGLE' => "Your strong bone structure matches stars like Keira Knightley, Henry Cavill, Marian Rivera, and Richard Gutierrez!"
+                                        ];
+                                        echo htmlspecialchars($celebrities[$result] ?? "Your face shape is seen on many Hollywood A-listers!");
+                                        ?>
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="fact-card">
+                                    <h5><i class="fas fa-lightbulb"></i> Did You Know?</h5>
+                                    <p>
+                                        <?php
+                                        $funfacts = [
+                                            'SQUARE' => "Square faces are among the rarer face shapes, making up only about 9% of the population!",
+                                            'ROUND' => "Round faces are considered the most youthful-looking face shape throughout life.",
+                                            'OBLONG' => "Oblong faces are sometimes called the 'aristocratic' shape due to their elegant proportions.",
+                                            'DIAMOND' => "Diamond faces have the most symmetrical proportions, with cheekbones as the widest point.",
+                                            'V-TRIANGLE' => "V-shaped faces are associated with strong, angular features that photograph exceptionally well.",
+                                            'A-TRIANGLE' => "A-shaped faces are sometimes called 'heart-shaped' and are associated with approachability.",
+                                            'RECTANGLE' => "Rectangular faces are commonly seen among fashion models due to their photogenic bone structure."
+                                        ];
+                                        echo htmlspecialchars($funfacts[$result] ?? "Your unique face shape combination makes you stand out in a crowd!");
+                                        ?>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <!-- Frame Recommendations Section -->
                 <div class="recommendation">
                     <h4><i class="fas fa-glasses me-2"></i> Perfect Frames For You</h4>
