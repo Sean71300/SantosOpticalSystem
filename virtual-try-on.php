@@ -44,7 +44,7 @@
     <p id="status" class="mt-3 text-muted"></p>
   </div>
 
-  <!-- Only FaceMesh + Drawing -->
+  <!-- Mediapipe FaceMesh + Drawing -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/face_mesh.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.4/drawing_utils.js"></script>
 
@@ -54,7 +54,12 @@
     const ctx     = canvas.getContext('2d');
     const button  = document.getElementById('startCamera');
     const status  = document.getElementById('status');
-    let running   = false;
+
+    // 🕶️ Load your glasses image (place glasses.png in the same folder)
+    const glassesImg = new Image();
+    glassesImg.src = "Images/frames/ashape-frame-removebg-preview.png";
+
+    let running = false;
 
     button.addEventListener('click', async ()=>{
       if(running) return;
@@ -85,7 +90,6 @@
       faceMesh.onResults(drawResults);
 
       async function processFrame(){
-        if(!running) return;
         await faceMesh.send({image:video});
         requestAnimationFrame(processFrame);
       }
@@ -97,13 +101,36 @@
       canvas.width  = video.videoWidth;
       canvas.height = video.videoHeight;
 
-      if(results.multiFaceLandmarks){
-        for(const landmarks of results.multiFaceLandmarks){
-          drawConnectors(ctx,landmarks,FACE_MESH_TESSELATION,{color:'#C0C0C0',lineWidth:1});
-          drawConnectors(ctx,landmarks,FACE_MESH_RIGHT_EYE,{color:'blue'});
-          drawConnectors(ctx,landmarks,FACE_MESH_LEFT_EYE,{color:'blue'});
-        }
-        status.textContent = "Face detected!";
+      if(results.multiFaceLandmarks && results.multiFaceLandmarks.length>0){
+        const landmarks = results.multiFaceLandmarks[0];
+
+        // 🧭 Identify key eye landmarks
+        const leftEye = landmarks[33];   // right eye outer corner (from user's perspective)
+        const rightEye = landmarks[263]; // left eye outer corner
+
+        const eyeCenterX = (leftEye.x + rightEye.x) / 2 * canvas.width;
+        const eyeCenterY = (leftEye.y + rightEye.y) / 2 * canvas.height;
+
+        const eyeDistance = Math.hypot(
+          (rightEye.x - leftEye.x) * canvas.width,
+          (rightEye.y - leftEye.y) * canvas.height
+        );
+
+        const glassesWidth = eyeDistance * 2.2; // slightly wider than eyes
+        const glassesHeight = glassesWidth * 0.4; // maintain proportion
+
+        const angle = Math.atan2(
+          (rightEye.y - leftEye.y) * canvas.height,
+          (rightEye.x - leftEye.x) * canvas.width
+        );
+
+        ctx.save();
+        ctx.translate(eyeCenterX, eyeCenterY);
+        ctx.rotate(angle);
+        ctx.drawImage(glassesImg, -glassesWidth/2, -glassesHeight/2, glassesWidth, glassesHeight);
+        ctx.restore();
+
+        status.textContent = "Face detected! Glasses applied.";
       }else{
         status.textContent = "No face detected.";
       }
