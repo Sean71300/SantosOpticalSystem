@@ -21,12 +21,14 @@
       color: var(--dark);
       text-align: center;
       padding-top: 40px;
+      margin: 0;
+      padding: 20px;
     }
     .camera-container {
       position: relative;
       display: inline-block;
-      width: 640px;
-      max-width: 90vw;
+      width: 100%;
+      max-width: 500px;
       aspect-ratio: 4/3;
     }
     video, canvas {
@@ -44,9 +46,14 @@
     .btn-primary {
       background-color: var(--primary);
       border: none;
+      font-size: 16px;
+      padding: 12px 24px;
     }
     .btn-primary:hover {
       background-color: #1558b0;
+    }
+    .btn-primary:disabled {
+      background-color: #6c757d;
     }
     .loading-spinner {
       display: none;
@@ -61,6 +68,11 @@
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
+    }
+    .performance-warning {
+      font-size: 12px;
+      color: #666;
+      margin-top: 10px;
     }
   </style>
 </head>
@@ -83,12 +95,12 @@
     <div class="loading-spinner" id="loadingSpinner"></div>
 
     <p class="mt-3 text-muted" id="statusMsg">Camera is off</p>
+    <p class="performance-warning" id="performanceWarning"></p>
 
     <!-- Performance tips for mobile -->
     <div class="alert alert-info mt-3 d-none" id="mobileTips">
       <small>
-        <strong>Mobile Tips:</strong> For better performance, ensure good lighting and hold device steady.
-        Face detection works best in portrait mode.
+        <strong>Mobile Tips:</strong> For better performance, ensure good lighting, hold device steady, and close other apps.
       </small>
     </div>
   </div>
@@ -109,11 +121,13 @@
     const statusMsg = document.getElementById('statusMsg');
     const loadingSpinner = document.getElementById('loadingSpinner');
     const mobileTips = document.getElementById('mobileTips');
+    const performanceWarning = document.getElementById('performanceWarning');
 
     // Check if mobile device
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     if (isMobile) {
       mobileTips.classList.remove('d-none');
+      performanceWarning.textContent = "Performance mode: Optimized for mobile";
     }
 
     // Load glasses image with error handling
@@ -133,80 +147,72 @@
     let faceMesh = null;
     let isProcessing = false;
     let frameCount = 0;
+    let faceTrackingActive = false;
 
     function calculateHeadAngle(landmarks) {
-      // Use inner eye corners to calculate head rotation
       const leftEyeInner = landmarks[133];
       const rightEyeInner = landmarks[362];
       
-      // Calculate angle between eyes
       const deltaX = rightEyeInner.x - leftEyeInner.x;
       const deltaY = rightEyeInner.y - leftEyeInner.y;
-      const angle = Math.atan2(deltaY, deltaX);
+      return Math.atan2(deltaY, deltaX);
+    }
+
+    function drawGlasses(landmarks) {
+      const leftEye = landmarks[33];
+      const rightEye = landmarks[263];
+      const headAngle = calculateHeadAngle(landmarks);
       
-      return angle;
+      const eyeDist = Math.hypot(
+        rightEye.x * canvasElement.width - leftEye.x * canvasElement.width,
+        rightEye.y * canvasElement.height - leftEye.y * canvasElement.height
+      );
+
+      const glassesWidth = eyeDist * 2.2;
+      const glassesHeight = glassesWidth * 0.5;
+      const centerX = (leftEye.x * canvasElement.width + rightEye.x * canvasElement.width) / 2;
+      const centerY = (leftEye.y * canvasElement.height + rightEye.y * canvasElement.height) / 2;
+
+      if (centerX > 0 && centerY > 0 && glassesWidth > 10) {
+        canvasCtx.save();
+        canvasCtx.translate(centerX, centerY);
+        canvasCtx.rotate(headAngle);
+        canvasCtx.drawImage(
+          glassesImg,
+          -glassesWidth / 2,
+          -glassesHeight / 2,
+          glassesWidth,
+          glassesHeight
+        );
+        canvasCtx.restore();
+      }
     }
 
     async function onResults(results) {
-      if (!results.multiFaceLandmarks || !glassesLoaded || isProcessing) return;
+      if (!glassesLoaded || isProcessing) return;
 
-      isProcessing = true;
+      // Skip frames for performance - process every 3rd frame on mobile
       frameCount++;
-
-      // Skip frames on mobile for better performance (process every 3rd frame)
       if (isMobile && frameCount % 3 !== 0) {
-        isProcessing = false;
         return;
       }
+
+      isProcessing = true;
 
       canvasCtx.save();
       canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
       
-      // Draw the video frame
+      // Draw video background
       canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
 
-      for (const landmarks of results.multiFaceLandmarks) {
-        const leftEye = landmarks[33];
-        const rightEye = landmarks[263];
-
-        // Calculate head rotation angle
-        const headAngle = calculateHeadAngle(landmarks);
-        
-        const eyeDist = Math.hypot(
-          rightEye.x * canvasElement.width - leftEye.x * canvasElement.width,
-          rightEye.y * canvasElement.height - leftEye.y * canvasElement.height
-        );
-
-        const glassesWidth = eyeDist * 2.2;
-        const glassesHeight = glassesWidth * 0.5;
-        
-        // Use the original eye-based center calculation
-        const centerX = (leftEye.x * canvasElement.width + rightEye.x * canvasElement.width) / 2;
-        const centerY = (leftEye.y * canvasElement.height + rightEye.y * canvasElement.height) / 2;
-
-        // Only draw if we have valid coordinates
-        if (centerX > 0 && centerY > 0 && glassesWidth > 10) {
-          // Save the current context
-          canvasCtx.save();
-          
-          // Move to the center of where we want to draw the glasses
-          canvasCtx.translate(centerX, centerY);
-          
-          // Rotate the context by the head angle
-          canvasCtx.rotate(headAngle);
-          
-          // Draw the glasses centered at (0,0) after translation
-          canvasCtx.drawImage(
-            glassesImg,
-            -glassesWidth / 2,
-            -glassesHeight / 2,
-            glassesWidth,
-            glassesHeight
-          );
-          
-          // Restore the context to remove rotation and translation
-          canvasCtx.restore();
+      // Draw glasses if face detected
+      if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+        faceTrackingActive = true;
+        for (const landmarks of results.multiFaceLandmarks) {
+          drawGlasses(landmarks);
         }
+      } else {
+        faceTrackingActive = false;
       }
 
       canvasCtx.restore();
@@ -230,94 +236,151 @@
           locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
         });
 
-        // Optimized settings for mobile
+        // Optimized settings
         faceMesh.setOptions({
           maxNumFaces: 1,
-          refineLandmarks: true, // Keep true for better rotation detection
+          refineLandmarks: false, // Disable for performance
           minDetectionConfidence: 0.7,
           minTrackingConfidence: 0.5
         });
 
         faceMesh.onResults(onResults);
+        
         faceMesh.initialize().then(() => {
           console.log("✅ FaceMesh initialized");
           resolve();
         }).catch(err => {
           console.error("❌ FaceMesh initialization failed:", err);
-          resolve(); // Resolve anyway to continue
+          resolve(); // Continue even if FaceMesh fails
         });
       });
     }
 
-    startBtn.addEventListener('click', async () => {
+    async function startCamera() {
       try {
-        statusMsg.innerText = "Initializing...";
-        startBtn.disabled = true;
-        loadingSpinner.style.display = 'block';
-
-        // Pre-initialize FaceMesh
-        await initializeFaceMesh();
-
-        // Optimize camera settings for mobile
+        statusMsg.innerText = "Requesting camera access...";
+        
+        // Try different camera constraints with fallbacks
         const constraints = {
           video: {
+            facingMode: 'user',
             width: { ideal: isMobile ? 640 : 1280 },
-            height: { ideal: isMobile ? 480 : 960 },
-            aspectRatio: { ideal: 4/3 },
-            frameRate: { ideal: isMobile ? 24 : 30 },
-            facingMode: 'user'
+            height: { ideal: isMobile ? 480 : 720 },
+            aspectRatio: { ideal: 4/3 }
           }
         };
 
-        statusMsg.innerText = "Requesting camera access...";
         const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        
         videoElement.srcObject = stream;
 
-        videoElement.onloadedmetadata = () => {
-          videoElement.play();
-          statusMsg.innerText = "Camera active — detecting face...";
-          
-          // Resize canvas to match display size
-          resizeCanvasToDisplay();
-          
-          camera = new Camera(videoElement, {
-            onFrame: async () => {
-              if (faceMesh && !isProcessing) {
-                await faceMesh.send({ image: videoElement });
-              }
-            },
-            width: isMobile ? 320 : 640,
-            height: isMobile ? 240 : 480
-          });
-          
-          camera.start().then(() => {
-            loadingSpinner.style.display = 'none';
-            statusMsg.innerText = "Ready! Look at the camera to try glasses.";
-          });
-        };
+        return new Promise((resolve) => {
+          videoElement.onloadedmetadata = () => {
+            videoElement.play().then(() => {
+              console.log("✅ Camera started successfully");
+              resolve(stream);
+            });
+          };
+        });
 
-        // Handle window resizing
-        window.addEventListener('resize', resizeCanvasToDisplay);
-        
       } catch (err) {
-        console.error("❌ Camera startup error:", err);
-        statusMsg.innerText = "Unable to access camera. Check browser permissions.";
-        startBtn.disabled = false;
+        console.error("Camera error:", err);
+        
+        // Try fallback with minimal constraints
+        try {
+          statusMsg.innerText = "Trying fallback camera...";
+          const fallbackStream = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: 'user' } 
+          });
+          videoElement.srcObject = fallbackStream;
+          
+          return new Promise((resolve) => {
+            videoElement.onloadedmetadata = () => {
+              videoElement.play().then(() => {
+                console.log("✅ Fallback camera started");
+                resolve(fallbackStream);
+              });
+            };
+          });
+        } catch (fallbackErr) {
+          throw fallbackErr;
+        }
+      }
+    }
+
+    startBtn.addEventListener('click', async () => {
+      try {
+        startBtn.disabled = true;
+        loadingSpinner.style.display = 'block';
+        statusMsg.innerText = "Initializing...";
+
+        // Initialize FaceMesh first
+        await initializeFaceMesh();
+
+        // Start camera
+        statusMsg.innerText = "Starting camera...";
+        const stream = await startCamera();
+
+        statusMsg.innerText = "Camera active — setting up face detection...";
+        
+        // Resize canvas to match video
+        resizeCanvasToDisplay();
+
+        // Determine processing resolution based on device
+        const processingWidth = isMobile ? 320 : 640;
+        const processingHeight = isMobile ? 240 : 480;
+
+        // Start MediaPipe camera
+        camera = new Camera(videoElement, {
+          onFrame: async () => {
+            if (faceMesh && !isProcessing) {
+              await faceMesh.send({ image: videoElement });
+            }
+          },
+          width: processingWidth,
+          height: processingHeight
+        });
+
+        await camera.start();
+
         loadingSpinner.style.display = 'none';
+        statusMsg.innerText = "Ready! Look at the camera to try glasses.";
+
+        // Update status based on face detection
+        setInterval(() => {
+          if (faceTrackingActive) {
+            statusMsg.innerHTML = "Glasses active ✅ | <small>Face detected</small>";
+          } else {
+            statusMsg.innerHTML = "Ready! Look at the camera | <small>Searching for face...</small>";
+          }
+        }, 3000);
+
+        // Handle window resize
+        window.addEventListener('resize', resizeCanvasToDisplay);
+
+      } catch (err) {
+        console.error("❌ Startup error:", err);
+        loadingSpinner.style.display = 'none';
+        startBtn.disabled = false;
         
         if (err.name === 'NotAllowedError') {
-          statusMsg.innerText = "Camera permission denied. Please allow camera access.";
+          statusMsg.innerText = "❌ Camera permission denied. Please allow camera access in your browser settings.";
         } else if (err.name === 'NotFoundError') {
-          statusMsg.innerText = "No camera found on this device.";
+          statusMsg.innerText = "❌ No camera found on this device.";
+        } else if (err.name === 'NotSupportedError') {
+          statusMsg.innerText = "❌ Your browser doesn't support camera access.";
+        } else {
+          statusMsg.innerText = "❌ Failed to start camera. Please refresh and try again.";
         }
       }
     });
 
-    // Preload and initialize when page loads
+    // Pre-initialize on load
     window.addEventListener('load', () => {
-      // Pre-initialize FaceMesh in background
-      initializeFaceMesh();
+      console.log("Page loaded - ready to start camera");
+      // Preload FaceMesh but don't block
+      setTimeout(() => {
+        initializeFaceMesh();
+      }, 1000);
     });
   </script>
 </body>
