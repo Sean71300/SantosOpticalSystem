@@ -358,6 +358,9 @@ if ($rid !== 4) {
             <?php elseif (isset($_POST['deleteBranchBtn'])): ?>
                 var deleteModalEl = document.getElementById('deleteBranchModal');
                 if (deleteModalEl) { new bootstrap.Modal(deleteModalEl).show(); }
+            <?php elseif (isset($_POST['confirmDeleteBtn'])): ?>
+                var confirmDeleteModalEl = document.getElementById('confirmDeleteModal');
+                if (confirmDeleteModalEl) { new bootstrap.Modal(confirmDeleteModalEl).show(); }
             <?php endif; ?>
         });
     </script>
