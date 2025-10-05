@@ -57,11 +57,12 @@ include 'setup.php';
                             </div>
                             <div class="mb-3">
                                 <label for="contactNo" class="form-label">Contact Number</label>
-                                <input type="text" class="form-control" id="contactNo" name="contactNo" required>
+                                <input type="text" class="form-control" id="contactNo" name="contactNo" required inputmode="numeric" pattern="[0-9]*" maxlength="15" oninput="this.value=this.value.replace(/[^0-9]/g,\'\')">
+                                <div class="form-text">Numbers only. We will store this as text in the database.</div>
                             </div>
                             <hr>
                             <div class="modal-footer">
-                                <button type="submit" class="btn btn-success w-25" name="addBtn">Add Branch</button>
+                                <button type="submit" class="btn btn-success w-25" name="addBranchBtn">Add Branch</button>
                                 <button type="button" class="btn btn-danger w-25" data-bs-dismiss="modal">Cancel</button>
                             </div>
                         </form>
