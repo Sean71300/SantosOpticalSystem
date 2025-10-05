@@ -760,32 +760,6 @@
       min-width: 120px;
     }
     
-    .mobile-tips {
-      background: linear-gradient(135deg, #FF3E6C, #FF6B8B);
-      color: white;
-      border-radius: 15px;
-      padding: 15px;
-      margin-top: 20px;
-      text-align: center;
-      box-shadow: 0 4px 15px rgba(255, 62, 108, 0.2);
-    }
-    
-    .mobile-tips h6 {
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-    
-    .mobile-tips ul {
-      text-align: left;
-      margin: 0;
-      padding-left: 20px;
-      font-size: 14px;
-    }
-    
-    .mobile-tips li {
-      margin-bottom: 5px;
-    }
-    
     .snapshot-modal {
       display: none;
       position: fixed;
@@ -890,8 +864,6 @@
       .card-body {
         padding: 15px;
       }
-      
-      /* step-wizard removed for mobile */
       
       .frame-grid {
         grid-template-columns: repeat(4, 1fr);
@@ -1037,15 +1009,6 @@
         </div>
 
         <?php if (preg_match('/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i', $_SERVER['HTTP_USER_AGENT'])): ?>
-        <div class="mobile-tips">
-          <h6>Mobile Tips</h6>
-          <ul>
-            <li>Ensure good lighting for best results</li>
-            <li>Hold device steady at eye level</li>
-            <li>Keep face centered in frame</li>
-            <li>Close other apps for better performance</li>
-          </ul>
-        </div>
         <?php endif; ?>
       </div>
 
