@@ -68,10 +68,10 @@
   <!-- Bootstrap Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
-  <!-- Mediapipe & Dependencies -->
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.min.js"></script>
+  <!-- ✅ Stable Mediapipe Versions -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/face_mesh.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.4.1633559619/camera_utils.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.4.1633559619/drawing_utils.js"></script>
 
   <script>
     const videoElement = document.getElementById('inputVideo');
@@ -80,9 +80,9 @@
     const startBtn = document.getElementById('startBtn');
     const statusMsg = document.getElementById('statusMsg');
 
-    // Load glasses image
+    // 🕶️ Load the glasses image
     const glassesImg = new Image();
-    glassesImg.src = "Images/frames/ashape-frame-removebg-preview.png";
+    glassesImg.src = "Images/frames/ashape-frame-removebg-preview.png"; // adjust path if needed
     let glassesLoaded = false;
     glassesImg.onload = () => {
       glassesLoaded = true;
@@ -131,7 +131,7 @@
         startBtn.disabled = true;
 
         faceMesh = new FaceMesh({
-          locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+          locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/${file}`
         });
         faceMesh.setOptions({
           maxNumFaces: 1,
