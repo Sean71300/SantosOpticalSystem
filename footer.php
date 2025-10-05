@@ -345,11 +345,7 @@
                         <div class="row justify-content-center">
                             <div class="col-auto">
                                 <span class="badge bg-light text-dark border me-2">Monday - Saturday</span>
-                                <span class="text-muted">8:00 AM - 7:00 PM</span>
-                            </div>
-                            <div class="col-auto">
-                                <span class="badge bg-light text-dark border me-2">Sunday</span>
-                                <span class="text-muted">9:00 AM - 5:00 PM</span>
+                                <span class="text-muted">8:00 AM - 6:00 PM</span>
                             </div>
                         </div>
                     </div>
