@@ -73,9 +73,10 @@
     }
     
     @media (min-width: 992px) {
-      /* Train-like layout: Camera | Adjust Fit | Frames | Material+Colors */
+      /* Train-like layout: Camera | Adjust Fit | Frames | Material+Colors
+         Make camera more prominent: take ~50% (half) of the main content width */
       .main-content {
-        grid-template-columns: 1fr 360px 320px 300px; /* camera, adjust, frames, material/colors */
+        grid-template-columns: 1fr 1fr 260px 240px; /* camera (half), adjust (half), frames, material/colors */
         align-items: start;
         gap: 20px;
       }
@@ -101,6 +102,7 @@
       overflow: hidden;
       box-shadow: 0 10px 30px rgba(0,0,0,0.15);
       aspect-ratio: 4/3;
+      min-height: 420px; /* ensure camera appears larger on desktop */
     }
 
     /* CTA over camera */
@@ -174,7 +176,7 @@
     /* Right column split: frames (left) + colors (right) */
     .right-column-inner {
       display: grid;
-      grid-template-columns: 1fr 320px;
+      grid-template-columns: 1fr 240px;
       gap: 12px;
     }
     .frames-area .frame-grid {
@@ -182,12 +184,12 @@
       gap: 10px;
     }
     .frames-column .frame-btn, .frames-area .frame-btn { padding: 6px; }
-    .frames-column .frame-img, .frames-area .frame-img { width: 56px; height: 36px; }
+    .frames-column .frame-img, .frames-area .frame-img { width: 48px; height: 32px; }
     .frames-column .frame-label { font-size: 11px; }
 
-  /* emphasized colors area */
+  /* colors area should visually match other cards (use primary gradient) */
   .colors-area .card { box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
-  .colors-area .card-header { background: linear-gradient(135deg, var(--secondary), #00b3a0); }
+  .colors-area .card-header { background: linear-gradient(135deg, var(--primary), #FF2B5D); color: white; }
   /* frames column simple wrapper */
   .frames-column { }
 
@@ -297,7 +299,7 @@
     }
     
     .card-body {
-      padding: 20px;
+      padding: 16px;
     }
     
     .btn-primary {
