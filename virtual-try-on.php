@@ -11,13 +11,13 @@ $faceShape = isset($_GET['shape']) ? strtoupper($_GET['shape']) : 'ROUND';
 // Map face shape to generic frame image
 function getGenericFrameImage($faceShape) {
     $frameMap = [
-        'SQUARE'      => 'Images/frames/round.png',
-        'ROUND'       => 'Images/frames/rectangular.png',
-        'OBLONG'      => 'Images/frames/deep.png',
-        'DIAMOND'     => 'Images/frames/cateye.png',
-        'V-TRIANGLE'  => 'Images/frames/browline.png',
-        'A-TRIANGLE'  => 'Images/frames/rounded-square.png',
-        'RECTANGLE'   => 'Images/frames/oval.png'
+        'SQUARE'      => 'Images/frames/square-frame-removebg-preview.png',
+        'ROUND'       => 'Images/frames/round-frame-removebg-preview.png',
+        'OBLONG'      => 'Images/frames/oblong-frame-removebg-preview.png',
+        'DIAMOND'     => 'Images/frames/diamond-frame-removebg-preview.png',
+        'V-TRIANGLE'  => 'Images/frames/vshape-frame-removebg-preview.png',
+        'A-TRIANGLE'  => 'Images/frames/ashape-frame-removebg-preview.png',
+        'RECTANGLE'   => 'Images/frames/rectangle-frame-removebg-preview.png'
     ];
     
     return $frameMap[$faceShape] ?? 'Images/frames/default.png';
