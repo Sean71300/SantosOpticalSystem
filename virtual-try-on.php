@@ -25,10 +25,14 @@
     .camera-container {
       position: relative;
       display: inline-block;
+      width: 640px;
+      max-width: 90vw;
+      aspect-ratio: 4/3;
     }
     video, canvas {
-      width: 640px;
-      height: 480px;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
       border-radius: 12px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     }
@@ -97,6 +101,8 @@
 
       canvasCtx.save();
       canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+      
+      // Draw the video frame maintaining aspect ratio
       canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
 
       for (const landmarks of results.multiFaceLandmarks) {
@@ -125,6 +131,17 @@
       canvasCtx.restore();
     }
 
+    function resizeCanvasToDisplay() {
+      const container = canvasElement.parentElement;
+      const displayWidth = container.clientWidth;
+      const displayHeight = container.clientHeight;
+      
+      if (canvasElement.width !== displayWidth || canvasElement.height !== displayHeight) {
+        canvasElement.width = displayWidth;
+        canvasElement.height = displayHeight;
+      }
+    }
+
     startBtn.addEventListener('click', async () => {
       try {
         statusMsg.innerText = "Requesting camera access...";
@@ -141,11 +158,12 @@
         });
         faceMesh.onResults(onResults);
 
-        // Request higher quality camera
+        // Request camera with specific aspect ratio
         const stream = await navigator.mediaDevices.getUserMedia({ 
           video: { 
             width: { ideal: 1280 },
-            height: { ideal: 720 },
+            height: { ideal: 960 }, // 4:3 aspect ratio
+            aspectRatio: { ideal: 4/3 },
             frameRate: { ideal: 30 }
           } 
         });
@@ -156,9 +174,8 @@
           videoElement.play();
           statusMsg.innerText = "Camera active — aligning frames...";
           
-          // Set canvas to match video dimensions for better quality
-          canvasElement.width = videoElement.videoWidth;
-          canvasElement.height = videoElement.videoHeight;
+          // Resize canvas to match display size
+          resizeCanvasToDisplay();
           
           camera = new Camera(videoElement, {
             onFrame: async () => {
@@ -169,6 +186,10 @@
           });
           camera.start();
         };
+
+        // Handle window resizing
+        window.addEventListener('resize', resizeCanvasToDisplay);
+        
       } catch (err) {
         console.error("❌ Camera startup error:", err);
         statusMsg.innerText = "Unable to access camera. Check browser permissions.";
