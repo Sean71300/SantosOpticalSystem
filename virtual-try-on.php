@@ -1153,9 +1153,9 @@
           </div>
         </div>
       </div>
-      </div>
+  </div>
 
-      <div class="right-column">
+  <div class="right-column">
         <!-- Material Effect moved to the right column (step 4) -->
         <div class="card mb-3">
           <div class="card-header">
