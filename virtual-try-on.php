@@ -234,7 +234,9 @@
     video, canvas {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      /* keep original pixel aspect; do not auto-fit/zoom/stretch */
+      object-fit: none;
+      object-position: center center;
       display: block;
     }
     
