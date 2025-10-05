@@ -38,7 +38,7 @@ include 'setup.php';
     function addBranch() {
         echo 
         '<div class = "modal fade" id="addBranchModal" aria-labelledby="addBranchModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered role="document">
+            <div class="modal-dialog modal-dialog-centered" role="document">
                 <div class="modal-content bg-secondary-subtle">
                     <div class="modal-header">
                         <h5 class="modal-title" id="addBranchModalLabel">Add New Branch</h5>
@@ -78,7 +78,7 @@ include 'setup.php';
 
         echo 
         '<div class = "modal fade" id="editBranchModal" aria-labelledby="editBranchModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered role="document">
+            <div class="modal-dialog modal-dialog-centered" role="document">
                 <div class="modal-content bg-secondary-subtle">
                     <div class="modal-header">
                         <h5 class="modal-title" id="editBranchModalLabel">Edit Branch</h5>

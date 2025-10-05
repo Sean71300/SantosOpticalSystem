@@ -290,7 +290,7 @@ if ($rid !== 4) {
         <div class="main-content">
             <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
                 <h1><i class="fas fa-boxes me-2"></i> Branches</h1>
-                <button class="btn btn-primary" role="button">
+                <button class="btn btn-primary" id="addBranchBtn" data-bs-toggle="modal" data-bs-target="#addBranchModal" type="button">
                     <i class="fas fa-plus me-2"></i> Add New Branch
                 </button>            
             </div>
@@ -321,6 +321,11 @@ if ($rid !== 4) {
         </div>
 
         <?php
+            // Render the Add Branch modal HTML so it can be opened client-side
+            addBranch();
+        ?>
+
+        <?php
             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 if (isset($_POST['editBranchBtn'])) {
                     editBranch();
@@ -340,7 +345,10 @@ if ($rid !== 4) {
             });
         // Modal handling
         document.addEventListener('DOMContentLoaded', function() {
-            <?php if (isset($_POST['editBranchBtn'])): ?>
+            <?php if (isset($_POST['addBranchBtn'])): ?>
+                var addModal = new bootstrap.Modal(document.getElementById('addBranchModal'));
+                addModal.show();               
+            <?php elseif (isset($_POST['editBranchBtn'])): ?>
                 var editModal = new bootstrap.Modal(document.getElementById('editBranchModal'));
                 editModal.show();
             <?php elseif (isset($_POST['deleteBranchBtn'])): ?>
