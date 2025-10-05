@@ -926,6 +926,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         }
                         ?>
                     </div>
+
+                    <!-- In your results section, replace the virtual try-on button with: -->
+                    <div class="text-center mt-4">
+                        <a href="virtual-try-on.php?shape=<?= urlencode($result) ?>" class="btn btn-quiz">
+                            <i class="fas fa-camera me-2"></i> Virtual Try-On
+                        </a>
+                        <div class="virtual-tryon-guide mt-2">
+                            <p class="small text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                See how recommended frames look on you in real-time using your camera
+                            </p>
+                        </div>
+                    </div>
                     
                     <?php
                     // Get the ShapeID for the detected face shape
@@ -1003,9 +1016,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             Shop Recommended Frames
                         </a>
                     </div>
-</div>
-
-
+                </div>
                 
                 <!-- Social Share -->
                 <div class="social-share">
