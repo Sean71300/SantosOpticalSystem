@@ -1024,11 +1024,13 @@
                 <div style="display:flex; align-items:center; gap:8px;"><span>Frame Size</span>
                   <button id="sizeResetIcon" class="btn btn-outline-secondary btn-sm" title="Reset size"><i class="fas fa-undo"></i></button>
                 </div>
-                <span class="control-value" id="sizeValue">2.4x</span>
               </div>
               <!-- Visible slider centered -->
               <div style="padding: 8px 0;">
                 <input type="range" class="form-range" id="sizeSlider" min="1.8" max="3.0" step="0.1" value="2.4" aria-label="Frame size slider">
+              </div>
+              <div style="display:flex; justify-content:center; margin-top:8px;">
+                <span class="control-value" id="sizeValue">2.4x</span>
               </div>
               <hr />
               <small class="text-muted">Drag to change the frame size</small>
@@ -1041,8 +1043,9 @@
                 </div>
                 <span class="control-value" id="heightValue">70%</span>
               </div>
-              <div class="position-controls" style="justify-content:center; gap:18px; margin-top:8px;">
+              <div class="position-controls" style="justify-content:center; gap:18px; margin-top:8px; align-items:center;">
                 <button class="btn btn-outline-primary position-btn" id="heightDown" aria-label="Decrease height"><i class="fas fa-minus"></i></button>
+                <span class="control-value" id="heightValue">70%</span>
                 <button class="btn btn-outline-primary position-btn" id="heightUp" aria-label="Increase height"><i class="fas fa-plus"></i></button>
               </div>
               <hr />
@@ -1056,8 +1059,9 @@
                 </div>
                 <span class="control-value" id="positionValue">0px</span>
               </div>
-              <div class="position-controls" style="justify-content:center; gap:18px; margin-top:8px;">
+              <div class="position-controls" style="justify-content:center; gap:18px; margin-top:8px; align-items:center;">
                 <button class="btn btn-outline-primary position-btn" id="positionDown" aria-label="Move down"><i class="fas fa-arrow-down"></i></button>
+                <span class="control-value" id="positionValue">0px</span>
                 <button class="btn btn-outline-primary position-btn" id="positionUp" aria-label="Move up"><i class="fas fa-arrow-up"></i></button>
               </div>
               <hr />
