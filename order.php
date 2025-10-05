@@ -137,9 +137,17 @@ foreach($headers as $h){
 <title>Orders Management</title>
 <style>
 body { background:#f5f7fa; padding-top:60px; }
-.main-container { margin: 0 auto; max-width: 1200px; }
+/* Make the main content occupy the full width beside the fixed 250px sidebar */
+.main-container { margin-left: 250px; padding: 20px; width: calc(100% - 250px); }
+@media (max-width: 992px) { .main-container { margin-left: 0; width: 100%; } }
 .card-round { border-radius: 10px; }
 .badge-status { padding: .4em .6em; border-radius: .5rem; }
+/* Explicit status colors */
+.badge-status.pending { background-color: #ffc107; color: #000; }
+.badge-status.completed { background-color: #198754; }
+.badge-status.cancelled { background-color: #dc3545; }
+.badge-status.returned { background-color: #fd7e14; }
+.badge-status.claimed { background-color: #0dcaf0; color: #000; }
 </style>
 </head>
 <body>

@@ -230,6 +230,15 @@ if ($isAdmin) {
         box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
         border-top: 1px solid rgba(0,0,0,0.1);
     }
+    /* Prevent stretched logo */
+    .sidebar-logo {
+        width: 60px !important;
+        height: auto !important;
+        max-height: 80px;
+        object-fit: contain;
+        aspect-ratio: auto;
+        display: block;
+    }
     
     /* Mobile Menu Toggle */
     .mobile-menu-toggle {
