@@ -869,61 +869,58 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     
                     <div class="frame-showcase">
                         <?php
-                        // Map face shapes to their shape IDs (matching your product gallery)
-                        $shapeIds = [
-                            'SQUARE'      => 5,
-                            'ROUND'       => 4,
-                            'OBLONG'      => 1,
-                            'DIAMOND'     => 3,
-                            'V-TRIANGLE'  => 2,
-                            'A-TRIANGLE'  => 6,
-                            'RECTANGLE'   => 7
+                        $frameExamples = [
+                            'SQUARE' => [
+                                ['file' => 'square1.jpg', 'name' => 'Round Classic', 'style' => 'Soft & Timeless'],
+                                ['file' => 'square2.jpg', 'name' => 'Oval Elite', 'style' => 'Elegant & Refined'],
+                                ['file' => 'square3.jpg', 'name' => 'Circle Modern', 'style' => 'Bold & Contemporary']
+                            ],
+                            'ROUND' => [
+                                ['file' => 'round1.jpg', 'name' => 'Rectangle Pro', 'style' => 'Sharp & Professional'],
+                                ['file' => 'round2.jpg', 'name' => 'Square Edge', 'style' => 'Structured & Strong'],
+                                ['file' => 'round3.jpg', 'name' => 'Wayfarer Classic', 'style' => 'Iconic & Cool']
+                            ],
+                            'OBLONG' => [
+                                ['file' => 'oblong1.jpg', 'name' => 'Browline Bold', 'style' => 'Vintage & Distinguished'],
+                                ['file' => 'oblong2.jpg', 'name' => 'Decorative Luxe', 'style' => 'Ornate & Stylish'],
+                                ['file' => 'oblong3.jpg', 'name' => 'Aviator Classic', 'style' => 'Adventurous & Wide']
+                            ],
+                            'DIAMOND' => [
+                                ['file' => 'diamond1.jpg', 'name' => 'Cat-Eye Chic', 'style' => 'Dramatic & Feminine'],
+                                ['file' => 'diamond2.jpg', 'name' => 'Oval Delicate', 'style' => 'Subtle & Graceful'],
+                                ['file' => 'diamond3.jpg', 'name' => 'Butterfly Glam', 'style' => 'Striking & Bold']
+                            ],
+                            'V-TRIANGLE' => [
+                                ['file' => 'vshape1.jpg', 'name' => 'Browline Premium', 'style' => 'Statement Top'],
+                                ['file' => 'vshape2.jpg', 'name' => 'Clubmaster Icon', 'style' => 'Retro & Smart'],
+                                ['file' => 'vshape3.jpg', 'name' => 'Half-Rim Modern', 'style' => 'Minimalist & Light']
+                            ],
+                            'A-TRIANGLE' => [
+                                ['file' => 'ashape1.jpg', 'name' => 'Rounded Square', 'style' => 'Balanced & Soft'],
+                                ['file' => 'ashape2.jpg', 'name' => 'Soft Rectangle', 'style' => 'Gentle & Refined'],
+                                ['file' => 'a-triangle3.jpg', 'name' => 'Wayfarer Soft', 'style' => 'Casual & Friendly']
+                            ],
+                            'RECTANGLE' => [
+                                ['file' => 'rectangle1.jpg', 'name' => 'Round Bold', 'style' => 'Smooth & Friendly'],
+                                ['file' => 'rectangle2.jpg', 'name' => 'Oval Large', 'style' => 'Soft & Oversized'],
+                                ['file' => 'rectangle3.jpg', 'name' => 'Oversized Chic', 'style' => 'Fashion-Forward']
+                            ]
                         ];
                         
-                        $shapeId = $shapeIds[$result] ?? null;
+                        $frames = $frameExamples[$result] ?? [
+                            ['file' => 'classic-frame1.jpg', 'name' => 'Classic Style', 'style' => 'Timeless'],
+                            ['file' => 'classic-frame2.jpg', 'name' => 'Modern Look', 'style' => 'Contemporary'],
+                            ['file' => 'classic-frame3.jpg', 'name' => 'Premium Pick', 'style' => 'Elegant']
+                        ];
                         
-                        if ($shapeId) {
-                            // Use the same connection method as product-gallery.php
-                            require_once 'connect.php';
-                            $conn = connect();
-                            
-                            // Fetch 3 random frames for this face shape (matching product gallery structure)
-                            $sql = "SELECT p.ProductID, p.Model, p.ProductImage, p.Price, p.CategoryType
-                                   FROM productMstr p
-                                   LEFT JOIN archives a ON (p.ProductID = a.TargetID AND a.TargetType = 'product')
-                                   WHERE p.ShapeID = ?
-                                   AND (p.Avail_FL = 'Available' OR p.Avail_FL IS NULL)
-                                   AND a.ArchiveID IS NULL
-                                   ORDER BY RAND()
-                                   LIMIT 3";
-                            
-                            $stmt = $conn->prepare($sql);
-                            $stmt->bind_param("i", $shapeId);
-                            $stmt->execute();
-                            $frameResult = $stmt->get_result();
-                            
-                            if ($frameResult->num_rows > 0) {
-                                while ($frame = $frameResult->fetch_assoc()) {
-                                    // Format price same way as product gallery
-                                    $price = $frame['Price'];
-                                    $numeric_price = preg_replace('/[^0-9.]/', '', $price);
-                                    $formatted_price = is_numeric($numeric_price) ? '₱' . number_format((float)$numeric_price, 2) : '₱0.00';
-                                    
-                                    echo '<div class="frame-item">';
-                                    echo '<img src="'.htmlspecialchars($frame['ProductImage']).'" alt="'.htmlspecialchars($frame['Model']).'">';
-                                    echo '<div class="frame-info">';
-                                    echo '<h6>'.htmlspecialchars($frame['Model']).'</h6>';
-                                    echo '<p>'.$formatted_price.'</p>';
-                                    echo '</div>';
-                                    echo '</div>';
-                                }
-                            } else {
-                                // Fallback if no products found
-                                echo '<p class="text-center w-100" style="color: #666;">No frames available at the moment. Browse our full collection below.</p>';
-                            }
-                            
-                            $stmt->close();
-                            $conn->close();
+                        foreach ($frames as $frame) {
+                            echo '<div class="frame-item">';
+                            echo '<img src="Images/frames/'.htmlspecialchars($frame['file']).'" alt="'.htmlspecialchars($frame['name']).'">';
+                            echo '<div class="frame-info">';
+                            echo '<h6>'.htmlspecialchars($frame['name']).'</h6>';
+                            echo '<p>'.htmlspecialchars($frame['style']).'</p>';
+                            echo '</div>';
+                            echo '</div>';
                         }
                         ?>
                     </div>
