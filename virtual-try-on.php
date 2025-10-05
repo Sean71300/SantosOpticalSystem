@@ -893,6 +893,7 @@
         top: 10px;
         z-index: 25;
         background: transparent;
+        max-width: 100%;
       }
 
       /* Ensure the container that holds all other cards scrolls if needed */
@@ -904,7 +905,7 @@
       }
 
     /* when JS toggles camera-fixed on mobile */
-    .camera-fixed {
+      .camera-fixed {
       position: fixed !important;
       top: 10px !important;
       left: 10px;
@@ -914,6 +915,11 @@
       box-shadow: 0 12px 40px rgba(0,0,0,0.12);
       border-radius: 12px;
       background: rgba(255,255,255,0.01);
+    }
+
+    /* prevent horizontal scroll on mobile */
+    @media (max-width: 767px) {
+      body, .app-container { overflow-x: hidden; }
     }
       
       .frame-btn {
@@ -1927,13 +1933,19 @@
       const cameraSection = document.querySelector('.camera-section');
       if (!cameraSection) return;
 
+      // record the camera section's original page Y offset so we can snap back precisely
+      let origOffsetTop = cameraSection.getBoundingClientRect().top + window.scrollY;
+      function updateOrigOffset() {
+        origOffsetTop = cameraSection.getBoundingClientRect().top + window.scrollY;
+      }
+
       function onScroll() {
         if (window.innerWidth > 767) {
           cameraSection.classList.remove('camera-fixed');
           return;
         }
-        const rect = cameraSection.getBoundingClientRect();
-        if (rect.top <= 10) {
+        const scrollY = window.scrollY || document.documentElement.scrollTop;
+        if (scrollY >= origOffsetTop - 10) {
           cameraSection.classList.add('camera-fixed');
         } else {
           cameraSection.classList.remove('camera-fixed');
@@ -1941,9 +1953,11 @@
       }
 
       window.addEventListener('scroll', onScroll, { passive: true });
-      window.addEventListener('resize', onScroll);
+      window.addEventListener('resize', () => { updateOrigOffset(); onScroll(); });
+      // recalc after images/fonts load in case layout shifts
+      window.addEventListener('load', () => { setTimeout(updateOrigOffset, 120); });
       // initial check
-      onScroll();
+      updateOrigOffset(); onScroll();
     })();
   </script>
 </body>
