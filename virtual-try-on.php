@@ -199,14 +199,25 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 28px;
-      height: 28px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
-      background: var(--primary);
+      background: linear-gradient(135deg, var(--secondary), #00bfa8); /* complementary to primary */
       color: #fff;
       font-weight: 800;
-      font-size: 12px;
+      font-size: 13px;
       margin-left: 8px;
+      box-shadow: 0 8px 22px rgba(0,0,0,0.12);
+      border: 2px solid rgba(255,255,255,0.12);
+    }
+
+    .camera-step-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 45;
+      display: inline-block;
+      pointer-events: none;
     }
     
     video, canvas {
@@ -950,12 +961,15 @@ padding: 8px;
               <button id="saveBtn" class="btn btn-outline-primary btn-sm me-2" title="Save">
                 <i class="fas fa-save me-1"></i>Save
               </button>
-              <button id="calibrateBtn" class="btn btn-outline-primary btn-sm" title="Calibrate">
-                <i class="fas fa-sync-alt me-1"></i>Calibrate
-              </button>
-              <!-- Camera step badge moved here to match other card headers -->
-              <span class="step-badge">1</span>
+                      <button id="calibrateBtn" class="btn btn-outline-primary btn-sm" title="Calibrate">
+                        <i class="fas fa-sync-alt me-1"></i>Calibrate
+                      </button>
             </div>
+
+                    <!-- Standalone camera step badge (outside the white pill) -->
+                    <div class="camera-step-badge" aria-hidden="true">
+                      <span class="step-badge">1</span>
+                    </div>
 
             <!-- Centered start CTA over camera -->
             <div class="camera-cta" id="cameraCta">
@@ -1005,13 +1019,39 @@ padding: 8px;
             <div class="control-group text-center">
               <div class="control-label" style="justify-content:center;">
                 <span>Frame Size</span>
-                <span class="control-value" id="sizeValue">2.4x</span>
+                <span class="control-value center-value" id="sizeValue">2.4x</span>
               </div>
               <!-- Visible slider centered -->
               <div style="padding: 8px 0;">
                 <input type="range" class="form-range" id="sizeSlider" min="1.8" max="3.0" step="0.1" value="2.4" aria-label="Frame size slider">
               </div>
               <small class="text-muted">Drag to change the frame size</small>
+            </div>
+
+            <div class="control-group">
+              <div class="control-label" style="justify-content:center;">
+                <span>Frame Height</span>
+                <span class="control-value" id="heightValue">70%</span>
+              </div>
+              <div class="position-controls" style="justify-content:center; gap:18px; margin-top:8px;">
+                <button class="btn btn-outline-primary position-btn" id="heightDown" aria-label="Decrease height"><i class="fas fa-minus"></i></button>
+                <span class="center-value" id="heightDisplay">70%</span>
+                <button class="btn btn-outline-primary position-btn" id="heightUp" aria-label="Increase height"><i class="fas fa-plus"></i></button>
+              </div>
+              <small class="text-muted">Adjust frame proportions</small>
+            </div>
+
+            <div class="control-group">
+              <div class="control-label" style="justify-content:center;">
+                <span>Vertical Position</span>
+                <span class="control-value" id="positionValue">0px</span>
+              </div>
+              <div class="position-controls" style="justify-content:center; gap:18px; margin-top:8px;">
+                <button class="btn btn-outline-primary position-btn" id="positionDown" aria-label="Move down"><i class="fas fa-arrow-down"></i></button>
+                <span class="center-value" id="positionDisplay">0px</span>
+                <button class="btn btn-outline-primary position-btn" id="positionUp" aria-label="Move up"><i class="fas fa-arrow-up"></i></button>
+              </div>
+              <small class="text-muted">Move frames higher or lower on face</small>
             </div>
           </div>
         </div>
@@ -1344,11 +1384,15 @@ padding: 8px;
     }
 
     function updateHeightDisplay() {
-      if (heightValue) heightValue.textContent = Math.round(glassesHeightRatio * 100) + '%';
+      const text = Math.round(glassesHeightRatio * 100) + '%';
+      if (heightValue) heightValue.textContent = text;
+      const hd = document.getElementById('heightDisplay'); if (hd) hd.textContent = text;
     }
 
     function updatePositionDisplay() {
-      if (positionValue) positionValue.textContent = verticalOffset + 'px';
+      const text = verticalOffset + 'px';
+      if (positionValue) positionValue.textContent = text;
+      const pd = document.getElementById('positionDisplay'); if (pd) pd.textContent = text;
     }
 
     function createMaterialTexture(width, height, baseColor, materialType) {
