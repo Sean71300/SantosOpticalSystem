@@ -1721,12 +1721,12 @@
 
       // Compose caption text from current frame and color
       let caption = '';
-        try {
-          const frameLabel = (FRAMES && FRAMES[currentFrame] && FRAMES[currentFrame].label) ? FRAMES[currentFrame].label : currentFrame;
-          caption = `${frameLabel} (${currentColorName || currentColor}) - ${currentMaterial}`;
-        } catch (e) {
-          caption = `${currentColorName || currentColor} - ${currentMaterial}`;
-        }
+      try {
+        const frameLabel = (FRAMES && FRAMES[currentFrame] && FRAMES[currentFrame].label) ? FRAMES[currentFrame].label : currentFrame;
+        caption = `${frameLabel} - ${currentColorName || currentColor} - ${currentMaterial}`;
+      } catch (e) {
+        caption = `${currentColorName || currentColor} - ${currentMaterial}`;
+      }
 
       // Draw caption band background
       ctx.fillStyle = 'rgba(0,0,0,0.75)';
