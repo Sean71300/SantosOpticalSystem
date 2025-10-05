@@ -85,12 +85,12 @@
       .center-column { grid-column: 2 / 3; }
       .frames-column { grid-column: 3 / 4; }
       .right-column { grid-column: 4 / 5; }
-      /* Add breathing room: shift right-column content slightly left on desktop */
+      /* Reset right-column spacing back to zero (flush to the column area) */
       .right-column {
-        padding-right: 12px;
+        padding-right: 0;
       }
       .right-column .card {
-        margin-right: 6px; /* keep cards slightly inset from the very right edge */
+        margin-right: 0;
       }
     }
     
