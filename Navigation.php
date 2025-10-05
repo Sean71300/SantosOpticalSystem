@@ -81,6 +81,9 @@ if (isset($_SESSION['role'])) {
 }
 /* Ensure dropdown appears above other elements */
 .dropdown-menu { z-index: 2000; }
+/* Force visible when JS adds .show (defensive against conflicting CSS) */
+.dropdown-menu.show { display: block !important; }
+.dropdown-menu { display: none; }
 </style>
 
 <div class="forNavigationbar sticky-top">
