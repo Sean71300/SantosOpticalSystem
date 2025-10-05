@@ -138,21 +138,27 @@ $shape = isset($_GET['shape']) ? htmlspecialchars($_GET['shape']) : 'Unknown';
         const dx = rightEye.x - leftEye.x;
         const dy = rightEye.y - leftEye.y;
         const eyeDist = Math.sqrt(dx * dx + dy * dy) * canvas.width;
-
         const centerX = (leftEye.x + rightEye.x) / 2 * canvas.width;
         const centerY = (leftEye.y + rightEye.y) / 2 * canvas.height;
 
-        // Adjusted for realistic fit ↓↓↓
-        const glassesWidth = eyeDist * 2.6;   // slightly wider (was 2.2)
-        const glassesHeight = glassesWidth * 0.45; // adjusted height ratio
+        // Adjusted proportions
+        const glassesWidth = eyeDist * 2.4;      // wider (previously 2.2)
+        const glassesHeight = glassesWidth * 0.55; // rounder (previously 0.4)
 
-        // Move slightly lower on the face ↓↓↓
-        const yOffset = (noseBridge.y * canvas.height - centerY) * 1.2 + 15;
+        // Dynamic offset based on nose bridge, but slightly higher overall
+        const noseY = noseBridge.y * canvas.height;
+        const dynamicYOffset = (noseY - centerY) * 0.5 - 15; // raised by ~15px
 
         ctx.save();
-        ctx.translate(centerX, centerY + yOffset);
+        ctx.translate(centerX, centerY);
         ctx.rotate(Math.atan2(dy, dx));
-        ctx.drawImage(glassesImg, -glassesWidth / 2, -glassesHeight / 2, glassesWidth, glassesHeight);
+        ctx.drawImage(
+          glassesImg,
+          -glassesWidth / 2,
+          -glassesHeight / 2 + dynamicYOffset,
+          glassesWidth,
+          glassesHeight
+        );
         ctx.restore();
       }
     });
