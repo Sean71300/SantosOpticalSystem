@@ -37,7 +37,7 @@
     }
     
     .app-container {
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 0 auto;
       padding: 15px;
     }
@@ -66,26 +66,23 @@
     }
     
     .main-content {
-      display: flex;
-      flex-direction: column;
+      display: grid;
+      grid-template-columns: 1fr;
       gap: 20px;
     }
     
-    @media (min-width: 768px) {
+    @media (min-width: 992px) {
       .main-content {
-        flex-direction: row;
-        align-items: flex-start;
+        grid-template-columns: 1fr 400px;
       }
     }
     
     .camera-section {
-      flex: 1;
-      min-width: 0;
+      position: relative;
     }
     
     .controls-section {
-      flex: 1;
-      min-width: 0;
+      position: relative;
     }
     
     .camera-container {
@@ -123,6 +120,102 @@
       flex-direction: column;
       color: white;
       z-index: 10;
+    }
+    
+    .snapshot-controls {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: none;
+      gap: 10px;
+      z-index: 20;
+    }
+    
+    .snapshot-controls.active {
+      display: flex;
+    }
+    
+    .btn-snapshot {
+      background: white;
+      color: var(--primary);
+      border: 3px solid var(--primary);
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+    
+    .btn-snapshot:hover {
+      transform: scale(1.1);
+      background: var(--primary);
+      color: white;
+    }
+    
+    .instructions-banner {
+      background: linear-gradient(135deg, rgba(0, 200, 179, 0.95), rgba(0, 180, 160, 0.95));
+      color: white;
+      padding: 15px 20px;
+      border-radius: 15px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 15px rgba(0, 200, 179, 0.2);
+    }
+    
+    .instructions-banner h6 {
+      font-weight: 700;
+      margin-bottom: 10px;
+      font-size: 1rem;
+    }
+    
+    .instruction-item {
+      display: flex;
+      align-items: start;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+    }
+    
+    .instruction-item:last-child {
+      margin-bottom: 0;
+    }
+    
+    .instruction-item i {
+      margin-right: 10px;
+      margin-top: 2px;
+      font-size: 1rem;
+    }
+    
+    .help-tooltip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      background: rgba(255, 62, 108, 0.2);
+      color: var(--primary);
+      border-radius: 50%;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: help;
+      margin-left: 5px;
+      border: 1px solid var(--primary);
+    }
+    
+    .help-text {
+      font-size: 0.85rem;
+      color: #666;
+      font-style: italic;
+      margin-top: 5px;
+      display: none;
+    }
+    
+    .help-text.show {
+      display: block;
     }
     
     .card {
@@ -491,6 +584,89 @@
       margin-bottom: 5px;
     }
     
+    .snapshot-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.9);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .snapshot-modal.active {
+      display: flex;
+    }
+    
+    .snapshot-content {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      max-width: 600px;
+      width: 100%;
+      text-align: center;
+    }
+    
+    .snapshot-preview {
+      max-width: 100%;
+      border-radius: 15px;
+      margin: 20px 0;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+    }
+    
+    .snapshot-actions {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    
+    .controls-scroll-indicator {
+      position: sticky;
+      top: 10px;
+      background: linear-gradient(135deg, rgba(255, 62, 108, 0.95), rgba(255, 43, 93, 0.95));
+      color: white;
+      padding: 10px 15px;
+      border-radius: 10px;
+      text-align: center;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 15px rgba(255, 62, 108, 0.3);
+      z-index: 10;
+    }
+    
+    .controls-scroll-indicator i {
+      margin-left: 8px;
+      animation: bounce 2s infinite;
+    }
+    
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+      }
+      40% {
+        transform: translateY(-5px);
+      }
+      60% {
+        transform: translateY(-3px);
+      }
+    }
+    
+    @media (max-width: 991px) {
+      .controls-scroll-indicator {
+        display: none;
+      }
+      
+      .main-content {
+        grid-template-columns: 1fr;
+      }
+    }
+    
     @media (max-width: 767px) {
       .app-container {
         padding: 10px;
@@ -546,6 +722,12 @@
       
       .position-controls {
         gap: 10px;
+        flex-direction: column;
+      }
+      
+      .position-controls span {
+        order: -1;
+        font-size: 0.9rem;
       }
       
       .position-btn {
@@ -560,6 +742,16 @@
       
       .action-buttons .btn {
         width: 100%;
+      }
+      
+      .btn-snapshot {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+      }
+      
+      .snapshot-controls {
+        bottom: 10px;
       }
     }
     
@@ -584,7 +776,7 @@
 
   <div class="header" data-aos="fade">
     <div class="container">
-      <h1>👓 Virtual Glasses Try-On</h1>
+      <h1>Virtual Glasses Try-On</h1>
       <p>Find your perfect frame and color in real-time</p>
     </div>
   </div>
@@ -592,12 +784,38 @@
   <div class="app-container">
     <div class="main-content">
       <div class="camera-section">
-        <div class="camera-container" data-aos="fade-right">
+        <div class="instructions-banner" data-aos="fade-right">
+          <h6><i class="fas fa-info-circle"></i> Quick Start Guide</h6>
+          <div class="instruction-item">
+            <i class="fas fa-video"></i>
+            <span><strong>Step 1:</strong> Click "Start Camera" and allow camera access</span>
+          </div>
+          <div class="instruction-item">
+            <i class="fas fa-smile"></i>
+            <span><strong>Step 2:</strong> Look straight at the camera for auto-calibration</span>
+          </div>
+          <div class="instruction-item">
+            <i class="fas fa-palette"></i>
+            <span><strong>Step 3:</strong> Browse frame styles and colors on the right</span>
+          </div>
+          <div class="instruction-item">
+            <i class="fas fa-camera"></i>
+            <span><strong>Step 4:</strong> Click the camera button at the bottom to save your look</span>
+          </div>
+        </div>
+
+        <div class="camera-container" data-aos="fade-right" data-aos-delay="100">
           <video id="inputVideo" autoplay muted playsinline></video>
           <canvas id="outputCanvas"></canvas>
           <div class="camera-overlay d-none" id="cameraOverlay">
             <div class="loading-spinner"></div>
             <p class="mt-3">Starting camera...</p>
+          </div>
+          
+          <div class="snapshot-controls" id="snapshotControls">
+            <button class="btn-snapshot" id="takeSnapshotBtn" title="Take Photo">
+              <i class="fas fa-camera"></i>
+            </button>
           </div>
         </div>
         
@@ -616,14 +834,22 @@
                 <i class="fas fa-camera-video me-2"></i>Start Camera
               </button>
               <button id="calibrateBtn" class="btn btn-outline-primary d-none">
-                <i class="fas fa-sync-alt me-2"></i>Recalibrate
+                <i class="fas fa-sync-alt me-2"></i>Reset Position
+                <span class="help-tooltip" data-help="calibrate">?</span>
               </button>
+            </div>
+            <div class="help-text" id="help-calibrate">
+              <i class="fas fa-lightbulb"></i> Use this if frames appear tilted. Look straight ahead and click to reset.
             </div>
           </div>
         </div>
       </div>
 
       <div class="controls-section">
+        <div class="controls-scroll-indicator">
+          Scroll down to adjust frame fit <i class="fas fa-arrow-down"></i>
+        </div>
+
         <div class="card" data-aos="fade-left">
           <div class="card-header">
             <i class="fas fa-glasses me-2"></i>Frame Styles
@@ -765,14 +991,20 @@
         <div class="card" data-aos="fade-left" data-aos-delay="200">
           <div class="card-header">
             <i class="fas fa-sliders-h me-2"></i>Adjust Fit
+            <span class="help-tooltip" data-help="adjust">?</span>
           </div>
           <div class="card-body">
+            <div class="help-text show" id="help-adjust" style="margin-bottom: 15px;">
+              <i class="fas fa-info-circle"></i> Fine-tune how the frames sit on your face for the perfect fit
+            </div>
+            
             <div class="control-group">
               <div class="control-label">
                 <span>Frame Size</span>
                 <span class="control-value" id="sizeValue">2.4x</span>
               </div>
               <input type="range" class="form-range" id="sizeSlider" min="1.8" max="3.0" step="0.1" value="2.4">
+              <small class="text-muted">Drag to make frames larger or smaller</small>
             </div>
             
             <div class="control-group">
@@ -784,11 +1016,12 @@
                 <button class="btn btn-outline-primary position-btn" id="heightDown">
                   <i class="fas fa-minus"></i>
                 </button>
-                <span>Shorter - Taller</span>
+                <span>Shorter / Taller</span>
                 <button class="btn btn-outline-primary position-btn" id="heightUp">
                   <i class="fas fa-plus"></i>
                 </button>
               </div>
+              <small class="text-muted">Adjust frame proportions</small>
             </div>
             
             <div class="control-group">
@@ -800,18 +1033,19 @@
                 <button class="btn btn-outline-primary position-btn" id="positionDown">
                   <i class="fas fa-arrow-down"></i>
                 </button>
-                <span>Lower - Higher</span>
+                <span>Move Up / Down</span>
                 <button class="btn btn-outline-primary position-btn" id="positionUp">
                   <i class="fas fa-arrow-up"></i>
                 </button>
               </div>
+              <small class="text-muted">Move frames higher or lower on face</small>
             </div>
           </div>
         </div>
 
         <?php if (preg_match('/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i', $_SERVER['HTTP_USER_AGENT'])): ?>
         <div class="mobile-tips" data-aos="fade-up">
-          <h6>📱 Mobile Tips</h6>
+          <h6>Mobile Tips</h6>
           <ul>
             <li>Ensure good lighting for best results</li>
             <li>Hold device steady at eye level</li>
@@ -820,6 +1054,22 @@
           </ul>
         </div>
         <?php endif; ?>
+      </div>
+    </div>
+  </div>
+
+  <!-- Snapshot Modal -->
+  <div class="snapshot-modal" id="snapshotModal">
+    <div class="snapshot-content">
+      <h3 style="color: var(--primary); font-weight: 700;">Your Perfect Look!</h3>
+      <img id="snapshotImage" class="snapshot-preview" src="" alt="Your snapshot">
+      <div class="snapshot-actions">
+        <button class="btn btn-primary" id="downloadSnapshotBtn">
+          <i class="fas fa-download me-2"></i>Download
+        </button>
+        <button class="btn btn-outline-primary" id="closeSnapshotBtn">
+          <i class="fas fa-times me-2"></i>Close
+        </button>
       </div>
     </div>
   </div>
@@ -859,6 +1109,12 @@
     const frameButtons = document.querySelectorAll('.frame-btn');
     const colorButtons = document.querySelectorAll('.color-btn');
     const materialButtons = document.querySelectorAll('.material-btn');
+    const snapshotControls = document.getElementById('snapshotControls');
+    const takeSnapshotBtn = document.getElementById('takeSnapshotBtn');
+    const snapshotModal = document.getElementById('snapshotModal');
+    const snapshotImage = document.getElementById('snapshotImage');
+    const downloadSnapshotBtn = document.getElementById('downloadSnapshotBtn');
+    const closeSnapshotBtn = document.getElementById('closeSnapshotBtn');
 
     const FRAMES = {
       'SQUARE': { path: 'Images/frames/square-frame-removebg-preview.png', label: 'Square' },
@@ -1147,6 +1403,48 @@
       }
     }
 
+    // Snapshot functionality
+    takeSnapshotBtn.addEventListener('click', () => {
+      const snapshotCanvas = document.createElement('canvas');
+      snapshotCanvas.width = canvasElement.width;
+      snapshotCanvas.height = canvasElement.height;
+      const ctx = snapshotCanvas.getContext('2d');
+      ctx.drawImage(canvasElement, 0, 0);
+      
+      const dataUrl = snapshotCanvas.toDataURL('image/png');
+      snapshotImage.src = dataUrl;
+      snapshotModal.classList.add('active');
+    });
+
+    downloadSnapshotBtn.addEventListener('click', () => {
+      const link = document.createElement('a');
+      link.download = `santos-optical-tryon-${Date.now()}.png`;
+      link.href = snapshotImage.src;
+      link.click();
+    });
+
+    closeSnapshotBtn.addEventListener('click', () => {
+      snapshotModal.classList.remove('active');
+    });
+
+    snapshotModal.addEventListener('click', (e) => {
+      if (e.target === snapshotModal) {
+        snapshotModal.classList.remove('active');
+      }
+    });
+
+    // Help tooltip functionality
+    document.querySelectorAll('.help-tooltip').forEach(tooltip => {
+      tooltip.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const helpId = 'help-' + tooltip.dataset.help;
+        const helpText = document.getElementById(helpId);
+        if (helpText) {
+          helpText.classList.toggle('show');
+        }
+      });
+    });
+
     frameButtons.forEach(btn => {
       btn.addEventListener('click', () => {
         frameButtons.forEach(b => b.classList.remove('active'));
@@ -1201,7 +1499,9 @@
       if (faceTrackingActive) {
         isCalibrated = false;
         updateStatus("Recalibrating... Look straight", "loading");
-        setTimeout(() => updateStatus("Recalibrated!", "online"), 1000);
+        setTimeout(() => {
+          updateStatus("Recalibrated!", "online");
+        }, 1000);
       }
     });
 
@@ -1215,6 +1515,7 @@
         
         resizeCanvasToDisplay();
         calibrateBtn.classList.remove('d-none');
+        snapshotControls.classList.add('active');
         updateHeightDisplay();
         updatePositionDisplay();
 
