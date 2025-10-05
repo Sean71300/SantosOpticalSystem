@@ -916,25 +916,29 @@
 
     /* when JS toggles camera-mini on mobile - corner floating thumbnail (video-call style) */
     .camera-mini {
-      position: fixed !important;
-      bottom: 16px !important;
-      right: 16px !important;
-      z-index: 9999 !important;
-      width: 140px !important;
-      height: 190px !important;
-      box-sizing: border-box !important;
-      overflow: hidden !important;
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      z-index: 9999;
+      width: 140px;
+      height: 190px;
+      box-sizing: border-box;
+      overflow: hidden;
       box-shadow: 0 18px 48px rgba(0,0,0,0.22);
-      border-radius: 12px !important;
-      background: rgba(0,0,0,0.35) !important;
+      border-radius: 12px;
+      background: rgba(0,0,0,0.35);
       transform-origin: center center;
       transition: width 260ms ease, height 260ms ease, transform 260ms ease, right 260ms ease, bottom 260ms ease;
+      touch-action: none; /* necessary for pointer dragging */
+      cursor: grab;
     }
-    .camera-mini .camera-container { width: 100% !important; height: 100% !important; aspect-ratio: auto !important; }
-    .camera-mini .camera-cta { display: none !important; }
-    .camera-mini .snapshot-controls { display: none !important; }
-    .camera-mini .camera-status { transform: scale(0.9); }
-    .camera-mini .camera-bottom-actions { right: 8px; bottom: 8px; }
+
+    .camera-mini:active { cursor: grabbing; }
+  .camera-mini .camera-container { width: 100%; height: 100%; aspect-ratio: auto; }
+  .camera-mini .camera-cta { display: none; }
+  .camera-mini .snapshot-controls { display: none; }
+  .camera-mini .camera-status { transform: scale(0.9); }
+  .camera-mini .camera-bottom-actions { right: 8px; bottom: 8px; }
 
     /* prevent horizontal scroll on mobile */
     @media (max-width: 767px) {
@@ -1989,6 +1993,64 @@
         // scroll so the camera section comes into view
         window.scrollTo({ top: origOffsetTop - 8, behavior: 'smooth' });
       });
+
+      // Drag support for the mini thumbnail (pointer events)
+      (function() {
+        let dragging = false;
+        let startX = 0, startY = 0;
+        let startRight = 16, startBottom = 16;
+        let dragged = false;
+
+        function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+        function onPointerDown(e) {
+          if (!cameraSection.classList.contains('camera-mini')) return;
+          dragging = true;
+          dragged = false;
+          cameraSection.style.transition = 'none';
+          startX = e.clientX || (e.touches && e.touches[0].clientX);
+          startY = e.clientY || (e.touches && e.touches[0].clientY);
+          // read current offsets
+          const rect = cameraSection.getBoundingClientRect();
+          // compute distance from right/bottom edges
+          startRight = window.innerWidth - rect.right;
+          startBottom = window.innerHeight - rect.bottom;
+          document.addEventListener('pointermove', onPointerMove);
+          document.addEventListener('pointerup', onPointerUp);
+          document.addEventListener('touchmove', onPointerMove, { passive: false });
+          document.addEventListener('touchend', onPointerUp);
+        }
+
+        function onPointerMove(e) {
+          if (!dragging) return;
+          e.preventDefault();
+          const curX = e.clientX || (e.touches && e.touches[0].clientX);
+          const curY = e.clientY || (e.touches && e.touches[0].clientY);
+          const dx = curX - startX;
+          const dy = curY - startY;
+          if (Math.abs(dx) > 6 || Math.abs(dy) > 6) dragged = true;
+          // new right/bottom
+          const newRight = clamp(startRight - dx, 8, window.innerWidth - 60);
+          const newBottom = clamp(startBottom - dy, 8, window.innerHeight - 60);
+          cameraSection.style.right = newRight + 'px';
+          cameraSection.style.bottom = newBottom + 'px';
+        }
+
+        function onPointerUp() {
+          if (!dragging) return;
+          dragging = false;
+          cameraSection.style.transition = '';
+          document.removeEventListener('pointermove', onPointerMove);
+          document.removeEventListener('pointerup', onPointerUp);
+          document.removeEventListener('touchmove', onPointerMove);
+          document.removeEventListener('touchend', onPointerUp);
+          // small delay to avoid immediate click after drag
+          setTimeout(() => { if (dragged) cameraSection.classList.add('dragged'); }, 50);
+        }
+
+        cameraSection.addEventListener('pointerdown', onPointerDown);
+        cameraSection.addEventListener('touchstart', onPointerDown, { passive: true });
+      })();
     })();
   </script>
 </body>
