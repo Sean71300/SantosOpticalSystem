@@ -871,39 +871,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <?php
                         $frameExamples = [
                             'SQUARE' => [
-                                ['file' => 'round-frame1.jpg', 'name' => 'Round Classic', 'style' => 'Soft & Timeless'],
-                                ['file' => 'oval-frame1.jpg', 'name' => 'Oval Elite', 'style' => 'Elegant & Refined'],
-                                ['file' => 'round-frame2.jpg', 'name' => 'Circle Modern', 'style' => 'Bold & Contemporary']
+                                ['file' => 'square1.jpg', 'name' => 'Round Classic', 'style' => 'Soft & Timeless'],
+                                ['file' => 'square2.jpg', 'name' => 'Oval Elite', 'style' => 'Elegant & Refined'],
+                                ['file' => 'sqaure3.jpg', 'name' => 'Circle Modern', 'style' => 'Bold & Contemporary']
                             ],
                             'ROUND' => [
-                                ['file' => 'rectangular-frame1.jpg', 'name' => 'Rectangle Pro', 'style' => 'Sharp & Professional'],
-                                ['file' => 'square-frame1.jpg', 'name' => 'Square Edge', 'style' => 'Structured & Strong'],
-                                ['file' => 'wayfarer-frame1.jpg', 'name' => 'Wayfarer Classic', 'style' => 'Iconic & Cool']
+                                ['file' => 'round1.jpg', 'name' => 'Rectangle Pro', 'style' => 'Sharp & Professional'],
+                                ['file' => 'round2.jpg', 'name' => 'Square Edge', 'style' => 'Structured & Strong'],
+                                ['file' => 'round3.jpg', 'name' => 'Wayfarer Classic', 'style' => 'Iconic & Cool']
                             ],
                             'OBLONG' => [
-                                ['file' => 'browline-frame1.jpg', 'name' => 'Browline Bold', 'style' => 'Vintage & Distinguished'],
-                                ['file' => 'decorative-frame1.jpg', 'name' => 'Decorative Luxe', 'style' => 'Ornate & Stylish'],
-                                ['file' => 'aviator-frame1.jpg', 'name' => 'Aviator Classic', 'style' => 'Adventurous & Wide']
+                                ['file' => 'oblong1.jpg', 'name' => 'Browline Bold', 'style' => 'Vintage & Distinguished'],
+                                ['file' => 'oblong2.jpg', 'name' => 'Decorative Luxe', 'style' => 'Ornate & Stylish'],
+                                ['file' => 'oblong3.jpg', 'name' => 'Aviator Classic', 'style' => 'Adventurous & Wide']
                             ],
                             'DIAMOND' => [
-                                ['file' => 'cateye-frame1.jpg', 'name' => 'Cat-Eye Chic', 'style' => 'Dramatic & Feminine'],
-                                ['file' => 'oval-frame2.jpg', 'name' => 'Oval Delicate', 'style' => 'Subtle & Graceful'],
-                                ['file' => 'butterfly-frame1.jpg', 'name' => 'Butterfly Glam', 'style' => 'Striking & Bold']
+                                ['file' => 'diamond1.jpg', 'name' => 'Cat-Eye Chic', 'style' => 'Dramatic & Feminine'],
+                                ['file' => 'diamond2.jpg', 'name' => 'Oval Delicate', 'style' => 'Subtle & Graceful'],
+                                ['file' => 'diamond3.jpg', 'name' => 'Butterfly Glam', 'style' => 'Striking & Bold']
                             ],
                             'V-TRIANGLE' => [
-                                ['file' => 'browline-frame2.jpg', 'name' => 'Browline Premium', 'style' => 'Statement Top'],
-                                ['file' => 'clubmaster-frame1.jpg', 'name' => 'Clubmaster Icon', 'style' => 'Retro & Smart'],
-                                ['file' => 'halfrim-frame1.jpg', 'name' => 'Half-Rim Modern', 'style' => 'Minimalist & Light']
+                                ['file' => 'vshape1.jpg', 'name' => 'Browline Premium', 'style' => 'Statement Top'],
+                                ['file' => 'vshape2.jpg', 'name' => 'Clubmaster Icon', 'style' => 'Retro & Smart'],
+                                ['file' => 'vshape3.jpg', 'name' => 'Half-Rim Modern', 'style' => 'Minimalist & Light']
                             ],
                             'A-TRIANGLE' => [
-                                ['file' => 'rounded-square1.jpg', 'name' => 'Rounded Square', 'style' => 'Balanced & Soft'],
-                                ['file' => 'rounded-square2.jpg', 'name' => 'Soft Rectangle', 'style' => 'Gentle & Refined'],
-                                ['file' => 'wayfarer-frame2.jpg', 'name' => 'Wayfarer Soft', 'style' => 'Casual & Friendly']
+                                ['file' => 'ashape1.jpg', 'name' => 'Rounded Square', 'style' => 'Balanced & Soft'],
+                                ['file' => 'ashape2.jpg', 'name' => 'Soft Rectangle', 'style' => 'Gentle & Refined'],
+                                ['file' => 'ashape3.jpg', 'name' => 'Wayfarer Soft', 'style' => 'Casual & Friendly']
                             ],
                             'RECTANGLE' => [
-                                ['file' => 'round-frame3.jpg', 'name' => 'Round Bold', 'style' => 'Smooth & Friendly'],
-                                ['file' => 'oval-frame3.jpg', 'name' => 'Oval Large', 'style' => 'Soft & Oversized'],
-                                ['file' => 'oversized-frame1.jpg', 'name' => 'Oversized Chic', 'style' => 'Fashion-Forward']
+                                ['file' => 'rectangle1.jpg', 'name' => 'Round Bold', 'style' => 'Smooth & Friendly'],
+                                ['file' => 'rectangle2.jpg', 'name' => 'Oval Large', 'style' => 'Soft & Oversized'],
+                                ['file' => 'rectangle3.jpg', 'name' => 'Oversized Chic', 'style' => 'Fashion-Forward']
                             ]
                         ];
                         
