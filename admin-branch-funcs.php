@@ -169,30 +169,6 @@ include 'setup.php';
                             
     }
 
-    function deleteBranch() {
-        echo 
-        '<div class="modal fade" id="deleteBranchModal" aria-labelledby="deleteBranchModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="deleteBranchModalLabel">Delete Branch</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body pt-3 pb-3">
-                        <p>Are you sure you want to delete this branch?</p>
-                        <form method="post">
-                            <input type="hidden" name="branchCode" value="'.htmlspecialchars($_POST['branchCode'] ?? '').'">
-                            <div class="modal-footer">
-                                <button type="submit" class="btn btn-danger w-25" name="confirmDeleteBtn">Delete</button>
-                                <button type="button" class="btn btn-secondary w-25" data-bs-dismiss="modal">Cancel</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>';
-    }
-
     function confirmEditBranch() {
         $link = connect();
         $branchCode = $_POST['branchCode'] ?? '';
@@ -248,4 +224,81 @@ include 'setup.php';
     }
         mysqli_close($link);
     }
+
+    function deleteBranch() {
+        echo 
+        '<div class="modal fade" id="deleteBranchModal" aria-labelledby="deleteBranchModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteBranchModalLabel">Delete Branch</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body pt-3 pb-3">
+                        <p>Are you sure you want to delete this branch?</p>
+                        <form method="post">
+                            <input type="hidden" name="branchCode" value="'.htmlspecialchars($_POST['branchCode'] ?? '').'">
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-danger w-25" name="confirmDeleteBtn">Delete</button>
+                                <button type="button" class="btn btn-secondary w-25" data-bs-dismiss="modal">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>';
+    }
+
+    function confirmDeleteBranch() {
+        $link = connect();
+        $branchCode = $_POST['branchCode'] ?? '';
+        $sql = "DELETE FROM BranchMaster WHERE BranchCode = ?";
+        $stmt = mysqli_prepare($link, $sql);
+        mysqli_stmt_bind_param($stmt, 's', $branchCode);
+        $stmt = mysqli_stmt_execute($stmt);
+
+        if ($stmt) {
+            echo 
+            '<div class="modal fade" id="deleteBranchModal" tabindex="-1" aria-labelledby="deleteBranchModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content bg-secondary-subtle">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="deleteBranchModalLabel">Success</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body" style="margin-top: -1.5rem;">
+                            <hr>
+                            <p>Branch deleted successfully.</p>
+                            <hr>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-success w-25" data-bs-dismiss="modal" onclick="location.reload()">OK</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>';
+        } else {
+            echo 
+            '<div class="modal fade" id="deleteBranchModal" tabindex="-1" aria-labelledby="deleteBranchModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content bg-secondary-subtle">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="deleteBranchModalLabel">Error</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body" style="margin-top: -1.5rem;">
+                            <hr>
+                            <p>Error deleting branch: '.mysqli_error($link).'</p>
+                            <hr>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-danger w-25" data-bs-dismiss="modal" onclick="location.reload()">OK</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>';
+        }
+        mysqli_close($link);
+    }        
+    
 ?>
