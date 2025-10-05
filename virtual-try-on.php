@@ -1366,6 +1366,9 @@
     let verticalOffset = 0;
     let currentFrame = 'A-TRIANGLE';
     let currentColor = '#1a1a1a';
+  // Destination rect inside the fixed canvas where the video image is drawn (in device pixels)
+  // We compute this per-frame in onResults so the video is "contained" (no auto-zoom/cover).
+  let drawDest = { x: 0, y: 0, w: 0, h: 0 };
     let currentColorName = 'Matte Black';
     let currentMaterial = 'Matte';
 
@@ -1492,21 +1495,24 @@
     }
 
     function drawGlasses(landmarks) {
-      const leftEye = landmarks[33];
-      const rightEye = landmarks[263];
+  const leftEye = landmarks[33];
+  const rightEye = landmarks[263];
       let headAngle = calculateHeadAngle(landmarks);
       
       if (isCalibrated) headAngle += angleOffset;
       
-      const eyeDist = Math.hypot(
-        rightEye.x * canvasElement.width - leftEye.x * canvasElement.width,
-        rightEye.y * canvasElement.height - leftEye.y * canvasElement.height
-      );
+      // Map normalized landmark coordinates into the drawDest rectangle (which holds the contained video)
+      const lx = drawDest.x + leftEye.x * drawDest.w;
+      const ly = drawDest.y + leftEye.y * drawDest.h;
+      const rx = drawDest.x + rightEye.x * drawDest.w;
+      const ry = drawDest.y + rightEye.y * drawDest.h;
+
+      const eyeDist = Math.hypot(rx - lx, ry - ly);
 
       const glassesWidth = eyeDist * glassesSizeMultiplier;
       const glassesHeight = glassesWidth * glassesHeightRatio;
-      let centerX = (leftEye.x * canvasElement.width + rightEye.x * canvasElement.width) / 2;
-      let centerY = (leftEye.y * canvasElement.height + rightEye.y * canvasElement.height) / 2;
+      let centerX = (lx + rx) / 2;
+      let centerY = (ly + ry) / 2;
       centerY += verticalOffset;
 
       if (centerX > 0 && centerY > 0 && glassesWidth > 10 && glassesImages[currentFrame]) {
@@ -1555,10 +1561,29 @@
       frameCount++;
       if (isMobile && frameCount % 3 !== 0) return;
 
-      isProcessing = true;
-      canvasCtx.save();
-      canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-      canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+  isProcessing = true;
+  canvasCtx.save();
+  canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+
+  // Draw the incoming image into the fixed canvas using "contain" scaling so it never auto-zooms.
+  const img = results.image;
+  const imgW = img.width || img.videoWidth || canvasElement.width;
+  const imgH = img.height || img.videoHeight || canvasElement.height;
+
+  // compute scale to contain image inside canvas while preserving aspect
+  const scale = Math.min(canvasElement.width / imgW, canvasElement.height / imgH);
+  const drawW = Math.round(imgW * scale);
+  const drawH = Math.round(imgH * scale);
+  const drawX = Math.round((canvasElement.width - drawW) / 2);
+  const drawY = Math.round((canvasElement.height - drawH) / 2);
+
+  // remember dest rect (in device pixels) for mapping normalized landmarks to canvas coordinates
+  drawDest.x = drawX;
+  drawDest.y = drawY;
+  drawDest.w = drawW;
+  drawDest.h = drawH;
+
+  canvasCtx.drawImage(img, 0, 0, imgW, imgH, drawX, drawY, drawW, drawH);
 
       if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
         faceTrackingActive = true;
@@ -1586,6 +1611,13 @@
       canvasElement.style.height = '100%';
       // update drawing context scale
       canvasCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+      // initialize drawDest to centered contain area (assume video has a natural aspect similar to the stream)
+      // Default to full canvas until first frame arrives; onResults will compute precise contain rect.
+      drawDest.x = 0;
+      drawDest.y = 0;
+      drawDest.w = canvasElement.width; // in device pixels
+      drawDest.h = canvasElement.height;
     }
 
     async function initializeFaceMesh() {
