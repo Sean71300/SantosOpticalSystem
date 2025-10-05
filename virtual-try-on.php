@@ -1625,17 +1625,42 @@
 
     // Snapshot functionality (reusable)
     function showSnapshotFromCanvas() {
-      // Create a higher-resolution snapshot so saved images are good size
+      // Produce a portrait 'selfie' snapshot (center-cropped) with good resolution.
+      // Mobile: 1080 x 1350 (4:5). Desktop: larger 1600 x 2000 (4:5) to keep quality.
       const snapshotCanvas = document.createElement('canvas');
-      // Prefer at least 800px wide or twice the display canvas width for better quality
-      const targetWidth = Math.round(Math.max(800, canvasElement.width * 2));
-      const aspect = canvasElement.width && canvasElement.height ? (canvasElement.height / canvasElement.width) : (3/4);
-      const targetHeight = Math.round(targetWidth * aspect);
+      const targetWidth = isMobile ? 1080 : 1600;
+      const targetHeight = Math.round(targetWidth * 5 / 4); // 4:5 portrait
       snapshotCanvas.width = targetWidth;
       snapshotCanvas.height = targetHeight;
       const ctx = snapshotCanvas.getContext('2d');
-      // drawImage will scale the current display canvas into the larger snapshot canvas
-      ctx.drawImage(canvasElement, 0, 0, snapshotCanvas.width, snapshotCanvas.height);
+
+      // Cover-crop: determine source crop rectangle that matches target aspect ratio
+      const srcW = canvasElement.width;
+      const srcH = canvasElement.height;
+      const targetAspect = targetWidth / targetHeight;
+      let sx = 0, sy = 0, sWidth = srcW, sHeight = srcH;
+
+      if (srcW > 0 && srcH > 0) {
+        const srcAspect = srcW / srcH;
+        if (srcAspect > targetAspect) {
+          // source is wider -> crop left/right
+          sHeight = srcH;
+          sWidth = Math.round(srcH * targetAspect);
+          sx = Math.round((srcW - sWidth) / 2);
+          sy = 0;
+        } else {
+          // source is taller -> crop top/bottom
+          sWidth = srcW;
+          sHeight = Math.round(srcW / targetAspect);
+          sx = 0;
+          sy = Math.round((srcH - sHeight) / 2);
+        }
+      }
+
+      // Draw cropped source into the target canvas, scaling to fit
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, targetWidth, targetHeight);
+      ctx.drawImage(canvasElement, sx, sy, sWidth, sHeight, 0, 0, targetWidth, targetHeight);
 
       const dataUrl = snapshotCanvas.toDataURL('image/png');
       snapshotImage.src = dataUrl;
