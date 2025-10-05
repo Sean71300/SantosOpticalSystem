@@ -207,7 +207,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         font-size: 1.1rem;
         letter-spacing: 0.5px;
         transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(255, 62, 108, 0.3);
+        box-shadow: 0 4px 15px rgba(0, 200, 179, 0.3);
     }
     
     .btn-quiz:hover {
