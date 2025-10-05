@@ -1065,7 +1065,7 @@
               <div style="display:flex; justify-content:center; margin-top:8px;">
                 <span class="control-value" id="sizeValue">2.4x</span>
               </div>
-              <hr />
+        </hr>
             </div>
 
             <div class="control-group">
@@ -1081,7 +1081,7 @@
                 <span class="control-value" id="heightValue">70%</span>
                 <button class="btn btn-outline-primary position-btn" id="heightUp" aria-label="Increase height"><i class="fas fa-plus"></i></button>
               </div>
-              <hr />
+        </hr>
             </div>
 
             <div class="control-group">
@@ -1097,7 +1097,7 @@
                 <span class="control-value" id="positionValue">0px</span>
                 <button class="btn btn-outline-primary position-btn" id="positionUp" aria-label="Move up"><i class="fas fa-arrow-up"></i></button>
               </div>
-              <hr />
+        </hr>
             </div>
           </div>
         </div>
