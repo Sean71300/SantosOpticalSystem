@@ -1,3 +1,7 @@
+<?php
+    include 'ActivityTracker.php';
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,6 +11,12 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="customCodes/custom.css">
+    <link rel="stylesheet" href="customCodes/s1.css">
+    <link rel="stylesheet" href="customCodes/custom.css">
+    <link rel="shortcut icon" type="image/x-icon" href="Images/logo.png"/>
+    <link rel="stylesheet" href="customCodes/s2.css">
+
     <style>
     /* Color Variables */
     :root {
@@ -142,7 +152,6 @@
         transform: translateY(-5px);
         box-shadow: 0 15px 35px rgba(255, 215, 0, 0.4);
         border-color: var(--primary-red);
-        /* No color change on hover */
     }
     
     .product-img {
@@ -213,7 +222,7 @@
         transform: translateY(-5px);
         box-shadow: 0 15px 35px rgba(220, 53, 69, 0.4);
         border-color: var(--primary-yellow);
-        /* No color change on hover */
+        color: var(--pure-white);
     }
     
     /* Enhanced Service Section with Brand Colors */
@@ -280,7 +289,7 @@
         transform: translateY(-3px);
         box-shadow: 0 15px 35px rgba(255, 215, 0, 0.4);
         border-color: var(--primary-red);
-        /* No color change on hover */
+        color: var(--text-dark);
     }
     
     /* Enhanced About Section */
@@ -322,7 +331,7 @@
         transform: translateY(-3px);
         box-shadow: 0 15px 35px rgba(220, 53, 69, 0.4);
         border-color: var(--primary-yellow);
-        /* No color change on hover */
+        color: var(--pure-white);
     }
     
     /* Enhanced Location Section */
@@ -355,9 +364,18 @@
         box-shadow: 0 30px 60px rgba(220, 53, 69, 0.25);
     }
     
-    /* Remove floating animation from images */
+    /* Floating Elements */
     .floating-element {
-        animation: none;
+        animation: float 6s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+        0%, 100% {
+            transform: translateY(0px);
+        }
+        50% {
+            transform: translateY(-20px);
+        }
     }
     
     /* Particle Background with Brand Colors */
@@ -440,53 +458,30 @@
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <div class="container">
-                <a class="navbar-brand" href="#">
-                    <img src="https://via.placeholder.com/150x50?text=Santos+Optical" alt="Santos Optical" height="50">
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav ms-auto">
-                        <li class="nav-item"><a class="nav-link active" href="#">Home</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#">Products</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#">Services</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#">About</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#">Contact</a></li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
+    <?php include "Navigation.php"?>
 
         <div class="carousel-container">
             <div id="eyeglassCarousel" class="carousel slide" data-bs-ride="carousel">
                 <div class="carousel-inner">
                     <div class="carousel-item active">
-                        <img src="https://via.placeholder.com/1200x600?text=Eyeglass+Sale+1" class="d-block w-100" alt="Eyeglass Sale 1">
+                        <img src="Images/cp3.png" class="d-block w-100" alt="Eyeglass Sale 1">
                     </div>
                     <div class="carousel-item">
-                        <img src="https://via.placeholder.com/1200x600?text=Eyeglass+Sale+2" class="d-block w-100" alt="Eyeglass Sale 2">
+                        <img src="Images/cp2.png" class="d-block w-100" alt="Eyeglass Sale 2">
                     </div>
                     <div class="carousel-item">
-                        <img src="https://via.placeholder.com/1200x600?text=Eyeglass+Sale+3" class="d-block w-100" alt="Eyeglass Sale 3">
+                        <img src="Images/cp1.png" class="d-block w-100" alt="Eyeglass Sale 3">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="Images/cp4.png" class="d-block w-100" alt="Eyeglass Sale 4">
                     </div>
                 </div>
-                <button class="carousel-control-prev" type="button" data-bs-target="#eyeglassCarousel" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Previous</span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#eyeglassCarousel" data-bs-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Next</span>
-                </button>
             </div>
             
             <!-- Enhanced Vision Statement -->
             <div class="vision-overlay" data-aos="fade-up">
                 <div class="container">
-                    <div class="vision-text">We value your sight. We care.</div>
+                    <div class="vision-text floating-element">We value your sight. We care.</div>
                     <div class="vision-subtext">QUALITY VISION FOR QUALITY LIFE</div>
                 </div>
             </div>
@@ -499,29 +494,29 @@
         <div class="container text-center my-4">
             <div class="row justify-content-center mb-5">
                 <div class="col-md-3 mb-3">
-                    <button class="category-btn best-sellers">
+                    <button class="category-btn best-sellers floating-element">
                         <i class="fas fa-crown me-2"></i>BEST SELLER
                     </button>
                 </div>
                 <div class="col-md-3 mb-3">
-                    <button class="category-btn new-arrivals">
+                    <button class="category-btn new-arrivals floating-element" style="animation-delay: 0.5s;">
                         <i class="fas fa-star me-2"></i>NEW ARRIVALS
                     </button>
                 </div>
             </div>
             <div class="row justify-content-center">
                 <div class="col-md-4 col-sm-6 text-center mb-4">
-                    <img src="https://via.placeholder.com/400x300?text=Minima+M608" alt="Minima M608" class="product-img" data-aos="fade-up">
+                    <img src="Images/imgm1.png" alt="Minima M608" class="product-img" data-aos="fade-up">
                 </div>
                 <div class="col-md-4 col-sm-6 text-center mb-4">
-                    <img src="https://via.placeholder.com/400x300?text=Paul+Hueman" alt="Paul Hueman" class="product-img" data-aos="fade-up" data-aos-delay="200">
+                    <img src="Images/imgm2.png" alt="Paul Hueman" class="product-img" data-aos="fade-up" data-aos-delay="200">
                 </div>
                 <div class="col-md-4 col-sm-6 text-center mb-4">
-                    <img src="https://via.placeholder.com/400x300?text=Paul+Hueman+PHF" alt="Paul Hueman PHF" class="product-img" data-aos="fade-up" data-aos-delay="400">
+                    <img src="Images/imgm3.png" alt="Paul Hueman PHF" class="product-img" data-aos="fade-up" data-aos-delay="400">
                 </div>
             </div>
             <div class="text-center my-4" data-aos="fade-up">
-                <a href="#" class="see-more-btn">
+                <a href="product-gallery.php" class="see-more-btn">
                     <i class="fas fa-eye me-2"></i>SEE MORE
                 </a>
             </div>
@@ -536,7 +531,7 @@
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-lg-6" data-aos="fade-right">
-                    <img src="https://via.placeholder.com/600x400?text=Our+Services" alt="Our Services" class="service-img">
+                    <img src="Images/imgs.jpg" alt="Our Services" class="service-img floating-element">
                 </div>
                 <div class="col-lg-6 text-content" data-aos="fade-left">
                     <h2 class="service-title">OUR SERVICES</h2>
@@ -545,7 +540,7 @@
                         and stylish frames to match your personality. Explore our wide range of services today!
                     </p>
                     <div class="d-flex justify-content-end">
-                        <a href="#" class="nav-button">
+                        <a href="ourservices.php" class="nav-button">
                             <i class="fas fa-arrow-right me-2"></i>KNOW MORE
                         </a>
                     </div>
@@ -565,12 +560,12 @@
                     <p class="about-text">
                         Know and learn more about PBV Santos Optical! Discover our commitment to quality vision care and exceptional customer service since 2001.
                     </p>
-                    <a href="#" class="btn-see-all">
+                    <a href="aboutus.php" class="btn-see-all">
                         EXPLORE OUR STORY <span>></span>
                     </a>
                 </div>
                 <div class="col-lg-6 text-center" data-aos="fade-left" data-aos-delay="200">
-                    <img src="https://via.placeholder.com/500x400?text=About+Us" alt="About Us Image" class="img-fluid rounded" style="border: 3px solid var(--primary-yellow);">
+                    <img src="Images/imgabt.jpg" alt="About Us Image" class="img-fluid rounded floating-element" style="border: 3px solid var(--primary-yellow); animation-delay: 1s;">
                 </div>
             </div>
         </div>
@@ -592,31 +587,7 @@
         </div>
     </div>
 
-    <footer class="bg-dark text-light py-4 mt-5">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-4">
-                    <h5>Santos Optical</h5>
-                    <p>Quality vision for quality life since 2001.</p>
-                </div>
-                <div class="col-md-4">
-                    <h5>Contact Us</h5>
-                    <p>Email: info@santosoptical.com<br>Phone: (123) 456-7890</p>
-                </div>
-                <div class="col-md-4">
-                    <h5>Follow Us</h5>
-                    <div class="d-flex">
-                        <a href="#" class="text-light me-3"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="text-light me-3"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="text-light me-3"><i class="fab fa-instagram"></i></a>
-                    </div>
-                </div>
-            </div>
-            <div class="text-center mt-3">
-                <p>&copy; 2023 Santos Optical. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
+    <?php include 'footer.php'; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
@@ -659,6 +630,18 @@
             
             createParticles('particles-1', 12);
             createParticles('particles-2', 8);
+            
+            // Add hover effects to carousel items
+            const carouselItems = document.querySelectorAll('.carousel-item');
+            carouselItems.forEach(item => {
+                item.addEventListener('mouseenter', () => {
+                    item.style.transform = 'scale(1.02)';
+                });
+                
+                item.addEventListener('mouseleave', () => {
+                    item.style.transform = 'scale(1)';
+                });
+            });
             
             // Add scroll-triggered animations
             const observerOptions = {
