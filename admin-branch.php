@@ -290,9 +290,9 @@ if ($rid !== 4) {
         <div class="main-content">
             <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
                 <h1><i class="fas fa-boxes me-2"></i> Branches</h1>
-                <a class="btn btn-primary" href="admin-inventory-add.php" role="button">
+                <button class="btn btn-primary" role="button">
                     <i class="fas fa-plus me-2"></i> Add New Branch
-                </a>            
+                </button>            
             </div>
 
             <div class="table-instructions alert alert-info" style="margin-bottom: 20px; padding: 10px 15px; border-radius: 4px;">
