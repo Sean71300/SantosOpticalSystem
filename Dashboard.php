@@ -153,9 +153,9 @@ if (!is_numeric($orderCount)) { $orderCount = 0; }
                         <div class="dashboard-card equal-height">
                             <h5 id="sales-overview-title"><i class="fas fa-chart-line me-2"></i>Sales Overview</h5>
                             <hr class="border-1 border-black opacity-25">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <div></div>
-                                <div class="d-flex align-items-center">
+                            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                                <div class="d-flex align-items-center flex-wrap gap-2">
+                                    <label class="me-2 small text-muted mb-0">Quick period</label>
                                     <select id="sales-month-select" class="form-select form-select-sm d-inline-block" style="width:150px;"></select>
                                     <select id="sales-week-select" class="form-select form-select-sm d-inline-block ms-2" style="width:140px;">
                                         <option value="week1">Week 1</option>
@@ -165,6 +165,14 @@ if (!is_numeric($orderCount)) { $orderCount = 0; }
                                         <option value="month">Whole Month</option>
                                     </select>
                                     <select id="sales-year-select" class="form-select form-select-sm d-inline-block ms-2" style="width:110px;"></select>
+                                </div>
+                                <div class="d-flex align-items-center flex-wrap gap-2">
+                                    <label class="me-2 small text-muted mb-0">Custom range</label>
+                                    <input type="date" id="sales-start-date" class="form-control form-control-sm" style="width:160px;" />
+                                    <span class="small text-muted">to</span>
+                                    <input type="date" id="sales-end-date" class="form-control form-control-sm" style="width:160px;" />
+                                    <button id="apply-custom-range" type="button" class="btn btn-sm btn-primary"><i class="fas fa-filter me-1"></i> Apply</button>
+                                    <button id="clear-custom-range" type="button" class="btn btn-sm btn-outline-secondary" title="Clear custom range">Clear</button>
                                 </div>
                             </div>
                             <div class="chart-container">
@@ -468,6 +476,17 @@ if (!is_numeric($orderCount)) { $orderCount = 0; }
                 const monthSel = document.getElementById('sales-month-select');
                 const weekSel = document.getElementById('sales-week-select');
                 const yearSel = document.getElementById('sales-year-select');
+                    const startInput = document.getElementById('sales-start-date');
+                    const endInput = document.getElementById('sales-end-date');
+                    // 1) If custom range is set and valid, prefer it
+                    const startVal = startInput && startInput.value ? startInput.value : null;
+                    const endVal = endInput && endInput.value ? endInput.value : null;
+                    if (startVal && endVal) {
+                        // basic safety: ensure start <= end
+                        if (new Date(startVal) <= new Date(endVal)) {
+                            return { start: startVal, end: endVal };
+                        }
+                    }
                 const monthVal = monthSel ? monthSel.value : null;
                 const yearVal = yearSel ? yearSel.value : null;
                 const week = weekSel ? weekSel.value : 'month';
@@ -615,6 +634,13 @@ if (!is_numeric($orderCount)) { $orderCount = 0; }
 
             // initial state
             updateSelectorStates();
+            // Custom range: Apply and Clear buttons
+            const applyBtn = document.getElementById('apply-custom-range');
+            const clearBtn = document.getElementById('clear-custom-range');
+            const startInput = document.getElementById('sales-start-date');
+            const endInput = document.getElementById('sales-end-date');
+            if (applyBtn) applyBtn.addEventListener('click', function(){ loadSalesRange(); });
+            if (clearBtn) clearBtn.addEventListener('click', function(){ if (startInput) startInput.value=''; if (endInput) endInput.value=''; loadSalesRange(); });
 
             const monthSel = document.getElementById('sales-month-select');
             const weekSel = document.getElementById('sales-week-select');

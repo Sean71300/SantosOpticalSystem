@@ -125,39 +125,11 @@ $search = _get_scalar('search');
 $branch = _get_scalar('branch');
 $status = _get_scalar('status');
 
-// Role-based branch scope (1=Admin,2=Employee)
+// Role info (no enforced branch scoping; interactive branch filter remains)
 $rid = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0;
 $restrictedRole = in_array($rid,[1,2],true);
-if ($restrictedRole) {
-    // Try to populate session branch from multiple reliable sources
-    if (empty($_SESSION['branchcode'])) {
-        // 1) Lookup by logged-in employee ID, if available
-        if (!empty($_SESSION['id'])) {
-            $st = $conn->prepare('SELECT BranchCode FROM employee WHERE EmployeeID = ? LIMIT 1');
-            $st->bind_param('i', $_SESSION['id']);
-            if ($st->execute()) { $r = $st->get_result()->fetch_assoc(); if ($r && !empty($r['BranchCode'])) $_SESSION['branchcode'] = $r['BranchCode']; }
-            $st->close();
-        }
-        // 2) Fallback: lookup by username/login name
-        if (empty($_SESSION['branchcode']) && !empty($_SESSION['username'])) {
-            $st = $conn->prepare('SELECT BranchCode FROM employee WHERE LoginName = ? LIMIT 1');
-            $st->bind_param('s', $_SESSION['username']);
-            if ($st->execute()) { $r = $st->get_result()->fetch_assoc(); if ($r && !empty($r['BranchCode'])) $_SESSION['branchcode'] = $r['BranchCode']; }
-            $st->close();
-        }
-    }
-    $branch = $_SESSION['branchcode'] ?? $branch;
-    if (empty($branch)) { _order_log('Warning: restricted role has no BranchCode in session and lookups failed.'); }
-}
 
-// Resolve a display name for the selected/locked branch (used to show a static control for Admin/Employee)
-$branchDisplayName = '';
-if (!empty($branch)) {
-    $bnStmt = $conn->prepare('SELECT BranchName FROM BranchMaster WHERE BranchCode = ? LIMIT 1');
-    $bnStmt->bind_param('s', $branch);
-    if ($bnStmt->execute()) { $branchDisplayName = ($bnStmt->get_result()->fetch_assoc()['BranchName'] ?? ''); }
-    $bnStmt->close();
-}
+// No locked-branch display name needed when interactive filter is used
 
 // Branches list
 $branches = [];
@@ -233,11 +205,10 @@ if (!$headers && $total>0 && $page>1) {
 if (isset($_GET['action']) && $_GET['action']==='details' && isset($_GET['id'])) {
     header('Content-Type: application/json');
     $id = trim($_GET['id']);
-    // Enforce branch scope for restricted roles
+    // Fetch without branch enforcement (interactive filter controls access)
     $sqlH = 'SELECT oh.Orderhdr_id, oh.CustomerID, oh.BranchCode, oh.Created_dt, c.CustomerName FROM Order_hdr oh LEFT JOIN customer c ON c.CustomerID=oh.CustomerID WHERE oh.Orderhdr_id=?';
-    if ($restrictedRole && !empty($_SESSION['branchcode'])) { $sqlH .= ' AND oh.BranchCode=?'; }
     $st = $conn->prepare($sqlH);
-    if ($restrictedRole && !empty($_SESSION['branchcode'])) { $st->bind_param('ss',$id,$_SESSION['branchcode']); } else { $st->bind_param('s',$id); }
+    $st->bind_param('s',$id);
     $st->execute(); $hdr=$st->get_result()->fetch_assoc(); $st->close();
     if(!$hdr){ echo json_encode(['error'=>'Order not found']); exit; }
 
@@ -354,7 +325,7 @@ body { background:#f5f7fa; padding-top:60px; }
         <h2><i class="fas fa-shopping-cart me-2"></i> Orders Management</h2>
     <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#addOrderModal"><i class="fas fa-plus me-1"></i> Add New Order</button>
     </div>
-    <div class="text-muted small mb-2">Debug: <?= $debugInfo ?> | headers=<?= isset($headers)?count($headers):0 ?> | orders=<?= isset($ordersCount)?$ordersCount:0 ?> | restrictedRole=<?= $restrictedRole?'1':'0' ?> | statusOptsLen=<?= isset($statusOptionsHtml)?strlen($statusOptionsHtml):0 ?></div>
+    
 
     <div class="card card-round p-4 mb-4">
         <form method="get" action="order.php">
@@ -365,18 +336,12 @@ body { background:#f5f7fa; padding-top:60px; }
                 </div>
                 <div class="col-lg-3 col-md-6">
                     <label class="form-label">Filter by Branch</label>
-                    <?php if ($restrictedRole): ?>
-                        <input class="form-control" value="<?= htmlspecialchars($branchDisplayName ?: $branch) ?>" readonly>
-                        <input type="hidden" name="branch" value="<?= htmlspecialchars($branch) ?>">
-                        <div class="form-text">Locked to your branch</div>
-                    <?php else: ?>
-                        <select name="branch" class="form-select">
-                            <option value="">All Branches</option>
-                            <?php foreach($branches as $br): ?>
-                            <option value="<?= htmlspecialchars($br['BranchCode']) ?>" <?= $branch==$br['BranchCode']?'selected':'' ?>><?= htmlspecialchars($br['BranchName']) ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    <?php endif; ?>
+                    <select name="branch" class="form-select">
+                        <option value="">All Branches</option>
+                        <?php foreach($branches as $br): ?>
+                        <option value="<?= htmlspecialchars($br['BranchCode']) ?>" <?= $branch==$br['BranchCode']?'selected':'' ?>><?= htmlspecialchars($br['BranchName']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
                 <div class="col-lg-3 col-md-6">
                     <label class="form-label">Filter by Status</label>
