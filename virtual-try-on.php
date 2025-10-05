@@ -44,13 +44,14 @@
     <p id="status" class="mt-3 text-muted"></p>
   </div>
 
-  <!-- ✅ Load Mediapipe Scripts in Correct Order -->
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.4/camera_utils.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.4/drawing_utils.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils@0.4/control_utils.js"></script>
+  <!-- ✅ Load Mediapipe FaceMesh & Drawing -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/face_mesh.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.4/drawing_utils.js"></script>
 
-  <script>
+  <!-- ✅ ES Module Import for CameraUtils -->
+  <script type="module">
+    import { Camera } from "https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.4/camera_utils.js";
+
     const video = document.getElementById("video");
     const startButton = document.getElementById("startCamera");
     const status = document.getElementById("status");
@@ -71,7 +72,6 @@
         return;
       }
 
-      // ✅ Initialize FaceMesh
       const faceMesh = new FaceMesh({
         locateFile: (file) =>
           `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/${file}`,
@@ -88,20 +88,16 @@
         console.log("Face detected:", results.multiFaceLandmarks?.length || 0);
       });
 
-      // ✅ Wait for Camera class to be ready before using it
-      if (typeof Camera !== "undefined") {
-        const camera = new Camera(video, {
-          onFrame: async () => {
-            await faceMesh.send({ image: video });
-          },
-          width: 480,
-          height: 360,
-        });
-        camera.start();
-      } else {
-        console.error("Camera class not loaded properly.");
-        status.textContent = "Error: Camera class missing.";
-      }
+      // ✅ Camera class imported correctly now
+      const camera = new Camera(video, {
+        onFrame: async () => {
+          await faceMesh.send({ image: video });
+        },
+        width: 480,
+        height: 360,
+      });
+
+      camera.start();
     });
   </script>
 </body>
