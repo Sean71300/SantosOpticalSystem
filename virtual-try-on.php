@@ -149,16 +149,24 @@
       font-weight: 600;
       margin-bottom: 5px;
     }
-    .height-controls {
+    .position-controls {
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 10px;
       margin-top: 5px;
     }
-    .height-value {
+    .position-value {
       min-width: 40px;
       font-weight: bold;
+    }
+    .control-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+    }
+    .control-col {
+      flex: 1;
     }
   </style>
 </head>
@@ -173,22 +181,50 @@
     </div>
 
     <div class="controls-container d-none" id="controlsContainer">
-      <div class="control-group">
-        <div class="control-label">Glasses Size</div>
-        <input type="range" class="form-range" id="sizeSlider" min="1.8" max="3.0" step="0.1" value="2.4">
-        <small id="sizeValue">2.4x</small>
+      <div class="control-row">
+        <div class="control-col">
+          <div class="control-label">Size</div>
+          <input type="range" class="form-range" id="sizeSlider" min="1.8" max="3.0" step="0.1" value="2.4">
+          <small id="sizeValue">2.4x</small>
+        </div>
+        <div class="control-col">
+          <div class="control-label">Height</div>
+          <div class="position-controls">
+            <button class="btn btn-outline-primary btn-sm" id="heightDown">
+              <i class="bi bi-dash"></i>
+            </button>
+            <span class="position-value" id="heightValue">70%</span>
+            <button class="btn btn-outline-primary btn-sm" id="heightUp">
+              <i class="bi bi-plus"></i>
+            </button>
+          </div>
+        </div>
       </div>
       
-      <div class="control-group">
-        <div class="control-label">Glasses Height</div>
-        <div class="height-controls">
-          <button class="btn btn-outline-primary btn-sm" id="heightDown">
-            <i class="bi bi-dash"></i>
-          </button>
-          <span class="height-value" id="heightValue">70%</span>
-          <button class="btn btn-outline-primary btn-sm" id="heightUp">
-            <i class="bi bi-plus"></i>
-          </button>
+      <div class="control-row">
+        <div class="control-col">
+          <div class="control-label">Vertical Position</div>
+          <div class="position-controls">
+            <button class="btn btn-outline-primary btn-sm" id="positionDown">
+              <i class="bi bi-arrow-down"></i>
+            </button>
+            <span class="position-value" id="positionValue">0px</span>
+            <button class="btn btn-outline-primary btn-sm" id="positionUp">
+              <i class="bi bi-arrow-up"></i>
+            </button>
+          </div>
+        </div>
+        <div class="control-col">
+          <div class="control-label">3D Depth</div>
+          <div class="position-controls">
+            <button class="btn btn-outline-primary btn-sm" id="depthDown">
+              <i class="bi bi-dash"></i>
+            </button>
+            <span class="position-value" id="depthValue">0.3</span>
+            <button class="btn btn-outline-primary btn-sm" id="depthUp">
+              <i class="bi bi-plus"></i>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -269,6 +305,12 @@
     const heightDown = document.getElementById('heightDown');
     const heightUp = document.getElementById('heightUp');
     const heightValue = document.getElementById('heightValue');
+    const positionDown = document.getElementById('positionDown');
+    const positionUp = document.getElementById('positionUp');
+    const positionValue = document.getElementById('positionValue');
+    const depthDown = document.getElementById('depthDown');
+    const depthUp = document.getElementById('depthUp');
+    const depthValue = document.getElementById('depthValue');
     const frameSelector = document.getElementById('frameSelector');
     const frameButtons = document.querySelectorAll('.frame-btn');
     const statusMsg = document.getElementById('statusMsg');
@@ -350,6 +392,8 @@
     let isCalibrated = false;
     let glassesSizeMultiplier = 2.4;
     let glassesHeightRatio = 0.7;
+    let verticalOffset = 0; // Y-axis positioning
+    let depthEffect = 0.3; // 3D depth effect strength
     let currentFrame = 'A-TRIANGLE';
 
     function calculateHeadAngle(landmarks) {
@@ -359,6 +403,17 @@
       const deltaX = rightEyeInner.x - leftEyeInner.x;
       const deltaY = rightEyeInner.y - leftEyeInner.y;
       return Math.atan2(deltaY, deltaX);
+    }
+
+    function calculateHeadTilt(landmarks) {
+      // Calculate head tilt using nose and forehead points
+      const noseTip = landmarks[1];
+      const forehead = landmarks[10];
+      const chin = landmarks[152];
+      
+      // Use vertical difference to detect side tilt
+      const verticalDiff = forehead.y - chin.y;
+      return verticalDiff;
     }
 
     function calibrateStraightPosition(landmarks) {
@@ -372,10 +427,19 @@
       heightValue.textContent = Math.round(glassesHeightRatio * 100) + '%';
     }
 
+    function updatePositionDisplay() {
+      positionValue.textContent = verticalOffset + 'px';
+    }
+
+    function updateDepthDisplay() {
+      depthValue.textContent = depthEffect.toFixed(1);
+    }
+
     function drawGlasses(landmarks) {
       const leftEye = landmarks[33];
       const rightEye = landmarks[263];
       let headAngle = calculateHeadAngle(landmarks);
+      const headTilt = calculateHeadTilt(landmarks);
       
       // Apply calibration offset if calibrated
       if (isCalibrated) {
@@ -389,13 +453,34 @@
 
       const glassesWidth = eyeDist * glassesSizeMultiplier;
       const glassesHeight = glassesWidth * glassesHeightRatio;
-      const centerX = (leftEye.x * canvasElement.width + rightEye.x * canvasElement.width) / 2;
-      const centerY = (leftEye.y * canvasElement.height + rightEye.y * canvasElement.height) / 2;
+      let centerX = (leftEye.x * canvasElement.width + rightEye.x * canvasElement.width) / 2;
+      let centerY = (leftEye.y * canvasElement.height + rightEye.y * canvasElement.height) / 2;
+
+      // Apply vertical offset
+      centerY += verticalOffset;
+
+      // Calculate 3D depth effect based on head tilt
+      const depthMultiplier = 1 + (Math.abs(headTilt) * depthEffect * 2);
+      const perspectiveShift = headTilt * depthEffect * glassesWidth * 0.5;
 
       if (centerX > 0 && centerY > 0 && glassesWidth > 10 && glassesImages[currentFrame]) {
         canvasCtx.save();
         canvasCtx.translate(centerX, centerY);
         canvasCtx.rotate(headAngle);
+        
+        // Apply perspective transformation for 3D effect
+        if (Math.abs(headTilt) > 0.05) {
+          // Create perspective by scaling and shifting
+          const scaleNear = 1 + (Math.abs(headTilt) * depthEffect);
+          const scaleFar = 1 - (Math.abs(headTilt) * depthEffect * 0.5);
+          
+          // Apply different scaling for left and right sides to simulate perspective
+          canvasCtx.transform(
+            headTilt > 0 ? scaleNear : scaleFar, 0, 0, 1,
+            perspectiveShift, 0
+          );
+        }
+        
         canvasCtx.drawImage(
           glassesImages[currentFrame],
           -glassesWidth / 2,
@@ -561,6 +646,28 @@
       updateHeightDisplay();
     });
 
+    // Vertical position controls
+    positionDown.addEventListener('click', () => {
+      verticalOffset += 5;
+      updatePositionDisplay();
+    });
+
+    positionUp.addEventListener('click', () => {
+      verticalOffset -= 5;
+      updatePositionDisplay();
+    });
+
+    // Depth effect controls
+    depthDown.addEventListener('click', () => {
+      depthEffect = Math.max(0.1, depthEffect - 0.1);
+      updateDepthDisplay();
+    });
+
+    depthUp.addEventListener('click', () => {
+      depthEffect = Math.min(1.0, depthEffect + 0.1);
+      updateDepthDisplay();
+    });
+
     // Calibrate button handler
     calibrateBtn.addEventListener('click', () => {
       if (faceTrackingActive) {
@@ -592,6 +699,8 @@
         frameSelector.classList.remove('d-none');
         calibrateBtn.classList.remove('d-none');
         updateHeightDisplay();
+        updatePositionDisplay();
+        updateDepthDisplay();
 
         const processingWidth = isMobile ? 320 : 640;
         const processingHeight = isMobile ? 240 : 480;
