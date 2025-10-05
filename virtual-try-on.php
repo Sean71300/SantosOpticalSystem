@@ -1859,15 +1859,21 @@
     if (positionDown) {
       positionDown.addEventListener('click', () => {
         verticalOffset += 2;
+        // limit to maximum 24
+        if (verticalOffset > 24) verticalOffset = 24;
         updatePositionDisplay();
       });
     }
+
     if (positionUp) {
       positionUp.addEventListener('click', () => {
         verticalOffset -= 2;
+        // limit to minimum -24
+        if (verticalOffset < -24) verticalOffset = -24;
         updatePositionDisplay();
       });
     }
+
 
     // Reset icon handlers
     const sizeResetIcon = document.getElementById('sizeResetIcon');
