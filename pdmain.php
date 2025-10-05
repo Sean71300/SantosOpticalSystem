@@ -133,25 +133,9 @@
         border: 2px solid transparent;
     }
     
-    .category-btn::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-        transition: left 0.5s ease;
-    }
-    
-    .category-btn:hover::before {
-        left: 100%;
-    }
-    
     .category-btn:hover {
         transform: translateY(-5px);
         box-shadow: 0 15px 35px rgba(255, 215, 0, 0.4);
-        border-color: var(--primary-red);
     }
     
     .product-img {
@@ -165,26 +149,9 @@
         border: 3px solid transparent;
     }
     
-    .product-img::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), transparent);
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-    
     .product-img:hover {
-        transform: scale(1.08);
         box-shadow: 0 20px 40px rgba(220, 53, 69, 0.2);
         border-color: var(--primary-yellow);
-    }
-    
-    .product-img:hover::before {
-        opacity: 1;
     }
     
     .see-more-btn {
@@ -203,25 +170,9 @@
         border: 2px solid transparent;
     }
     
-    .see-more-btn::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-        transition: left 0.5s ease;
-    }
-    
-    .see-more-btn:hover::before {
-        left: 100%;
-    }
-    
     .see-more-btn:hover {
         transform: translateY(-5px);
         box-shadow: 0 15px 35px rgba(220, 53, 69, 0.4);
-        border-color: var(--primary-yellow);
         color: var(--pure-white);
     }
     
@@ -241,7 +192,6 @@
     }
     
     .service-img:hover {
-        transform: scale(1.02);
         box-shadow: 0 25px 50px rgba(255, 215, 0, 0.3);
     }
     
@@ -288,7 +238,6 @@
     .nav-button:hover {
         transform: translateY(-3px);
         box-shadow: 0 15px 35px rgba(255, 215, 0, 0.4);
-        border-color: var(--primary-red);
         color: var(--text-dark);
     }
     
@@ -330,7 +279,6 @@
     .btn-see-all:hover {
         transform: translateY(-3px);
         box-shadow: 0 15px 35px rgba(220, 53, 69, 0.4);
-        border-color: var(--primary-yellow);
         color: var(--pure-white);
     }
     
@@ -360,7 +308,6 @@
     }
     
     .ratio-16x9:hover {
-        transform: scale(1.02);
         box-shadow: 0 30px 60px rgba(220, 53, 69, 0.25);
     }
     
@@ -429,10 +376,6 @@
         .category-btn, .see-more-btn, .nav-button, .btn-see-all {
             padding: 0.8rem 1.5rem;
             font-size: 1rem;
-        }
-        
-        .product-img:hover {
-            transform: scale(1.05);
         }
     }
     
@@ -630,18 +573,6 @@
             
             createParticles('particles-1', 12);
             createParticles('particles-2', 8);
-            
-            // Add hover effects to carousel items
-            const carouselItems = document.querySelectorAll('.carousel-item');
-            carouselItems.forEach(item => {
-                item.addEventListener('mouseenter', () => {
-                    item.style.transform = 'scale(1.02)';
-                });
-                
-                item.addEventListener('mouseleave', () => {
-                    item.style.transform = 'scale(1)';
-                });
-            });
             
             // Add scroll-triggered animations
             const observerOptions = {
