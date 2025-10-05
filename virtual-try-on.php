@@ -90,6 +90,12 @@
       margin: 10px 0;
       font-size: 14px;
     }
+    .size-controls {
+      background: #e9ecef;
+      border-radius: 8px;
+      padding: 10px;
+      margin: 10px 0;
+    }
   </style>
 </head>
 
@@ -104,6 +110,18 @@
 
     <div class="calibration-notice d-none" id="calibrationNotice">
       <strong>Tip:</strong> Look straight at the camera, then click "Calibrate Straight Position" below
+    </div>
+
+    <div class="size-controls d-none" id="sizeControls">
+      <div class="row align-items-center">
+        <div class="col">
+          <label class="form-label"><small>Glasses Size:</small></label>
+          <input type="range" class="form-range" id="sizeSlider" min="1.8" max="3.0" step="0.1" value="2.4">
+        </div>
+        <div class="col-auto">
+          <small id="sizeValue">2.4x</small>
+        </div>
+      </div>
     </div>
 
     <div class="mt-3">
@@ -143,6 +161,9 @@
     const startBtn = document.getElementById('startBtn');
     const calibrateBtn = document.getElementById('calibrateBtn');
     const calibrationNotice = document.getElementById('calibrationNotice');
+    const sizeControls = document.getElementById('sizeControls');
+    const sizeSlider = document.getElementById('sizeSlider');
+    const sizeValue = document.getElementById('sizeValue');
     const statusMsg = document.getElementById('statusMsg');
     const loadingSpinner = document.getElementById('loadingSpinner');
     const mobileTips = document.getElementById('mobileTips');
@@ -175,6 +196,8 @@
     let faceTrackingActive = false;
     let angleOffset = 0; // This will store the calibration offset
     let isCalibrated = false;
+    let glassesSizeMultiplier = 2.4; // Increased from 2.2 for larger glasses
+    let glassesHeightRatio = 0.7; // Increased from 0.5 for taller glasses
 
     function calculateHeadAngle(landmarks) {
       const leftEyeInner = landmarks[133];
@@ -207,8 +230,9 @@
         rightEye.y * canvasElement.height - leftEye.y * canvasElement.height
       );
 
-      const glassesWidth = eyeDist * 2.2;
-      const glassesHeight = glassesWidth * 0.5;
+      // Use the size multiplier for width and increased height ratio
+      const glassesWidth = eyeDist * glassesSizeMultiplier;
+      const glassesHeight = glassesWidth * glassesHeightRatio; // Taller glasses
       const centerX = (leftEye.x * canvasElement.width + rightEye.x * canvasElement.width) / 2;
       const centerY = (leftEye.y * canvasElement.height + rightEye.y * canvasElement.height) / 2;
 
@@ -353,6 +377,12 @@
       }
     }
 
+    // Size slider handler
+    sizeSlider.addEventListener('input', (e) => {
+      glassesSizeMultiplier = parseFloat(e.target.value);
+      sizeValue.textContent = glassesSizeMultiplier.toFixed(1) + 'x';
+    });
+
     // Calibrate button handler
     calibrateBtn.addEventListener('click', () => {
       if (faceTrackingActive) {
@@ -384,9 +414,10 @@
         // Resize canvas to match video
         resizeCanvasToDisplay();
 
-        // Show calibration notice and button
+        // Show calibration notice and controls
         calibrationNotice.classList.remove('d-none');
         calibrateBtn.classList.remove('d-none');
+        sizeControls.classList.remove('d-none');
 
         // Determine processing resolution based on device
         const processingWidth = isMobile ? 320 : 640;
