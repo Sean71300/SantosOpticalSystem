@@ -869,7 +869,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     
                     <div class="frame-showcase">
                         <?php
-                        // Map face shapes to their shape IDs
+                        // Map face shapes to their shape IDs (matching your product gallery)
                         $shapeIds = [
                             'SQUARE'      => 5,
                             'ROUND'       => 4,
@@ -883,45 +883,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $shapeId = $shapeIds[$result] ?? null;
                         
                         if ($shapeId) {
-                            // Fetch frames from database for this face shape
-                            // Assuming you have a database connection already established
-                            $query = "SELECT product_id, product_name, product_image, product_price 
-                                     FROM products 
-                                     WHERE face_shape_id = ? 
-                                     AND status = 'active' 
-                                     ORDER BY RAND() 
-                                     LIMIT 3";
+                            // Use the same connection method as product-gallery.php
+                            require_once 'connect.php';
+                            $conn = connect();
                             
-                            // You'll need to adjust this based on your actual database connection method
-                            // Example with PDO:
-                            // $stmt = $pdo->prepare($query);
-                            // $stmt->execute([$shapeId]);
-                            // $frames = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                            // Fetch 3 random frames for this face shape (matching product gallery structure)
+                            $sql = "SELECT p.ProductID, p.Model, p.ProductImage, p.Price, p.CategoryType
+                                   FROM productMstr p
+                                   LEFT JOIN archives a ON (p.ProductID = a.TargetID AND a.TargetType = 'product')
+                                   WHERE p.ShapeID = ?
+                                   AND (p.Avail_FL = 'Available' OR p.Avail_FL IS NULL)
+                                   AND a.ArchiveID IS NULL
+                                   ORDER BY RAND()
+                                   LIMIT 3";
                             
-                            // Example with mysqli:
-                            // $stmt = $conn->prepare($query);
-                            // $stmt->bind_param("i", $shapeId);
-                            // $stmt->execute();
-                            // $result_set = $stmt->get_result();
-                            // $frames = $result_set->fetch_all(MYSQLI_ASSOC);
+                            $stmt = $conn->prepare($sql);
+                            $stmt->bind_param("i", $shapeId);
+                            $stmt->execute();
+                            $frameResult = $stmt->get_result();
                             
-                            // For now, showing placeholder - replace with your actual DB query
-                            $frames = []; // Replace this line with actual database fetch
-                            
-                            if (!empty($frames)) {
-                                foreach ($frames as $frame) {
+                            if ($frameResult->num_rows > 0) {
+                                while ($frame = $frameResult->fetch_assoc()) {
+                                    // Format price same way as product gallery
+                                    $price = $frame['Price'];
+                                    $numeric_price = preg_replace('/[^0-9.]/', '', $price);
+                                    $formatted_price = is_numeric($numeric_price) ? '₱' . number_format((float)$numeric_price, 2) : '₱0.00';
+                                    
                                     echo '<div class="frame-item">';
-                                    echo '<img src="'.htmlspecialchars($frame['product_image']).'" alt="'.htmlspecialchars($frame['product_name']).'">';
+                                    echo '<img src="'.htmlspecialchars($frame['ProductImage']).'" alt="'.htmlspecialchars($frame['Model']).'">';
                                     echo '<div class="frame-info">';
-                                    echo '<h6>'.htmlspecialchars($frame['product_name']).'</h6>';
-                                    echo '<p>₱'.number_format($frame['product_price'], 2).'</p>';
+                                    echo '<h6>'.htmlspecialchars($frame['Model']).'</h6>';
+                                    echo '<p>'.$formatted_price.'</p>';
                                     echo '</div>';
                                     echo '</div>';
                                 }
                             } else {
                                 // Fallback if no products found
-                                echo '<p class="text-center w-100">No frames available at the moment. Please check our full gallery.</p>';
+                                echo '<p class="text-center w-100" style="color: #666;">No frames available at the moment. Browse our full collection below.</p>';
                             }
+                            
+                            $stmt->close();
+                            $conn->close();
                         }
                         ?>
                     </div>
