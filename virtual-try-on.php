@@ -1,5 +1,5 @@
 <?php
-// virtual-try-on.php
+// virtual-try-on-fixed.php
 include 'ActivityTracker.php';
 require_once 'connect.php';
 
@@ -78,6 +78,7 @@ $frameImage = getGenericFrameImage($faceShape);
         aspect-ratio: 4/3;
         object-fit: cover;
         box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        transform: scaleX(-1); /* Mirror the camera */
     }
     
     .position-relative {
@@ -91,6 +92,7 @@ $frameImage = getGenericFrameImage($faceShape);
         z-index: 10;
         pointer-events: none;
         border-radius: 15px;
+        transform: scaleX(-1); /* Mirror the overlay to match camera */
     }
     
     .btn-tryon {
@@ -199,6 +201,16 @@ $frameImage = getGenericFrameImage($faceShape);
         flex-wrap: wrap;
     }
     
+    .debug-info {
+        background: #e9ecef;
+        border-radius: 10px;
+        padding: 15px;
+        margin-top: 15px;
+        font-family: monospace;
+        font-size: 12px;
+        display: none;
+    }
+    
     @media (max-width: 768px) {
         .tryon-container {
             margin: 15px auto;
@@ -263,12 +275,23 @@ $frameImage = getGenericFrameImage($faceShape);
                 <canvas id="frameOverlay" class="position-absolute top-0 start-0 w-100 h-100"></canvas>
             </div>
             
+            <!-- Debug information -->
+            <div class="debug-info" id="debugInfo">
+                <strong>Debug Information:</strong>
+                <div id="debugStatus">Waiting for camera...</div>
+                <div id="faceDetectionStatus">Face detection: Not started</div>
+                <div id="frameStatus">Frame: Not loaded</div>
+            </div>
+            
             <div class="camera-controls">
                 <button class="btn btn-tryon" id="startCameraBtn">
                     <i class="fas fa-camera me-2"></i> Start Camera
                 </button>
                 <button class="btn btn-tryon btn-outline-custom" id="switchCameraBtn" style="display: none;">
                     <i class="fas fa-sync-alt me-2"></i> Switch Camera
+                </button>
+                <button class="btn btn-tryon btn-outline-custom" id="debugBtn">
+                    <i class="fas fa-bug me-2"></i> Debug Info
                 </button>
                 <a href="face-shape-detector.php" class="btn btn-tryon btn-outline-custom">
                     <i class="fas fa-arrow-left me-2"></i> Back to Results
@@ -287,12 +310,13 @@ $frameImage = getGenericFrameImage($faceShape);
     <div class="loading-overlay" id="loadingOverlay">
         <div class="loader"></div>
         <h4>Loading Virtual Try-On...</h4>
-        <p class="mt-2">This may take a few moments</p>
+        <p class="mt-2" id="loadingDetails">Initializing camera and face detection</p>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Using a more reliable face detection library -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-landmarks-detection@0.0.1/dist/face-landmarks-detection.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-detection@1.0.0/dist/face-detection.min.js"></script>
     <script>
         // Virtual Try-On Configuration
         const config = {
@@ -301,7 +325,7 @@ $frameImage = getGenericFrameImage($faceShape);
         };
 
         let tryOnStream = null;
-        let faceModel = null;
+        let faceDetector = null;
         let isTryOnActive = false;
         let currentFacingMode = 'user';
         let animationFrameId = null;
@@ -309,29 +333,56 @@ $frameImage = getGenericFrameImage($faceShape);
         // DOM Elements
         const startCameraBtn = document.getElementById('startCameraBtn');
         const switchCameraBtn = document.getElementById('switchCameraBtn');
+        const debugBtn = document.getElementById('debugBtn');
         const tryOnPreview = document.getElementById('tryOnPreview');
         const frameOverlay = document.getElementById('frameOverlay');
         const loadingOverlay = document.getElementById('loadingOverlay');
+        const loadingDetails = document.getElementById('loadingDetails');
+        const debugInfo = document.getElementById('debugInfo');
+        const debugStatus = document.getElementById('debugStatus');
+        const faceDetectionStatus = document.getElementById('faceDetectionStatus');
+        const frameStatus = document.getElementById('frameStatus');
+
+        // Update debug information
+        function updateDebugInfo(status, faceStatus, frameStat) {
+            debugStatus.textContent = status;
+            faceDetectionStatus.textContent = `Face detection: ${faceStatus}`;
+            frameStatus.textContent = `Frame: ${frameStat}`;
+        }
+
+        // Toggle debug info
+        debugBtn.addEventListener('click', function() {
+            debugInfo.style.display = debugInfo.style.display === 'none' ? 'block' : 'none';
+        });
 
         // Start virtual try-on
         async function startVirtualTryOn() {
             try {
                 loadingOverlay.style.display = 'flex';
+                updateDebugInfo('Initializing...', 'Loading model', 'Waiting');
                 
                 // Load face detection model
-                if (!faceModel) {
-                    faceModel = await faceLandmarksDetection.load(
-                        faceLandmarksDetection.SupportedPackages.mediapipeFacemesh,
-                        { maxFaces: 1 }
-                    );
+                if (!faceDetector) {
+                    loadingDetails.textContent = 'Loading face detection model...';
+                    const model = faceDetection.SupportedModels.MediaPipeFaceDetector;
+                    const detectorConfig = {
+                        runtime: 'mediapipe',
+                        solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/face_detection',
+                        modelType: 'short'
+                    };
+                    faceDetector = await faceDetection.createDetector(model, detectorConfig);
+                    updateDebugInfo('Model loaded', 'Ready', 'Waiting');
                 }
 
                 // Start camera
+                loadingDetails.textContent = 'Starting camera...';
+                updateDebugInfo('Starting camera...', 'Ready', 'Waiting');
+                
                 tryOnStream = await navigator.mediaDevices.getUserMedia({
                     video: { 
                         facingMode: currentFacingMode,
-                        width: 640,
-                        height: 480
+                        width: 1280,
+                        height: 720
                     },
                     audio: false
                 });
@@ -344,12 +395,16 @@ $frameImage = getGenericFrameImage($faceShape);
                     isTryOnActive = true;
                     startCameraBtn.style.display = 'none';
                     switchCameraBtn.style.display = 'inline-block';
+                    updateDebugInfo('Camera active', 'Detecting...', 'Loading frame');
+                    
+                    // Start detection loop
                     detectFaces();
                 };
 
             } catch (error) {
                 loadingOverlay.style.display = 'none';
                 console.error('Error starting virtual try-on:', error);
+                updateDebugInfo(`Error: ${error.message}`, 'Failed', 'Error');
                 alert('Could not start virtual try-on. Please check camera permissions and try again.');
             }
         }
@@ -374,6 +429,7 @@ $frameImage = getGenericFrameImage($faceShape);
             
             startCameraBtn.style.display = 'inline-block';
             switchCameraBtn.style.display = 'none';
+            updateDebugInfo('Camera stopped', 'Inactive', 'None');
         }
 
         // Restart virtual try-on (for camera switch)
@@ -399,69 +455,83 @@ $frameImage = getGenericFrameImage($faceShape);
             // Clear canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Detect faces
-            const faces = await faceModel.estimateFaces({
-                input: video,
-                returnTensors: false,
-                flipHorizontal: false,
-                predictIrises: false
-            });
-            
-            // If face detected, overlay frame
-            if (faces.length > 0) {
-                const face = faces[0];
-                await overlayFrameOnFace(ctx, face, config.frameImage);
+            try {
+                // Detect faces
+                const faces = await faceDetector.estimateFaces(video, {
+                    flipHorizontal: false,
+                    maxFaces: 1
+                });
+                
+                updateDebugInfo(`Camera: ${video.videoWidth}x${video.videoHeight}`, `Faces: ${faces.length}`, 'Ready');
+                
+                // If face detected, overlay frame
+                if (faces.length > 0) {
+                    const face = faces[0];
+                    await overlayFrameOnFace(ctx, face, config.frameImage);
+                } else {
+                    // No face detected - show help message on canvas
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                    ctx.fillRect(10, 10, 300, 60);
+                    ctx.fillStyle = '#333';
+                    ctx.font = '16px Arial';
+                    ctx.fillText('Move your face into the frame', 20, 35);
+                    ctx.fillText('to see the glasses preview', 20, 55);
+                }
+                
+            } catch (error) {
+                console.error('Face detection error:', error);
+                updateDebugInfo('Detection error', 'Error', 'Error');
             }
             
             // Continue detection
             animationFrameId = requestAnimationFrame(detectFaces);
         }
 
-        // Overlay frame on detected face
+        // Overlay frame on detected face - SIMPLIFIED VERSION
         async function overlayFrameOnFace(ctx, face, frameImageUrl) {
             const video = tryOnPreview;
             
-            // Get key facial points
-            const leftEye = face.annotations.leftEyeUpper0[0];
-            const rightEye = face.annotations.rightEyeUpper0[3];
-            const noseBottom = face.annotations.noseTip[0];
-            
-            // Calculate face dimensions
-            const eyeDistance = Math.sqrt(
-                Math.pow(rightEye[0] - leftEye[0], 2) + 
-                Math.pow(rightEye[1] - leftEye[1], 2)
-            );
+            // Get face bounding box
+            const box = face.box;
+            const faceWidth = box.width;
+            const faceHeight = box.height;
+            const faceX = box.xMin;
+            const faceY = box.yMin;
             
             // Frame dimensions based on face size
-            const frameWidth = eyeDistance * 2.5;
-            const frameHeight = frameWidth * 0.4;
+            const frameWidth = faceWidth * 1.2;
+            const frameHeight = frameWidth * 0.3;
             
-            // Position frame (centered on eyes, slightly above)
-            const frameX = (leftEye[0] + rightEye[0]) / 2 - frameWidth / 2;
-            const frameY = (leftEye[1] + rightEye[1]) / 2 - frameHeight / 2 - eyeDistance * 0.3;
+            // Position frame - centered on face, slightly above center
+            const frameX = faceX + (faceWidth / 2) - (frameWidth / 2);
+            const frameY = faceY + (faceHeight / 3) - (frameHeight / 2);
             
             // Create frame image
             const frameImg = new Image();
-            frameImg.crossOrigin = "anonymous";
             
             return new Promise((resolve) => {
                 frameImg.onload = function() {
-                    // Draw frame with slight rotation based on face angle
-                    ctx.save();
-                    
-                    // Calculate rotation angle from eye positions
-                    const angle = Math.atan2(rightEye[1] - leftEye[1], rightEye[0] - leftEye[0]);
-                    const centerX = frameX + frameWidth / 2;
-                    const centerY = frameY + frameHeight / 2;
-                    
-                    ctx.translate(centerX, centerY);
-                    ctx.rotate(angle);
-                    ctx.translate(-centerX, -centerY);
-                    
                     // Draw the frame image
                     ctx.drawImage(frameImg, frameX, frameY, frameWidth, frameHeight);
                     
-                    ctx.restore();
+                    // Optional: Draw debug rectangle around face
+                    if (debugInfo.style.display === 'block') {
+                        ctx.strokeStyle = 'red';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(faceX, faceY, faceWidth, faceHeight);
+                    }
+                    
+                    resolve();
+                };
+                
+                frameImg.onerror = function() {
+                    console.error('Error loading frame image:', frameImageUrl);
+                    // Draw a placeholder rectangle if image fails to load
+                    ctx.fillStyle = 'rgba(0, 150, 255, 0.5)';
+                    ctx.fillRect(frameX, frameY, frameWidth, frameHeight);
+                    ctx.strokeStyle = 'blue';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(frameX, frameY, frameWidth, frameHeight);
                     resolve();
                 };
                 
@@ -479,6 +549,9 @@ $frameImage = getGenericFrameImage($faceShape);
 
         // Stop camera when page is closed
         window.addEventListener('beforeunload', stopVirtualTryOn);
+
+        // Initialize
+        updateDebugInfo('Ready to start', 'Not started', 'Not loaded');
     </script>
 </body>
 </html>
