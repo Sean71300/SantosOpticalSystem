@@ -1,159 +1,160 @@
 <?php
-$shape = isset($_GET['shape']) ? htmlspecialchars($_GET['shape']) : 'Unknown';
+$frame = isset($_GET['frame']) ? htmlspecialchars($_GET['frame']) : 'ashape';
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Virtual Try-On - <?= $shape ?> Face</title>
-
-  <!-- Bootstrap -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-  <style>
-    body {
-      background: #fafafa;
-      font-family: "Poppins", sans-serif;
-      text-align: center;
-      padding-top: 30px;
-    }
-    #video, #overlay {
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-      border-radius: 12px;
-    }
-    #tryon-container {
-      position: relative;
-      display: inline-block;
-    }
-    #overlay {
-      pointer-events: none;
-    }
-    .debug {
-      font-size: 0.9rem;
-      color: #555;
-      margin-top: 10px;
-      text-align: left;
-      max-width: 600px;
-      margin-inline: auto;
-      background: #f5f5f5;
-      border-radius: 8px;
-      padding: 8px;
-      height: 150px;
-      overflow-y: auto;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Virtual Try-On</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+  body {
+    background-color: #f8f9fa;
+    overflow: hidden;
+    font-family: 'Poppins', sans-serif;
+  }
+  .tryon-container {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    background: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  video, canvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .top-bar {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    background: rgba(0,0,0,0.7);
+    color: #fff;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    z-index: 10;
+  }
+  .control-buttons {
+    position: absolute;
+    bottom: 20px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    z-index: 10;
+  }
+  .btn-custom {
+    border-radius: 50px;
+    padding: 0.6rem 1.5rem;
+    font-weight: 500;
+  }
+</style>
 </head>
 <body>
-  <div class="container">
-    <h2 class="mb-4 text-primary">Virtual Try-On for <?= $shape ?> Face</h2>
-    <p>Align your face within the frame to see how the glasses look on you.</p>
 
-    <div id="tryon-container">
-      <video id="video" autoplay playsinline width="600" height="450"></video>
-      <canvas id="overlay" width="600" height="450"></canvas>
-    </div>
-
-    <div class="mt-3">
-      <button id="startBtn" class="btn btn-primary">Start Virtual Try-On</button>
-      <a href="results.php" class="btn btn-secondary">Back to Results</a>
-    </div>
-
-    <div class="debug" id="debug"></div>
+<div class="tryon-container">
+  <div class="top-bar">
+    <h5 class="m-0">👓 Virtual Try-On Demo</h5>
+    <a href="result.php" class="btn btn-outline-light btn-sm">← Back to Results</a>
   </div>
 
-  <!-- MediaPipe & FaceMesh -->
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/face_mesh.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+  <video id="videoInput" autoplay muted playsinline></video>
+  <canvas id="outputCanvas"></canvas>
 
-  <script>
-    const debugBox = document.getElementById('debug');
-    const log = msg => {
-      console.log(msg);
-      debugBox.innerHTML += msg + '<br>';
-      debugBox.scrollTop = debugBox.scrollHeight;
-    };
+  <div class="control-buttons">
+    <button id="changeFrame" class="btn btn-light btn-custom">Change Frame</button>
+    <button id="captureBtn" class="btn btn-primary btn-custom">Capture Look</button>
+  </div>
+</div>
 
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('overlay');
-    const ctx = canvas.getContext('2d');
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/face_mesh.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675469200/camera_utils.min.js"></script>
+<script>
+const videoElement = document.getElementById('videoInput');
+const canvasElement = document.getElementById('outputCanvas');
+const canvasCtx = canvasElement.getContext('2d');
 
-    // ✅ Use your frame image here
-    const glassesImg = new Image();
-    glassesImg.src = "https://santosopticalclinic.com/Images/frames/ashape-frame-removebg-preview.png";
+let glassesLoaded = false;
+const glassesImg = new Image();
+glassesImg.src = "Images/frames/<?php echo $frame; ?>-frame-removebg-preview.png";
+glassesImg.onload = () => { 
+  glassesLoaded = true; 
+  console.log("✅ Glasses image loaded:", glassesImg.src);
+};
 
-    glassesImg.onload = () => log("✅ Glasses image loaded: " + glassesImg.src);
+// Initialize FaceMesh
+const faceMesh = new FaceMesh({
+  locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/${file}`
+});
 
-    async function startCamera() {
-      log("📸 Requesting camera access...");
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      video.srcObject = stream;
+faceMesh.setOptions({
+  maxNumFaces: 1,
+  refineLandmarks: true,
+  minDetectionConfidence: 0.5,
+  minTrackingConfidence: 0.5
+});
 
-      video.onloadedmetadata = () => {
-        log("✅ Camera permission granted");
+faceMesh.onResults(onResults);
 
-        // ✅ Wait for Camera class from MediaPipe to exist
-        if (typeof Camera === "undefined") {
-          log("❌ Camera class not defined. Check camera_utils.js path.");
-          return;
-        }
+async function onResults(results) {
+  canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+  canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
 
-        try {
-          const camera = new Camera(video, {
-            onFrame: async () => {
-              await faceMesh.send({ image: video });
-            },
-            width: 600,
-            height: 450
-          });
-          camera.start();
-          log("🎥 Camera started successfully!");
-        } catch (err) {
-          log("❌ Camera failed: " + err);
-        }
-      };
-    }
+  if (!results.multiFaceLandmarks || !glassesLoaded) return;
 
-    const faceMesh = new FaceMesh({
-      locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/${file}`
+  const landmarks = results.multiFaceLandmarks[0];
+  const leftEye = landmarks[33];
+  const rightEye = landmarks[263];
+
+  const centerX = (leftEye.x + rightEye.x) / 2 * canvasElement.width;
+  const centerY = (leftEye.y + rightEye.y) / 2 * canvasElement.height;
+  const width = Math.abs(rightEye.x - leftEye.x) * canvasElement.width * 2;
+  const height = width / 3;
+
+  canvasCtx.save();
+  canvasCtx.translate(centerX, centerY);
+  canvasCtx.drawImage(glassesImg, -width/2, -height/2, width, height);
+  canvasCtx.restore();
+}
+
+// Camera Setup
+let camera;
+async function startCamera() {
+  try {
+    camera = new Camera(videoElement, {
+      onFrame: async () => await faceMesh.send({ image: videoElement }),
+      width: 1280,
+      height: 720
     });
+    await camera.start();
+    console.log("✅ Camera started");
+  } catch (error) {
+    console.error("❌ Camera failed:", error);
+    alert("Camera access was blocked or failed.");
+  }
+}
+startCamera();
 
-    faceMesh.setOptions({
-      maxNumFaces: 1,
-      refineLandmarks: true,
-      minDetectionConfidence: 0.5,
-      minTrackingConfidence: 0.5
-    });
+// Capture Image Button
+document.getElementById("captureBtn").addEventListener("click", () => {
+  const dataURL = canvasElement.toDataURL("image/png");
+  const link = document.createElement('a');
+  link.download = 'virtual-tryon.png';
+  link.href = dataURL;
+  link.click();
+});
 
-    faceMesh.onResults(results => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
-        const landmarks = results.multiFaceLandmarks[0];
-        const leftEye = landmarks[33];
-        const rightEye = landmarks[263];
-        const nose = landmarks[1];
-
-        const dx = rightEye.x - leftEye.x;
-        const dy = rightEye.y - leftEye.y;
-        const eyeDist = Math.sqrt(dx * dx + dy * dy) * canvas.width;
-        const centerX = (leftEye.x + rightEye.x) / 2 * canvas.width;
-        const centerY = (leftEye.y + rightEye.y) / 2 * canvas.height;
-
-        const glassesWidth = eyeDist * 2.2;
-        const glassesHeight = glassesWidth * 0.4;
-
-        ctx.save();
-        ctx.translate(centerX, centerY);
-        ctx.rotate(Math.atan2(dy, dx));
-        ctx.drawImage(glassesImg, -glassesWidth / 2, -glassesHeight / 2, glassesWidth, glassesHeight);
-        ctx.restore();
-      }
-    });
-
-    document.getElementById('startBtn').addEventListener('click', startCamera);
-  </script>
+// Change Frame Button (future use)
+document.getElementById("changeFrame").addEventListener("click", () => {
+  alert("Frame changing feature coming soon!");
+});
+</script>
 </body>
 </html>
