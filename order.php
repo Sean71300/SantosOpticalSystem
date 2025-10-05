@@ -99,6 +99,9 @@ if (isset($_GET['action']) && $_GET['action']==='details' && isset($_GET['id']))
 
     $sd = $conn->prepare('SELECT od.Quantity, od.Status, od.ProductBranchID, p.Model, p.Price, p.CategoryType, b.BrandName FROM orderDetails od JOIN ProductBranchMaster pb ON od.ProductBranchID=pb.ProductBranchID JOIN productMstr p ON pb.ProductID=p.ProductID JOIN brandMaster b ON p.BrandID=b.BrandID WHERE od.OrderHdr_id=?');
     $sd->bind_param('s',$id); $sd->execute(); $details=$sd->get_result()->fetch_all(MYSQLI_ASSOC); $sd->close();
+    // Normalize numeric fields to avoid NaN on client
+    foreach ($details as &$d) { $d['Price'] = (float)($d['Price'] ?? 0); $d['Quantity'] = (int)($d['Quantity'] ?? 0); }
+    unset($d);
 
     $totalItems=count($details); $c=$x=$rtn=$clm=0; foreach($details as $d){ if($d['Status']==='Completed')$c++; elseif($d['Status']==='Cancelled')$x++; elseif($d['Status']==='Returned')$rtn++; elseif($d['Status']==='Claimed')$clm++; }
     $orderStatus = $totalItems>0 ? ($c===$totalItems?'Completed':($x===$totalItems?'Cancelled':($rtn===$totalItems?'Returned':($clm===$totalItems?'Claimed':'Pending')))) : 'Pending';
@@ -138,8 +141,8 @@ foreach($headers as $h){
 <style>
 body { background:#f5f7fa; padding-top:60px; }
 /* Make the main content occupy the full width beside the fixed 250px sidebar */
-.main-container { margin-left: 250px; padding: 20px; width: calc(100% - 250px); }
-@media (max-width: 992px) { .main-container { margin-left: 0; width: 100%; } }
+.main-content, .main-container { margin-left: 250px; padding: 20px; width: calc(100% - 250px); }
+@media (max-width: 992px) { .main-content, .main-container { margin-left: 0; width: 100%; } }
 .card-round { border-radius: 10px; }
 .badge-status { padding: .4em .6em; border-radius: .5rem; }
 /* Explicit status colors */
@@ -152,10 +155,10 @@ body { background:#f5f7fa; padding-top:60px; }
 </head>
 <body>
 <?php include 'sidebar.php'; ?>
-<div class="main-container mx-auto px-3">
+<div class="main-content">
     <div class="d-flex justify-content-between align-items-center mb-4 mt-2">
         <h2><i class="fas fa-shopping-cart me-2"></i> Orders Management</h2>
-        <button class="btn btn-primary" onclick="location.href='orderCreate.php'"><i class="fas fa-plus me-1"></i> Add New Order</button>
+    <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#addOrderModal"><i class="fas fa-plus me-1"></i> Add New Order</button>
     </div>
 
     <div class="card card-round p-4 mb-4">
@@ -211,17 +214,51 @@ body { background:#f5f7fa; padding-top:60px; }
                 </tbody>
             </table>
         </div>
-        <nav class="mt-3"><ul class="pagination justify-content-center">
-            <?php $base=['search'=>$search,'branch'=>$branch,'status'=>$status]; if($page>1): ?>
-            <li class="page-item"><a class="page-link" href="?<?= http_build_query($base+['page'=>$page-1]) ?>">&laquo;</a></li>
-            <?php endif; for($i=1;$i<=$totalPages;$i++): ?>
-            <li class="page-item <?= $i==$page?'active':'' ?>"><a class="page-link" href="?<?= http_build_query($base+['page'=>$i]) ?>"><?= $i ?></a></li>
-            <?php endfor; if($page<$totalPages): ?>
-            <li class="page-item"><a class="page-link" href="?<?= http_build_query($base+['page'=>$page+1]) ?>">&raquo;</a></li>
-            <?php endif; ?>
-        </ul></nav>
+                <nav class="mt-3"><ul class="pagination justify-content-center">
+                        <?php $base=['search'=>$search,'branch'=>$branch,'status'=>$status]; if($page>1): ?>
+                        <li class="page-item"><a class="page-link" href="?<?= http_build_query(array_merge($base,['page'=>$page-1])) ?>">&laquo;</a></li>
+                        <?php endif; for($i=1;$i<=$totalPages;$i++): ?>
+                        <li class="page-item <?= $i==$page?'active':'' ?>"><a class="page-link" href="?<?= http_build_query(array_merge($base,['page'=>$i])) ?>"><?= $i ?></a></li>
+                        <?php endfor; if($page<$totalPages): ?>
+                        <li class="page-item"><a class="page-link" href="?<?= http_build_query(array_merge($base,['page'=>$page+1])) ?>">&raquo;</a></li>
+                        <?php endif; ?>
+                </ul></nav>
         <?php endif; ?>
     </div>
+</div>
+
+<!-- Add Order modal: select customer -->
+<div class="modal fade" id="addOrderModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg"><div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">Create New Order</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+            <div class="mb-3">
+                <label class="form-label">Search Customer</label>
+                <input type="text" class="form-control" id="customerSearch" placeholder="Search by name or contact number...">
+            </div>
+            <div class="table-responsive" style="max-height:360px; overflow:auto;">
+                <table class="table table-hover" id="customerTable">
+                    <thead class="table-light"><tr><th>ID</th><th>Name</th><th>Contact</th><th>Action</th></tr></thead>
+                    <tbody>
+                        <?php
+                        $custRs = $conn->query("SELECT CustomerID, CustomerName, CustomerContact FROM customer ORDER BY CustomerName LIMIT 300");
+                        if ($custRs) { while($c = $custRs->fetch_assoc()) { ?>
+                            <tr>
+                                <td><?= htmlspecialchars($c['CustomerID']) ?></td>
+                                <td><?= htmlspecialchars($c['CustomerName']) ?></td>
+                                <td><?= htmlspecialchars($c['CustomerContact']) ?></td>
+                                <td><button type="button" class="btn btn-sm btn-primary" onclick="window.location.href='orderCreate.php?customer_id=<?= urlencode($c['CustomerID']) ?>'">Select</button></td>
+                            </tr>
+                        <?php } } ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Close</button></div>
+    </div></div>
 </div>
 
 <div class="modal fade" id="orderDetailsModal" tabindex="-1" aria-hidden="true">
@@ -247,12 +284,27 @@ function showDetails(id){
         <div class="col-md-6"><h6>Customer</h6><p>${data.CustomerName}</p></div>
       </div>`;
       html += '<h6 class="mt-3">Items</h6><div class="table-responsive"><table class="table table-sm"><thead><tr><th>Product</th><th>Brand</th><th>Category</th><th>Price</th><th>Qty</th><th>Status</th></tr></thead><tbody>';
-      (data.Details||[]).forEach(d=>{ html += `<tr><td>${d.Model||'N/A'}</td><td>${d.BrandName||'N/A'}</td><td>${d.CategoryType||'N/A'}</td><td>₱${parseFloat(d.Price||0).toFixed(2)}</td><td>${d.Quantity||0}</td><td>${d.Status||''}</td></tr>`; });
+            (data.Details||[]).forEach(d=>{ const price = Number.isFinite(d.Price)? d.Price : parseFloat(d.Price||0); html += `<tr><td>${d.Model||'N/A'}</td><td>${d.BrandName||'N/A'}</td><td>${d.CategoryType||'N/A'}</td><td>₱${(price||0).toFixed(2)}</td><td>${d.Quantity||0}</td><td>${d.Status||''}</td></tr>`; });
       html += '</tbody></table></div>';
       body.innerHTML = html; modal.show();
     })
     .catch(()=>{ body.innerHTML='<div class="alert alert-danger">Error loading details</div>'; modal.show(); });
 }
+
+// Client-side filter for customers in the Add Order modal
+document.addEventListener('DOMContentLoaded', ()=>{
+    const input = document.getElementById('customerSearch');
+    if (!input) return;
+    input.addEventListener('input', ()=>{
+        const term = input.value.toLowerCase();
+        document.querySelectorAll('#customerTable tbody tr').forEach(tr=>{
+            const id = tr.children[0].textContent.toLowerCase();
+            const name = tr.children[1].textContent.toLowerCase();
+            const contact = tr.children[2].textContent.toLowerCase();
+            tr.style.display = (id.includes(term) || name.includes(term) || contact.includes(term)) ? '' : 'none';
+        });
+    });
+});
 </script>
 </body>
 </html>
