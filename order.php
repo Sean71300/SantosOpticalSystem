@@ -212,6 +212,15 @@ if ($having!=='') {
     $sql = "SELECT oh.Orderhdr_id, oh.CustomerID, oh.BranchCode, oh.Created_dt, oh.Created_by, c.CustomerName FROM Order_hdr oh LEFT JOIN customer c ON c.CustomerID=oh.CustomerID $whereSql $orderBy LIMIT ".(int)$offset.", ".(int)$perPage;
 }
 $stmt = $conn->prepare($sql); $p=$params; $t=$types; _bind($stmt,$t,$p); $stmt->execute(); $headers=$stmt->get_result()->fetch_all(MYSQLI_ASSOC); $stmt->close();
+// Collate basic debug info for inline display (helps diagnose empty views without server access)
+$debugInfo = sprintf('role=%s branch=%s total=%d pages=%d page=%d having=%s',
+    (string)$rid,
+    htmlspecialchars((string)$branch),
+    (int)$total,
+    (int)$totalPages,
+    (int)$page,
+    $having!==''?'yes':'no'
+);
 
 // If we somehow got an empty page while there are results, clamp to last page
 if (!$headers && $total>0 && $page>1) {
@@ -302,15 +311,16 @@ body { background:#f5f7fa; padding-top:60px; }
         <h2><i class="fas fa-shopping-cart me-2"></i> Orders Management</h2>
     <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#addOrderModal"><i class="fas fa-plus me-1"></i> Add New Order</button>
     </div>
+    <div class="text-muted small mb-2">Debug: <?= $debugInfo ?> | headers=<?= isset($headers)?count($headers):0 ?> | restrictedRole=<?= $restrictedRole?'1':'0' ?> | statusOptsLen=<?= isset($statusOptionsHtml)?strlen($statusOptionsHtml):0 ?></div>
 
     <div class="card card-round p-4 mb-4">
         <form method="get" action="order.php">
             <div class="row g-3 align-items-end">
-                <div class="col-md-5">
+                <div class="col-lg-5 col-md-6">
                     <label class="form-label">Search</label>
                     <input name="search" value="<?= htmlspecialchars($search) ?>" class="form-control" placeholder="Search orders or customers...">
                 </div>
-                <div class="col-md-3">
+                <div class="col-lg-3 col-md-6">
                     <label class="form-label">Filter by Branch</label>
                     <?php if ($restrictedRole): ?>
                         <input class="form-control" value="<?= htmlspecialchars($branchDisplayName ?: $branch) ?>" readonly>
@@ -325,13 +335,13 @@ body { background:#f5f7fa; padding-top:60px; }
                         </select>
                     <?php endif; ?>
                 </div>
-                <div class="col-md-3">
+                <div class="col-lg-3 col-md-6">
                     <label class="form-label">Filter by Status</label>
                     <select name="status" class="form-select">
                         <?= $statusOptionsHtml ?>
                     </select>
                 </div>
-                <div class="col-md-1 d-grid">
+                <div class="col-lg-1 col-md-6 d-grid">
                     <button class="btn btn-primary"><i class="fas fa-filter"></i> Filter</button>
                 </div>
             </div>
