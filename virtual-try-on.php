@@ -63,6 +63,31 @@
       background-color: var(--primary);
       color: white;
     }
+    .frame-btn {
+      width: 60px;
+      height: 60px;
+      padding: 5px;
+      border: 2px solid #dee2e6;
+      border-radius: 8px;
+      margin: 2px;
+      background: white;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .frame-btn:hover {
+      border-color: var(--primary);
+      transform: scale(1.05);
+    }
+    .frame-btn.active {
+      border-color: var(--primary);
+      border-width: 3px;
+      background: #e3f2fd;
+    }
+    .frame-btn img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
     .loading-spinner {
       display: none;
       width: 40px;
@@ -96,6 +121,19 @@
       padding: 10px;
       margin: 10px 0;
     }
+    .frame-selector {
+      background: white;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 10px 0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .frame-category {
+      font-size: 12px;
+      font-weight: bold;
+      color: #666;
+      margin-bottom: 5px;
+    }
   </style>
 </head>
 
@@ -121,6 +159,33 @@
         <div class="col-auto">
           <small id="sizeValue">2.4x</small>
         </div>
+      </div>
+    </div>
+
+    <div class="frame-selector d-none" id="frameSelector">
+      <div class="frame-category">CHOOSE FRAME STYLE</div>
+      <div class="d-flex flex-wrap justify-content-center">
+        <button class="frame-btn active" data-frame="A-TRIANGLE" title="A-Shape Triangle">
+          <img src="Images/frames/ashape-frame-removebg-preview.png" alt="A-Shape">
+        </button>
+        <button class="frame-btn" data-frame="V-TRIANGLE" title="V-Shape Triangle">
+          <img src="Images/frames/vshape-frame-removebg-preview.png" alt="V-Shape">
+        </button>
+        <button class="frame-btn" data-frame="ROUND" title="Round">
+          <img src="Images/frames/round-frame-removebg-preview.png" alt="Round">
+        </button>
+        <button class="frame-btn" data-frame="SQUARE" title="Square">
+          <img src="Images/frames/square-frame-removebg-preview.png" alt="Square">
+        </button>
+        <button class="frame-btn" data-frame="RECTANGLE" title="Rectangle">
+          <img src="Images/frames/rectangle-frame-removebg-preview.png" alt="Rectangle">
+        </button>
+        <button class="frame-btn" data-frame="OBLONG" title="Oblong">
+          <img src="Images/frames/oblong-frame-removebg-preview.png" alt="Oblong">
+        </button>
+        <button class="frame-btn" data-frame="DIAMOND" title="Diamond">
+          <img src="Images/frames/diamond-frame-removebg-preview.png" alt="Diamond">
+        </button>
       </div>
     </div>
 
@@ -164,10 +229,23 @@
     const sizeControls = document.getElementById('sizeControls');
     const sizeSlider = document.getElementById('sizeSlider');
     const sizeValue = document.getElementById('sizeValue');
+    const frameSelector = document.getElementById('frameSelector');
+    const frameButtons = document.querySelectorAll('.frame-btn');
     const statusMsg = document.getElementById('statusMsg');
     const loadingSpinner = document.getElementById('loadingSpinner');
     const mobileTips = document.getElementById('mobileTips');
     const performanceWarning = document.getElementById('performanceWarning');
+
+    // Frame definitions
+    const FRAMES = {
+      'SQUARE': 'Images/frames/square-frame-removebg-preview.png',
+      'ROUND': 'Images/frames/round-frame-removebg-preview.png',
+      'OBLONG': 'Images/frames/oblong-frame-removebg-preview.png',
+      'DIAMOND': 'Images/frames/diamond-frame-removebg-preview.png',
+      'V-TRIANGLE': 'Images/frames/vshape-frame-removebg-preview.png',
+      'A-TRIANGLE': 'Images/frames/ashape-frame-removebg-preview.png',
+      'RECTANGLE': 'Images/frames/rectangle-frame-removebg-preview.png'
+    };
 
     // Check if mobile device
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -176,28 +254,42 @@
       performanceWarning.textContent = "Performance mode: Optimized for mobile";
     }
 
-    // Load glasses image with error handling
-    const glassesImg = new Image();
-    glassesImg.src = "Images/frames/ashape-frame-removebg-preview.png";
+    // Load glasses images
+    const glassesImages = {};
     let glassesLoaded = false;
-    glassesImg.onload = () => {
-      glassesLoaded = true;
-      console.log("✅ Glasses image loaded successfully");
-    };
-    glassesImg.onerror = () => {
-      console.error("❌ Failed to load glasses image");
-      statusMsg.innerText = "Error loading glasses image";
-    };
+    let loadedImagesCount = 0;
+    const totalImages = Object.keys(FRAMES).length;
+
+    // Preload all frame images
+    Object.entries(FRAMES).forEach(([frameType, framePath]) => {
+      const img = new Image();
+      img.src = framePath;
+      img.onload = () => {
+        loadedImagesCount++;
+        glassesImages[frameType] = img;
+        console.log(`✅ ${frameType} frame loaded`);
+        
+        if (loadedImagesCount === totalImages) {
+          glassesLoaded = true;
+          console.log("✅ All frame images loaded successfully");
+        }
+      };
+      img.onerror = () => {
+        console.error(`❌ Failed to load frame: ${frameType}`);
+        loadedImagesCount++;
+      };
+    });
 
     let camera = null;
     let faceMesh = null;
     let isProcessing = false;
     let frameCount = 0;
     let faceTrackingActive = false;
-    let angleOffset = 0; // This will store the calibration offset
+    let angleOffset = 0;
     let isCalibrated = false;
-    let glassesSizeMultiplier = 2.4; // Increased from 2.2 for larger glasses
-    let glassesHeightRatio = 0.7; // Increased from 0.5 for taller glasses
+    let glassesSizeMultiplier = 2.4;
+    let glassesHeightRatio = 0.7;
+    let currentFrame = 'A-TRIANGLE'; // Default frame
 
     function calculateHeadAngle(landmarks) {
       const leftEyeInner = landmarks[133];
@@ -210,7 +302,7 @@
 
     function calibrateStraightPosition(landmarks) {
       const currentAngle = calculateHeadAngle(landmarks);
-      angleOffset = -currentAngle; // Store the inverse to cancel out the current tilt
+      angleOffset = -currentAngle;
       isCalibrated = true;
       console.log("✅ Calibrated! Offset:", angleOffset);
     }
@@ -230,18 +322,17 @@
         rightEye.y * canvasElement.height - leftEye.y * canvasElement.height
       );
 
-      // Use the size multiplier for width and increased height ratio
       const glassesWidth = eyeDist * glassesSizeMultiplier;
-      const glassesHeight = glassesWidth * glassesHeightRatio; // Taller glasses
+      const glassesHeight = glassesWidth * glassesHeightRatio;
       const centerX = (leftEye.x * canvasElement.width + rightEye.x * canvasElement.width) / 2;
       const centerY = (leftEye.y * canvasElement.height + rightEye.y * canvasElement.height) / 2;
 
-      if (centerX > 0 && centerY > 0 && glassesWidth > 10) {
+      if (centerX > 0 && centerY > 0 && glassesWidth > 10 && glassesImages[currentFrame]) {
         canvasCtx.save();
         canvasCtx.translate(centerX, centerY);
         canvasCtx.rotate(headAngle);
         canvasCtx.drawImage(
-          glassesImg,
+          glassesImages[currentFrame],
           -glassesWidth / 2,
           -glassesHeight / 2,
           glassesWidth,
@@ -309,7 +400,7 @@
         // Optimized settings
         faceMesh.setOptions({
           maxNumFaces: 1,
-          refineLandmarks: false, // Disable for performance
+          refineLandmarks: false,
           minDetectionConfidence: 0.7,
           minTrackingConfidence: 0.5
         });
@@ -321,7 +412,7 @@
           resolve();
         }).catch(err => {
           console.error("❌ FaceMesh initialization failed:", err);
-          resolve(); // Continue even if FaceMesh fails
+          resolve();
         });
       });
     }
@@ -330,7 +421,6 @@
       try {
         statusMsg.innerText = "Requesting camera access...";
         
-        // Try different camera constraints with fallbacks
         const constraints = {
           video: {
             facingMode: 'user',
@@ -355,7 +445,6 @@
       } catch (err) {
         console.error("Camera error:", err);
         
-        // Try fallback with minimal constraints
         try {
           statusMsg.innerText = "Trying fallback camera...";
           const fallbackStream = await navigator.mediaDevices.getUserMedia({ 
@@ -377,6 +466,19 @@
       }
     }
 
+    // Frame selection handler
+    frameButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        // Remove active class from all buttons
+        frameButtons.forEach(b => b.classList.remove('active'));
+        // Add active class to clicked button
+        btn.classList.add('active');
+        // Update current frame
+        currentFrame = btn.dataset.frame;
+        console.log(`🎯 Selected frame: ${currentFrame}`);
+      });
+    });
+
     // Size slider handler
     sizeSlider.addEventListener('input', (e) => {
       glassesSizeMultiplier = parseFloat(e.target.value);
@@ -387,7 +489,6 @@
     calibrateBtn.addEventListener('click', () => {
       if (faceTrackingActive) {
         statusMsg.innerText = "Calibrating straight position...";
-        // We'll calibrate on the next frame detection
         isCalibrated = false;
         calibrationNotice.classList.remove('d-none');
         setTimeout(() => {
@@ -402,28 +503,24 @@
         loadingSpinner.style.display = 'block';
         statusMsg.innerText = "Initializing...";
 
-        // Initialize FaceMesh first
         await initializeFaceMesh();
 
-        // Start camera
         statusMsg.innerText = "Starting camera...";
         const stream = await startCamera();
 
         statusMsg.innerText = "Camera active — setting up face detection...";
         
-        // Resize canvas to match video
         resizeCanvasToDisplay();
 
-        // Show calibration notice and controls
+        // Show all controls
         calibrationNotice.classList.remove('d-none');
         calibrateBtn.classList.remove('d-none');
         sizeControls.classList.remove('d-none');
+        frameSelector.classList.remove('d-none');
 
-        // Determine processing resolution based on device
         const processingWidth = isMobile ? 320 : 640;
         const processingHeight = isMobile ? 240 : 480;
 
-        // Start MediaPipe camera
         camera = new Camera(videoElement, {
           onFrame: async () => {
             if (faceMesh && !isProcessing) {
@@ -437,22 +534,20 @@
         await camera.start();
 
         loadingSpinner.style.display = 'none';
-        statusMsg.innerText = "Ready! Look straight at the camera.";
+        statusMsg.innerText = "Ready! Try different frame styles below.";
 
-        // Update status based on face detection
         setInterval(() => {
           if (faceTrackingActive) {
             if (isCalibrated) {
-              statusMsg.innerHTML = "Glasses active ✅ | <small>Face detected - Calibrated</small>";
+              statusMsg.innerHTML = `Glasses active ✅ | <small>${currentFrame} - Calibrated</small>`;
             } else {
-              statusMsg.innerHTML = "Glasses active ✅ | <small>Face detected - Calibrating...</small>";
+              statusMsg.innerHTML = `Glasses active ✅ | <small>${currentFrame} - Calibrating...</small>`;
             }
           } else {
             statusMsg.innerHTML = "Ready! Look at the camera | <small>Searching for face...</small>";
           }
         }, 3000);
 
-        // Handle window resize
         window.addEventListener('resize', resizeCanvasToDisplay);
 
       } catch (err) {
@@ -472,10 +567,8 @@
       }
     });
 
-    // Pre-initialize on load
     window.addEventListener('load', () => {
       console.log("Page loaded - ready to start camera");
-      // Preload FaceMesh but don't block
       setTimeout(() => {
         initializeFaceMesh();
       }, 1000);
