@@ -357,11 +357,10 @@ body { background:#f5f7fa; padding-top:60px; }
 </div>
 
 <div class="modal fade" id="orderDetailsModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg"><div class="modal-content">
-    <div class="modal-header"><h5 class="modal-title">Order Details</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-    <div class="modal-body" id="orderDetailsBody">Loading...</div>
-    <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Close</button></div>
-  </div></div>
+    <div class="modal-dialog modal-lg"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">Order Details</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body" id="orderDetailsBody">Loading...</div>
+    </div></div>
 </div>
 
 <!-- Hidden forms for actions -->
