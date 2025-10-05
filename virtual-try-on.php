@@ -699,7 +699,6 @@
               </div>
               <div class="material-controls">
                 <button class="material-btn active" data-material="realistic">Realistic</button>
-                <button class="material-btn" data-material="glossy">Glossy</button>
                 <button class="material-btn" data-material="metallic">Metallic</button>
               </div>
             </div>
@@ -915,24 +914,6 @@
           data[i + 2] = Math.max(0, Math.min(255, data[i + 2] + noise));
         }
         textureCtx.putImageData(imageData, 0, 0);
-        
-      } else if (materialType === 'glossy') {
-        // Glossy plastic texture
-        const gradient = textureCtx.createLinearGradient(0, 0, width * 0.3, height * 0.3);
-        gradient.addColorStop(0, `rgb(${Math.min(255, r+60)}, ${Math.min(255, g+60)}, ${Math.min(255, b+60)})`);
-        gradient.addColorStop(0.3, baseColor);
-        gradient.addColorStop(0.7, `rgb(${Math.max(0, r-40)}, ${Math.max(0, g-40)}, ${Math.max(0, b-40)})`);
-        gradient.addColorStop(1, `rgb(${Math.max(0, r-20)}, ${Math.max(0, g-20)}, ${Math.max(0, b-20)})`);
-        
-        textureCtx.fillStyle = gradient;
-        textureCtx.fillRect(0, 0, width, height);
-        
-        // Add highlight
-        const highlight = textureCtx.createRadialGradient(width*0.3, height*0.3, 0, width*0.3, height*0.3, width*0.5);
-        highlight.addColorStop(0, 'rgba(255,255,255,0.3)');
-        highlight.addColorStop(1, 'rgba(255,255,255,0)');
-        textureCtx.fillStyle = highlight;
-        textureCtx.fillRect(0, 0, width, height);
         
       } else if (materialType === 'metallic') {
         // Optimized metallic texture - use larger blocks
