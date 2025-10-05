@@ -334,17 +334,10 @@
                         </div>
                     </div>
                     <div class="timeline-item">
-                        <div class="timeline-year">2018</div>
-                        <div class="timeline-content">
-                            <h4 style="color: #dc3545;">Manila Presence</h4>
-                            <p>Opened our Quiapo, Manila branch, extending our services to the heart of the city and reaching a wider customer base.</p>
-                        </div>
-                    </div>
-                    <div class="timeline-item">
                         <div class="timeline-year">Present</div>
                         <div class="timeline-content">
-                            <h4 style="color: #dc3545;">Digital Transformation</h4>
-                            <p>Implementing a centralized website system to streamline inventory monitoring, customer record management, and enhance service delivery across all four branches.</p>
+                            <h4 style="color: #dc3545;">Continued Growth & Digital Transformation</h4>
+                            <p>We continue to grow and expand our branches, now establishing our presence in Manila. Implementing a centralized website system to streamline inventory monitoring, customer record management, and enhance service delivery across all four branches.</p>
                         </div>
                     </div>
                 </div>
