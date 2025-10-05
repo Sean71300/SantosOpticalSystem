@@ -894,6 +894,16 @@
         z-index: 25;
         background: transparent;
         max-width: 100%;
+        display: flex;
+        justify-content: center;
+      }
+
+      /* Make camera container fit the mobile viewport width and use portrait aspect */
+      .camera-section .camera-container {
+        width: calc(100vw - 20px);
+        max-width: 100%;
+        aspect-ratio: 9 / 16; /* portrait on mobile */
+        min-height: auto;
       }
 
       /* Ensure the container that holds all other cards scrolls if needed */
