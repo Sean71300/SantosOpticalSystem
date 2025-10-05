@@ -273,12 +273,55 @@ if (isset($_GET['action']) && $_GET['action']==='details' && isset($_GET['id']))
 $orders=[];
 foreach($headers as $h){
     $id=$h['Orderhdr_id'];
+    $details=[];
     $sd=$conn->prepare('SELECT od.Quantity, od.Status, od.ProductBranchID, p.Model, p.Price, p.CategoryType, b.BrandName FROM orderDetails od JOIN ProductBranchMaster pb ON od.ProductBranchID=pb.ProductBranchID JOIN productMstr p ON pb.ProductID=p.ProductID JOIN brandMaster b ON p.BrandID=b.BrandID WHERE od.OrderHdr_id=?');
-    $sd->bind_param('s',$id); $sd->execute(); $details=$sd->get_result()->fetch_all(MYSQLI_ASSOC); $sd->close();
+    if ($sd) {
+        $sd->bind_param('s',$id);
+        if ($sd->execute()) {
+            $res = $sd->get_result();
+            if ($res) { $details = $res->fetch_all(MYSQLI_ASSOC); }
+        } else {
+            _order_log('Order details execute failed for ID '.$id.': '.$conn->error);
+        }
+        $sd->close();
+    } else {
+        _order_log('Order details prepare failed for ID '.$id.': '.$conn->error);
+    }
+
     $totalItems=count($details); $c=$x=$rtn=$clm=0; foreach($details as $d){ if($d['Status']==='Completed')$c++; elseif($d['Status']==='Cancelled')$x++; elseif($d['Status']==='Returned')$rtn++; elseif($d['Status']==='Claimed')$clm++; }
     $statusComputed = $totalItems>0 ? ($c===$totalItems?'Completed':($x===$totalItems?'Cancelled':($rtn===$totalItems?'Returned':($clm===$totalItems?'Claimed':'Pending')))) : 'Pending';
-    $sb=$conn->prepare('SELECT BranchName FROM BranchMaster WHERE BranchCode=?'); $sb->bind_param('s',$h['BranchCode']); $sb->execute(); $bn=$sb->get_result()->fetch_assoc()['BranchName']??''; $sb->close();
+
+    $bn='';
+    $sb=$conn->prepare('SELECT BranchName FROM BranchMaster WHERE BranchCode=?');
+    if ($sb) {
+        $sb->bind_param('s',$h['BranchCode']);
+        if ($sb->execute()) { $bn=$sb->get_result()->fetch_assoc()['BranchName']??''; }
+        else { _order_log('BranchName execute failed for BranchCode '.$h['BranchCode'].': '.$conn->error); }
+        $sb->close();
+    } else {
+        _order_log('BranchName prepare failed for BranchCode '.$h['BranchCode'].': '.$conn->error);
+    }
+
     $orders[]=[ 'Orderhdr_id'=>$id, 'CustomerName'=>$h['CustomerName']??'Unknown', 'BranchName'=>$bn, 'Created_dt'=>$h['Created_dt'], 'Status'=>$statusComputed ];
+}
+$ordersCount = count($orders);
+// Fallback: if headers exist but orders array ended up empty (due to detail queries failing),
+// render a minimal set directly from headers so the table is visible.
+if ($ordersCount === 0 && !empty($headers)) {
+    foreach ($headers as $h) {
+        $bn='';
+        $sb=$conn->prepare('SELECT BranchName FROM BranchMaster WHERE BranchCode=?');
+        if ($sb) { $sb->bind_param('s',$h['BranchCode']); if ($sb->execute()) { $bn=$sb->get_result()->fetch_assoc()['BranchName']??''; } $sb->close(); }
+        $orders[] = [
+            'Orderhdr_id' => $h['Orderhdr_id'],
+            'CustomerName' => $h['CustomerName'] ?? 'Unknown',
+            'BranchName' => $bn,
+            'Created_dt' => $h['Created_dt'],
+            'Status' => 'Pending' // conservative default; details not available
+        ];
+    }
+    $ordersCount = count($orders);
+    _order_log('Fallback orders built from headers: '.$ordersCount);
 }
 
 ?><!doctype html>
@@ -311,7 +354,7 @@ body { background:#f5f7fa; padding-top:60px; }
         <h2><i class="fas fa-shopping-cart me-2"></i> Orders Management</h2>
     <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#addOrderModal"><i class="fas fa-plus me-1"></i> Add New Order</button>
     </div>
-    <div class="text-muted small mb-2">Debug: <?= $debugInfo ?> | headers=<?= isset($headers)?count($headers):0 ?> | restrictedRole=<?= $restrictedRole?'1':'0' ?> | statusOptsLen=<?= isset($statusOptionsHtml)?strlen($statusOptionsHtml):0 ?></div>
+    <div class="text-muted small mb-2">Debug: <?= $debugInfo ?> | headers=<?= isset($headers)?count($headers):0 ?> | orders=<?= isset($ordersCount)?$ordersCount:0 ?> | restrictedRole=<?= $restrictedRole?'1':'0' ?> | statusOptsLen=<?= isset($statusOptionsHtml)?strlen($statusOptionsHtml):0 ?></div>
 
     <div class="card card-round p-4 mb-4">
         <form method="get" action="order.php">
