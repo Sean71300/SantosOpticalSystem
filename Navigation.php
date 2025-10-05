@@ -56,32 +56,30 @@ if (isset($_SESSION['role'])) {
     border-radius: 2px;
 }
 
-.badge-ai {
-    font-size: 0.65rem;
+.badge-ai, .badge-try {
+    font-size: 0.55rem;
     font-weight: 700;
     color: #fff;
-    background: linear-gradient(90deg, #6a11cb, #2575fc);
     padding: 2px 6px;
     border-radius: 12px;
     text-transform: uppercase;
+    white-space: nowrap;
+}
+
+/* Gradients for each badge */
+.badge-ai {
+    background: linear-gradient(90deg, #6a11cb, #2575fc);
 }
 
 .badge-try {
-    font-size: 0.65rem;
-    font-weight: 700;
-    color: #fff;
     background: linear-gradient(90deg, #f7971e, #ffd200);
-    padding: 2px 6px;
-    border-radius: 12px;
-    text-transform: uppercase;
 }
 
-/* Optional: subtle hover effect */
-.nav-link:hover .badge-ai {
+/* Optional: subtle hover effects */
+.nav-link:hover + .badge-ai {
     background: #4e00b8;
 }
-
-.nav-link:hover .badge-try {
+.nav-link:hover + .badge-try {
     background: #f5a623;
 }
 
@@ -147,19 +145,20 @@ if (isset($_SESSION['role'])) {
             </button>
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav ps-5 fs-5 fw-bold ms-2 mb-lg-0 col d-flex justify-content-end">
-                    <li class="nav-item">
+                    <li class="nav-item position-relative">
                         <a class="nav-link m-2 <?php echo ($current_page == 'face-shape-detector.php') ? 'active' : ''; ?>" href="face-shape-detector.php">
                             SHAPE SCAN AI
-                            <span class="badge ms-2 badge-ai">AI-Powered</span>
                         </a>
-                    </li>                
-                    <li class="nav-item">
-                        <a class="nav-link m-2 <?php echo ($current_page == 'virtual-try-on.php') ? 'active' : ''; ?>" href="virtual-try-on.php">
-                            VIRTUAL FIT
-                            <span class="badge ms-2 badge-try">Try Now</span>
-                        </a>
+                        <span class="badge badge-ai position-absolute top-0 start-100 translate-middle">AI-Powered</span>
                     </li>
 
+                    <li class="nav-item position-relative">
+                        <a class="nav-link m-2 <?php echo ($current_page == 'virtual-try-on.php') ? 'active' : ''; ?>" href="virtual-try-on.php">
+                            VIRTUAL FIT
+                        </a>
+                        <span class="badge badge-try position-absolute top-0 start-100 translate-middle">Try Now</span>
+                    </li>
+  
                     <li class="nav-item">
                         <a class="nav-link m-2 <?php echo ($current_page == 'product-gallery.php') ? 'active' : ''; ?>" href="product-gallery.php">PRODUCTS</a>
                     </li>
