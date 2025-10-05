@@ -139,25 +139,26 @@
 
     .camera-top-actions {
       position: absolute;
-      top: 12px;
-      right: 58px; /* moved slightly left to avoid colliding with step badge */
-      left: auto;
+      top: 10px;
+      right: 12px;
       z-index: 35;
       display: flex;
       gap: 8px;
       align-items: center;
-      background: rgba(255,255,255,0.95);
-      padding: 6px;
+      background: rgba(255,255,255,0.92);
+      padding: 4px;
       border-radius: 999px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+      box-shadow: 0 6px 14px rgba(0,0,0,0.06);
+      pointer-events: auto;
     }
     .camera-top-actions .btn-sm {
-      background: white;
-      color: var(--dark);
+      background: #f7f7f8;
+      color: var(--dark-muted, #333);
       border-radius: 999px;
-      padding: 6px 10px;
+      padding: 4px 8px;
       font-weight: 700;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      font-size: 0.85rem;
     }
 
     /* Camera status badge (top-left inside camera) */
@@ -169,15 +170,15 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 6px 10px;
-      border-radius: 18px;
-      font-size: 13px;
-      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 14px;
+      font-size: 12px;
+      font-weight: 600;
       color: #fff;
-      background: rgba(0,0,0,0.45);
-      backdrop-filter: blur(4px);
+      background: rgba(0,0,0,0.35);
+      backdrop-filter: blur(3px);
     }
-    .camera-status.status-online { background: rgba(16,185,129,0.95); }
+    .camera-status.status-online { background: rgba(34,197,94,0.9); }
     .camera-status.status-offline { background: rgba(220,38,38,0.9); }
 
     /* Right column split: frames (left) + colors (right) */
@@ -273,25 +274,45 @@
     }
     
     .btn-snapshot {
-      background: white;
-      color: var(--primary);
-      border: 3px solid var(--primary);
+      background: linear-gradient(135deg, #FF4C6A, #FF7B99);
+      color: #fff;
+      border: none;
       border-radius: 50%;
-      width: 60px;
-      height: 60px;
+      width: 52px;
+      height: 52px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 24px;
+      font-size: 20px;
       cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      transition: all 0.18s ease;
+      box-shadow: 0 8px 20px rgba(255,62,108,0.12);
     }
     
     .btn-snapshot:hover {
-      transform: scale(1.1);
-      background: var(--primary);
-      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(255,62,108,0.12);
+    }
+
+    /* bottom-right calibrate button inside camera */
+    .camera-bottom-actions {
+      position: absolute;
+      right: 12px;
+      bottom: 12px;
+      z-index: 40;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      pointer-events: auto;
+    }
+    .camera-bottom-actions .btn-sm {
+      padding: 6px 8px;
+      font-size: 0.85rem;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.95);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.06);
+      color: var(--dark-muted, #333);
+      border: 1px solid rgba(0,0,0,0.06);
     }
     
     .card {
@@ -976,12 +997,7 @@
             <video id="inputVideo" autoplay muted playsinline></video>
             <canvas id="outputCanvas"></canvas>
 
-            <!-- Top actions: Save & Calibrate -->
-            <div class="camera-top-actions">
-              <button id="calibrateBtn" class="btn btn-outline-primary btn-sm" title="Re-center">
-                <i class="fas fa-sync-alt me-1"></i>Re-center
-              </button>
-            </div>
+            <!-- Top actions: Save & Calibrate (calibrate moved to bottom-right overlay) -->
 
                     <!-- Standalone camera step badge (outside the white pill) -->
                             <div class="camera-step-badge" aria-hidden="true">
@@ -1003,6 +1019,12 @@
             <div class="snapshot-controls" id="snapshotControls">
               <button class="btn-snapshot" id="takeSnapshotBtn" title="Take Photo" data-bs-toggle="tooltip" data-bs-placement="top">
                 <i class="fas fa-camera"></i>
+              </button>
+            </div>
+            <!-- Re-center placed bottom-right inside camera for better discoverability -->
+            <div class="camera-bottom-actions">
+              <button id="calibrateBtn" class="btn btn-outline-secondary btn-sm" title="Re-center">
+                <i class="fas fa-sync-alt me-1"></i>
               </button>
             </div>
             <!-- small camera status badge (moved inside camera) -->
