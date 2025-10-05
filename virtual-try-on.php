@@ -64,66 +64,7 @@
       margin-bottom: 0;
     }
     
-    .step-wizard {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 25px;
-      padding: 20px;
-      background: white;
-      border-radius: 15px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    
-    .step-item {
-      flex: 1;
-      min-width: 120px;
-      text-align: center;
-      position: relative;
-    }
-    
-    .step-number {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: #e9ecef;
-      color: #6c757d;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 10px;
-      font-weight: 700;
-      font-size: 18px;
-      transition: all 0.3s ease;
-    }
-    
-    .step-item.active .step-number {
-      background: linear-gradient(135deg, var(--primary), #FF2B5D);
-      color: white;
-      transform: scale(1.1);
-      box-shadow: 0 4px 15px rgba(255, 62, 108, 0.3);
-    }
-    
-    .step-item.completed .step-number {
-      background: var(--secondary);
-      color: white;
-    }
-    
-    .step-label {
-      font-size: 12px;
-      font-weight: 600;
-      color: #6c757d;
-    }
-    
-    .step-item.active .step-label {
-      color: var(--primary);
-      font-weight: 700;
-    }
-    
-    .step-item.completed .step-label {
-      color: var(--secondary);
-    }
+    /* step-wizard styles removed (wizard UI moved/removed) */
     
     .main-content {
       display: grid;
@@ -133,8 +74,14 @@
     
     @media (min-width: 992px) {
       .main-content {
-        grid-template-columns: 1fr 400px;
+        grid-template-columns: 260px 1fr 380px; /* left, center, right */
+        align-items: start;
+        gap: 24px;
       }
+      .left-column, .center-column, .right-column { display: block; }
+      .left-column { grid-column: 1 / 2; }
+      .center-column { grid-column: 2 / 3; }
+      .right-column { grid-column: 3 / 4; }
     }
     
     .camera-section {
@@ -152,6 +99,53 @@
       overflow: hidden;
       box-shadow: 0 10px 30px rgba(0,0,0,0.15);
       aspect-ratio: 4/3;
+    }
+
+    /* CTA over camera */
+    .camera-cta {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 30;
+      pointer-events: none; /* allow underlying elements until button enabled */
+    }
+    .camera-cta button { pointer-events: auto; }
+    .camera-cta .btn {
+      padding: 18px 28px;
+      font-size: 1.05rem;
+      border-radius: 999px;
+      box-shadow: 0 10px 30px rgba(255,62,108,0.25);
+      transform: translateY(0);
+      transition: transform 220ms ease, box-shadow 220ms ease;
+      background: linear-gradient(135deg, var(--primary), #FF2B5D);
+    }
+    .camera-cta .btn:active { transform: translateY(1px) scale(0.995); }
+    .camera-cta .btn:hover { transform: translateY(-4px); }
+    @keyframes pulseCTA { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
+    .camera-cta .btn.pulse { animation: pulseCTA 2.2s infinite; }
+
+    .camera-top-actions {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      z-index: 35;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      background: rgba(255,255,255,0.85);
+      padding: 6px;
+      border-radius: 999px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    }
+    .camera-top-actions .btn-sm {
+      background: white;
+      color: var(--dark);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-weight: 700;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
     }
     
     video, canvas {
@@ -320,6 +314,28 @@
       gap: 10px;
       margin-top: 10px;
     }
+
+    /* Vertical frames list for right column */
+    .vertical-frames {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: stretch;
+    }
+    /* Make frame items look more like product list items */
+    .right-column .frame-btn {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: white;
+    }
+    .right-column .frame-img { width: 64px; height: 36px; }
+    .right-column .frame-label { font-size: 13px; text-align: left; flex: 1; }
+    .right-column .frame-btn .frame-meta { font-size: 12px; color: #6c757d; }
+    .right-column .frame-btn:hover { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
     
     .frame-btn {
       background: white;
@@ -753,24 +769,7 @@ padding: 8px;
         padding: 15px;
       }
       
-      .step-wizard {
-        padding: 15px 10px;
-        gap: 5px;
-      }
-      
-      .step-item {
-        min-width: 80px;
-      }
-      
-      .step-number {
-        width: 35px;
-        height: 35px;
-        font-size: 16px;
-      }
-      
-      .step-label {
-        font-size: 10px;
-      }
+      /* step-wizard removed for mobile */
       
       .frame-grid {
         grid-template-columns: repeat(4, 1fr);
@@ -837,6 +836,7 @@ padding: 8px;
       .snapshot-controls {
         bottom: 10px;
       }
+      .camera-cta .btn { padding: 12px 18px; font-size: 0.95rem; }
     }
     
     @media (max-width: 480px) {
@@ -866,246 +866,9 @@ padding: 8px;
   </div>
 
   <div class="app-container">
-    <!-- Step Wizard -->
-    <div class="step-wizard">
-      <div class="step-item active" id="step1">
-        <div class="step-number">1</div>
-        <div class="step-label">Start Camera</div>
-      </div>
-      <div class="step-item" id="step2">
-        <div class="step-number">2</div>
-        <div class="step-label">Choose Frame</div>
-      </div>
-      <div class="step-item" id="step3">
-        <div class="step-number">3</div>
-        <div class="step-label">Pick Color</div>
-      </div>
-      <div class="step-item" id="step4">
-        <div class="step-number">4</div>
-        <div class="step-label">Capture Look</div>
-      </div>
-    </div>
-
+    <!-- New shop-like layout: left = adjustments, center = camera + color/material, right = frames -->
     <div class="main-content">
-      <div class="camera-section">
-        <div class="camera-container">
-          <video id="inputVideo" autoplay muted playsinline></video>
-          <canvas id="outputCanvas"></canvas>
-          <div class="camera-overlay d-none" id="cameraOverlay">
-            <div class="loading-spinner"></div>
-            <p class="mt-3">Starting camera...</p>
-          </div>
-          
-          <div class="snapshot-controls" id="snapshotControls">
-            <button class="btn-snapshot" id="takeSnapshotBtn" title="Take Photo" data-bs-toggle="tooltip" data-bs-placement="top">
-              <i class="fas fa-camera"></i>
-            </button>
-          </div>
-        </div>
-        
-        <div class="status-indicator status-offline" id="statusIndicator">
-          <div class="status-dot"></div>
-          <span id="statusText">Camera is off</span>
-        </div>
-
-        <div class="card">
-          <div class="card-header">
-            <span><i class="fas fa-video me-2"></i>Camera Controls</span>
-            <span class="tooltip-icon" data-bs-toggle="tooltip" data-bs-placement="left" title="Allow camera access and position your face in the center for best results">?</span>
-          </div>
-          <div class="card-body">
-            <div class="action-buttons">
-              <button id="startBtn" class="btn btn-primary">
-                <i class="fas fa-camera-video me-2"></i>Start Camera
-              </button>
-              <button id="calibrateBtn" class="btn btn-outline-primary d-none">
-                <i class="fas fa-sync-alt me-2"></i>Reset Position
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="controls-section">
-        <div class="controls-scroll-indicator">
-          Scroll down to adjust frame fit <i class="fas fa-arrow-down"></i>
-        </div>
-
-        <div class="card">
-          <div class="card-header">
-            <span><i class="fas fa-glasses me-2"></i>Frame Styles</span>
-            <span class="tooltip-icon" data-bs-toggle="tooltip" data-bs-placement="left" title="Choose a frame style that complements your face shape">?</span>
-          </div>
-          <div class="card-body">
-            <a href="https://santosopticalclinic.com/face-shape-detector.php" class="btn-face-shape" target="_blank">
-              <i class="fas fa-face-smile"></i>
-              <span>Discover Your Face Shape</span>
-            </a>
-            <div class="frame-grid">
-              <button class="frame-btn active" data-frame="A-TRIANGLE">
-                <img src="Images/frames/ashape-frame-removebg-preview.png" alt="A-Shape" class="frame-img">
-                <span class="frame-label">A-Shape</span>
-              </button>
-              <button class="frame-btn" data-frame="V-TRIANGLE">
-                <img src="Images/frames/vshape-frame-removebg-preview.png" alt="V-Shape" class="frame-img">
-                <span class="frame-label">V-Shape</span>
-              </button>
-              <button class="frame-btn" data-frame="ROUND">
-                <img src="Images/frames/round-frame-removebg-preview.png" alt="Round" class="frame-img">
-                <span class="frame-label">Round</span>
-              </button>
-              <button class="frame-btn" data-frame="SQUARE">
-                <img src="Images/frames/square-frame-removebg-preview.png" alt="Square" class="frame-img">
-                <span class="frame-label">Square</span>
-              </button>
-              <button class="frame-btn" data-frame="RECTANGLE">
-                <img src="Images/frames/rectangle-frame-removebg-preview.png" alt="Rectangle" class="frame-img">
-                <span class="frame-label">Rectangle</span>
-              </button>
-              <button class="frame-btn" data-frame="OBLONG">
-                <img src="Images/frames/oblong-frame-removebg-preview.png" alt="Oblong" class="frame-img">
-                <span class="frame-label">Oblong</span>
-              </button>
-              <button class="frame-btn" data-frame="DIAMOND">
-                <img src="Images/frames/diamond-frame-removebg-preview.png" alt="Diamond" class="frame-img">
-                <span class="frame-label">Diamond</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-header">
-            <span><i class="fas fa-palette me-2"></i>Frame Colors & Materials</span>
-            <span class="tooltip-icon" data-bs-toggle="tooltip" data-bs-placement="left" title="Select from classic, modern, or premium metallic colors">?</span>
-          </div>
-          <div class="card-body">
-            <!-- Accordion for Colors -->
-            <div class="accordion" id="colorAccordion">
-              <!-- Classic Neutrals -->
-              <div class="accordion-item">
-                <h2 class="accordion-header">
-                  <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#classicColors" aria-expanded="true">
-                    Classic Neutrals
-                  </button>
-                </h2>
-                <div id="classicColors" class="accordion-collapse collapse show" data-bs-parent="#colorAccordion">
-                  <div class="accordion-body">
-                    <div class="color-grid">
-                      <div class="color-option">
-                        <div class="color-btn active" style="background: #1a1a1a;" data-color="#1a1a1a" data-color-name="Matte Black"></div>
-                        <div class="color-label">Black</div>
-                      </div>
-                      <div class="color-option">
-                        <div class="color-btn" style="background: #2d3436;" data-color="#2d3436" data-color-name="Charcoal"></div>
-                        <div class="color-label">Charcoal</div>
-                      </div>
-                      <div class="color-option">
-                        <div class="color-btn" style="background: #636e72;" data-color="#636e72" data-color-name="Slate Gray"></div>
-                        <div class="color-label">Slate</div>
-                      </div>
-                      <div class="color-option">
-                        <div class="color-btn" style="background: #704214;" data-color="#704214" data-color-name="Havana"></div>
-                        <div class="color-label">Havana</div>
-                      </div>
-                      <div class="color-option">
-                        <div class="color-btn" style="background: #8b7355;" data-color="#8b7355" data-color-name="Taupe"></div>
-                        <div class="color-label">Taupe</div>
-                      </div>
-                      <div class="color-option">
-                        <div class="color-btn" style="background: #5f4339;" data-color="#5f4339" data-color-name="Espresso"></div>
-                        <div class="color-label">Espresso</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <!-- Modern Tones -->
-              <div class="accordion-item">
-                <h2 class="accordion-header">
-                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#modernTones">
-                    Modern Tones
-                  </button>
-                </h2>
-                <div id="modernTones" class="accordion-collapse collapse" data-bs-parent="#colorAccordion">
-                  <div class="accordion-body">
-                    <div class="color-grid">
-                      <div class="color-option">
-                        <div class="color-btn" style="background: #2c5f7c;" data-color="#2c5f7c" data-color-name="Ocean Blue"></div>
-                        <div class="color-label">Ocean</div>
-                      </div>
-                      <div class="color-option">
-                        <div class="color-btn" style="background: #34495e;" data-color="#34495e" data-color-name="Navy"></div>
-                        <div class="color-label">Navy</div>
-                      </div>
-                      <div class="color-option">
-                        <div class="color-btn" style="background: #16a085;" data-color="#16a085" data-color-name="Teal"></div>
-                        <div class="color-label">Teal</div>
-                      </div>
-                      <div class="color-option">
-                        <div class="color-btn" style="background: #7f5539;" data-color="#7f5539" data-color-name="Cognac"></div>
-                        <div class="color-label">Cognac</div>
-                      </div>
-                      <div class="color-option">
-                        <div class="color-btn" style="background: #95a5a6;" data-color="#95a5a6" data-color-name="Smoke"></div>
-                        <div class="color-label">Smoke</div>
-                      </div>
-                      <div class="color-option">
-                        <div class="color-btn" style="background: #8e44ad;" data-color="#8e44ad" data-color-name="Plum"></div>
-                        <div class="color-label">Plum</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <!-- Premium Metallic -->
-              <div class="accordion-item">
-                <h2 class="accordion-header">
-                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#premiumMetallic">
-                    Premium Metallic
-                  </button>
-                </h2>
-                <div id="premiumMetallic" class="accordion-collapse collapse" data-bs-parent="#colorAccordion">
-                  <div class="accordion-body">
-                    <div class="color-grid">
-                      <div class="color-option">
-                        <div class="color-btn" style="background: linear-gradient(135deg, #bdc3c7, #ecf0f1);" data-color="#bdc3c7" data-color-name="Brushed Silver"></div>
-                        <div class="color-label">Silver</div>
-                      </div>
-                      <div class="color-option">
-                        <div class="color-btn" style="background: linear-gradient(135deg, #b8860b, #d4af37);" data-color="#c5a647" data-color-name="Champagne Gold"></div>
-                        <div class="color-label">Gold</div>
-                      </div>
-                      <div class="color-option">
-                        <div class="color-btn" style="background: linear-gradient(135deg, #cd7f32, #e8a87c);" data-color="#cd7f32" data-color-name="Rose Gold"></div>
-                        <div class="color-label">Rose Gold</div>
-                      </div>
-                      <div class="color-option">
-                        <div class="color-btn" style="background: linear-gradient(135deg, #4a4a4a, #6b6b6b);" data-color="#5a5a5a" data-color-name="Gunmetal"></div>
-                        <div class="color-label">Gunmetal</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="control-group mt-3">
-              <div class="control-label">
-                <span>Material Effect</span>
-                <span class="tooltip-icon" data-bs-toggle="tooltip" title="Change the finish of your frames">?</span>
-              </div>
-              <div class="material-controls">
-                <button class="material-btn active" data-material="Matte">Matte</button>
-                <button class="material-btn" data-material="Glossy">Glossy</button>
-                <button class="material-btn" data-material="Pattern">Pattern</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
+      <div class="left-column">
         <div class="card">
           <div class="card-header">
             <span><i class="fas fa-sliders-h me-2"></i>Adjust Fit</span>
@@ -1169,6 +932,221 @@ padding: 8px;
         </div>
         <?php endif; ?>
       </div>
+
+      <div class="center-column">
+        <div class="camera-section">
+          <div class="camera-container">
+            <video id="inputVideo" autoplay muted playsinline></video>
+            <canvas id="outputCanvas"></canvas>
+
+            <!-- Top actions: Save & Calibrate -->
+            <div class="camera-top-actions">
+              <button id="saveBtn" class="btn btn-outline-primary btn-sm me-2" title="Save">
+                <i class="fas fa-save me-1"></i>Save
+              </button>
+              <button id="calibrateBtn" class="btn btn-outline-primary btn-sm" title="Calibrate">
+                <i class="fas fa-sync-alt me-1"></i>Calibrate
+              </button>
+            </div>
+
+            <!-- Centered start CTA over camera -->
+            <div class="camera-cta" id="cameraCta">
+              <button id="startBtn" class="btn btn-primary btn-lg">
+                <i class="fas fa-camera-video me-2"></i>Start Camera
+              </button>
+            </div>
+
+            <div class="camera-overlay d-none" id="cameraOverlay">
+              <div class="loading-spinner"></div>
+              <p class="mt-3">Starting camera...</p>
+            </div>
+
+            <div class="snapshot-controls" id="snapshotControls">
+              <button class="btn-snapshot" id="takeSnapshotBtn" title="Take Photo" data-bs-toggle="tooltip" data-bs-placement="top">
+                <i class="fas fa-camera"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="status-indicator status-offline" id="statusIndicator">
+            <div class="status-dot"></div>
+            <span id="statusText">Camera is off</span>
+          </div>
+        </div>
+
+        <!-- Colors & Materials below the camera (bottom area) -->
+        <div class="card">
+          <div class="card-header">
+            <span><i class="fas fa-palette me-2"></i>Frame Colors & Materials</span>
+            <span class="tooltip-icon" data-bs-toggle="tooltip" data-bs-placement="left" title="Select from classic, modern, or premium metallic colors">?</span>
+          </div>
+          <div class="card-body">
+            <!-- Accordion for Colors (unchanged content) -->
+            <div class="accordion" id="colorAccordion">
+              <div class="accordion-item">
+                <h2 class="accordion-header">
+                  <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#classicColors" aria-expanded="true">
+                    Classic Neutrals
+                  </button>
+                </h2>
+                <div id="classicColors" class="accordion-collapse collapse show" data-bs-parent="#colorAccordion">
+                  <div class="accordion-body">
+                    <div class="color-grid">
+                      <div class="color-option">
+                        <div class="color-btn active" style="background: #1a1a1a;" data-color="#1a1a1a" data-color-name="Matte Black"></div>
+                        <div class="color-label">Black</div>
+                      </div>
+                      <div class="color-option">
+                        <div class="color-btn" style="background: #2d3436;" data-color="#2d3436" data-color-name="Charcoal"></div>
+                        <div class="color-label">Charcoal</div>
+                      </div>
+                      <div class="color-option">
+                        <div class="color-btn" style="background: #636e72;" data-color="#636e72" data-color-name="Slate Gray"></div>
+                        <div class="color-label">Slate</div>
+                      </div>
+                      <div class="color-option">
+                        <div class="color-btn" style="background: #704214;" data-color="#704214" data-color-name="Havana"></div>
+                        <div class="color-label">Havana</div>
+                      </div>
+                      <div class="color-option">
+                        <div class="color-btn" style="background: #8b7355;" data-color="#8b7355" data-color-name="Taupe"></div>
+                        <div class="color-label">Taupe</div>
+                      </div>
+                      <div class="color-option">
+                        <div class="color-btn" style="background: #5f4339;" data-color="#5f4339" data-color-name="Espresso"></div>
+                        <div class="color-label">Espresso</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="accordion-item">
+                <h2 class="accordion-header">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#modernTones">
+                    Modern Tones
+                  </button>
+                </h2>
+                <div id="modernTones" class="accordion-collapse collapse" data-bs-parent="#colorAccordion">
+                  <div class="accordion-body">
+                    <div class="color-grid">
+                      <div class="color-option">
+                        <div class="color-btn" style="background: #2c5f7c;" data-color="#2c5f7c" data-color-name="Ocean Blue"></div>
+                        <div class="color-label">Ocean</div>
+                      </div>
+                      <div class="color-option">
+                        <div class="color-btn" style="background: #34495e;" data-color="#34495e" data-color-name="Navy"></div>
+                        <div class="color-label">Navy</div>
+                      </div>
+                      <div class="color-option">
+                        <div class="color-btn" style="background: #16a085;" data-color="#16a085" data-color-name="Teal"></div>
+                        <div class="color-label">Teal</div>
+                      </div>
+                      <div class="color-option">
+                        <div class="color-btn" style="background: #7f5539;" data-color="#7f5539" data-color-name="Cognac"></div>
+                        <div class="color-label">Cognac</div>
+                      </div>
+                      <div class="color-option">
+                        <div class="color-btn" style="background: #95a5a6;" data-color="#95a5a6" data-color-name="Smoke"></div>
+                        <div class="color-label">Smoke</div>
+                      </div>
+                      <div class="color-option">
+                        <div class="color-btn" style="background: #8e44ad;" data-color="#8e44ad" data-color-name="Plum"></div>
+                        <div class="color-label">Plum</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="accordion-item">
+                <h2 class="accordion-header">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#premiumMetallic">
+                    Premium Metallic
+                  </button>
+                </h2>
+                <div id="premiumMetallic" class="accordion-collapse collapse" data-bs-parent="#colorAccordion">
+                  <div class="accordion-body">
+                    <div class="color-grid">
+                      <div class="color-option">
+                        <div class="color-btn" style="background: linear-gradient(135deg, #bdc3c7, #ecf0f1);" data-color="#bdc3c7" data-color-name="Brushed Silver"></div>
+                        <div class="color-label">Silver</div>
+                      </div>
+                      <div class="color-option">
+                        <div class="color-btn" style="background: linear-gradient(135deg, #b8860b, #d4af37);" data-color="#c5a647" data-color-name="Champagne Gold"></div>
+                        <div class="color-label">Gold</div>
+                      </div>
+                      <div class="color-option">
+                        <div class="color-btn" style="background: linear-gradient(135deg, #cd7f32, #e8a87c);" data-color="#cd7f32" data-color-name="Rose Gold"></div>
+                        <div class="color-label">Rose Gold</div>
+                      </div>
+                      <div class="color-option">
+                        <div class="color-btn" style="background: linear-gradient(135deg, #4a4a4a, #6b6b6b);" data-color="#5a5a5a" data-color-name="Gunmetal"></div>
+                        <div class="color-label">Gunmetal</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="control-group mt-3">
+              <div class="control-label">
+                <span>Material Effect</span>
+                <span class="tooltip-icon" data-bs-toggle="tooltip" title="Change the finish of your frames">?</span>
+              </div>
+              <div class="material-controls">
+                <button class="material-btn active" data-material="Matte">Matte</button>
+                <button class="material-btn" data-material="Glossy">Glossy</button>
+                <button class="material-btn" data-material="Pattern">Pattern</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="right-column">
+        <div class="card">
+          <div class="card-header">
+            <span><i class="fas fa-glasses me-2"></i>Frame Styles</span>
+            <span class="tooltip-icon" data-bs-toggle="tooltip" data-bs-placement="left" title="Choose a frame style that complements your face shape">?</span>
+          </div>
+          <div class="card-body">
+            <a href="https://santosopticalclinic.com/face-shape-detector.php" class="btn-face-shape" target="_blank">
+              <i class="fas fa-face-smile"></i>
+              <span>Discover Your Face Shape</span>
+            </a>
+            <div class="frame-grid vertical-frames">
+              <button class="frame-btn active" data-frame="A-TRIANGLE">
+                <img src="Images/frames/ashape-frame-removebg-preview.png" alt="A-Shape" class="frame-img">
+                <span class="frame-label">A-Shape</span>
+              </button>
+              <button class="frame-btn" data-frame="V-TRIANGLE">
+                <img src="Images/frames/vshape-frame-removebg-preview.png" alt="V-Shape" class="frame-img">
+                <span class="frame-label">V-Shape</span>
+              </button>
+              <button class="frame-btn" data-frame="ROUND">
+                <img src="Images/frames/round-frame-removebg-preview.png" alt="Round" class="frame-img">
+                <span class="frame-label">Round</span>
+              </button>
+              <button class="frame-btn" data-frame="SQUARE">
+                <img src="Images/frames/square-frame-removebg-preview.png" alt="Square" class="frame-img">
+                <span class="frame-label">Square</span>
+              </button>
+              <button class="frame-btn" data-frame="RECTANGLE">
+                <img src="Images/frames/rectangle-frame-removebg-preview.png" alt="Rectangle" class="frame-img">
+                <span class="frame-label">Rectangle</span>
+              </button>
+              <button class="frame-btn" data-frame="OBLONG">
+                <img src="Images/frames/oblong-frame-removebg-preview.png" alt="Oblong" class="frame-img">
+                <span class="frame-label">Oblong</span>
+              </button>
+              <button class="frame-btn" data-frame="DIAMOND">
+                <img src="Images/frames/diamond-frame-removebg-preview.png" alt="Diamond" class="frame-img">
+                <span class="frame-label">Diamond</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1203,8 +1181,9 @@ padding: 8px;
     const videoElement = document.getElementById('inputVideo');
     const canvasElement = document.getElementById('outputCanvas');
     const canvasCtx = canvasElement.getContext('2d');
-    const startBtn = document.getElementById('startBtn');
-    const calibrateBtn = document.getElementById('calibrateBtn');
+  const startBtn = document.getElementById('startBtn');
+  const calibrateBtn = document.getElementById('calibrateBtn');
+  const saveBtn = document.getElementById('saveBtn');
     const cameraOverlay = document.getElementById('cameraOverlay');
     const statusIndicator = document.getElementById('statusIndicator');
     const statusText = document.getElementById('statusText');
@@ -1226,11 +1205,11 @@ padding: 8px;
     const downloadSnapshotBtn = document.getElementById('downloadSnapshotBtn');
     const closeSnapshotBtn = document.getElementById('closeSnapshotBtn');
 
-    // Step wizard elements
-    const step1 = document.getElementById('step1');
-    const step2 = document.getElementById('step2');
-    const step3 = document.getElementById('step3');
-    const step4 = document.getElementById('step4');
+  // Step wizard elements (may be removed) - keep references if present
+  const step1 = document.getElementById('step1');
+  const step2 = document.getElementById('step2');
+  const step3 = document.getElementById('step3');
+  const step4 = document.getElementById('step4');
 
     const FRAMES = {
       'SQUARE': { path: 'Images/frames/square-frame-removebg-preview.png', label: 'Square' },
@@ -1282,7 +1261,8 @@ padding: 8px;
     const textureCache = new Map();
 
     function updateStepWizard(stepNumber) {
-      const steps = [step1, step2, step3, step4];
+      const steps = [step1, step2, step3, step4].filter(Boolean);
+      if (steps.length === 0) return; // step wizard removed in layout
       steps.forEach((step, index) => {
         step.classList.remove('active', 'completed');
         if (index < stepNumber - 1) {
@@ -1531,19 +1511,23 @@ padding: 8px;
       }
     }
 
-    // Snapshot functionality
-    takeSnapshotBtn.addEventListener('click', () => {
+    // Snapshot functionality (reusable)
+    function showSnapshotFromCanvas() {
       const snapshotCanvas = document.createElement('canvas');
       snapshotCanvas.width = canvasElement.width;
       snapshotCanvas.height = canvasElement.height;
       const ctx = snapshotCanvas.getContext('2d');
       ctx.drawImage(canvasElement, 0, 0);
-      
+
       const dataUrl = snapshotCanvas.toDataURL('image/png');
       snapshotImage.src = dataUrl;
       snapshotModal.classList.add('active');
-      updateStepWizard(4);
-    });
+      try { updateStepWizard(4); } catch (e) { /* ignore if wizard removed */ }
+    }
+
+    takeSnapshotBtn.addEventListener('click', showSnapshotFromCanvas);
+
+    if (saveBtn) saveBtn.addEventListener('click', showSnapshotFromCanvas);
 
     downloadSnapshotBtn.addEventListener('click', () => {
       const link = document.createElement('a');
@@ -1624,6 +1608,10 @@ padding: 8px;
       }
     });
 
+    const cameraCta = document.getElementById('cameraCta');
+    // pulse CTA to draw attention
+    const ctaBtn = cameraCta ? cameraCta.querySelector('button') : null;
+    if (ctaBtn) ctaBtn.classList.add('pulse');
     startBtn.addEventListener('click', async () => {
       try {
         startBtn.disabled = true;
@@ -1632,9 +1620,12 @@ padding: 8px;
         await initializeFaceMesh();
         const stream = await startCamera();
         
-        resizeCanvasToDisplay();
-        calibrateBtn.classList.remove('d-none');
-        snapshotControls.classList.add('active');
+  resizeCanvasToDisplay();
+  // hide CTA overlay after camera starts
+  if (cameraCta) cameraCta.style.display = 'none';
+  if (ctaBtn) ctaBtn.classList.remove('pulse');
+  calibrateBtn.classList.remove('d-none');
+  if (snapshotControls) snapshotControls.classList.add('active');
         updateHeightDisplay();
         updatePositionDisplay();
         updateStepWizard(1);
