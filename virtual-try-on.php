@@ -914,32 +914,27 @@
         gap: 8px;
       }
 
-    /* when JS toggles camera-fixed on mobile - mini video header (video-call style) */
-    .camera-fixed {
+    /* when JS toggles camera-mini on mobile - corner floating thumbnail (video-call style) */
+    .camera-mini {
       position: fixed !important;
-      top: 10px !important;
-      left: 0 !important;
-      right: 0 !important;
-      margin: 0 10px !important;
-      z-index: 9999;
-      width: auto !important;
-      max-width: calc(100% - 20px) !important;
+      bottom: 16px !important;
+      right: 16px !important;
+      z-index: 9999 !important;
+      width: 140px !important;
+      height: 190px !important;
       box-sizing: border-box !important;
       overflow: hidden !important;
-      box-shadow: 0 12px 40px rgba(0,0,0,0.12);
-      border-radius: 12px;
-      background: rgba(255,255,255,0.01);
-      transition: height 220ms ease, transform 220ms ease;
-      height: 96px; /* mini header height */
+      box-shadow: 0 18px 48px rgba(0,0,0,0.22);
+      border-radius: 12px !important;
+      background: rgba(0,0,0,0.35) !important;
+      transform-origin: center center;
+      transition: width 260ms ease, height 260ms ease, transform 260ms ease, right 260ms ease, bottom 260ms ease;
     }
-    .camera-fixed .camera-container { height: 96px !important; aspect-ratio: auto !important; }
-    .camera-fixed .camera-cta { display: none !important; }
-    .camera-fixed .snapshot-controls { display: none !important; }
-    .camera-fixed .camera-status { transform: scale(0.92); }
-    .camera-fixed .camera-bottom-actions { right: 12px; bottom: 12px; }
-
-    /* while mini camera active, add top padding so content doesn't jump under the fixed bar */
-    .camera-mini-active .main-content { padding-top: 120px; }
+    .camera-mini .camera-container { width: 100% !important; height: 100% !important; aspect-ratio: auto !important; }
+    .camera-mini .camera-cta { display: none !important; }
+    .camera-mini .snapshot-controls { display: none !important; }
+    .camera-mini .camera-status { transform: scale(0.9); }
+    .camera-mini .camera-bottom-actions { right: 8px; bottom: 8px; }
 
     /* prevent horizontal scroll on mobile */
     @media (max-width: 767px) {
@@ -1966,19 +1961,17 @@
 
       function onScroll() {
         if (window.innerWidth > 767) {
-          cameraSection.classList.remove('camera-fixed');
+          cameraSection.classList.remove('camera-mini');
           return;
         }
         const scrollY = window.scrollY || document.documentElement.scrollTop;
         if (scrollY >= origOffsetTop - 10) {
-          if (!cameraSection.classList.contains('camera-fixed')) {
-            cameraSection.classList.add('camera-fixed');
-            document.body.classList.add('camera-mini-active');
+          if (!cameraSection.classList.contains('camera-mini')) {
+            cameraSection.classList.add('camera-mini');
           }
         } else {
-          if (cameraSection.classList.contains('camera-fixed')) {
-            cameraSection.classList.remove('camera-fixed');
-            document.body.classList.remove('camera-mini-active');
+          if (cameraSection.classList.contains('camera-mini')) {
+            cameraSection.classList.remove('camera-mini');
           }
         }
       }
@@ -1989,6 +1982,13 @@
       window.addEventListener('load', () => { setTimeout(updateOrigOffset, 120); });
       // initial check
       updateOrigOffset(); onScroll();
+
+      // click-to-expand: if user taps the mini thumbnail, scroll back to the camera section
+      cameraSection.addEventListener('click', (e) => {
+        if (!cameraSection.classList.contains('camera-mini')) return;
+        // scroll so the camera section comes into view
+        window.scrollTo({ top: origOffsetTop - 8, behavior: 'smooth' });
+      });
     })();
   </script>
 </body>
