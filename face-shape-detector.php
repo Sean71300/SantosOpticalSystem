@@ -971,17 +971,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
                 
                 <!-- Primary CTA -->
-                <div class="primary-cta">
-                    <h3><i class="fas fa-shopping-bag me-2"></i> Ready to Find Your Perfect Frames?</h3>
-                    <p>Explore our curated collection designed specifically for <?= htmlspecialchars($result) ?> face shapes</p>
-                    <?php
-                    $shapeID = mapShapeToID($result);
-                    $shopUrl = 'product-gallery.php?page=1&shape=' . $shapeID;
-                    ?>
-                    <a href="<?= htmlspecialchars($shopUrl) ?>" class="btn-shop-now">
-                        Shop Recommended Frames
-                    </a>
+                <div class="primary-cta container my-5">
+                    <div class="card text-center shadow-sm border-0 rounded-4 p-4 p-md-5">
+                        <h3 class="fw-semibold mb-3">
+                            <i class="fas fa-shopping-bag me-2 text-primary"></i>
+                            Ready to Find Your Perfect Frames?
+                        </h3>
+
+                        <p class="text-muted mb-4">
+                            Explore our curated collection designed specifically for 
+                            <span class="fw-bold text-primary"><?= htmlspecialchars($result) ?></span> face shapes.
+                        </p>
+
+                        <?php
+                        $shapeID = mapShapeToID($result);
+                        $shopUrl = 'product-gallery.php?page=1&shape=' . $shapeID;
+                        ?>
+
+                        <a href="<?= htmlspecialchars($shopUrl) ?>" class="btn btn-primary btn-lg px-4 py-2 rounded-pill">
+                            Shop Recommended Frames
+                        </a>
+                    </div>
                 </div>
+
                 
                 <!-- Social Share -->
                 <div class="social-share">
