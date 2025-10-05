@@ -149,16 +149,24 @@
       font-weight: 600;
       margin-bottom: 5px;
     }
-    .height-controls {
+    .position-controls {
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 10px;
       margin-top: 5px;
     }
-    .height-value {
+    .position-value {
       min-width: 40px;
       font-weight: bold;
+    }
+    .control-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+    }
+    .control-col {
+      flex: 1;
     }
   </style>
 </head>
@@ -173,22 +181,38 @@
     </div>
 
     <div class="controls-container d-none" id="controlsContainer">
-      <div class="control-group">
-        <div class="control-label">Glasses Size</div>
-        <input type="range" class="form-range" id="sizeSlider" min="1.8" max="3.0" step="0.1" value="2.4">
-        <small id="sizeValue">2.4x</small>
+      <div class="control-row">
+        <div class="control-col">
+          <div class="control-label">Size</div>
+          <input type="range" class="form-range" id="sizeSlider" min="1.8" max="3.0" step="0.1" value="2.4">
+          <small id="sizeValue">2.4x</small>
+        </div>
+        <div class="control-col">
+          <div class="control-label">Height</div>
+          <div class="position-controls">
+            <button class="btn btn-outline-primary btn-sm" id="heightDown">
+              <i class="bi bi-dash"></i>
+            </button>
+            <span class="position-value" id="heightValue">70%</span>
+            <button class="btn btn-outline-primary btn-sm" id="heightUp">
+              <i class="bi bi-plus"></i>
+            </button>
+          </div>
+        </div>
       </div>
       
-      <div class="control-group">
-        <div class="control-label">Glasses Height</div>
-        <div class="height-controls">
-          <button class="btn btn-outline-primary btn-sm" id="heightDown">
-            <i class="bi bi-dash"></i>
-          </button>
-          <span class="height-value" id="heightValue">70%</span>
-          <button class="btn btn-outline-primary btn-sm" id="heightUp">
-            <i class="bi bi-plus"></i>
-          </button>
+      <div class="control-row">
+        <div class="control-col">
+          <div class="control-label">Vertical Position</div>
+          <div class="position-controls">
+            <button class="btn btn-outline-primary btn-sm" id="positionDown">
+              <i class="bi bi-arrow-down"></i>
+            </button>
+            <span class="position-value" id="positionValue">0px</span>
+            <button class="btn btn-outline-primary btn-sm" id="positionUp">
+              <i class="bi bi-arrow-up"></i>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -269,6 +293,9 @@
     const heightDown = document.getElementById('heightDown');
     const heightUp = document.getElementById('heightUp');
     const heightValue = document.getElementById('heightValue');
+    const positionDown = document.getElementById('positionDown');
+    const positionUp = document.getElementById('positionUp');
+    const positionValue = document.getElementById('positionValue');
     const frameSelector = document.getElementById('frameSelector');
     const frameButtons = document.querySelectorAll('.frame-btn');
     const statusMsg = document.getElementById('statusMsg');
@@ -350,6 +377,7 @@
     let isCalibrated = false;
     let glassesSizeMultiplier = 2.4;
     let glassesHeightRatio = 0.7;
+    let verticalOffset = 0; // Y-axis positioning
     let currentFrame = 'A-TRIANGLE';
 
     function calculateHeadAngle(landmarks) {
@@ -372,6 +400,10 @@
       heightValue.textContent = Math.round(glassesHeightRatio * 100) + '%';
     }
 
+    function updatePositionDisplay() {
+      positionValue.textContent = verticalOffset + 'px';
+    }
+
     function drawGlasses(landmarks) {
       const leftEye = landmarks[33];
       const rightEye = landmarks[263];
@@ -389,8 +421,11 @@
 
       const glassesWidth = eyeDist * glassesSizeMultiplier;
       const glassesHeight = glassesWidth * glassesHeightRatio;
-      const centerX = (leftEye.x * canvasElement.width + rightEye.x * canvasElement.width) / 2;
-      const centerY = (leftEye.y * canvasElement.height + rightEye.y * canvasElement.height) / 2;
+      let centerX = (leftEye.x * canvasElement.width + rightEye.x * canvasElement.width) / 2;
+      let centerY = (leftEye.y * canvasElement.height + rightEye.y * canvasElement.height) / 2;
+
+      // Apply vertical offset (small increments)
+      centerY += verticalOffset;
 
       if (centerX > 0 && centerY > 0 && glassesWidth > 10 && glassesImages[currentFrame]) {
         canvasCtx.save();
@@ -561,6 +596,17 @@
       updateHeightDisplay();
     });
 
+    // Vertical position controls - smaller increments
+    positionDown.addEventListener('click', () => {
+      verticalOffset += 2; // Smaller increment: 2px instead of 5px
+      updatePositionDisplay();
+    });
+
+    positionUp.addEventListener('click', () => {
+      verticalOffset -= 2; // Smaller decrement: 2px instead of 5px
+      updatePositionDisplay();
+    });
+
     // Calibrate button handler
     calibrateBtn.addEventListener('click', () => {
       if (faceTrackingActive) {
@@ -592,6 +638,7 @@
         frameSelector.classList.remove('d-none');
         calibrateBtn.classList.remove('d-none');
         updateHeightDisplay();
+        updatePositionDisplay();
 
         const processingWidth = isMobile ? 320 : 640;
         const processingHeight = isMobile ? 240 : 480;
