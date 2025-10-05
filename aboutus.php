@@ -350,94 +350,100 @@
         </div>
 
         <div class="container" data-aos="fade-up">
-          <h2 class="aboutus-h2">SO BRANCHES</h2>
-          <div class="row justify-content-center g-4">
-              <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-                <div class="branch-card" data-aos="fade-up" data-aos-delay="100">
-                  <div class="image-container">
-                    <a href="https://maps.app.goo.gl/8gff1kz1FyvZ6FCK8" target="_blank">
-                      <img src="Images/pascual st.jpg" alt="San Agustin, Malabon" class="branch-image">
-                      <img src="Images/loc.png" alt="Map Icon" class="map-icon">
-                    </a>
-                  </div>
-                  <div class="branch-info">
-                    <strong>SO Santos Optical San Agustin</strong><br>
-                    San Agustin, Malabon<br>
-                    ☎️ 02 88183480<br>
-                    <small>Conveniently located in San Agustin</small>
-                  </div>
-                </div>
-              </div>
+        <h2 class="aboutus-h2">SO BRANCHES</h2>
+        <div class="row justify-content-center g-4">
 
-              <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-                <div class="branch-card" data-aos="fade-up" data-aos-delay="200">
-                  <div class="image-container">
-                    <a href="https://maps.app.goo.gl/FCzggs1hSusNxnMq7" target="_blank">
-                      <img src="Images/bayan.jpg" alt="Rizal Extension Avenue, Malabon" class="branch-image">
-                      <img src="Images/loc.png" alt="Map Icon" class="map-icon">
-                    </a>
-                  </div>
-                  <div class="branch-info">
-                    <strong>SO Santos Optical Rizal Avenue</strong><br>
-                    Rizal Extension Avenue, Malabon<br>
-                    ☎️ 02 86321972<br>
-                    <small>Along the main avenue of Malabon</small>
-                  </div>
+            <!-- Row 1: 3 branches -->
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+            <div class="branch-card" data-aos="fade-up" data-aos-delay="100">
+                <div class="image-container">
+                <a href="https://maps.app.goo.gl/8gff1kz1FyvZ6FCK8" target="_blank">
+                    <img src="Images/pascual st.jpg" alt="San Agustin, Malabon" class="branch-image">
+                    <img src="Images/loc.png" alt="Map Icon" class="map-icon">
+                </a>
                 </div>
-              </div>
-
-              <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-                <div class="branch-card" data-aos="fade-up" data-aos-delay="300">
-                  <div class="image-container">
-                    <a href="https://maps.app.goo.gl/JGjVQRtRNCQYwkus6" target="_blank">
-                      <img src="Images/quiapo.jpg" alt="Quiapo, Manila" class="branch-image">
-                      <img src="Images/loc.png" alt="Map Icon" class="map-icon">
-                    </a>
-                  </div>
-                  <div class="branch-info">
-                    <strong>SO Santos Optical Quiapo</strong><br>
-                    Quiapo, Manila<br>
-                    ☎️ 09328447068<br>
-                    <small>In the heart of Quiapo, Manila</small>
-                  </div>
-                </div>
-              </div>
-
-              <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-                <div class="branch-card" data-aos="fade-up" data-aos-delay="400">
-                  <div class="image-container">
-                    <a href="https://maps.app.goo.gl/riu7zr7VhunhW1Tq8" target="_blank">
-                      <img src="Images/tangos.png" alt="Tangos, Navotas" class="branch-image">
-                      <img src="Images/loc.png" alt="Map Icon" class="map-icon">
-                    </a>
-                  </div>
-                  <div class="branch-info">
-                    <strong>SO Santos Optical Tangos</strong><br>
-                    Tangos, Navotas<br>
-                    ☎️ 09328447068<br>
-                    <small>Our original branch in Tangos</small>
-                  </div>
-                </div>
-              </div>
-
-              <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-                <div class="branch-card" data-aos="fade-up" data-aos-delay="500">
-                    <div class="image-container">
-                    <a href="https://maps.app.goo.gl/your-map-link-here" target="_blank">
-                        <img src="Images/pasodeblas.jpg" alt="Paso De Blas, Valenzuela" class="branch-image">
-                        <img src="Images/loc.png" alt="Map Icon" class="map-icon">
-                    </a>
-                    </div>
-                    <div class="branch-info">
-                    <strong>SO Santos Optical Paso De Blas</strong><br>
-                    621-B Paso de Blas Rd, Valenzuela, 1442 Metro Manila<br>
-                    ☎️ 0932 844 7068<br>
-                    <small>In the busy city of Valenzuela</small>
-                    </div>
+                <div class="branch-info">
+                <strong>SO Santos Optical San Agustin</strong><br>
+                San Agustin, Malabon<br>
+                ☎️ 02 88183480<br>
+                <small>Conveniently located in San Agustin</small>
                 </div>
             </div>
-          </div>
-        </div>  
+            </div>
+
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+            <div class="branch-card" data-aos="fade-up" data-aos-delay="200">
+                <div class="image-container">
+                <a href="https://maps.app.goo.gl/FCzggs1hSusNxnMq7" target="_blank">
+                    <img src="Images/bayan.jpg" alt="Rizal Extension Avenue, Malabon" class="branch-image">
+                    <img src="Images/loc.png" alt="Map Icon" class="map-icon">
+                </a>
+                </div>
+                <div class="branch-info">
+                <strong>SO Santos Optical Rizal Avenue</strong><br>
+                Rizal Extension Avenue, Malabon<br>
+                ☎️ 02 86321972<br>
+                <small>Along the main avenue of Malabon</small>
+                </div>
+            </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+            <div class="branch-card" data-aos="fade-up" data-aos-delay="300">
+                <div class="image-container">
+                <a href="https://maps.app.goo.gl/JGjVQRtRNCQYwkus6" target="_blank">
+                    <img src="Images/quiapo.jpg" alt="Quiapo, Manila" class="branch-image">
+                    <img src="Images/loc.png" alt="Map Icon" class="map-icon">
+                </a>
+                </div>
+                <div class="branch-info">
+                <strong>SO Santos Optical Quiapo</strong><br>
+                Quiapo, Manila<br>
+                ☎️ 09328447068<br>
+                <small>In the heart of Quiapo, Manila</small>
+                </div>
+            </div>
+            </div>
+
+            <!-- Row 2: 2 branches -->
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+            <div class="branch-card" data-aos="fade-up" data-aos-delay="400">
+                <div class="image-container">
+                <a href="https://maps.app.goo.gl/riu7zr7VhunhW1Tq8" target="_blank">
+                    <img src="Images/tangos.png" alt="Tangos, Navotas" class="branch-image">
+                    <img src="Images/loc.png" alt="Map Icon" class="map-icon">
+                </a>
+                </div>
+                <div class="branch-info">
+                <strong>SO Santos Optical Tangos</strong><br>
+                Tangos, Navotas<br>
+                ☎️ 09328447068<br>
+                <small>Our original branch in Tangos</small>
+                </div>
+            </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+            <div class="branch-card" data-aos="fade-up" data-aos-delay="500">
+                <div class="image-container">
+                <a href="https://maps.app.goo.gl/your-map-link-here" target="_blank">
+                    <img src="Images/pasodeblas.jpg" alt="Paso De Blas, Valenzuela" class="branch-image">
+                    <img src="Images/loc.png" alt="Map Icon" class="map-icon">
+                </a>
+                </div>
+                <div class="branch-info">
+                <strong>SO Santos Optical Paso De Blas</strong><br>
+                621-B Paso de Blas Rd, Valenzuela, 1442 Metro Manila<br>
+                ☎️ 0932 844 7068<br>
+                <small>Along busy streets in Valenzuela</small>
+                </div>
+            </div>
+            </div>
+
+        </div>
+        </div>
+
+
 
         <?php include 'footer.php'; ?>
 
