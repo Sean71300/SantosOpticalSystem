@@ -76,16 +76,15 @@
       /* 3-column layout: camera(left, tall) | center(col2) | frames(col3)
          grid rows: top and bottom. Camera spans both rows. */
       .main-content {
-        grid-template-columns: 360px 1fr 260px; /* camera (narrow/mobile-like), adjust/material, frames/colors */
+        grid-template-columns: 220px 280px 420px 240px; /* camera (thin/tall) | adjust (narrow) | frames+material | colors */
         grid-auto-rows: auto;
-        gap: 20px;
+        gap: 18px;
       }
-      .left-column, .center-column, .frames-column, .right-column, .material-column { display: block; }
+      .left-column, .center-column, .frames-column, .right-column { display: block; }
       .left-column { grid-column: 1; grid-row: 1 / span 2; }
       .center-column { grid-column: 2; grid-row: 1; }
-      .frames-column { grid-column: 3; grid-row: 1; }
-      .material-column { grid-column: 2; grid-row: 2; }
-      .right-column { grid-column: 3; grid-row: 2; }
+      .frames-column { grid-column: 3; grid-row: 1 / span 2; }
+      .right-column { grid-column: 4; grid-row: 1 / span 2; }
     }
     
     .camera-section {
@@ -102,11 +101,12 @@
       border-radius: 20px;
       overflow: hidden;
       box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-      aspect-ratio: 4/3;
-      /* make camera tall but keep it constrained to viewport so bottom row remains visible */
-      min-height: 60vh;
+      aspect-ratio: 2/3; /* tall and thin */
+      /* tall but constrained to viewport so other columns remain visible */
+      min-height: calc(70vh);
       max-height: calc(100vh - 120px);
-      max-width: 420px;
+      max-width: 220px; /* thin */
+      width: 100%;
     }
 
     /* CTA over camera */
@@ -303,7 +303,7 @@
 
     /* Keep the Adjust Fit card compact so it doesn't push Material/Colors offscreen */
     .center-column .card {
-      max-height: 540px;
+      max-height: 420px;
       overflow: auto;
     }
     
@@ -426,7 +426,7 @@
       background: white;
       border: 2px solid var(--border);
       border-radius: 12px;
-      padding: 6px;
+      padding: 6px 8px;
       cursor: pointer;
       transition: all 0.3s ease;
       display: flex;
@@ -450,8 +450,8 @@
     }
     
     .frame-img {
-      width: 40px;
-      height: 24px;
+      width: 34px;
+      height: 20px;
       object-fit: contain;
     }
     
@@ -635,7 +635,7 @@
     
     .form-range {
       width: 100%;
-      height: 10px;
+      height: 6px;
       border-radius: 6px;
       background: linear-gradient(90deg, rgba(255,62,108,0.12), rgba(0,200,179,0.06));
     }
@@ -1149,26 +1149,25 @@
                 <span class="frame-label">Diamond</span>
               </button>
             </div>
-          </div>
-        </div>
-      </div>
-      </div>
-
-      <div class="material-column">
-        <div class="card">
-          <div class="card-header">
-            <span><i class="fas fa-cubes me-2"></i>Material Effect</span>
-            <span class="step-badge">4</span>
-          </div>
-          <div class="card-body">
-            <div class="material-controls">
-              <button class="material-btn active" data-material="Matte">Matte</button>
-              <button class="material-btn" data-material="Glossy">Glossy</button>
-              <button class="material-btn" data-material="Pattern">Pattern</button>
+            <!-- Material Effect moved into frames column below frames -->
+            <div class="mt-3">
+              <div class="card">
+                <div class="card-header">
+                  <span><i class="fas fa-cubes me-2"></i>Material Effect</span>
+                  <span class="step-badge">4</span>
+                </div>
+                <div class="card-body">
+                  <div class="material-controls">
+                    <button class="material-btn active" data-material="Matte">Matte</button>
+                    <button class="material-btn" data-material="Glossy">Glossy</button>
+                    <button class="material-btn" data-material="Pattern">Pattern</button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-
+      </div>
       </div>
 
       <div class="right-column">
