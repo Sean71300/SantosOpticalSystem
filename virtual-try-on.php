@@ -1098,7 +1098,6 @@
                 <button class="btn btn-outline-primary position-btn" id="positionUp" aria-label="Move up"><i class="fas fa-arrow-up"></i></button>
               </div>
             </div>
-            <hr>
           </div>
         </div>
       </div>
