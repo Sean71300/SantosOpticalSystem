@@ -76,7 +76,7 @@
       /* 3-column layout: camera(left, tall) | center(col2) | frames(col3)
          grid rows: top and bottom. Camera spans both rows. */
       .main-content {
-        grid-template-columns: 1fr 1fr 260px; /* camera, adjust/material, frames/colors */
+        grid-template-columns: 360px 1fr 260px; /* camera (narrow/mobile-like), adjust/material, frames/colors */
         grid-auto-rows: auto;
         gap: 20px;
       }
@@ -103,7 +103,10 @@
       overflow: hidden;
       box-shadow: 0 10px 30px rgba(0,0,0,0.15);
       aspect-ratio: 4/3;
-      min-height: 380px; /* slightly reduced so frames fit the viewport better */
+      /* make camera tall but keep it constrained to viewport so bottom row remains visible */
+      min-height: 60vh;
+      max-height: calc(100vh - 120px);
+      max-width: 420px;
     }
 
     /* CTA over camera */
@@ -296,6 +299,12 @@
       margin-bottom: 20px;
       overflow: visible;
       transition: transform 0.3s ease;
+    }
+
+    /* Keep the Adjust Fit card compact so it doesn't push Material/Colors offscreen */
+    .center-column .card {
+      max-height: 540px;
+      overflow: auto;
     }
     
     .card:hover {
@@ -931,6 +940,14 @@
       
       .action-buttons .btn {
         width: 100%;
+      }
+
+      /* mobile camera sizing for a smaller footprint */
+      .camera-container {
+        min-height: 200px;
+        max-width: 320px;
+        margin-left: auto;
+        margin-right: auto;
       }
       
       .btn-snapshot {
