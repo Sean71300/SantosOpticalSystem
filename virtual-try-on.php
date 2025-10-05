@@ -1149,28 +1149,28 @@
                 <span class="frame-label">Diamond</span>
               </button>
             </div>
-            <!-- Material Effect moved into frames column below frames -->
-            <div class="mt-3">
-              <div class="card">
-                <div class="card-header">
-                  <span><i class="fas fa-cubes me-2"></i>Material Effect</span>
-                  <span class="step-badge">4</span>
-                </div>
-                <div class="card-body">
-                  <div class="material-controls">
-                    <button class="material-btn active" data-material="Matte">Matte</button>
-                    <button class="material-btn" data-material="Glossy">Glossy</button>
-                    <button class="material-btn" data-material="Pattern">Pattern</button>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <!-- Material Effect removed from here and relocated to the right-column -->
           </div>
         </div>
       </div>
       </div>
 
       <div class="right-column">
+        <!-- Material Effect moved to the right column (step 4) -->
+        <div class="card mb-3">
+          <div class="card-header">
+            <span><i class="fas fa-cubes me-2"></i>Material Effect</span>
+            <span class="step-badge">4</span>
+          </div>
+          <div class="card-body">
+            <div class="material-controls">
+              <button class="material-btn active" data-material="Matte">Matte</button>
+              <button class="material-btn" data-material="Glossy">Glossy</button>
+              <button class="material-btn" data-material="Pattern">Pattern</button>
+            </div>
+          </div>
+        </div>
+
         <div class="colors-area">
           <div class="card">
             <div class="card-header">
