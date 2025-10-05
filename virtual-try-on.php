@@ -796,7 +796,7 @@
     const colorButtons = document.querySelectorAll('.color-btn');
     const materialButtons = document.querySelectorAll('.material-btn');
 
-    // Frame definitions - UPDATED with correct paths
+    // Frame definitions
     const FRAMES = {
       'SQUARE': { path: 'Images/frames/square-frame-removebg-preview.png', label: 'Square' },
       'ROUND': { path: 'Images/frames/round-frame-removebg-preview.png', label: 'Round' },
@@ -807,68 +807,28 @@
       'RECTANGLE': { path: 'Images/frames/rectangle-frame-removebg-preview.png', label: 'Rectangle' }
     };
 
-    // Load glasses images - IMPROVED with error handling
+    // Load glasses images
     const glassesImages = {};
     let glassesLoaded = false;
     let loadedImagesCount = 0;
     const totalImages = Object.keys(FRAMES).length;
 
-    // Function to load images with better error handling
-    function loadFrameImages() {
-      Object.entries(FRAMES).forEach(([frameType, frameData]) => {
-        const img = new Image();
-        img.onload = () => {
-          loadedImagesCount++;
-          glassesImages[frameType] = img;
-          console.log(`✅ Loaded: ${frameData.label}`);
-          
-          if (loadedImagesCount === totalImages) {
-            glassesLoaded = true;
-            console.log("🎉 All frame images loaded successfully!");
-            updateStatus("Frames loaded - Ready to start camera", "online");
-          }
-        };
-        img.onerror = () => {
-          loadedImagesCount++;
-          console.error(`❌ Failed to load frame: ${frameData.label} from ${frameData.path}`);
-          // Create a placeholder image for missing frames
-          glassesImages[frameType] = createPlaceholderFrame(frameData.label);
-          
-          if (loadedImagesCount === totalImages) {
-            glassesLoaded = true;
-            console.log("⚠️ Some frames failed to load, using placeholders");
-            updateStatus("Some frames missing - Ready to start camera", "loading");
-          }
-        };
-        img.src = frameData.path;
-      });
-    }
-
-    // Create placeholder frame for missing images
-    function createPlaceholderFrame(label) {
-      const canvas = document.createElement('canvas');
-      canvas.width = 100;
-      canvas.height = 50;
-      const ctx = canvas.getContext('2d');
-      
-      // Draw a simple glasses outline
-      ctx.strokeStyle = '#ff0000';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(10, 20, 30, 15); // Left lens
-      ctx.strokeRect(60, 20, 30, 15); // Right lens
-      ctx.strokeRect(40, 20, 20, 5);  // Bridge
-      ctx.strokeRect(5, 25, 5, 15);   // Left temple
-      ctx.strokeRect(90, 25, 5, 15);  // Right temple
-      
-      // Add label text
-      ctx.fillStyle = '#ff0000';
-      ctx.font = '8px Arial';
-      ctx.fillText(label, 35, 45);
-      
+    Object.entries(FRAMES).forEach(([frameType, frameData]) => {
       const img = new Image();
-      img.src = canvas.toDataURL();
-      return img;
-    }
+      img.src = frameData.path;
+      img.onload = () => {
+        loadedImagesCount++;
+        glassesImages[frameType] = img;
+        if (loadedImagesCount === totalImages) {
+          glassesLoaded = true;
+          console.log("✅ All frame images loaded successfully");
+        }
+      };
+      img.onerror = () => {
+        console.error(`❌ Failed to load frame: ${frameData.label}`);
+        loadedImagesCount++;
+      };
+    });
 
     let camera = null;
     let faceMesh = null;
@@ -881,8 +841,8 @@
     let glassesHeightRatio = 0.7;
     let verticalOffset = 0;
     let currentFrame = 'A-TRIANGLE';
-    let currentColor = '#1a1a1a';
-    let currentColorName = 'Jet Black';
+    let currentColor = '#2c2c2c';
+    let currentColorName = 'Black';
     let currentMaterial = 'Plain';
 
     // Cache for textures to avoid regeneration
@@ -935,39 +895,29 @@
       const b = parseInt(hex.substr(4, 2), 16);
       
       if (materialType === 'Plain') {
-        // More realistic matte plastic texture
+        // Plain plastic/matte texture
         const gradient = textureCtx.createLinearGradient(0, 0, width, height);
-        gradient.addColorStop(0, `rgb(${Math.max(0, r-20)}, ${Math.max(0, g-20)}, ${Math.max(0, b-20)})`);
+        gradient.addColorStop(0, `rgb(${Math.max(0, r-30)}, ${Math.max(0, g-30)}, ${Math.max(0, b-30)})`);
         gradient.addColorStop(0.5, baseColor);
-        gradient.addColorStop(1, `rgb(${Math.min(255, r+15)}, ${Math.min(255, g+15)}, ${Math.min(255, b+15)})`);
+        gradient.addColorStop(1, `rgb(${Math.min(255, r+20)}, ${Math.min(255, g+20)}, ${Math.min(255, b+20)})`);
         
         textureCtx.fillStyle = gradient;
         textureCtx.fillRect(0, 0, width, height);
         
-        // Add subtle noise for texture
+        // Add subtle noise for texture (optimized)
         const imageData = textureCtx.getImageData(0, 0, width, height);
         const data = imageData.data;
-        for (let i = 0; i < data.length; i += 8) {
-          const noise = (Math.random() - 0.5) * 8;
+        for (let i = 0; i < data.length; i += 16) { // Process every 4th pixel for performance
+          const noise = (Math.random() - 0.5) * 15;
           data[i] = Math.max(0, Math.min(255, data[i] + noise));
           data[i + 1] = Math.max(0, Math.min(255, data[i + 1] + noise));
           data[i + 2] = Math.max(0, Math.min(255, data[i + 2] + noise));
         }
         textureCtx.putImageData(imageData, 0, 0);
         
-        // Add subtle highlights
-        const highlight = textureCtx.createRadialGradient(
-          width * 0.3, height * 0.3, 0,
-          width * 0.3, height * 0.3, width * 0.7
-        );
-        highlight.addColorStop(0, 'rgba(255,255,255,0.1)');
-        highlight.addColorStop(1, 'rgba(255,255,255,0)');
-        textureCtx.fillStyle = highlight;
-        textureCtx.fillRect(0, 0, width, height);
-        
       } else if (materialType === 'Pattern') {
-        // Pattern texture
-        const blockSize = 4;
+        // Optimized Pattern texture - use larger blocks
+        const blockSize = 4; // Process in 4x4 blocks for performance
         for (let x = 0; x < width; x += blockSize) {
           for (let y = 0; y < height; y += blockSize) {
             const value = Math.sin(x * 0.05) * Math.cos(y * 0.05) * 40;
@@ -995,11 +945,6 @@
     }
 
     function drawGlasses(landmarks) {
-      if (!glassesLoaded || !glassesImages[currentFrame]) {
-        console.warn('Frames not loaded yet or current frame missing');
-        return;
-      }
-
       const leftEye = landmarks[33];
       const rightEye = landmarks[263];
       let headAngle = calculateHeadAngle(landmarks);
@@ -1017,7 +962,7 @@
       let centerY = (leftEye.y * canvasElement.height + rightEye.y * canvasElement.height) / 2;
       centerY += verticalOffset;
 
-      if (centerX > 0 && centerY > 0 && glassesWidth > 10) {
+      if (centerX > 0 && centerY > 0 && glassesWidth > 10 && glassesImages[currentFrame]) {
         canvasCtx.save();
         canvasCtx.translate(centerX, centerY);
         canvasCtx.rotate(headAngle);
@@ -1025,147 +970,129 @@
         // Create temporary canvas for the frame
         const tempCanvas = document.createElement('canvas');
         const tempCtx = tempCanvas.getContext('2d');
-        tempCanvas.width = glassesWidth;
-        tempCanvas.height = glassesHeight;
+        const frameWidth = Math.max(50, glassesImages[currentFrame].width); // Minimum size for texture quality
+        const frameHeight = Math.max(30, glassesImages[currentFrame].height);
+        tempCanvas.width = frameWidth;
+        tempCanvas.height = frameHeight;
         
-        // Draw the frame image
-        tempCtx.drawImage(glassesImages[currentFrame], 0, 0, glassesWidth, glassesHeight);
+        // Draw original frame to get the shape
+        tempCtx.drawImage(glassesImages[currentFrame], 0, 0, frameWidth, frameHeight);
         
-        // Apply color and material
-        const texture = createMaterialTexture(glassesWidth, glassesHeight, currentColor, currentMaterial);
+        // Create material texture
+        const textureCanvas = createMaterialTexture(frameWidth, frameHeight, currentColor, currentMaterial);
+        
+        // Apply texture using the frame as a mask
         tempCtx.globalCompositeOperation = 'source-in';
-        tempCtx.drawImage(texture, 0, 0, glassesWidth, glassesHeight);
+        tempCtx.drawImage(textureCanvas, 0, 0);
         
-        // Draw the processed frame
-        canvasCtx.drawImage(tempCanvas, -glassesWidth/2, -glassesHeight/2, glassesWidth, glassesHeight);
+        // Draw the final textured glasses
+        canvasCtx.drawImage(
+          tempCanvas,
+          -glassesWidth / 2,
+          -glassesHeight / 2,
+          glassesWidth,
+          glassesHeight
+        );
+        
         canvasCtx.restore();
       }
     }
 
-    function onResults(results) {
-      if (!isProcessing || !glassesLoaded) return;
-      
+    async function onResults(results) {
+      if (!glassesLoaded || isProcessing) return;
       frameCount++;
+      if (isMobile && frameCount % 3 !== 0) return;
+
+      isProcessing = true;
       canvasCtx.save();
       canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
       canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
-      
+
       if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
-        if (!faceTrackingActive) {
-          faceTrackingActive = true;
-          updateStatus(`Tracking - ${FRAMES[currentFrame].label} (${currentColorName})`, "online");
-        }
-        
-        // Draw glasses on each detected face
-        results.multiFaceLandmarks.forEach(landmarks => {
-          drawGlasses(landmarks);
-        });
+        faceTrackingActive = true;
+        if (!isCalibrated && frameCount > 10) calibrateStraightPosition(results.multiFaceLandmarks[0]);
+        results.multiFaceLandmarks.forEach(drawGlasses);
+        updateStatus(`Active - ${FRAMES[currentFrame].label} (${currentColorName})`, "online");
       } else {
-        if (faceTrackingActive) {
-          faceTrackingActive = false;
-          updateStatus("Camera active - waiting for face", "loading");
-        }
+        faceTrackingActive = false;
+        updateStatus("Looking for face...", "loading");
       }
-      
+
       canvasCtx.restore();
+      isProcessing = false;
+    }
+
+    function resizeCanvasToDisplay() {
+      const container = canvasElement.parentElement;
+      canvasElement.width = container.clientWidth;
+      canvasElement.height = container.clientHeight;
+    }
+
+    async function initializeFaceMesh() {
+      return new Promise((resolve) => {
+        faceMesh = new FaceMesh({
+          locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+        });
+        faceMesh.setOptions({
+          maxNumFaces: 1, refineLandmarks: false, minDetectionConfidence: 0.7, minTrackingConfidence: 0.5
+        });
+        faceMesh.onResults(onResults);
+        faceMesh.initialize().then(resolve).catch(resolve);
+      });
     }
 
     async function startCamera() {
       try {
+        updateStatus("Requesting camera access...", "loading");
         cameraOverlay.classList.remove('d-none');
-        updateStatus("Initializing camera...", "loading");
         
-        if (camera) {
-          camera.stop();
-        }
-
-        if (!faceMesh) {
-          faceMesh = new FaceMesh({
-            locateFile: (file) => {
-              return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
-            }
-          });
-
-          faceMesh.setOptions({
-            maxNumFaces: 1,
-            refineLandmarks: false,
-            minDetectionConfidence: 0.7,
-            minTrackingConfidence: 0.5
-          });
-
-          faceMesh.onResults(onResults);
-        }
-
-        // Start video stream
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { 
-            facingMode: 'user', 
-            width: { ideal: 640 }, 
-            height: { ideal: 480 } 
-          }
-        });
-        
+        const constraints = {
+          video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 }, aspectRatio: { ideal: 4/3 } }
+        };
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
         videoElement.srcObject = stream;
         
-        await new Promise((resolve) => {
+        return new Promise((resolve) => {
           videoElement.onloadedmetadata = () => {
-            videoElement.play();
-            resolve();
+            videoElement.play().then(() => {
+              cameraOverlay.classList.add('d-none');
+              resolve(stream);
+            });
           };
         });
-
-        // Set up camera with MediaPipe
-        camera = new Camera(videoElement, {
-          onFrame: async () => {
-            if (faceMesh && isProcessing && glassesLoaded) {
-              await faceMesh.send({ image: videoElement });
-            }
-          },
-          width: 640,
-          height: 480
-        });
-
-        await camera.start();
+      } catch (err) {
         cameraOverlay.classList.add('d-none');
-        startBtn.classList.add('d-none');
-        calibrateBtn.classList.remove('d-none');
-        updateStatus("Camera active - waiting for face", "loading");
-        isProcessing = true;
-        
-        // Set canvas dimensions to match video
-        canvasElement.width = videoElement.videoWidth;
-        canvasElement.height = videoElement.videoHeight;
-        
-      } catch (error) {
-        console.error('Error starting camera:', error);
-        updateStatus("Camera error - please check permissions", "offline");
-        cameraOverlay.classList.add('d-none');
-        startBtn.disabled = false;
+        throw err;
       }
     }
 
-    function stopCamera() {
-      isProcessing = false;
-      if (camera) {
-        camera.stop();
-      }
-      if (videoElement.srcObject) {
-        videoElement.srcObject.getTracks().forEach(track => track.stop());
-      }
-      startBtn.classList.remove('d-none');
-      calibrateBtn.classList.add('d-none');
-      updateStatus("Camera is off", "offline");
-      faceTrackingActive = false;
-    }
+    // Event listeners for frame selection
+    frameButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        frameButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFrame = btn.dataset.frame;
+      });
+    });
 
-    // Event Listeners
-    startBtn.addEventListener('click', startCamera);
-    
-    calibrateBtn.addEventListener('click', () => {
-      if (faceTrackingActive) {
-        isCalibrated = false;
-        updateStatus("Recalibrating... Look straight ahead", "loading");
-      }
+    // Event listeners for color selection - FIXED: Don't change material
+    colorButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        colorButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentColor = btn.dataset.color;
+        currentColorName = btn.dataset.colorName;
+        // DON'T change material when selecting color - keep current material
+      });
+    });
+
+    // Event listeners for material selection
+    materialButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        materialButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentMaterial = btn.dataset.material;
+      });
     });
 
     sizeSlider.addEventListener('input', (e) => {
@@ -1174,7 +1101,7 @@
     });
 
     heightDown.addEventListener('click', () => {
-      glassesHeightRatio = Math.max(0.5, glassesHeightRatio - 0.05);
+      glassesHeightRatio = Math.max(0.4, glassesHeightRatio - 0.05);
       updateHeightDisplay();
     });
 
@@ -1184,67 +1111,58 @@
     });
 
     positionDown.addEventListener('click', () => {
-      verticalOffset += 5;
+      verticalOffset += 2;
       updatePositionDisplay();
     });
 
     positionUp.addEventListener('click', () => {
-      verticalOffset -= 5;
+      verticalOffset -= 2;
       updatePositionDisplay();
     });
 
-    frameButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        frameButtons.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        currentFrame = btn.dataset.frame;
-        if (faceTrackingActive) {
-          updateStatus(`Tracking - ${FRAMES[currentFrame].label} (${currentColorName})`, "online");
-        }
-      });
-    });
-
-    colorButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        colorButtons.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        currentColor = btn.dataset.color;
-        currentColorName = btn.dataset.colorName;
-        // Clear texture cache when color changes
-        textureCache.clear();
-        if (faceTrackingActive) {
-          updateStatus(`Tracking - ${FRAMES[currentFrame].label} (${currentColorName})`, "online");
-        }
-      });
-    });
-
-    materialButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        materialButtons.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        currentMaterial = btn.dataset.material;
-        // Clear texture cache when material changes
-        textureCache.clear();
-      });
-    });
-
-    // Initialize display values and load frames
-    updateHeightDisplay();
-    updatePositionDisplay();
-    sizeValue.textContent = glassesSizeMultiplier.toFixed(1) + 'x';
-
-    // Start loading frames immediately
-    console.log("🔄 Loading frame images...");
-    loadFrameImages();
-
-    // Handle page visibility changes
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden && isProcessing) {
-        stopCamera();
+    calibrateBtn.addEventListener('click', () => {
+      if (faceTrackingActive) {
+        isCalibrated = false;
+        updateStatus("Recalibrating... Look straight", "loading");
+        setTimeout(() => updateStatus("Recalibrated!", "online"), 1000);
       }
     });
 
-    console.log("🚀 Virtual Glasses Try-On initialized");
+    startBtn.addEventListener('click', async () => {
+      try {
+        startBtn.disabled = true;
+        updateStatus("Initializing...", "loading");
+
+        await initializeFaceMesh();
+        const stream = await startCamera();
+        
+        resizeCanvasToDisplay();
+        calibrateBtn.classList.remove('d-none');
+        updateHeightDisplay();
+        updatePositionDisplay();
+
+        camera = new Camera(videoElement, {
+          onFrame: async () => {
+            if (faceMesh && !isProcessing) await faceMesh.send({ image: videoElement });
+          }, width: 320, height: 240
+        });
+
+        await camera.start();
+        updateStatus("Ready! Try different frames and colors", "online");
+
+        window.addEventListener('resize', resizeCanvasToDisplay);
+      } catch (err) {
+        startBtn.disabled = false;
+        let errorMsg = "Failed to start camera";
+        if (err.name === 'NotAllowedError') errorMsg = "Camera permission denied";
+        else if (err.name === 'NotFoundError') errorMsg = "No camera found";
+        updateStatus(errorMsg, "offline");
+      }
+    });
+
+    // Initialize
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    window.addEventListener('load', () => setTimeout(initializeFaceMesh, 1000));
   </script>
 </body>
 </html>
