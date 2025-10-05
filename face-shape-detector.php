@@ -938,7 +938,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 
                 <!-- Social Share -->
                 <div class="social-share">
-                    <h5><i class="fas fa-share-alt me-2"></i> Share Your Results</h5>
+                    <h5><i class="fas fa-share-alt me-2"></i> Share This Face Shape Tool</h5>
+                    <p style="font-size: 0.9rem; color: #666; margin-bottom: 15px;">Help your friends find their perfect frames too!</p>
                     <div class="share-buttons">
                         <div class="share-btn facebook" onclick="shareResults('facebook')" title="Share on Facebook">
                             <i class="fab fa-facebook-f"></i>
