@@ -1017,7 +1017,7 @@
             </div>
 
             <div class="snapshot-controls" id="snapshotControls">
-              <button class="btn-snapshot" id="takeSnapshotBtn" title="Take Photo" data-bs-toggle="tooltip" data-bs-placement="top">
+              <button class="btn-snapshot" id="takeSnapshotBtn" title="Take Photo">
                 <i class="fas fa-camera"></i>
               </button>
             </div>
