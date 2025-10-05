@@ -927,26 +927,19 @@
         textureCtx.putImageData(imageData, 0, 0);
         
       } else if (materialType === 'Glossy') {
+        // Simplified glossy plastic with subtle shine
         textureCtx.fillStyle = baseColor;
         textureCtx.fillRect(0, 0, width, height);
         
+        // Add gentle shine only
         const shine = textureCtx.createRadialGradient(
-          width * 0.3, height * 0.25, 0,
-          width * 0.3, height * 0.25, width * 0.8
+          width * 0.4, height * 0.3, 0,
+          width * 0.4, height * 0.3, width * 0.6
         );
-        shine.addColorStop(0, 'rgba(255, 255, 255, 0.45)');
-        shine.addColorStop(0.3, 'rgba(255, 255, 255, 0.15)');
-        shine.addColorStop(0.7, 'rgba(255, 255, 255, 0.05)');
+        shine.addColorStop(0, 'rgba(255, 255, 255, 0.25)');
+        shine.addColorStop(0.5, 'rgba(255, 255, 255, 0.08)');
         shine.addColorStop(1, 'rgba(255, 255, 255, 0)');
         textureCtx.fillStyle = shine;
-        textureCtx.fillRect(0, 0, width, height);
-        
-        const reflection = textureCtx.createLinearGradient(0, 0, 0, height);
-        reflection.addColorStop(0, 'rgba(255, 255, 255, 0.2)');
-        reflection.addColorStop(0.15, 'rgba(255, 255, 255, 0)');
-        reflection.addColorStop(0.85, 'rgba(0, 0, 0, 0)');
-        reflection.addColorStop(1, 'rgba(0, 0, 0, 0.15)');
-        textureCtx.fillStyle = reflection;
         textureCtx.fillRect(0, 0, width, height);
         
       } else if (materialType === 'Pattern') {
@@ -1031,25 +1024,6 @@
         canvasCtx.shadowBlur = 0;
         canvasCtx.shadowOffsetX = 0;
         canvasCtx.shadowOffsetY = 0;
-        
-        if (currentMaterial === 'Glossy' || currentMaterial === 'Acetate') {
-          canvasCtx.globalAlpha = 0.15;
-          canvasCtx.globalCompositeOperation = 'lighter';
-          
-          const highlightGradient = canvasCtx.createLinearGradient(
-            -glassesWidth/2, -glassesHeight/2,
-            -glassesWidth/2, glassesHeight/2
-          );
-          highlightGradient.addColorStop(0, 'rgba(255, 255, 255, 0.6)');
-          highlightGradient.addColorStop(0.3, 'rgba(255, 255, 255, 0)');
-          highlightGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
-          
-          canvasCtx.fillStyle = highlightGradient;
-          canvasCtx.fillRect(-glassesWidth/2, -glassesHeight/2, glassesWidth * 0.15, glassesHeight);
-          
-          canvasCtx.globalAlpha = 1;
-          canvasCtx.globalCompositeOperation = 'source-over';
-        }
         
         canvasCtx.restore();
       }
