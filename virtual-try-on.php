@@ -55,6 +55,14 @@
     .btn-primary:disabled {
       background-color: #6c757d;
     }
+    .btn-outline-primary {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .btn-outline-primary:hover {
+      background-color: var(--primary);
+      color: white;
+    }
     .loading-spinner {
       display: none;
       width: 40px;
@@ -74,6 +82,14 @@
       color: #666;
       margin-top: 10px;
     }
+    .calibration-notice {
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      border-radius: 8px;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 14px;
+    }
   </style>
 </head>
 
@@ -86,9 +102,16 @@
       <canvas id="outputCanvas"></canvas>
     </div>
 
+    <div class="calibration-notice d-none" id="calibrationNotice">
+      <strong>Tip:</strong> Look straight at the camera, then click "Calibrate Straight Position" below
+    </div>
+
     <div class="mt-3">
       <button id="startBtn" class="btn btn-primary px-4">
         <i class="bi bi-camera me-2"></i>Start Camera
+      </button>
+      <button id="calibrateBtn" class="btn btn-outline-primary px-4 ms-2 d-none">
+        <i class="bi bi-arrow-clockwise me-2"></i>Calibrate Straight Position
       </button>
     </div>
 
@@ -118,6 +141,8 @@
     const canvasElement = document.getElementById('outputCanvas');
     const canvasCtx = canvasElement.getContext('2d');
     const startBtn = document.getElementById('startBtn');
+    const calibrateBtn = document.getElementById('calibrateBtn');
+    const calibrationNotice = document.getElementById('calibrationNotice');
     const statusMsg = document.getElementById('statusMsg');
     const loadingSpinner = document.getElementById('loadingSpinner');
     const mobileTips = document.getElementById('mobileTips');
@@ -148,6 +173,8 @@
     let isProcessing = false;
     let frameCount = 0;
     let faceTrackingActive = false;
+    let angleOffset = 0; // This will store the calibration offset
+    let isCalibrated = false;
 
     function calculateHeadAngle(landmarks) {
       const leftEyeInner = landmarks[133];
@@ -158,10 +185,22 @@
       return Math.atan2(deltaY, deltaX);
     }
 
+    function calibrateStraightPosition(landmarks) {
+      const currentAngle = calculateHeadAngle(landmarks);
+      angleOffset = -currentAngle; // Store the inverse to cancel out the current tilt
+      isCalibrated = true;
+      console.log("✅ Calibrated! Offset:", angleOffset);
+    }
+
     function drawGlasses(landmarks) {
       const leftEye = landmarks[33];
       const rightEye = landmarks[263];
-      const headAngle = calculateHeadAngle(landmarks);
+      let headAngle = calculateHeadAngle(landmarks);
+      
+      // Apply calibration offset if calibrated
+      if (isCalibrated) {
+        headAngle += angleOffset;
+      }
       
       const eyeDist = Math.hypot(
         rightEye.x * canvasElement.width - leftEye.x * canvasElement.width,
@@ -208,6 +247,13 @@
       // Draw glasses if face detected
       if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
         faceTrackingActive = true;
+        
+        // Auto-calibrate on first face detection if not already calibrated
+        if (!isCalibrated && frameCount > 10) {
+          calibrateStraightPosition(results.multiFaceLandmarks[0]);
+          calibrationNotice.classList.add('d-none');
+        }
+        
         for (const landmarks of results.multiFaceLandmarks) {
           drawGlasses(landmarks);
         }
@@ -307,6 +353,19 @@
       }
     }
 
+    // Calibrate button handler
+    calibrateBtn.addEventListener('click', () => {
+      if (faceTrackingActive) {
+        statusMsg.innerText = "Calibrating straight position...";
+        // We'll calibrate on the next frame detection
+        isCalibrated = false;
+        calibrationNotice.classList.remove('d-none');
+        setTimeout(() => {
+          statusMsg.innerText = "Calibrated! Glasses should now appear straight.";
+        }, 1000);
+      }
+    });
+
     startBtn.addEventListener('click', async () => {
       try {
         startBtn.disabled = true;
@@ -324,6 +383,10 @@
         
         // Resize canvas to match video
         resizeCanvasToDisplay();
+
+        // Show calibration notice and button
+        calibrationNotice.classList.remove('d-none');
+        calibrateBtn.classList.remove('d-none');
 
         // Determine processing resolution based on device
         const processingWidth = isMobile ? 320 : 640;
@@ -343,12 +406,16 @@
         await camera.start();
 
         loadingSpinner.style.display = 'none';
-        statusMsg.innerText = "Ready! Look at the camera to try glasses.";
+        statusMsg.innerText = "Ready! Look straight at the camera.";
 
         // Update status based on face detection
         setInterval(() => {
           if (faceTrackingActive) {
-            statusMsg.innerHTML = "Glasses active ✅ | <small>Face detected</small>";
+            if (isCalibrated) {
+              statusMsg.innerHTML = "Glasses active ✅ | <small>Face detected - Calibrated</small>";
+            } else {
+              statusMsg.innerHTML = "Glasses active ✅ | <small>Face detected - Calibrating...</small>";
+            }
           } else {
             statusMsg.innerHTML = "Ready! Look at the camera | <small>Searching for face...</small>";
           }
