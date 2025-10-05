@@ -221,6 +221,66 @@
       line-height: 1.2;
     }
     
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+    
+    .color-btn {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border);
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    
+    .color-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    
+    .color-btn.active {
+      border-color: var(--primary);
+      transform: scale(1.15);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+    }
+    
+    .color-btn.active::after {
+      content: '✓';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      font-weight: bold;
+      font-size: 14px;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+    }
+    
+    .color-label {
+      font-size: 9px;
+      text-align: center;
+      margin-top: 4px;
+      font-weight: 600;
+    }
+    
+    .color-group {
+      margin-bottom: 15px;
+    }
+    
+    .color-group-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
     .control-group {
       margin-bottom: 20px;
     }
@@ -410,6 +470,16 @@
         font-size: 9px;
       }
       
+      .color-grid {
+        grid-template-columns: repeat(6, 1fr);
+        gap: 6px;
+      }
+      
+      .color-btn {
+        width: 35px;
+        height: 35px;
+      }
+      
       .position-controls {
         gap: 10px;
       }
@@ -434,6 +504,10 @@
         grid-template-columns: repeat(3, 1fr);
       }
       
+      .color-grid {
+        grid-template-columns: repeat(5, 1fr);
+      }
+      
       .header h1 {
         font-size: 1.5rem;
       }
@@ -445,7 +519,7 @@
   <div class="app-container">
     <div class="header">
       <h1>👓 Virtual Glasses Try-On</h1>
-      <p>Find your perfect frame in real-time</p>
+      <p>Find your perfect frame and color in real-time</p>
     </div>
 
     <div class="main-content">
@@ -522,6 +596,73 @@
 
         <div class="card">
           <div class="card-header">
+            Frame Colors
+          </div>
+          <div class="card-body">
+            <div class="color-group">
+              <div class="color-group-title">Classic Colors</div>
+              <div class="color-grid">
+                <div class="color-option">
+                  <div class="color-btn active" style="background: #2c2c2c;" data-color="#2c2c2c" data-color-name="Black"></div>
+                  <div class="color-label">Black</div>
+                </div>
+                <div class="color-option">
+                  <div class="color-btn" style="background: #6c757d;" data-color="#6c757d" data-color-name="Gray"></div>
+                  <div class="color-label">Gray</div>
+                </div>
+                <div class="color-option">
+                  <div class="color-btn" style="background: #8B4513;" data-color="#8B4513" data-color-name="Whiskey Tortoise"></div>
+                  <div class="color-label">Tortoise</div>
+                </div>
+                <div class="color-option">
+                  <div class="color-btn" style="background: #A52A2A;" data-color="#A52A2A" data-color-name="Brown"></div>
+                  <div class="color-label">Brown</div>
+                </div>
+                <div class="color-option">
+                  <div class="color-btn" style="background: linear-gradient(45deg, #c0c0c0, #e8e8e8);" data-color="#c0c0c0" data-color-name="Silver Metal"></div>
+                  <div class="color-label">Silver</div>
+                </div>
+                <div class="color-option">
+                  <div class="color-btn" style="background: linear-gradient(45deg, #daa520, #b8860b);" data-color="#daa520" data-color-name="Gold Metal"></div>
+                  <div class="color-label">Gold</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="color-group">
+              <div class="color-group-title">Vibrant Colors</div>
+              <div class="color-grid">
+                <div class="color-option">
+                  <div class="color-btn" style="background: #1a73e8;" data-color="#1a73e8" data-color-name="Blue"></div>
+                  <div class="color-label">Blue</div>
+                </div>
+                <div class="color-option">
+                  <div class="color-btn" style="background: #dc3545;" data-color="#dc3545" data-color-name="Red"></div>
+                  <div class="color-label">Red</div>
+                </div>
+                <div class="color-option">
+                  <div class="color-btn" style="background: #28a745;" data-color="#28a745" data-color-name="Green"></div>
+                  <div class="color-label">Green</div>
+                </div>
+                <div class="color-option">
+                  <div class="color-btn" style="background: #ffc107;" data-color="#ffc107" data-color-name="Yellow"></div>
+                  <div class="color-label">Yellow</div>
+                </div>
+                <div class="color-option">
+                  <div class="color-btn" style="background: #6f42c1;" data-color="#6f42c1" data-color-name="Purple"></div>
+                  <div class="color-label">Purple</div>
+                </div>
+                <div class="color-option">
+                  <div class="color-btn" style="background: #e83e8c;" data-color="#e83e8c" data-color-name="Pink"></div>
+                  <div class="color-label">Pink</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
             Adjust Fit
           </div>
           <div class="card-body">
@@ -591,8 +732,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.min.js"></script>
 
   <script>
-    // [Keep all the JavaScript code from the previous version exactly the same]
-    // Only the CSS and HTML structure has been updated for better UI/UX
     const videoElement = document.getElementById('inputVideo');
     const canvasElement = document.getElementById('outputCanvas');
     const canvasCtx = canvasElement.getContext('2d');
@@ -610,6 +749,7 @@
     const positionUp = document.getElementById('positionUp');
     const positionValue = document.getElementById('positionValue');
     const frameButtons = document.querySelectorAll('.frame-btn');
+    const colorButtons = document.querySelectorAll('.color-btn');
 
     // Frame definitions
     const FRAMES = {
@@ -620,6 +760,27 @@
       'V-TRIANGLE': { path: 'Images/frames/vshape-frame-removebg-preview.png', label: 'V-Shape' },
       'A-TRIANGLE': { path: 'Images/frames/ashape-frame-removebg-preview.png', label: 'A-Shape' },
       'RECTANGLE': { path: 'Images/frames/rectangle-frame-removebg-preview.png', label: 'Rectangle' }
+    };
+
+    // Color mapping for different frame styles
+    const COLOR_MAP = {
+      'default': '#2c2c2c', // Black
+      'classic': {
+        'Black': '#2c2c2c',
+        'Gray': '#6c757d',
+        'Whiskey Tortoise': '#8B4513',
+        'Brown': '#A52A2A',
+        'Silver Metal': '#c0c0c0',
+        'Gold Metal': '#daa520'
+      },
+      'vibrant': {
+        'Blue': '#1a73e8',
+        'Red': '#dc3545',
+        'Green': '#28a745',
+        'Yellow': '#ffc107',
+        'Purple': '#6f42c1',
+        'Pink': '#e83e8c'
+      }
     };
 
     // Load glasses images
@@ -656,6 +817,8 @@
     let glassesHeightRatio = 0.7;
     let verticalOffset = 0;
     let currentFrame = 'A-TRIANGLE';
+    let currentColor = '#2c2c2c';
+    let currentColorName = 'Black';
 
     function updateStatus(status, type) {
       statusText.textContent = status;
@@ -684,6 +847,31 @@
       positionValue.textContent = verticalOffset + 'px';
     }
 
+    function applyColorToGlasses(imageData, color) {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = imageData.width;
+      canvas.height = imageData.height;
+      
+      ctx.putImageData(imageData, 0, 0);
+      
+      // Create a temporary canvas for color manipulation
+      const tempCanvas = document.createElement('canvas');
+      const tempCtx = tempCanvas.getContext('2d');
+      tempCanvas.width = imageData.width;
+      tempCanvas.height = imageData.height;
+      
+      // Draw the original image
+      tempCtx.drawImage(canvas, 0, 0);
+      
+      // Set composite operation to colorize
+      tempCtx.globalCompositeOperation = 'source-in';
+      tempCtx.fillStyle = color;
+      tempCtx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      return tempCtx.getImageData(0, 0, canvas.width, canvas.height);
+    }
+
     function drawGlasses(landmarks) {
       const leftEye = landmarks[33];
       const rightEye = landmarks[263];
@@ -706,7 +894,30 @@
         canvasCtx.save();
         canvasCtx.translate(centerX, centerY);
         canvasCtx.rotate(headAngle);
-        canvasCtx.drawImage(glassesImages[currentFrame], -glassesWidth/2, -glassesHeight/2, glassesWidth, glassesHeight);
+        
+        // Create temporary canvas for color manipulation
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCanvas.width = glassesImages[currentFrame].width;
+        tempCanvas.height = glassesImages[currentFrame].height;
+        
+        // Draw original frame
+        tempCtx.drawImage(glassesImages[currentFrame], 0, 0);
+        
+        // Apply color using source-in composition
+        tempCtx.globalCompositeOperation = 'source-in';
+        tempCtx.fillStyle = currentColor;
+        tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+        
+        // Draw the colored glasses
+        canvasCtx.drawImage(
+          tempCanvas,
+          -glassesWidth / 2,
+          -glassesHeight / 2,
+          glassesWidth,
+          glassesHeight
+        );
+        
         canvasCtx.restore();
       }
     }
@@ -725,7 +936,7 @@
         faceTrackingActive = true;
         if (!isCalibrated && frameCount > 10) calibrateStraightPosition(results.multiFaceLandmarks[0]);
         results.multiFaceLandmarks.forEach(drawGlasses);
-        updateStatus("Face detected - Active", "online");
+        updateStatus(`Active - ${FRAMES[currentFrame].label} (${currentColorName})`, "online");
       } else {
         faceTrackingActive = false;
         updateStatus("Looking for face...", "loading");
@@ -779,12 +990,22 @@
       }
     }
 
-    // Event listeners
+    // Event listeners for frame selection
     frameButtons.forEach(btn => {
       btn.addEventListener('click', () => {
         frameButtons.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         currentFrame = btn.dataset.frame;
+      });
+    });
+
+    // Event listeners for color selection
+    colorButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        colorButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentColor = btn.dataset.color;
+        currentColorName = btn.dataset.colorName;
       });
     });
 
@@ -841,7 +1062,7 @@
         });
 
         await camera.start();
-        updateStatus("Ready! Try different frames", "online");
+        updateStatus("Ready! Try different frames and colors", "online");
 
         window.addEventListener('resize', resizeCanvasToDisplay);
       } catch (err) {
