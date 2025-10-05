@@ -999,7 +999,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         class="btn px-4 py-2 rounded-pill fw-semibold"
                         style="background-color: var(--primary);"
                         onmouseover="this.style.backgroundColor='var(--primary-dark)'"
-                        onmouseout="this.style.backgroundColor='var(--primary)'">
                             Shop Recommended Frames
                         </a>
                     </div>
