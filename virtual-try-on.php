@@ -10,7 +10,6 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
   <style>
-    /* [Keep all the previous CSS exactly the same] */
     :root {
       --primary: #1a73e8;
       --secondary: #6c757d;
@@ -464,7 +463,6 @@
       margin-bottom: 5px;
     }
     
-    /* Mobile optimizations */
     @media (max-width: 767px) {
       .app-container {
         padding: 10px;
@@ -634,61 +632,83 @@
           </div>
           <div class="card-body">
             <div class="color-group">
-              <div class="color-group-title">Classic Colors</div>
+              <div class="color-group-title">Classic Neutrals</div>
               <div class="color-grid">
                 <div class="color-option">
-                  <div class="color-btn active" style="background: #2c2c2c;" data-color="#2c2c2c" data-color-name="Black"></div>
-                  <div class="color-label">Black</div>
+                  <div class="color-btn active" style="background: #1a1a1a;" data-color="#1a1a1a" data-color-name="Matte Black"></div>
+                  <div class="color-label">Matte Black</div>
                 </div>
                 <div class="color-option">
-                  <div class="color-btn" style="background: #6c757d;" data-color="#6c757d" data-color-name="Gray"></div>
-                  <div class="color-label">Gray</div>
+                  <div class="color-btn" style="background: #2d3436;" data-color="#2d3436" data-color-name="Charcoal"></div>
+                  <div class="color-label">Charcoal</div>
                 </div>
                 <div class="color-option">
-                  <div class="color-btn" style="background: #8B4513;" data-color="#8B4513" data-color-name="Tortoise"></div>
-                  <div class="color-label">Tortoise</div>
+                  <div class="color-btn" style="background: #636e72;" data-color="#636e72" data-color-name="Slate Gray"></div>
+                  <div class="color-label">Slate</div>
                 </div>
                 <div class="color-option">
-                  <div class="color-btn" style="background: #A52A2A;" data-color="#A52A2A" data-color-name="Brown"></div>
-                  <div class="color-label">Brown</div>
+                  <div class="color-btn" style="background: #704214;" data-color="#704214" data-color-name="Havana"></div>
+                  <div class="color-label">Havana</div>
                 </div>
                 <div class="color-option">
-                  <div class="color-btn" style="background: linear-gradient(45deg, #c0c0c0, #e8e8e8);" data-color="#c0c0c0" data-color-name="Silver"></div>
-                  <div class="color-label">Silver</div>
+                  <div class="color-btn" style="background: #8b7355;" data-color="#8b7355" data-color-name="Taupe"></div>
+                  <div class="color-label">Taupe</div>
                 </div>
                 <div class="color-option">
-                  <div class="color-btn" style="background: linear-gradient(45deg, #daa520, #b8860b);" data-color="#daa520" data-color-name="Gold"></div>
-                  <div class="color-label">Gold</div>
+                  <div class="color-btn" style="background: #5f4339;" data-color="#5f4339" data-color-name="Espresso"></div>
+                  <div class="color-label">Espresso</div>
                 </div>
               </div>
             </div>
             
             <div class="color-group">
-              <div class="color-group-title">Vibrant Colors</div>
+              <div class="color-group-title">Modern Tones</div>
               <div class="color-grid">
                 <div class="color-option">
-                  <div class="color-btn" style="background: #1a73e8;" data-color="#1a73e8" data-color-name="Blue"></div>
-                  <div class="color-label">Blue</div>
+                  <div class="color-btn" style="background: #2c5f7c;" data-color="#2c5f7c" data-color-name="Ocean Blue"></div>
+                  <div class="color-label">Ocean</div>
                 </div>
                 <div class="color-option">
-                  <div class="color-btn" style="background: #dc3545;" data-color="#dc3545" data-color-name="Red"></div>
-                  <div class="color-label">Red</div>
+                  <div class="color-btn" style="background: #34495e;" data-color="#34495e" data-color-name="Navy"></div>
+                  <div class="color-label">Navy</div>
                 </div>
                 <div class="color-option">
-                  <div class="color-btn" style="background: #28a745;" data-color="#28a745" data-color-name="Green"></div>
-                  <div class="color-label">Green</div>
+                  <div class="color-btn" style="background: #16a085;" data-color="#16a085" data-color-name="Teal"></div>
+                  <div class="color-label">Teal</div>
                 </div>
                 <div class="color-option">
-                  <div class="color-btn" style="background: #ffc107;" data-color="#ffc107" data-color-name="Yellow"></div>
-                  <div class="color-label">Yellow</div>
+                  <div class="color-btn" style="background: #7f5539;" data-color="#7f5539" data-color-name="Cognac"></div>
+                  <div class="color-label">Cognac</div>
                 </div>
                 <div class="color-option">
-                  <div class="color-btn" style="background: #6f42c1;" data-color="#6f42c1" data-color-name="Purple"></div>
-                  <div class="color-label">Purple</div>
+                  <div class="color-btn" style="background: #95a5a6;" data-color="#95a5a6" data-color-name="Smoke"></div>
+                  <div class="color-label">Smoke</div>
                 </div>
                 <div class="color-option">
-                  <div class="color-btn" style="background: #e83e8c;" data-color="#e83e8c" data-color-name="Pink"></div>
-                  <div class="color-label">Pink</div>
+                  <div class="color-btn" style="background: #8e44ad;" data-color="#8e44ad" data-color-name="Plum"></div>
+                  <div class="color-label">Plum</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="color-group">
+              <div class="color-group-title">Premium Metallic</div>
+              <div class="color-grid">
+                <div class="color-option">
+                  <div class="color-btn" style="background: linear-gradient(135deg, #bdc3c7, #ecf0f1);" data-color="#bdc3c7" data-color-name="Brushed Silver"></div>
+                  <div class="color-label">Silver</div>
+                </div>
+                <div class="color-option">
+                  <div class="color-btn" style="background: linear-gradient(135deg, #b8860b, #d4af37);" data-color="#c5a647" data-color-name="Champagne Gold"></div>
+                  <div class="color-label">Gold</div>
+                </div>
+                <div class="color-option">
+                  <div class="color-btn" style="background: linear-gradient(135deg, #cd7f32, #e8a87c);" data-color="#cd7f32" data-color-name="Rose Gold"></div>
+                  <div class="color-label">Rose Gold</div>
+                </div>
+                <div class="color-option">
+                  <div class="color-btn" style="background: linear-gradient(135deg, #4a4a4a, #6b6b6b);" data-color="#5a5a5a" data-color-name="Gunmetal"></div>
+                  <div class="color-label">Gunmetal</div>
                 </div>
               </div>
             </div>
@@ -698,8 +718,9 @@
                 <span>Material Effect</span>
               </div>
               <div class="material-controls">
-                <button class="material-btn active" data-material="Plain">Plain</button>
-                <button class="material-btn" data-material="Pattern">Pattern</button>
+                <button class="material-btn active" data-material="Matte">Matte</button>
+                <button class="material-btn" data-material="Glossy">Glossy</button>
+                <button class="material-btn" data-material="Acetate">Acetate</button>
               </div>
             </div>
           </div>
@@ -767,10 +788,7 @@
     </div>
   </div>
 
-  <!-- Bootstrap Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-
-  <!-- Mediapipe & Dependencies -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.min.js"></script>
@@ -796,7 +814,6 @@
     const colorButtons = document.querySelectorAll('.color-btn');
     const materialButtons = document.querySelectorAll('.material-btn');
 
-    // Frame definitions
     const FRAMES = {
       'SQUARE': { path: 'Images/frames/square-frame-removebg-preview.png', label: 'Square' },
       'ROUND': { path: 'Images/frames/round-frame-removebg-preview.png', label: 'Round' },
@@ -807,7 +824,6 @@
       'RECTANGLE': { path: 'Images/frames/rectangle-frame-removebg-preview.png', label: 'Rectangle' }
     };
 
-    // Load glasses images
     const glassesImages = {};
     let glassesLoaded = false;
     let loadedImagesCount = 0;
@@ -841,11 +857,10 @@
     let glassesHeightRatio = 0.7;
     let verticalOffset = 0;
     let currentFrame = 'A-TRIANGLE';
-    let currentColor = '#2c2c2c';
-    let currentColorName = 'Black';
-    let currentMaterial = 'Plain';
+    let currentColor = '#1a1a1a';
+    let currentColorName = 'Matte Black';
+    let currentMaterial = 'Matte';
 
-    // Cache for textures to avoid regeneration
     const textureCache = new Map();
 
     function updateStatus(status, type) {
@@ -878,7 +893,6 @@
     function createMaterialTexture(width, height, baseColor, materialType) {
       const cacheKey = `${baseColor}-${materialType}-${width}x${height}`;
       
-      // Return cached texture if available
       if (textureCache.has(cacheKey)) {
         return textureCache.get(cacheKey);
       }
@@ -888,58 +902,80 @@
       textureCanvas.width = width;
       textureCanvas.height = height;
       
-      // Parse base color
       const hex = baseColor.replace('#', '');
       const r = parseInt(hex.substr(0, 2), 16);
       const g = parseInt(hex.substr(2, 2), 16);
       const b = parseInt(hex.substr(4, 2), 16);
       
-      if (materialType === 'Plain') {
-        // Plain plastic/matte texture
+      if (materialType === 'Matte') {
         const gradient = textureCtx.createLinearGradient(0, 0, width, height);
-        gradient.addColorStop(0, `rgb(${Math.max(0, r-30)}, ${Math.max(0, g-30)}, ${Math.max(0, b-30)})`);
+        gradient.addColorStop(0, `rgb(${Math.max(0, r-15)}, ${Math.max(0, g-15)}, ${Math.max(0, b-15)})`);
         gradient.addColorStop(0.5, baseColor);
-        gradient.addColorStop(1, `rgb(${Math.min(255, r+20)}, ${Math.min(255, g+20)}, ${Math.min(255, b+20)})`);
+        gradient.addColorStop(1, `rgb(${Math.max(0, r-10)}, ${Math.max(0, g-10)}, ${Math.max(0, b-10)})`);
         
         textureCtx.fillStyle = gradient;
         textureCtx.fillRect(0, 0, width, height);
         
-        // Add subtle noise for texture (optimized)
         const imageData = textureCtx.getImageData(0, 0, width, height);
         const data = imageData.data;
-        for (let i = 0; i < data.length; i += 16) { // Process every 4th pixel for performance
-          const noise = (Math.random() - 0.5) * 15;
+        for (let i = 0; i < data.length; i += 8) {
+          const noise = (Math.random() - 0.5) * 6;
           data[i] = Math.max(0, Math.min(255, data[i] + noise));
           data[i + 1] = Math.max(0, Math.min(255, data[i + 1] + noise));
           data[i + 2] = Math.max(0, Math.min(255, data[i + 2] + noise));
         }
         textureCtx.putImageData(imageData, 0, 0);
         
-      } else if (materialType === 'Pattern') {
-        // Optimized Pattern texture - use larger blocks
-        const blockSize = 4; // Process in 4x4 blocks for performance
-        for (let x = 0; x < width; x += blockSize) {
-          for (let y = 0; y < height; y += blockSize) {
-            const value = Math.sin(x * 0.05) * Math.cos(y * 0.05) * 40;
-            const PatternR = Math.max(0, Math.min(255, r + value));
-            const PatternG = Math.max(0, Math.min(255, g + value));
-            const PatternB = Math.max(0, Math.min(255, b + value));
-            
-            textureCtx.fillStyle = `rgb(${PatternR}, ${PatternG}, ${PatternB})`;
-            textureCtx.fillRect(x, y, blockSize, blockSize);
-          }
+      } else if (materialType === 'Glossy') {
+        textureCtx.fillStyle = baseColor;
+        textureCtx.fillRect(0, 0, width, height);
+        
+        const shine = textureCtx.createRadialGradient(
+          width * 0.3, height * 0.25, 0,
+          width * 0.3, height * 0.25, width * 0.8
+        );
+        shine.addColorStop(0, 'rgba(255, 255, 255, 0.45)');
+        shine.addColorStop(0.3, 'rgba(255, 255, 255, 0.15)');
+        shine.addColorStop(0.7, 'rgba(255, 255, 255, 0.05)');
+        shine.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        textureCtx.fillStyle = shine;
+        textureCtx.fillRect(0, 0, width, height);
+        
+        const reflection = textureCtx.createLinearGradient(0, 0, 0, height);
+        reflection.addColorStop(0, 'rgba(255, 255, 255, 0.2)');
+        reflection.addColorStop(0.15, 'rgba(255, 255, 255, 0)');
+        reflection.addColorStop(0.85, 'rgba(0, 0, 0, 0)');
+        reflection.addColorStop(1, 'rgba(0, 0, 0, 0.15)');
+        textureCtx.fillStyle = reflection;
+        textureCtx.fillRect(0, 0, width, height);
+        
+      } else if (materialType === 'Acetate') {
+        const gradient = textureCtx.createLinearGradient(0, 0, width, height);
+        gradient.addColorStop(0, `rgb(${Math.min(255, r+20)}, ${Math.min(255, g+20)}, ${Math.min(255, b+20)})`);
+        gradient.addColorStop(0.5, baseColor);
+        gradient.addColorStop(1, `rgb(${Math.max(0, r-20)}, ${Math.max(0, g-20)}, ${Math.max(0, b-20)})`);
+        
+        textureCtx.fillStyle = gradient;
+        textureCtx.fillRect(0, 0, width, height);
+        
+        for (let i = 0; i < width; i += 3) {
+          const opacity = Math.random() * 0.08 + 0.02;
+          const variation = Math.sin(i * 0.1) * 15;
+          textureCtx.fillStyle = `rgba(${r + variation}, ${g + variation}, ${b + variation}, ${opacity})`;
+          textureCtx.fillRect(i, 0, 2, height);
         }
         
-        // Add Pattern shine
-        const shine = textureCtx.createLinearGradient(0, 0, width, height);
-        shine.addColorStop(0, 'rgba(255,255,255,0.4)');
-        shine.addColorStop(0.5, 'rgba(255,255,255,0.1)');
-        shine.addColorStop(1, 'rgba(255,255,255,0)');
-        textureCtx.fillStyle = shine;
+        const translucent = textureCtx.createRadialGradient(
+          width * 0.5, height * 0.5, 0,
+          width * 0.5, height * 0.5, width * 0.7
+        );
+        translucent.addColorStop(0, 'rgba(255, 255, 255, 0.15)');
+        translucent.addColorStop(0.6, 'rgba(255, 255, 255, 0.05)');
+        translucent.addColorStop(1, 'rgba(0, 0, 0, 0.05)');
+        textureCtx.fillStyle = translucent;
         textureCtx.fillRect(0, 0, width, height);
       }
       
-      // Cache the texture
       textureCache.set(cacheKey, textureCanvas);
       return textureCanvas;
     }
@@ -967,25 +1003,25 @@
         canvasCtx.translate(centerX, centerY);
         canvasCtx.rotate(headAngle);
         
-        // Create temporary canvas for the frame
+        canvasCtx.shadowColor = 'rgba(0, 0, 0, 0.35)';
+        canvasCtx.shadowBlur = 8;
+        canvasCtx.shadowOffsetX = 2;
+        canvasCtx.shadowOffsetY = 3;
+        
         const tempCanvas = document.createElement('canvas');
         const tempCtx = tempCanvas.getContext('2d');
-        const frameWidth = Math.max(50, glassesImages[currentFrame].width); // Minimum size for texture quality
+        const frameWidth = Math.max(50, glassesImages[currentFrame].width);
         const frameHeight = Math.max(30, glassesImages[currentFrame].height);
         tempCanvas.width = frameWidth;
         tempCanvas.height = frameHeight;
         
-        // Draw original frame to get the shape
         tempCtx.drawImage(glassesImages[currentFrame], 0, 0, frameWidth, frameHeight);
         
-        // Create material texture
         const textureCanvas = createMaterialTexture(frameWidth, frameHeight, currentColor, currentMaterial);
         
-        // Apply texture using the frame as a mask
         tempCtx.globalCompositeOperation = 'source-in';
         tempCtx.drawImage(textureCanvas, 0, 0);
         
-        // Draw the final textured glasses
         canvasCtx.drawImage(
           tempCanvas,
           -glassesWidth / 2,
@@ -993,6 +1029,30 @@
           glassesWidth,
           glassesHeight
         );
+        
+        canvasCtx.shadowColor = 'transparent';
+        canvasCtx.shadowBlur = 0;
+        canvasCtx.shadowOffsetX = 0;
+        canvasCtx.shadowOffsetY = 0;
+        
+        if (currentMaterial === 'Glossy' || currentMaterial === 'Acetate') {
+          canvasCtx.globalAlpha = 0.15;
+          canvasCtx.globalCompositeOperation = 'lighter';
+          
+          const highlightGradient = canvasCtx.createLinearGradient(
+            -glassesWidth/2, -glassesHeight/2,
+            -glassesWidth/2, glassesHeight/2
+          );
+          highlightGradient.addColorStop(0, 'rgba(255, 255, 255, 0.6)');
+          highlightGradient.addColorStop(0.3, 'rgba(255, 255, 255, 0)');
+          highlightGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+          
+          canvasCtx.fillStyle = highlightGradient;
+          canvasCtx.fillRect(-glassesWidth/2, -glassesHeight/2, glassesWidth * 0.15, glassesHeight);
+          
+          canvasCtx.globalAlpha = 1;
+          canvasCtx.globalCompositeOperation = 'source-over';
+        }
         
         canvasCtx.restore();
       }
@@ -1034,7 +1094,10 @@
           locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
         });
         faceMesh.setOptions({
-          maxNumFaces: 1, refineLandmarks: false, minDetectionConfidence: 0.7, minTrackingConfidence: 0.5
+          maxNumFaces: 1, 
+          refineLandmarks: false, 
+          minDetectionConfidence: 0.7, 
+          minTrackingConfidence: 0.5
         });
         faceMesh.onResults(onResults);
         faceMesh.initialize().then(resolve).catch(resolve);
@@ -1047,7 +1110,12 @@
         cameraOverlay.classList.remove('d-none');
         
         const constraints = {
-          video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 }, aspectRatio: { ideal: 4/3 } }
+          video: { 
+            facingMode: 'user', 
+            width: { ideal: 640 }, 
+            height: { ideal: 480 }, 
+            aspectRatio: { ideal: 4/3 } 
+          }
         };
         const stream = await navigator.mediaDevices.getUserMedia(constraints);
         videoElement.srcObject = stream;
@@ -1066,7 +1134,6 @@
       }
     }
 
-    // Event listeners for frame selection
     frameButtons.forEach(btn => {
       btn.addEventListener('click', () => {
         frameButtons.forEach(b => b.classList.remove('active'));
@@ -1075,18 +1142,15 @@
       });
     });
 
-    // Event listeners for color selection - FIXED: Don't change material
     colorButtons.forEach(btn => {
       btn.addEventListener('click', () => {
         colorButtons.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         currentColor = btn.dataset.color;
         currentColorName = btn.dataset.colorName;
-        // DON'T change material when selecting color - keep current material
       });
     });
 
-    // Event listeners for material selection
     materialButtons.forEach(btn => {
       btn.addEventListener('click', () => {
         materialButtons.forEach(b => b.classList.remove('active'));
@@ -1144,7 +1208,9 @@
         camera = new Camera(videoElement, {
           onFrame: async () => {
             if (faceMesh && !isProcessing) await faceMesh.send({ image: videoElement });
-          }, width: 320, height: 240
+          }, 
+          width: 320, 
+          height: 240
         });
 
         await camera.start();
@@ -1160,7 +1226,6 @@
       }
     });
 
-    // Initialize
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     window.addEventListener('load', () => setTimeout(initializeFaceMesh, 1000));
   </script>
