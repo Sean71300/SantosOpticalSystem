@@ -293,7 +293,7 @@
                 </div>
 
                 <!-- Contact Section -->
-                <div class="row justify-content-center">
+                 
                 <div class="col-lg-3 col-md-6 mb-4">
                     <div class="footer-section">
                         <h6 class="footer-title mb-3">CONTACT INFORMATION</h6>
@@ -341,7 +341,6 @@
                         </div>
                     </div>
                 </div>
-            </div>
             </div>
 
             <!-- Business Hours -->
