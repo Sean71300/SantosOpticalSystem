@@ -896,15 +896,22 @@
       .material-controls {
         flex-direction: column;
       }
-      
+
+      /* Keep the up/down buttons and value inline on mobile, with the value centered between them */
       .position-controls {
         gap: 10px;
-        flex-direction: column;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
       }
-      
+
       .position-controls span {
-        order: -1;
-        font-size: 0.9rem;
+        order: 0;
+        font-size: 0.95rem;
+        margin: 0 8px;
+        display: inline-block;
+        min-width: 36px;
+        text-align: center;
       }
       
       .position-btn {
