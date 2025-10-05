@@ -94,6 +94,14 @@ if (isset($_SESSION['role'])) {
 /* Anchor dropdown to its parent nav item and ensure it isn't clipped */
 .nav-item.dropdown { position: relative; }
 .nav-item.dropdown .dropdown-menu { position: absolute; top: 100%; right: 0; left: auto; min-width: 10rem; pointer-events: auto; }
+
+/* Custom user dropdown (used when logged in). We keep it simple and deterministic. */
+.user-dropdown { display: none; position: absolute; right: 0; top: 100%; background: white; border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 6px 20px rgba(0,0,0,0.08); padding: 0.25rem 0; z-index: 2500; min-width: 12rem; }
+.user-dropdown .dropdown-link { display: block; padding: 0.5rem 1rem; color: #333; text-decoration: none; }
+.user-dropdown .dropdown-link:hover { background: #f8f9fa; }
+.user-dropdown.show { display: block; }
+
+.user-toggle { cursor: pointer; }
 </style>
 
 <div class="forNavigationbar sticky-top">
@@ -129,62 +137,38 @@ if (isset($_SESSION['role'])) {
                         echo '</li>';
                     }
                     else {
-                        echo '<li class="nav-item dropdown">';
-                        echo '<a class="nav-link dropdown-toggle fs-5 fw-bold" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">';
-                        echo '|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' . htmlspecialchars($_SESSION["full_name"]);
-
-                        // Only show image if it exists (for employees)
-                        if (isset($_SESSION["img"]) && $_SESSION["user_type"] !== 'customer') {
-                            echo '<img src="' . $_SESSION["img"] . '" class="logo">';
-                        }
-                        echo '</a>';
-                        echo '<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">';
-                        
-                        // Compute the primary menu item (role + page) and render it along with Logout
+                        // Deterministic user menu: compute primary link and render a custom toggle/menu
+                        $fullNameHtml = htmlspecialchars($_SESSION['full_name'] ?? '');
+                        // compute primary label/href similar to before
                         $firstLabel = '';
                         $firstHref = '#';
-                        if (isset($_SESSION["user_type"]) && $_SESSION["user_type"] === 'employee') {
-                            $rIdLocal = isset($_SESSION["roleid"]) ? (int)$_SESSION["roleid"] : 0;
+                        if (isset($_SESSION['user_type']) && $_SESSION['user_type'] === 'employee') {
+                            $rIdLocal = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0;
                             switch ($rIdLocal) {
-                                case 4:
-                                    $firstLabel = 'Super Admin Page';
-                                    $firstHref = 'Dashboard.php';
-                                    break;
-                                case 1:
-                                    $firstLabel = 'Admin Page';
-                                    $firstHref = 'Dashboard.php';
-                                    break;
-                                case 2:
-                                    $firstLabel = 'Employee Page';
-                                    $firstHref = 'Dashboard.php';
-                                    break;
-                                case 3:
-                                    $firstLabel = 'Optometrist Page';
-                                    $firstHref = 'Dashboard.php';
-                                    break;
-                                default:
-                                    $firstLabel = 'Dashboard';
-                                    $firstHref = 'Dashboard.php';
-                                    break;
+                                case 4: $firstLabel = 'Super Admin Page'; $firstHref = 'Dashboard.php'; break;
+                                case 1: $firstLabel = 'Admin Page'; $firstHref = 'Dashboard.php'; break;
+                                case 2: $firstLabel = 'Employee Page'; $firstHref = 'Dashboard.php'; break;
+                                case 3: $firstLabel = 'Optometrist Page'; $firstHref = 'Dashboard.php'; break;
+                                default: $firstLabel = 'Dashboard'; $firstHref = 'Dashboard.php'; break;
                             }
-                        } elseif (isset($_SESSION["user_type"]) && $_SESSION["user_type"] === 'customer') {
-                            $firstLabel = 'Customer Dashboard';
-                            $firstHref = 'customer_dashboard.php';
-                        } elseif (isset($_SESSION["role"])) {
-                            // fallback by role string
-                            $rnameLocal = strtolower((string)$_SESSION["role"]);
-                            if (in_array($rnameLocal, ['super admin', 'superadmin', 'admin'], true)) {
-                                $firstLabel = 'Admin Panel';
-                                $firstHref = 'Dashboard.php';
-                            }
+                        } elseif (isset($_SESSION['user_type']) && $_SESSION['user_type'] === 'customer') {
+                            $firstLabel = 'Customer Dashboard'; $firstHref = 'customer_dashboard.php';
+                        } elseif (isset($_SESSION['role'])) {
+                            $rnameLocal = strtolower((string)$_SESSION['role']);
+                            if (in_array($rnameLocal, ['super admin', 'superadmin', 'admin'], true)) { $firstLabel = 'Admin Panel'; $firstHref = 'Dashboard.php'; }
                         }
 
-                        if ($firstLabel !== '') {
-                            echo '<li><a class="dropdown-item" href="' . htmlspecialchars($firstHref) . '">' . htmlspecialchars($firstLabel) . '</a></li>';
-                        }
+                        echo '<li class="nav-item dropdown">';
+                        echo '<a href="#" id="userDropdown" class="nav-link user-toggle" aria-haspopup="true" aria-expanded="false">';
+                        echo '|&nbsp;&nbsp;&nbsp;' . $fullNameHtml;
+                        if (isset($_SESSION['img']) && $_SESSION['user_type'] !== 'customer') { echo ' <img src="' . htmlspecialchars($_SESSION['img']) . '" class="logo">'; }
+                        echo '</a>';
 
-                        echo '<li><a class="dropdown-item" href="logout.php">Log Out</a></li>';
-                        echo '</ul>';
+                        // Render a simple menu container (we toggle visibility with JS)
+                        echo '<div id="userDropdownMenu" class="user-dropdown">';
+                        if ($firstLabel !== '') { echo '<a class="dropdown-link" href="' . htmlspecialchars($firstHref) . '">' . htmlspecialchars($firstLabel) . '</a>'; }
+                        echo '<a class="dropdown-link" href="logout.php">Log Out</a>';
+                        echo '</div>';
                         echo '</li>';
                     }
                     ?>                               
@@ -215,3 +199,14 @@ if (isset($_SESSION['role'])) {
         } catch(e) { console.error('Nav debug error', e); }
         </script>
         <?php endif; ?>
+        <script>
+        // Toggle our custom user dropdown
+        document.addEventListener('DOMContentLoaded', function(){
+            var toggle = document.querySelector('.user-toggle');
+            var menu = document.getElementById('userDropdownMenu');
+            if (!toggle || !menu) return;
+            toggle.addEventListener('click', function(ev){ ev.preventDefault(); ev.stopPropagation(); menu.classList.toggle('show'); });
+            // close on outside click
+            document.addEventListener('click', function(ev){ if (!toggle.contains(ev.target) && !menu.contains(ev.target)) { menu.classList.remove('show'); } });
+        });
+        </script>
