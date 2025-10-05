@@ -452,213 +452,109 @@
       return c;
     }
 
-    // --- Enhanced drawGlasses: drop-in replacement. Uses your images in glassesImages[] ---
-    function drawGlasses(landmarks) {
-      if (!glassesLoaded) return;
 
-      // landmarks: mediapipe normalized coords
-      const leftEye = landmarks[33];   // approx outer points used in your original code earlier
-      const rightEye = landmarks[263];
-      const leftEyeInner = landmarks[133] || leftEye;
-      const rightEyeInner = landmarks[362] || rightEye;
+/* -------------------------------
+   Realistic Glasses Rendering
+--------------------------------*/
+function drawGlasses(landmarks) {
+  const leftEye = landmarks[33];
+  const rightEye = landmarks[263];
+  const eyeMid = {
+    x: (leftEye.x + rightEye.x) / 2,
+    y: (leftEye.y + rightEye.y) / 2
+  };
 
-      // head angle (for light direction), using inner-eye vector
-      const deltaX = rightEyeInner.x - leftEyeInner.x;
-      const deltaY = rightEyeInner.y - leftEyeInner.y;
-      const headAngle = Math.atan2(deltaY, deltaX);
-      let angle = headAngle + angleOffset;
-      if (isCalibrated) angle += angleOffset;
+  // Adjust scaling to match your setup
+  const faceWidth = Math.abs(rightEye.x - leftEye.x) * canvasElement.width * 2.5 * glassesSizeMultiplier;
+  const faceHeight = faceWidth * 0.45;
+  const x = (eyeMid.x * canvasElement.width) - faceWidth / 2;
+  const y = (eyeMid.y * canvasElement.height) - faceHeight / 2 + verticalOffset;
+  const angle = Math.atan2(rightEye.y - leftEye.y, rightEye.x - leftEye.x);
 
-      // compute screen positions
-      const leftX = leftEye.x * canvasElement.width;
-      const rightX = rightEye.x * canvasElement.width;
-      const leftY = leftEye.y * canvasElement.height;
-      const rightY = rightEye.y * canvasElement.height;
+  const glassesImage = new Image();
+  glassesImage.src = glassesPath; // Example: "Images/frames/square-frame-removebg-preview.png"
 
-      const eyeDist = Math.hypot(rightX - leftX, rightY - leftY);
-      const glassesWidth = eyeDist * glassesSizeMultiplier;
-      const glassesHeight = glassesWidth * glassesHeightRatio;
+  // Wait until the image is loaded before drawing
+  if (!glassesImage.complete) {
+    glassesImage.onload = () => drawGlasses(landmarks);
+    return;
+  }
 
-      let centerX = (leftX + rightX) / 2;
-      let centerY = (leftY + rightY) / 2 + verticalOffset;
+  // -----------------------------
+  // Draw Base Glasses
+  // -----------------------------
+  canvasCtx.save();
+  canvasCtx.translate(x + faceWidth / 2, y + faceHeight / 2);
+  canvasCtx.rotate(angle);
+  canvasCtx.translate(-faceWidth / 2, -faceHeight / 2);
 
-      // bounds check
-      if (!(centerX > 0 && centerY > 0 && glassesWidth > 20 && glassesImages[currentFrame])) return;
+  // Draw the main frame
+  canvasCtx.drawImage(glassesImage, 0, 0, faceWidth, faceHeight);
 
-      canvasCtx.save();
+  // -----------------------------
+  // Create Realistic Lens Effects
+  // -----------------------------
+  const buffer = document.createElement("canvas");
+  buffer.width = faceWidth;
+  buffer.height = faceHeight;
+  const bctx = buffer.getContext("2d");
 
-      // position & rotation
-      canvasCtx.translate(centerX, centerY);
-      canvasCtx.rotate(angle);
-      canvasCtx.translate(-glassesWidth/2, -glassesHeight/2);
+  // Start by drawing the glasses frame as a mask
+  bctx.drawImage(glassesImage, 0, 0, faceWidth, faceHeight);
+  bctx.globalCompositeOperation = "source-in";
 
-      // -------------------------
-      // 1) Blur background behind lens area (fake refraction)
-      // -------------------------
-      // create small offscreen of video frame region => blur => draw under lenses
-      try {
-        const blurCanvas = document.createElement('canvas');
-        const bw = Math.round(glassesWidth);
-        const bh = Math.round(glassesHeight);
-        blurCanvas.width = bw;
-        blurCanvas.height = bh;
-        const bctx = blurCanvas.getContext('2d');
+  // --- Dynamic reflection gradient based on head angle ---
+  const lightDir = (leftEye.x + rightEye.x) / 2;
+  const reflection = bctx.createLinearGradient(
+    lightDir > 0.5 ? faceWidth : 0, 0,
+    lightDir > 0.5 ? 0 : faceWidth, faceHeight
+  );
+  reflection.addColorStop(0, "rgba(255,255,255,0.35)");
+  reflection.addColorStop(0.3, "rgba(255,255,255,0.1)");
+  reflection.addColorStop(1, "rgba(255,255,255,0)");
+  bctx.fillStyle = reflection;
+  bctx.fillRect(0, 0, faceWidth, faceHeight);
 
-        // draw the live video frame portion to offscreen (map coordinates)
-        // Because the video element may be different size, draw a scaled region:
-        // drawImage(source, sx, sy, sw, sh, dx, dy, dw, dh)
-        // We'll approximate by drawing full video scaled onto small canvas and then blur -- cheaper
-        bctx.drawImage(videoElement, 0, 0, bw, bh);
-        // apply blur via filter (browser-supported)
-        bctx.filter = 'blur(3px)';
-        const blurredImg = bctx.getImageData(0,0,bw,bh);
-        // clear and re-put blurred data (bctx filter doesn't persist for getImageData => do simple trick)
-        bctx.clearRect(0,0,bw,bh);
-        bctx.putImageData(blurredImg, 0, 0);
-        // draw blurred area but under the frame silhouette:
-        // draw blurred under frame area with low alpha (subtle)
-        canvasCtx.globalAlpha = 0.22;
-        canvasCtx.drawImage(blurCanvas, 0, 0, glassesWidth, glassesHeight);
-        canvasCtx.globalAlpha = 1.0;
-        canvasCtx.filter = 'none';
-      } catch (e) {
-        // if anything fails (cross-origin or perf), silently skip blur
-      }
+  // --- Soft lens tint (light gray or colored glass) ---
+  bctx.globalCompositeOperation = "overlay";
+  bctx.fillStyle = "rgba(180,200,220,0.15)";
+  bctx.fillRect(0, 0, faceWidth, faceHeight);
 
-      // -------------------------
-      // 2) Prepare frame texture: mask frame shape and fill with material texture
-      // -------------------------
-      const frameImg = glassesImages[currentFrame];
-      // prepare temp canvas same ratio as frame image for better texturing
-      const tempCanvas = document.createElement('canvas');
-      const tW = Math.max(64, frameImg.width);
-      const tH = Math.max(40, frameImg.height);
-      tempCanvas.width = tW;
-      tempCanvas.height = tH;
-      const tctx = tempCanvas.getContext('2d');
+  // Merge buffer back into the main canvas
+  canvasCtx.drawImage(buffer, 0, 0, faceWidth, faceHeight);
 
-      // draw source frame (this gives us the mask/alpha)
-      tctx.clearRect(0,0,tW,tH);
-      tctx.drawImage(frameImg, 0, 0, tW, tH);
+  // -----------------------------
+  // Add Subtle Shadow for Depth
+  // -----------------------------
+  canvasCtx.globalCompositeOperation = "multiply";
+  const shadowGrad = canvasCtx.createLinearGradient(0, 0, 0, faceHeight);
+  shadowGrad.addColorStop(0, "rgba(0,0,0,0.15)");
+  shadowGrad.addColorStop(1, "rgba(0,0,0,0)");
+  canvasCtx.fillStyle = shadowGrad;
+  canvasCtx.fillRect(0, 0, faceWidth, faceHeight);
 
-      // draw material texture into separate canvas, then composite using source-in
-      const materialCanvas = createMaterialTexture(tW, tH, currentColor, currentMaterial || 'Plain');
-      tctx.globalCompositeOperation = 'source-in';
-      tctx.drawImage(materialCanvas, 0, 0, tW, tH);
-      tctx.globalCompositeOperation = 'source-over';
+  canvasCtx.restore();
+}
 
-      // optionally add thin rim highlight for edges (frame shine)
-      tctx.globalCompositeOperation = 'lighter';
-      const rimGrad = tctx.createLinearGradient(0,0,tW,0);
-      rimGrad.addColorStop(0, 'rgba(255,255,255,0.06)');
-      rimGrad.addColorStop(0.5, 'rgba(255,255,255,0.02)');
-      rimGrad.addColorStop(1, 'rgba(255,255,255,0.06)');
-      tctx.fillStyle = rimGrad;
-      tctx.globalAlpha = 0.18;
-      tctx.fillRect(0,0,tW,tH);
-      tctx.globalAlpha = 1.0;
-      tctx.globalCompositeOperation = 'source-over';
+/* -------------------------------
+   Global Camera Tone Filter
+   (for better blending)
+--------------------------------*/
+function setRealismFilters() {
+  canvasElement.style.filter = `
+    brightness(0.97)
+    contrast(1.08)
+    saturate(0.9)
+    drop-shadow(0px 2px 4px rgba(0,0,0,0.4))
+  `;
+}
 
-      // -------------------------
-      // 3) Draw ambient occlusion / shadow under the frame for "grounding"
-      // -------------------------
-      canvasCtx.save();
-      canvasCtx.globalAlpha = 0.35;
-      canvasCtx.shadowColor = 'rgba(0,0,0,0.45)';
-      canvasCtx.shadowBlur = 12;
-      canvasCtx.shadowOffsetY = 6;
-      // draw the frame silhouette as shadow by drawing the temp canvas but tinting black
-      const shadowCanvas = document.createElement('canvas');
-      shadowCanvas.width = tW; shadowCanvas.height = tH;
-      const sctx = shadowCanvas.getContext('2d');
-      sctx.drawImage(frameImg, 0, 0, tW, tH);
-      // colorize to black silhouette
-      sctx.globalCompositeOperation = 'source-in';
-      sctx.fillStyle = 'rgba(0,0,0,0.9)';
-      sctx.fillRect(0,0,tW,tH);
-      canvasCtx.drawImage(shadowCanvas, 1.5, 2.5, glassesWidth, glassesHeight); // slight offset for realism
-      canvasCtx.restore();
+/* -------------------------------
+   Call This After Camera Starts
+--------------------------------*/
+// Example:
+startCamera().then(() => setRealismFilters());
 
-      // -------------------------
-      // 4) Draw textured frame (final)
-      // -------------------------
-      canvasCtx.save();
-      // multiply scale to target size
-      canvasCtx.drawImage(tempCanvas, 0, 0, glassesWidth, glassesHeight);
-      canvasCtx.restore();
-
-      // -------------------------
-      // 5) LENS effect: tint + specular highlight that moves with headAngle
-      // -------------------------
-      // We'll overlay a subtle tint and a specular streak whose position is derived from angle
-      canvasCtx.save();
-
-      // tint (subtle, based on currentColorName)
-      const tintMap = {
-        'Black': 'rgba(200,200,210,0.08)',
-        'Gray': 'rgba(160,176,181,0.12)',
-        'Brown': 'rgba(166,138,107,0.10)',
-        'Tortoise': 'rgba(150,110,80,0.09)',
-        'Blue': 'rgba(124,169,199,0.10)',
-        'Silver': 'rgba(200,200,200,0.08)',
-        'Gold': 'rgba(218,165,32,0.06)',
-        'Red': 'rgba(180,80,80,0.08)',
-        'Green': 'rgba(120,170,120,0.08)',
-        'Yellow': 'rgba(220,200,120,0.06)',
-        'Purple': 'rgba(150,110,170,0.08)',
-        'Pink': 'rgba(230,130,170,0.07)'
-      };
-      const tint = tintMap[currentColorName] || 'rgba(200,200,200,0.06)';
-      canvasCtx.globalAlpha = 0.16;
-      canvasCtx.fillStyle = tint;
-      canvasCtx.fillRect(0, 0, glassesWidth, glassesHeight);
-      canvasCtx.globalAlpha = 1.0;
-
-      // dynamic specular highlight
-      const spec = canvasCtx.createLinearGradient(0, 0, glassesWidth, 0);
-      // specular intensity depends on head rotation (angle). Use sine mapping to vary position
-      const normalizedAngle = clamp((angle / Math.PI) , -1, 1); // -1..1
-      const specCenter = 0.5 + normalizedAngle * 0.18; // move highlight left/right
-      spec.addColorStop(clamp(specCenter - 0.15, 0,1), 'rgba(255,255,255,0)');
-      spec.addColorStop(clamp(specCenter - 0.06, 0,1), 'rgba(255,255,255,0.15)');
-      spec.addColorStop(specCenter, 'rgba(255,255,255,0.35)');
-      spec.addColorStop(clamp(specCenter + 0.06,0,1), 'rgba(255,255,255,0.12)');
-      spec.addColorStop(clamp(specCenter + 0.2,0,1), 'rgba(255,255,255,0)');
-      canvasCtx.globalCompositeOperation = 'lighter';
-      canvasCtx.globalAlpha = 0.9;
-      canvasCtx.fillStyle = spec;
-      canvasCtx.fillRect(0, 0, glassesWidth, glassesHeight);
-      canvasCtx.globalAlpha = 1.0;
-      canvasCtx.globalCompositeOperation = 'source-over';
-
-      // small elliptical highlight (curved lens)
-      canvasCtx.save();
-      canvasCtx.globalAlpha = 0.28;
-      canvasCtx.beginPath();
-      const hx = glassesWidth * (0.2 + normalizedAngle * 0.15);
-      const hy = glassesHeight * 0.22;
-      canvasCtx.ellipse(hx, hy, glassesWidth * 0.2, glassesHeight * 0.12, -0.3, 0, Math.PI*2);
-      canvasCtx.fillStyle = 'rgba(255,255,255,0.55)';
-      canvasCtx.fill();
-      canvasCtx.restore();
-
-      canvasCtx.restore();
-
-      // -------------------------
-      // 6) Small edge darkening to boost contrast (subtle)
-      // -------------------------
-      canvasCtx.save();
-      canvasCtx.globalCompositeOperation = 'multiply';
-      canvasCtx.globalAlpha = 0.06;
-      canvasCtx.fillStyle = 'rgba(0,0,0,1)';
-      canvasCtx.fillRect(0, 0, glassesWidth, glassesHeight);
-      canvasCtx.globalAlpha = 1.0;
-      canvasCtx.globalCompositeOperation = 'source-over';
-      canvasCtx.restore();
-
-      // done: restore canvas global transform
-      canvasCtx.restore();
-    }
 
     // --- Mediapipe handlers ---
     function calculateHeadAngle(landmarks) {
