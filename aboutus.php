@@ -141,22 +141,6 @@
                 display: inline-block;
             }
             
-            .nav-button {
-                background: linear-gradient(45deg, #dc3545, #ff6b7a);
-                color: white;
-                border: none;
-                padding: 12px 30px;
-                border-radius: 25px;
-                text-decoration: none;
-                transition: all 0.3s ease;
-            }
-            
-            .nav-button:hover {
-                transform: scale(1.05);
-                box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
-                color: white;
-            }
-            
             @media (max-width: 768px) {
                 .timeline-item:before {
                     left: 30px;
