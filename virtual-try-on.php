@@ -183,9 +183,9 @@
       grid-template-columns: repeat(2, 1fr);
       gap: 10px;
     }
-  .frames-column .frame-btn, .frames-area .frame-btn { padding: 4px 6px; }
-  .frames-column .frame-img, .frames-area .frame-img { width: 44px; height: 28px; }
-  .frames-column .frame-label { font-size: 10px; }
+    .frames-column .frame-btn, .frames-area .frame-btn { padding: 6px; }
+    .frames-column .frame-img, .frames-area .frame-img { width: 48px; height: 32px; }
+    .frames-column .frame-label { font-size: 11px; }
 
   /* colors area should visually match other cards (use primary gradient) */
   .colors-area .card { box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
@@ -402,27 +402,28 @@
       display: flex;
       flex-direction: row;
       align-items: center;
-      gap: 12px;
-      padding: 10px 12px;
-      border-radius: 12px;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 10px;
       background: white;
     }
-    .right-column .frame-img { width: 64px; height: 36px; }
-    .right-column .frame-label { font-size: 13px; text-align: left; flex: 1; }
+    .right-column .frame-img { width: 56px; height: 32px; }
+    .right-column .frame-label { font-size: 12px; text-align: left; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .right-column .frame-btn .frame-meta { font-size: 12px; color: #6c757d; }
     .right-column .frame-btn:hover { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
     
     .frame-btn {
       background: white;
       border: 2px solid var(--border);
-      border-radius: 12px;
-      padding: 6px;
+      border-radius: 10px;
+      padding: 4px 6px;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all 0.25s ease;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 5px;
+      gap: 4px;
+      min-width: 60px;
     }
     
     .frame-btn:hover {
@@ -440,8 +441,8 @@
     }
     
     .frame-img {
-      width: 40px;
-      height: 24px;
+      width: 36px;
+      height: 20px;
       object-fit: contain;
     }
     
@@ -450,7 +451,11 @@
       font-weight: 700;
       color: var(--dark);
       text-align: center;
-      line-height: 1.2;
+      line-height: 1.1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
     }
     
     .color-grid {
@@ -1166,7 +1171,7 @@
         <div class="colors-area">
           <div class="card">
             <div class="card-header">
-              <span><i class="fas fa-palette me-2"></i>Frame Color</span>
+              <span><i class="fas fa-palette me-2"></i>Colors</span>
               <span class="step-badge">5</span>
             </div>
             <div class="card-body">
