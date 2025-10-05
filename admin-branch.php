@@ -321,12 +321,13 @@ if ($rid !== 4) {
         </div>
 
         <?php
-            // Render the Add Branch modal HTML so it can be opened client-side
-            addBranch();
-        ?>
+            addBranchModal();
 
-        <?php
             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                if (isset($_POST['addBranchBtn'])) {
+                    addBranch();
+                }
+                else
                 if (isset($_POST['editBranchBtn'])) {
                     editBranch();
                 }
