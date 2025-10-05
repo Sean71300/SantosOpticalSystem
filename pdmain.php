@@ -1,3 +1,7 @@
+<?php
+    include 'ActivityTracker.php';
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,6 +11,12 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="customCodes/custom.css">
+    <link rel="stylesheet" href="customCodes/s1.css">
+    <link rel="stylesheet" href="customCodes/custom.css">
+    <link rel="shortcut icon" type="image/x-icon" href="Images/logo.png"/>
+    <link rel="stylesheet" href="customCodes/s2.css">
+
     <style>
     /* Color Variables */
     :root {
@@ -142,7 +152,6 @@
         transform: translateY(-5px);
         box-shadow: 0 15px 35px rgba(255, 215, 0, 0.4);
         border-color: var(--primary-red);
-        /* No color change on hover */
     }
     
     .product-img {
@@ -213,7 +222,7 @@
         transform: translateY(-5px);
         box-shadow: 0 15px 35px rgba(220, 53, 69, 0.4);
         border-color: var(--primary-yellow);
-        /* No color change on hover */
+        color: var(--pure-white);
     }
     
     /* Enhanced Service Section with Brand Colors */
@@ -280,7 +289,7 @@
         transform: translateY(-3px);
         box-shadow: 0 15px 35px rgba(255, 215, 0, 0.4);
         border-color: var(--primary-red);
-        /* No color change on hover */
+        color: var(--text-dark);
     }
     
     /* Enhanced About Section */
@@ -322,7 +331,7 @@
         transform: translateY(-3px);
         box-shadow: 0 15px 35px rgba(220, 53, 69, 0.4);
         border-color: var(--primary-yellow);
-        /* No color change on hover */
+        color: var(--pure-white);
     }
     
     /* Enhanced Location Section */
@@ -355,7 +364,7 @@
         box-shadow: 0 30px 60px rgba(220, 53, 69, 0.25);
     }
     
-    /* Floating Elements - Removed from images */
+    /* Floating Elements */
     .floating-element {
         animation: float 6s ease-in-out infinite;
     }
@@ -449,6 +458,8 @@
 </head>
 <body>
     <header>
+    <?php include "Navigation.php"?>
+
         <div class="carousel-container">
             <div id="eyeglassCarousel" class="carousel slide" data-bs-ride="carousel">
                 <div class="carousel-inner">
@@ -576,31 +587,7 @@
         </div>
     </div>
 
-    <footer class="bg-dark text-light py-4 mt-5">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-4">
-                    <h5>Santos Optical</h5>
-                    <p>Quality vision for quality life since 2001.</p>
-                </div>
-                <div class="col-md-4">
-                    <h5>Contact Us</h5>
-                    <p>Email: info@santosoptical.com<br>Phone: (123) 456-7890</p>
-                </div>
-                <div class="col-md-4">
-                    <h5>Follow Us</h5>
-                    <div class="d-flex">
-                        <a href="#" class="text-light me-3"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="text-light me-3"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="text-light me-3"><i class="fab fa-instagram"></i></a>
-                    </div>
-                </div>
-            </div>
-            <div class="text-center mt-3">
-                <p>&copy; 2023 Santos Optical. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
+    <?php include 'footer.php'; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
@@ -643,6 +630,18 @@
             
             createParticles('particles-1', 12);
             createParticles('particles-2', 8);
+            
+            // Add hover effects to carousel items
+            const carouselItems = document.querySelectorAll('.carousel-item');
+            carouselItems.forEach(item => {
+                item.addEventListener('mouseenter', () => {
+                    item.style.transform = 'scale(1.02)';
+                });
+                
+                item.addEventListener('mouseleave', () => {
+                    item.style.transform = 'scale(1)';
+                });
+            });
             
             // Add scroll-triggered animations
             const observerOptions = {
