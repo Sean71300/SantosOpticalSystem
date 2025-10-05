@@ -78,19 +78,20 @@
          (so it appears the same height as adjacent cards). */
       .main-content {
         grid-template-columns: 220px 320px 420px 260px; /* camera | adjust | frames | colors/material */
-        grid-template-rows: 420px 420px; /* two rows of equal card height */
+        grid-auto-rows: 420px; /* single row height for cards */
         gap: 18px;
       }
       .left-column, .center-column, .frames-column, .right-column { display: block; }
-      /* place each major column in the first row so camera does NOT span both rows */
-      .left-column { grid-column: 1; grid-row: 1; }
-      .center-column { grid-column: 2; grid-row: 1; }
-      .frames-column { grid-column: 3; grid-row: 1; }
-      .right-column { grid-column: 4; grid-row: 1; }
+  /* place each major column in the first row so we have one row layout */
+  .left-column { grid-column: 1; grid-row: 1; }
+  .center-column { grid-column: 2; grid-row: 1; }
+  .frames-column { grid-column: 3; grid-row: 1; }
+  .right-column { grid-column: 4; grid-row: 1; }
     }
     
     .camera-section {
       position: relative;
+      align-self: stretch;
     }
     
     .controls-section {
@@ -106,6 +107,8 @@
       height: 100%;
       width: 100%;
       max-width: none;
+      display: flex;
+      flex-direction: column;
     }
 
     /* CTA over camera */
