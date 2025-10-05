@@ -85,9 +85,12 @@
         padding-bottom: 8px;
         padding-left: 6px; /* small offset so first car doesn't stick to edge */
       }
-      /* hide native scrollbar for WebKit while still allowing scroll */
-      .main-content::-webkit-scrollbar { height: 8px; }
-      .main-content::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 6px; }
+      /* hide native scrollbar while keeping scrolling available */
+      .main-content {
+        -ms-overflow-style: none; /* IE and Edge */
+        scrollbar-width: none; /* Firefox */
+      }
+      .main-content::-webkit-scrollbar { display: none; } /* Chrome, Safari */
       .main-content {
         flex-wrap: nowrap;
       }
@@ -101,8 +104,8 @@
   .left-column { min-width: 180px; }
   .left-column .camera-section { flex: 1; display: flex; align-items: center; justify-content: center; padding: 6px; }
       .center-column { min-width: 340px; }
-      .frames-column { min-width: 460px; }
-      .right-column { min-width: 280px; }
+  .frames-column { min-width: 460px; padding-right: 18px; }
+  .right-column { min-width: 280px; padding-left: 12px; }
   /* keep cards filling the car height */
   .card { height: 520px; }
   .camera-container { height: 100%; max-width: 220px; margin-left: auto; margin-right: auto; }
@@ -211,6 +214,7 @@
     .frames-column .frame-btn, .frames-area .frame-btn { padding: 6px; }
     .frames-column .frame-img, .frames-area .frame-img { width: 48px; height: 32px; }
     .frames-column .frame-label { font-size: 11px; }
+  .frames-column .card-body { padding-right: 18px; }
 
   /* colors area should visually match other cards (use primary gradient) */
   .colors-area .card { box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
@@ -466,6 +470,7 @@
       flex-direction: column;
       align-items: center;
       gap: 6px;
+      margin-right: 6px;
     }
     
     .frame-btn:hover {
