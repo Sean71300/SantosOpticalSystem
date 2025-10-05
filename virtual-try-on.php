@@ -1066,6 +1066,7 @@
                 <span class="control-value" id="sizeValue">2.4x</span>
               </div>
             </div>
+            <hr>
 
             <div class="control-group">
               <div class="control-label" style="justify-content:space-between;">
@@ -1081,6 +1082,7 @@
                 <button class="btn btn-outline-primary position-btn" id="heightUp" aria-label="Increase height"><i class="fas fa-plus"></i></button>
               </div>
             </div>
+            <hr>
 
             <div class="control-group">
               <div class="control-label" style="justify-content:space-between;">
@@ -1096,6 +1098,7 @@
                 <button class="btn btn-outline-primary position-btn" id="positionUp" aria-label="Move up"><i class="fas fa-arrow-up"></i></button>
               </div>
             </div>
+            <hr>
           </div>
         </div>
       </div>
