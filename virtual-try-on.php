@@ -1041,7 +1041,6 @@
                 <div style="display:flex; align-items:center; gap:8px;"><span>Frame Height</span>
                   <button id="heightResetIcon" class="btn btn-outline-secondary btn-sm" title="Reset height"><i class="fas fa-undo"></i></button>
                 </div>
-                <span class="control-value" id="heightValue">70%</span>
               </div>
               <div class="position-controls" style="justify-content:center; gap:18px; margin-top:8px; align-items:center;">
                 <button class="btn btn-outline-primary position-btn" id="heightDown" aria-label="Decrease height"><i class="fas fa-minus"></i></button>
@@ -1057,7 +1056,6 @@
                 <div style="display:flex; align-items:center; gap:8px;"><span>Vertical Position</span>
                   <button id="positionResetIcon" class="btn btn-outline-secondary btn-sm" title="Reset vertical position"><i class="fas fa-undo"></i></button>
                 </div>
-                <span class="control-value" id="positionValue">0px</span>
               </div>
               <div class="position-controls" style="justify-content:center; gap:18px; margin-top:8px; align-items:center;">
                 <button class="btn btn-outline-primary position-btn" id="positionDown" aria-label="Move down"><i class="fas fa-arrow-down"></i></button>
