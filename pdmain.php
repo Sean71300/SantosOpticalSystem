@@ -18,7 +18,20 @@
     <link rel="stylesheet" href="customCodes/s2.css">
 
     <style>
-    /* Enhanced Carousel with Parallax Effect */
+    /* Color Variables */
+    :root {
+        --primary-yellow: #FFD700;
+        --dark-yellow: #FFC107;
+        --primary-red: #DC3545;
+        --dark-red: #C82333;
+        --light-red: #FF6B6B;
+        --pure-white: #FFFFFF;
+        --off-white: #F8F9FA;
+        --light-gray: #E9ECEF;
+        --text-dark: #2C3E50;
+    }
+    
+    /* Enhanced Carousel with Brand Colors */
     .carousel-container {
         position: relative;
         width: 100%;
@@ -36,14 +49,12 @@
     .carousel-inner {
         width: 100%;
         height: 100%;
-        perspective: 1000px;
     }
     
     .carousel-item {
         height: 85vh;
         min-height: 500px;
         max-height: 800px;
-        transform-style: preserve-3d;
         transition: transform 1s ease-in-out;
     }
     
@@ -51,39 +62,35 @@
         width: 100%;
         height: 100%;
         object-fit: contain;
-        transform: translateZ(0);
         transition: transform 1.2s ease-out;
     }
     
     .carousel-item.active img {
-        transform: scale(1.05) translateZ(20px);
+        transform: scale(1.05);
     }
     
-    /* Enhanced Vision Statement with Glass Morphism */
+    /* Enhanced Vision Statement with Brand Colors */
     .vision-overlay {
         position: absolute;
         bottom: 0;
         left: 0;
         right: 0;
-        background: rgba(255, 255, 255, 0.85);
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 215, 0, 0.1));
         backdrop-filter: blur(10px);
         padding: 2rem 0;
         text-align: center;
         z-index: 10;
-        border-top: 1px solid rgba(255, 255, 255, 0.3);
+        border-top: 3px solid var(--primary-yellow);
     }
     
     .vision-text {
         font-family: 'Georgia', serif;
         font-size: 2.8rem;
         font-weight: 300;
-        color: #2c3e50;
+        color: var(--text-dark);
         margin-bottom: 0.5rem;
-        background: linear-gradient(135deg, #2c3e50, #3498db);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
         position: relative;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
     }
     
     .vision-text::after {
@@ -93,38 +100,41 @@
         left: 50%;
         transform: translateX(-50%);
         width: 100px;
-        height: 3px;
-        background: linear-gradient(90deg, transparent, #FFD700, transparent);
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-red), var(--primary-yellow), var(--primary-red));
+        border-radius: 2px;
     }
     
     .vision-subtext {
         font-family: 'Arial', sans-serif;
         font-size: 1.1rem;
-        color: #7f8c8d;
+        color: var(--primary-red);
         letter-spacing: 3px;
         text-transform: uppercase;
-        font-weight: 600;
+        font-weight: 700;
         margin-top: 1rem;
     }
     
-    /* Enhanced Product Sections */
+    /* Enhanced Product Sections with Brand Colors */
     .product-showcase {
         position: relative;
         overflow: hidden;
+        background: var(--pure-white);
     }
     
     .category-btn {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, var(--primary-yellow), var(--dark-yellow));
         border: none;
-        color: white;
+        color: var(--text-dark);
         padding: 1rem 2rem;
         border-radius: 50px;
-        font-weight: 600;
+        font-weight: 700;
         font-size: 1.1rem;
         transition: all 0.4s ease;
-        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
         position: relative;
         overflow: hidden;
+        border: 2px solid transparent;
     }
     
     .category-btn::before {
@@ -134,7 +144,7 @@
         left: -100%;
         width: 100%;
         height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
         transition: left 0.5s ease;
     }
     
@@ -144,7 +154,8 @@
     
     .category-btn:hover {
         transform: translateY(-5px);
-        box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+        box-shadow: 0 15px 35px rgba(255, 215, 0, 0.4);
+        border-color: var(--primary-red);
     }
     
     .product-img {
@@ -152,9 +163,10 @@
         height: auto;
         transition: all 0.5s ease;
         border-radius: 15px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        box-shadow: 0 10px 30px rgba(220, 53, 69, 0.1);
         position: relative;
         overflow: hidden;
+        border: 3px solid transparent;
     }
     
     .product-img::before {
@@ -164,14 +176,15 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+        background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), transparent);
         opacity: 0;
         transition: opacity 0.3s ease;
     }
     
     .product-img:hover {
-        transform: scale(1.08) rotate(2deg);
-        box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        transform: scale(1.08);
+        box-shadow: 0 20px 40px rgba(220, 53, 69, 0.2);
+        border-color: var(--primary-yellow);
     }
     
     .product-img:hover::before {
@@ -180,17 +193,18 @@
     
     .see-more-btn {
         display: inline-block;
-        background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-        color: white;
+        background: linear-gradient(135deg, var(--primary-red), var(--dark-red));
+        color: var(--pure-white);
         padding: 1rem 2.5rem;
         border-radius: 50px;
         text-decoration: none;
-        font-weight: 600;
+        font-weight: 700;
         font-size: 1.1rem;
         transition: all 0.4s ease;
-        box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
+        box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
         position: relative;
         overflow: hidden;
+        border: 2px solid transparent;
     }
     
     .see-more-btn::before {
@@ -210,35 +224,38 @@
     
     .see-more-btn:hover {
         transform: translateY(-5px);
-        box-shadow: 0 15px 35px rgba(255, 107, 107, 0.4);
+        box-shadow: 0 15px 35px rgba(220, 53, 69, 0.4);
+        border-color: var(--primary-yellow);
+        color: var(--pure-white);
     }
     
-    /* Enhanced Service Section */
+    /* Enhanced Service Section with Brand Colors */
+    .service-section {
+        background: linear-gradient(135deg, var(--off-white), var(--light-gray));
+    }
+    
     .service-img {
         width: 100%;
         height: 400px;
         object-fit: cover;
         border-radius: 20px;
-        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        box-shadow: 0 15px 35px rgba(255, 215, 0, 0.2);
         transition: all 0.5s ease;
-        filter: grayscale(0.3);
+        border: 3px solid var(--primary-yellow);
     }
     
     .service-img:hover {
         transform: scale(1.02);
-        filter: grayscale(0);
-        box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+        box-shadow: 0 25px 50px rgba(255, 215, 0, 0.3);
     }
     
     .service-title {
         font-size: 3rem;
         font-weight: 700;
-        background: linear-gradient(135deg, #2c3e50, #3498db);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        color: var(--text-dark);
         margin-bottom: 1.5rem;
         position: relative;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
     }
     
     .service-title::after {
@@ -248,39 +265,45 @@
         left: 0;
         width: 100px;
         height: 4px;
-        background: linear-gradient(90deg, #FFD700, #ff6b6b);
+        background: linear-gradient(90deg, var(--primary-yellow), var(--primary-red));
         border-radius: 2px;
     }
     
     .service-text {
         font-size: 1.2rem;
         line-height: 1.8;
-        color: #5a6c7d;
+        color: var(--text-dark);
         margin-bottom: 2rem;
     }
     
     .nav-button {
         display: inline-block;
-        background: linear-gradient(135deg, #00b894, #00a085);
-        color: white;
+        background: linear-gradient(135deg, var(--primary-yellow), var(--dark-yellow));
+        color: var(--text-dark);
         padding: 1rem 2rem;
         border-radius: 50px;
         text-decoration: none;
-        font-weight: 600;
+        font-weight: 700;
         transition: all 0.4s ease;
-        box-shadow: 0 8px 25px rgba(0, 184, 148, 0.3);
+        box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
+        border: 2px solid transparent;
     }
     
     .nav-button:hover {
         transform: translateY(-3px);
-        box-shadow: 0 15px 35px rgba(0, 184, 148, 0.4);
-        color: white;
+        box-shadow: 0 15px 35px rgba(255, 215, 0, 0.4);
+        border-color: var(--primary-red);
+        color: var(--text-dark);
     }
     
     /* Enhanced About Section */
+    .about-section {
+        background: var(--pure-white);
+    }
+    
     .about-text {
         font-size: 1.3rem;
-        color: #5a6c7d;
+        color: var(--text-dark);
         margin-bottom: 2rem;
         line-height: 1.6;
     }
@@ -288,14 +311,15 @@
     .btn-see-all {
         display: inline-flex;
         align-items: center;
-        background: linear-gradient(135deg, #a29bfe, #6c5ce7);
-        color: white;
+        background: linear-gradient(135deg, var(--primary-red), var(--dark-red));
+        color: var(--pure-white);
         padding: 1rem 2rem;
         border-radius: 50px;
         text-decoration: none;
-        font-weight: 600;
+        font-weight: 700;
         transition: all 0.4s ease;
-        box-shadow: 0 8px 25px rgba(108, 92, 231, 0.3);
+        box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+        border: 2px solid transparent;
     }
     
     .btn-see-all span {
@@ -309,42 +333,39 @@
     
     .btn-see-all:hover {
         transform: translateY(-3px);
-        box-shadow: 0 15px 35px rgba(108, 92, 231, 0.4);
-        color: white;
+        box-shadow: 0 15px 35px rgba(220, 53, 69, 0.4);
+        border-color: var(--primary-yellow);
+        color: var(--pure-white);
     }
     
-    /* Enhanced Map Section */
+    /* Enhanced Location Section */
     .location-section {
         position: relative;
         overflow: hidden;
+        background: linear-gradient(135deg, var(--off-white), var(--light-gray));
     }
     
-    .location-section::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(135deg, rgba(248, 245, 242, 0.9), rgba(255, 255, 255, 0.9));
-        z-index: 1;
-    }
-    
-    .location-section > * {
-        position: relative;
-        z-index: 2;
+    .location-title {
+        font-size: 3.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--primary-red), var(--primary-yellow));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
     }
     
     .ratio-16x9 {
         border-radius: 20px;
         overflow: hidden;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        box-shadow: 0 20px 40px rgba(220, 53, 69, 0.15);
         transition: all 0.5s ease;
+        border: 3px solid var(--primary-yellow);
     }
     
     .ratio-16x9:hover {
         transform: scale(1.02);
-        box-shadow: 0 30px 60px rgba(0,0,0,0.2);
+        box-shadow: 0 30px 60px rgba(220, 53, 69, 0.25);
     }
     
     /* Floating Elements */
@@ -361,7 +382,7 @@
         }
     }
     
-    /* Particle Background */
+    /* Particle Background with Brand Colors */
     .particles {
         position: absolute;
         top: 0;
@@ -374,10 +395,25 @@
     
     .particle {
         position: absolute;
-        background: linear-gradient(135deg, #FFD700, #ff6b6b);
         border-radius: 50%;
         opacity: 0.3;
         animation: float 8s ease-in-out infinite;
+    }
+    
+    .particle.yellow {
+        background: radial-gradient(circle, var(--primary-yellow), var(--dark-yellow));
+    }
+    
+    .particle.red {
+        background: radial-gradient(circle, var(--primary-red), var(--dark-red));
+    }
+    
+    /* Section Dividers */
+    .section-divider {
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-yellow), var(--primary-red), var(--primary-yellow));
+        margin: 3rem 0;
+        border-radius: 2px;
     }
     
     /* Responsive Design */
@@ -388,6 +424,10 @@
         
         .service-title {
             font-size: 2.2rem;
+        }
+        
+        .location-title {
+            font-size: 2.5rem;
         }
         
         .category-btn, .see-more-btn, .nav-button, .btn-see-all {
@@ -412,6 +452,10 @@
         
         .service-title {
             font-size: 1.8rem;
+        }
+        
+        .location-title {
+            font-size: 2rem;
         }
     }
     </style>
@@ -449,7 +493,7 @@
     </header>
 
     <!-- Enhanced Product Showcase -->
-    <div class="container-fluid py-5 product-showcase" style="background: linear-gradient(135deg, #fdfdfd 0%, #f8f9fa 100%);" data-aos="fade-up">
+    <div class="container-fluid py-5 product-showcase" data-aos="fade-up">
         <div class="particles" id="particles-1"></div>
         <div class="container text-center my-4">
             <div class="row justify-content-center mb-5">
@@ -483,8 +527,10 @@
         </div>
     </div>
 
+    <div class="section-divider"></div>
+
     <!-- Enhanced Services Section -->
-    <div class="container-fluid py-5" style="background: linear-gradient(135deg, #e0e0e0 0%, #d5d5d5 100%);" data-aos="fade-up">
+    <div class="container-fluid py-5 service-section" data-aos="fade-up">
         <div class="particles" id="particles-2"></div>
         <div class="container">
             <div class="row align-items-center">
@@ -507,14 +553,14 @@
         </div>
     </div>
 
+    <div class="section-divider"></div>
+
     <!-- Enhanced About Section -->
-    <div class="container-fluid py-5" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);" data-aos="fade-up">
+    <div class="container-fluid py-5 about-section" data-aos="fade-up">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-lg-6" data-aos="fade-right">
-                    <h2 class="fw-bold display-4 mb-4" style="background: linear-gradient(135deg, #2c3e50, #3498db); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
-                        ABOUT US
-                    </h2>
+                    <h2 class="service-title mb-4">ABOUT US</h2>
                     <p class="about-text">
                         Know and learn more about PBV Santos Optical! Discover our commitment to quality vision care and exceptional customer service since 2001.
                     </p>
@@ -523,17 +569,17 @@
                     </a>
                 </div>
                 <div class="col-lg-6 text-center" data-aos="fade-left" data-aos-delay="200">
-                    <img src="Images/imgabt.jpg" alt="About Us Image" class="img-fluid rounded floating-element" style="animation-delay: 1s;">
+                    <img src="Images/imgabt.jpg" alt="About Us Image" class="img-fluid rounded floating-element" style="border: 3px solid var(--primary-yellow); animation-delay: 1s;">
                 </div>
             </div>
         </div>
     </div>
 
+    <div class="section-divider"></div>
+
     <!-- Enhanced Location Section -->
     <div class="container-fluid py-5 location-section vh-100 d-flex flex-column justify-content-center" data-aos="fade-up">
-        <h2 class="fw-bold pb-3 pt-5 text-center display-4" style="background: linear-gradient(135deg, #2c3e50, #3498db); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
-            OUR LOCATION
-        </h2>
+        <h2 class="location-title pb-3 pt-5 text-center">OUR LOCATION</h2>
         <div class="ratio ratio-16x9 w-75 mx-auto mt-4">
             <iframe 
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d768.9767236191218!2d120.95072416949931!3d14.6581210991147!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397b452e915147b%3A0x910e6ce82d8b5bd7!2sSantos%20Optical!5e1!3m2!1sen!2sph!4v1741535090106!5m2!1sen!2sph" 
@@ -558,7 +604,7 @@
                 mirror: false
             });
             
-            // Enhanced Carousel with 3D effects
+            // Enhanced Carousel
             var myCarousel = document.querySelector('#eyeglassCarousel');
             var carousel = new bootstrap.Carousel(myCarousel, {
                 interval: 4000,
@@ -567,14 +613,15 @@
                 pause: 'hover'
             });
             
-            // Create floating particles
+            // Create floating particles with brand colors
             function createParticles(containerId, count) {
                 const container = document.getElementById(containerId);
                 if (!container) return;
                 
                 for (let i = 0; i < count; i++) {
                     const particle = document.createElement('div');
-                    particle.className = 'particle';
+                    const isYellow = Math.random() > 0.5;
+                    particle.className = `particle ${isYellow ? 'yellow' : 'red'}`;
                     particle.style.width = Math.random() * 20 + 5 + 'px';
                     particle.style.height = particle.style.width;
                     particle.style.left = Math.random() * 100 + '%';
@@ -585,8 +632,8 @@
                 }
             }
             
-            createParticles('particles-1', 15);
-            createParticles('particles-2', 10);
+            createParticles('particles-1', 12);
+            createParticles('particles-2', 8);
             
             // Add hover effects to carousel items
             const carouselItems = document.querySelectorAll('.carousel-item');
