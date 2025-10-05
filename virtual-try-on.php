@@ -189,7 +189,8 @@
 
   /* colors area should visually match other cards (use primary gradient) */
   .colors-area .card { box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
-  .colors-area .card-header { background: linear-gradient(135deg, var(--primary), #FF2B5D); color: white; }
+  .colors-area .card-header { background: linear-gradient(135deg, var(--primary), #FF2B5D); }
+  .colors-area .card-header, .colors-area .card-header * { color: #111 !important; }
   /* frames column simple wrapper */
   .frames-column { }
 
@@ -412,15 +413,16 @@ padding: 8px;
     
     .frame-btn:hover {
       border-color: var(--primary);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(255, 62, 108, 0.2);
+      transform: translateY(-6px) scale(1.02);
+      box-shadow: 0 14px 32px rgba(0,0,0,0.12);
+      background: linear-gradient(180deg, rgba(255,62,108,0.04), rgba(255,62,108,0.02));
     }
-    
+
     .frame-btn.active {
       border-color: var(--primary);
-      background: rgba(255, 62, 108, 0.1);
-      transform: scale(1.05);
-      box-shadow: 0 6px 15px rgba(255, 62, 108, 0.3);
+      background: linear-gradient(180deg, rgba(255,62,108,0.12), rgba(255,62,108,0.06));
+      transform: translateY(-2px) scale(1.04);
+      box-shadow: 0 10px 28px rgba(255, 62, 108, 0.16);
     }
     
     .frame-img {
@@ -582,11 +584,19 @@ padding: 8px;
       border-radius: 8px;
       font-size: 12px;
     }
+    .center-value {
+      display: inline-block;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--dark);
+      margin-top: 8px;
+    }
     
     .form-range {
       width: 100%;
-      height: 8px;
-      border-radius: 4px;
+      height: 10px;
+      border-radius: 6px;
+      background: linear-gradient(90deg, rgba(255,62,108,0.12), rgba(0,200,179,0.06));
     }
     
     .form-range::-webkit-slider-thumb {
@@ -943,6 +953,8 @@ padding: 8px;
               <button id="calibrateBtn" class="btn btn-outline-primary btn-sm" title="Calibrate">
                 <i class="fas fa-sync-alt me-1"></i>Calibrate
               </button>
+              <!-- Camera step badge moved here to match other card headers -->
+              <span class="step-badge">1</span>
             </div>
 
             <!-- Centered start CTA over camera -->
@@ -965,9 +977,6 @@ padding: 8px;
             <!-- small camera status badge (moved inside camera) -->
             <div class="camera-status status-offline" id="cameraStatus">
               <span id="cameraStatusText">Camera is off</span>
-            </div>
-            <div style="position:absolute; left:12px; top:48px; z-index:41;">
-              <span class="step-badge">1</span>
             </div>
           </div>
         </div>
@@ -993,47 +1002,16 @@ padding: 8px;
             <span class="step-badge">2</span>
           </div>
           <div class="card-body">
-            <div class="control-group">
-              <div class="control-label">
+            <div class="control-group text-center">
+              <div class="control-label" style="justify-content:center;">
                 <span>Frame Size</span>
                 <span class="control-value" id="sizeValue">2.4x</span>
               </div>
-              <input type="range" class="form-range" id="sizeSlider" min="1.8" max="3.0" step="0.1" value="2.4">
-              <small class="text-muted">Drag to make frames larger or smaller</small>
-            </div>
-            
-            <div class="control-group">
-              <div class="control-label">
-                <span>Frame Height</span>
-                <span class="control-value" id="heightValue">70%</span>
+              <!-- Visible slider centered -->
+              <div style="padding: 8px 0;">
+                <input type="range" class="form-range" id="sizeSlider" min="1.8" max="3.0" step="0.1" value="2.4" aria-label="Frame size slider">
               </div>
-              <div class="position-controls">
-                <button class="btn btn-outline-primary position-btn" id="heightDown">
-                  <i class="fas fa-minus"></i>
-                </button>
-                <span>Shorter / Taller</span>
-                <button class="btn btn-outline-primary position-btn" id="heightUp">
-                  <i class="fas fa-plus"></i>
-                </button>
-              </div>
-              <small class="text-muted">Adjust frame proportions</small>
-            </div>
-            
-            <div class="control-group">
-              <div class="control-label">
-                <span>Vertical Position</span>
-                <span class="control-value" id="positionValue">0px</span>
-              </div>
-              <div class="position-controls">
-                <button class="btn btn-outline-primary position-btn" id="positionDown">
-                  <i class="fas fa-arrow-down"></i>
-                </button>
-                <span>Move Up / Down</span>
-                <button class="btn btn-outline-primary position-btn" id="positionUp">
-                  <i class="fas fa-arrow-up"></i>
-                </button>
-              </div>
-              <small class="text-muted">Move frames higher or lower on face</small>
+              <small class="text-muted">Drag to change the frame size</small>
             </div>
           </div>
         </div>
@@ -1260,12 +1238,12 @@ padding: 8px;
   const cameraStatusText = document.getElementById('cameraStatusText');
     const sizeSlider = document.getElementById('sizeSlider');
     const sizeValue = document.getElementById('sizeValue');
-    const heightDown = document.getElementById('heightDown');
-    const heightUp = document.getElementById('heightUp');
-    const heightValue = document.getElementById('heightValue');
-    const positionDown = document.getElementById('positionDown');
-    const positionUp = document.getElementById('positionUp');
-    const positionValue = document.getElementById('positionValue');
+  const heightDown = document.getElementById('heightDown');
+  const heightUp = document.getElementById('heightUp');
+  const heightValue = document.getElementById('heightValue');
+  const positionDown = document.getElementById('positionDown');
+  const positionUp = document.getElementById('positionUp');
+  const positionValue = document.getElementById('positionValue');
     const frameButtons = document.querySelectorAll('.frame-btn');
     const colorButtons = document.querySelectorAll('.color-btn');
     const materialButtons = document.querySelectorAll('.material-btn');
@@ -1366,11 +1344,11 @@ padding: 8px;
     }
 
     function updateHeightDisplay() {
-      heightValue.textContent = Math.round(glassesHeightRatio * 100) + '%';
+      if (heightValue) heightValue.textContent = Math.round(glassesHeightRatio * 100) + '%';
     }
 
     function updatePositionDisplay() {
-      positionValue.textContent = verticalOffset + 'px';
+      if (positionValue) positionValue.textContent = verticalOffset + 'px';
     }
 
     function createMaterialTexture(width, height, baseColor, materialType) {
@@ -1651,25 +1629,30 @@ padding: 8px;
       sizeValue.textContent = glassesSizeMultiplier.toFixed(1) + 'x';
     });
 
-    heightDown.addEventListener('click', () => {
-      glassesHeightRatio = Math.max(0.4, glassesHeightRatio - 0.05);
-      updateHeightDisplay();
-    });
-
-    heightUp.addEventListener('click', () => {
-      glassesHeightRatio = Math.min(1.0, glassesHeightRatio + 0.05);
-      updateHeightDisplay();
-    });
-
-    positionDown.addEventListener('click', () => {
-      verticalOffset += 2;
-      updatePositionDisplay();
-    });
-
-    positionUp.addEventListener('click', () => {
-      verticalOffset -= 2;
-      updatePositionDisplay();
-    });
+    if (heightDown) {
+      heightDown.addEventListener('click', () => {
+        glassesHeightRatio = Math.max(0.4, glassesHeightRatio - 0.05);
+        updateHeightDisplay();
+      });
+    }
+    if (heightUp) {
+      heightUp.addEventListener('click', () => {
+        glassesHeightRatio = Math.min(1.0, glassesHeightRatio + 0.05);
+        updateHeightDisplay();
+      });
+    }
+    if (positionDown) {
+      positionDown.addEventListener('click', () => {
+        verticalOffset += 2;
+        updatePositionDisplay();
+      });
+    }
+    if (positionUp) {
+      positionUp.addEventListener('click', () => {
+        verticalOffset -= 2;
+        updatePositionDisplay();
+      });
+    }
 
     calibrateBtn.addEventListener('click', () => {
       if (faceTrackingActive) {
