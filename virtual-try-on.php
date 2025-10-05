@@ -133,7 +133,7 @@
     .camera-top-actions {
       position: absolute;
       top: 12px;
-      right: 12px;
+      right: 58px; /* moved slightly left to avoid colliding with step badge */
       left: auto;
       z-index: 35;
       display: flex;
@@ -210,6 +210,9 @@
       box-shadow: 0 8px 22px rgba(0,0,0,0.12);
       border: 2px solid rgba(255,255,255,0.12);
     }
+
+    /* ensure step 5 (colors) uses white text like other badges */
+    .colors-area .step-badge { color: #fff !important; }
 
     .camera-step-badge {
       position: absolute;
@@ -961,15 +964,15 @@ padding: 8px;
               <button id="saveBtn" class="btn btn-outline-primary btn-sm me-2" title="Save">
                 <i class="fas fa-save me-1"></i>Save
               </button>
-                      <button id="calibrateBtn" class="btn btn-outline-primary btn-sm" title="Calibrate">
-                        <i class="fas fa-sync-alt me-1"></i>Calibrate
+                      <button id="calibrateBtn" class="btn btn-outline-primary btn-sm" title="Re-center">
+                        <i class="fas fa-sync-alt me-1"></i>Re-center
                       </button>
             </div>
 
                     <!-- Standalone camera step badge (outside the white pill) -->
-                    <div class="camera-step-badge" aria-hidden="true">
-                      <span class="step-badge">1</span>
-                    </div>
+                            <div class="camera-step-badge" aria-hidden="true">
+                              <span class="step-badge">1</span>
+                            </div>
 
             <!-- Centered start CTA over camera -->
             <div class="camera-cta" id="cameraCta">
@@ -1019,11 +1022,15 @@ padding: 8px;
             <div class="control-group text-center">
               <div class="control-label" style="justify-content:center;">
                 <span>Frame Size</span>
-                <span class="control-value center-value" id="sizeValue">2.4x</span>
+                <!-- top redundant value removed in favor of inline control under the slider -->
               </div>
               <!-- Visible slider centered -->
               <div style="padding: 8px 0;">
                 <input type="range" class="form-range" id="sizeSlider" min="1.8" max="3.0" step="0.1" value="2.4" aria-label="Frame size slider">
+              </div>
+              <div style="margin-top:8px; display:flex; justify-content:center; gap:8px; align-items:center;">
+                <button id="sizeResetBtn" class="btn btn-outline-primary btn-sm">Reset</button>
+                <button id="sizeValueBtn" class="btn btn-primary btn-sm" aria-label="Current size">2.4x</button>
               </div>
               <small class="text-muted">Drag to change the frame size</small>
             </div>
@@ -1067,7 +1074,7 @@ padding: 8px;
           <div class="card-body">
             <a href="https://santosopticalclinic.com/face-shape-detector.php" class="btn-face-shape" target="_blank">
               <i class="fas fa-face-smile"></i>
-              <span>Discover Your Face Shape</span>
+              <span>Click here to figure out your face shape</span>
             </a>
             <div class="frame-grid">
               <button class="frame-btn active" data-frame="A-TRIANGLE">
@@ -1670,8 +1677,32 @@ padding: 8px;
 
     sizeSlider.addEventListener('input', (e) => {
       glassesSizeMultiplier = parseFloat(e.target.value);
-      sizeValue.textContent = glassesSizeMultiplier.toFixed(1) + 'x';
+      // update legacy display if present
+      if (sizeValue) sizeValue.textContent = glassesSizeMultiplier.toFixed(1) + 'x';
+      // update the new size value button
+      const sizeValueBtn = document.getElementById('sizeValueBtn'); if (sizeValueBtn) sizeValueBtn.textContent = glassesSizeMultiplier.toFixed(1) + 'x';
     });
+
+    // New Reset and size button handlers
+    const sizeResetBtn = document.getElementById('sizeResetBtn');
+    const sizeValueBtn = document.getElementById('sizeValueBtn');
+    if (sizeResetBtn) {
+      sizeResetBtn.addEventListener('click', () => {
+        glassesSizeMultiplier = 2.4;
+        if (sizeSlider) { sizeSlider.value = '2.4'; }
+        if (sizeValue) sizeValue.textContent = '2.4x';
+        if (sizeValueBtn) sizeValueBtn.textContent = '2.4x';
+      });
+    }
+    if (sizeValueBtn) {
+      sizeValueBtn.addEventListener('click', () => {
+        // clicking the value toggles reset to default as a convenience
+        glassesSizeMultiplier = 2.4;
+        if (sizeSlider) { sizeSlider.value = '2.4'; }
+        if (sizeValue) sizeValue.textContent = '2.4x';
+        if (sizeValueBtn) sizeValueBtn.textContent = '2.4x';
+      });
+    }
 
     if (heightDown) {
       heightDown.addEventListener('click', () => {
