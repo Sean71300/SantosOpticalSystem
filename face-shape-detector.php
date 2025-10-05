@@ -98,6 +98,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $result = 'NO_FACE_DETECTED';
     }
 }
+
+// Get generic frame image based on face shape
+function getGenericFrameImage($faceShape) {
+    $frameMap = [
+        'SQUARE'      => 'Images/frames/round.png',      // Round frames for square faces
+        'ROUND'       => 'Images/frames/rectangular.png', // Rectangular frames for round faces
+        'OBLONG'      => 'Images/frames/deep.png',       // Deep frames for oblong faces
+        'DIAMOND'     => 'Images/frames/cateye.png',     // Cat-eye frames for diamond faces
+        'V-TRIANGLE'  => 'Images/frames/browline.png',   // Browline frames for V-triangle
+        'A-TRIANGLE'  => 'Images/frames/rounded-square.png', // Rounded square for A-triangle
+        'RECTANGLE'   => 'Images/frames/oval.png'        // Oval frames for rectangle faces
+    ];
+    
+    return $frameMap[$faceShape] ?? 'Images/frames/default.png';
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -654,6 +669,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         color: #2a6496;
     }
     
+    /* Virtual Try-On Styles */
+    .frame-selector {
+        max-width: 400px;
+        margin: 0 auto 20px;
+    }
+    
+    #frameOverlay {
+        z-index: 10;
+    }
+    
+    .virtual-tryon-guide {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 15px;
+        margin: 15px 0;
+        text-align: center;
+        font-size: 0.9rem;
+        color: #666;
+    }
+    
+    .tryon-tips {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+    }
+    
+    .tryon-tip {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.8rem;
+    }
+    
+    .tryon-tip i {
+        color: var(--primary);
+    }
+    
+    .position-relative {
+        position: relative;
+    }
+    
     @media (max-width: 768px) {
         .quiz-header {
             padding: 30px 0;
@@ -683,6 +741,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         .share-buttons {
             flex-wrap: wrap;
+        }
+        
+        .tryon-tips {
+            flex-direction: column;
+            gap: 10px;
         }
     }
 </style>
@@ -933,6 +996,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     
                     // Get recommended frames from database
                     $recommendedFrames = getRecommendedFrames($shapeID, 3);
+                    
+                    // Get generic frame image for virtual try-on
+                    $genericFrameImage = getGenericFrameImage($result);
                     ?>
                     
                     <?php if (!empty($recommendedFrames)): ?>
@@ -971,6 +1037,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             Please visit our store or <a href="product-gallery.php">browse all products</a>.
                         </div>
                     <?php endif; ?>
+                    
+                    <!-- Virtual Try-On Button -->
+                    <div class="text-center mt-4">
+                        <button class="btn btn-quiz" id="virtualTryOnBtn">
+                            <i class="fas fa-camera me-2"></i> Virtual Try-On
+                        </button>
+                        <div class="virtual-tryon-guide">
+                            <p><strong>See how these frames look on you in real-time!</strong></p>
+                            <div class="tryon-tips">
+                                <div class="tryon-tip">
+                                    <i class="fas fa-lightbulb"></i>
+                                    <span>Good lighting works best</span>
+                                </div>
+                                <div class="tryon-tip">
+                                    <i class="fas fa-user"></i>
+                                    <span>Position face in center</span>
+                                </div>
+                                <div class="tryon-tip">
+                                    <i class="fas fa-sync-alt"></i>
+                                    <span>Switch camera if needed</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- Primary CTA -->
@@ -1003,8 +1093,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             Shop Recommended Frames
                         </a>
                     </div>
-</div>
-
+                </div>
 
                 
                 <!-- Social Share -->
@@ -1056,6 +1145,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
     
+    <!-- Virtual Try-On Modal -->
+    <div class="camera-modal" id="virtualTryOnModal">
+        <div class="camera-container" style="max-width: 800px;">
+            <h3>Virtual Try-On</h3>
+            <p>See how these frames look on you!</p>
+            
+            <div class="frame-selector mb-3">
+                <select class="form-select" id="frameSelector">
+                    <option value="<?= htmlspecialchars($genericFrameImage) ?>">Recommended <?= htmlspecialchars($result) ?> Frame</option>
+                    <!-- Additional frames can be added here -->
+                </select>
+            </div>
+            
+            <div class="position-relative">
+                <video id="tryOnPreview" class="camera-preview" autoplay playsinline></video>
+                <canvas id="frameOverlay" class="position-absolute top-0 start-0 w-100 h-100" 
+                        style="pointer-events: none;"></canvas>
+            </div>
+            
+            <div class="camera-controls">
+                <button class="btn btn-cancel" id="closeTryOnBtn">
+                    <i class="fas fa-times me-1"></i> Close
+                </button>
+                <button class="btn btn-camera" id="switchCameraBtn">
+                    <i class="fas fa-sync-alt me-1"></i> Switch Camera
+                </button>
+            </div>
+        </div>
+    </div>
+    
     <div class="loading-overlay" id="loadingOverlay">
         <div class="loader"></div>
         <h3 id="loadingText">Analyzing your face shape...</h3>
@@ -1066,6 +1185,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+    <!-- Add TensorFlow.js and Face Detection Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-landmarks-detection@0.0.1/dist/face-landmarks-detection.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             AOS.init({
@@ -1093,9 +1215,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             const cameraPreview = document.getElementById('cameraPreview');
             const captureBtn = document.getElementById('captureBtn');
             const closeCameraBtn = document.getElementById('closeCameraBtn');
+            
+            // Virtual Try-On Elements
+            const virtualTryOnBtn = document.getElementById('virtualTryOnBtn');
+            const virtualTryOnModal = document.getElementById('virtualTryOnModal');
+            const closeTryOnBtn = document.getElementById('closeTryOnBtn');
+            const switchCameraBtn = document.getElementById('switchCameraBtn');
+            const tryOnPreview = document.getElementById('tryOnPreview');
+            const frameOverlay = document.getElementById('frameOverlay');
+            const frameSelector = document.getElementById('frameSelector');
+            
             let stream = null;
+            let tryOnStream = null;
+            let faceModel = null;
+            let isTryOnActive = false;
+            let currentFacingMode = 'user';
+            let animationFrameId = null;
             
             imagePreviewContainer.style.display = 'none';
+            
+            // Virtual Try-On Frame Data
+            const virtualTryOnFrames = [
+                {
+                    id: 'recommended_frame',
+                    name: 'Recommended <?= htmlspecialchars($result) ?> Frame',
+                    image: '<?= htmlspecialchars($genericFrameImage) ?>'
+                }
+                // Additional frames can be added here
+            ];
             
             fileInput.addEventListener('change', function() {
                 if (this.files && this.files[0]) {
@@ -1227,6 +1374,168 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             
             closeCameraBtn.addEventListener('click', closeCamera);
+            
+            // Virtual Try-On Functions
+            virtualTryOnBtn.addEventListener('click', async function() {
+                virtualTryOnModal.style.display = 'flex';
+                await startVirtualTryOn();
+            });
+            
+            closeTryOnBtn.addEventListener('click', function() {
+                stopVirtualTryOn();
+                virtualTryOnModal.style.display = 'none';
+            });
+            
+            switchCameraBtn.addEventListener('click', async function() {
+                currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+                await restartVirtualTryOn();
+            });
+            
+            async function startVirtualTryOn() {
+                try {
+                    // Load face detection model
+                    if (!faceModel) {
+                        faceModel = await faceLandmarksDetection.load(
+                            faceLandmarksDetection.SupportedPackages.mediapipeFacemesh,
+                            { maxFaces: 1 }
+                        );
+                    }
+                    
+                    // Start camera
+                    tryOnStream = await navigator.mediaDevices.getUserMedia({
+                        video: { 
+                            facingMode: currentFacingMode,
+                            width: 640,
+                            height: 480
+                        },
+                        audio: false
+                    });
+                    
+                    tryOnPreview.srcObject = tryOnStream;
+                    
+                    // Wait for video to be ready
+                    tryOnPreview.onloadedmetadata = () => {
+                        isTryOnActive = true;
+                        detectFaces();
+                    };
+                    
+                } catch (error) {
+                    console.error('Error starting virtual try-on:', error);
+                    alert('Could not start virtual try-on. Please check camera permissions.');
+                }
+            }
+            
+            function stopVirtualTryOn() {
+                isTryOnActive = false;
+                
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                    animationFrameId = null;
+                }
+                
+                if (tryOnStream) {
+                    tryOnStream.getTracks().forEach(track => track.stop());
+                    tryOnStream = null;
+                }
+                
+                // Clear canvas
+                const ctx = frameOverlay.getContext('2d');
+                ctx.clearRect(0, 0, frameOverlay.width, frameOverlay.height);
+            }
+            
+            async function restartVirtualTryOn() {
+                stopVirtualTryOn();
+                await startVirtualTryOn();
+            }
+            
+            async function detectFaces() {
+                if (!isTryOnActive) return;
+                
+                const video = tryOnPreview;
+                const canvas = frameOverlay;
+                const ctx = canvas.getContext('2d');
+                
+                // Set canvas dimensions to match video
+                if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                }
+                
+                // Clear canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Detect faces
+                const faces = await faceModel.estimateFaces({
+                    input: video,
+                    returnTensors: false,
+                    flipHorizontal: false,
+                    predictIrises: false
+                });
+                
+                // If face detected, overlay frame
+                if (faces.length > 0) {
+                    const face = faces[0];
+                    const selectedFrame = virtualTryOnFrames[0]; // Use the first frame
+                    
+                    if (selectedFrame) {
+                        await overlayFrameOnFace(ctx, face, selectedFrame.image);
+                    }
+                }
+                
+                // Continue detection
+                animationFrameId = requestAnimationFrame(detectFaces);
+            }
+            
+            async function overlayFrameOnFace(ctx, face, frameImageUrl) {
+                const video = tryOnPreview;
+                
+                // Get key facial points for eyes
+                const leftEye = face.annotations.leftEyeUpper0[0];
+                const rightEye = face.annotations.rightEyeUpper0[3];
+                const noseBottom = face.annotations.noseTip[0];
+                
+                // Calculate face dimensions
+                const eyeDistance = Math.sqrt(
+                    Math.pow(rightEye[0] - leftEye[0], 2) + 
+                    Math.pow(rightEye[1] - leftEye[1], 2)
+                );
+                
+                // Frame dimensions based on face size
+                const frameWidth = eyeDistance * 2.5;
+                const frameHeight = frameWidth * 0.4;
+                
+                // Position frame (centered on eyes, slightly above)
+                const frameX = (leftEye[0] + rightEye[0]) / 2 - frameWidth / 2;
+                const frameY = (leftEye[1] + rightEye[1]) / 2 - frameHeight / 2 - eyeDistance * 0.3;
+                
+                // Create frame image
+                const frameImg = new Image();
+                frameImg.crossOrigin = "anonymous";
+                
+                return new Promise((resolve) => {
+                    frameImg.onload = function() {
+                        // Draw frame with slight rotation based on face angle
+                        ctx.save();
+                        
+                        // Calculate rotation angle from eye positions
+                        const angle = Math.atan2(rightEye[1] - leftEye[1], rightEye[0] - leftEye[0]);
+                        const centerX = frameX + frameWidth / 2;
+                        const centerY = frameY + frameHeight / 2;
+                        
+                        ctx.translate(centerX, centerY);
+                        ctx.rotate(angle);
+                        ctx.translate(-centerX, -centerY);
+                        
+                        // Draw the frame image
+                        ctx.drawImage(frameImg, frameX, frameY, frameWidth, frameHeight);
+                        
+                        ctx.restore();
+                        resolve();
+                    };
+                    
+                    frameImg.src = frameImageUrl;
+                });
+            }
             
             ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
                 uploadArea.addEventListener(eventName, preventDefaults, false);
