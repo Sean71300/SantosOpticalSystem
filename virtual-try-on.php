@@ -73,15 +73,17 @@
     }
     
     @media (min-width: 992px) {
+      /* Train-like layout: Camera | Adjust Fit | Frames | Material+Colors */
       .main-content {
-        grid-template-columns: 260px 1fr 380px; /* left, center, right */
+        grid-template-columns: 1fr 360px 320px 300px; /* camera, adjust, frames, material/colors */
         align-items: start;
-        gap: 24px;
+        gap: 20px;
       }
-      .left-column, .center-column, .right-column { display: block; }
+      .left-column, .center-column, .frames-column, .right-column { display: block; }
       .left-column { grid-column: 1 / 2; }
       .center-column { grid-column: 2 / 3; }
-      .right-column { grid-column: 3 / 4; }
+      .frames-column { grid-column: 3 / 4; }
+      .right-column { grid-column: 4 / 5; }
     }
     
     .camera-section {
@@ -177,14 +179,17 @@
     }
     .frames-area .frame-grid {
       grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
+      gap: 10px;
     }
-    .frames-area .frame-btn { padding: 10px; }
-    .frames-area .frame-img { width: 72px; height: 48px; }
+    .frames-column .frame-btn, .frames-area .frame-btn { padding: 6px; }
+    .frames-column .frame-img, .frames-area .frame-img { width: 56px; height: 36px; }
+    .frames-column .frame-label { font-size: 11px; }
 
-    /* emphasized colors area */
-    .colors-area .card { box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
-    .colors-area .card-header { background: linear-gradient(135deg, var(--secondary), #00b3a0); }
+  /* emphasized colors area */
+  .colors-area .card { box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+  .colors-area .card-header { background: linear-gradient(135deg, var(--secondary), #00b3a0); }
+  /* frames column simple wrapper */
+  .frames-column { }
 
     /* Step badges used in place of tooltip icons */
     .step-badge {
@@ -959,6 +964,9 @@ padding: 8px;
             <div class="camera-status status-offline" id="cameraStatus">
               <span id="cameraStatusText">Camera is off</span>
             </div>
+            <div style="position:absolute; left:12px; top:48px; z-index:41;">
+              <span class="step-badge">1</span>
+            </div>
           </div>
         </div>
 
@@ -976,119 +984,128 @@ padding: 8px;
       </div>
 
       <div class="center-column">
-        </div>
-
-          <!-- Adjust Fit moved to center as step 2 -->
-          <div class="card">
-            <div class="card-header">
-              <span><i class="fas fa-sliders-h me-2"></i>Adjust Fit</span>
-              <span class="step-badge">2</span>
+        <!-- Adjust Fit moved to center as step 2 -->
+        <div class="card">
+          <div class="card-header">
+            <span><i class="fas fa-sliders-h me-2"></i>Adjust Fit</span>
+            <span class="step-badge">2</span>
+          </div>
+          <div class="card-body">
+            <div class="control-group">
+              <div class="control-label">
+                <span>Frame Size</span>
+                <span class="control-value" id="sizeValue">2.4x</span>
+              </div>
+              <input type="range" class="form-range" id="sizeSlider" min="1.8" max="3.0" step="0.1" value="2.4">
+              <small class="text-muted">Drag to make frames larger or smaller</small>
             </div>
-            <div class="card-body">
-              <div class="control-group">
-                <div class="control-label">
-                  <span>Frame Size</span>
-                  <span class="control-value" id="sizeValue">2.4x</span>
-                </div>
-                <input type="range" class="form-range" id="sizeSlider" min="1.8" max="3.0" step="0.1" value="2.4">
-                <small class="text-muted">Drag to make frames larger or smaller</small>
+            
+            <div class="control-group">
+              <div class="control-label">
+                <span>Frame Height</span>
+                <span class="control-value" id="heightValue">70%</span>
               </div>
-              
-              <div class="control-group">
-                <div class="control-label">
-                  <span>Frame Height</span>
-                  <span class="control-value" id="heightValue">70%</span>
-                </div>
-                <div class="position-controls">
-                  <button class="btn btn-outline-primary position-btn" id="heightDown">
-                    <i class="fas fa-minus"></i>
-                  </button>
-                  <span>Shorter / Taller</span>
-                  <button class="btn btn-outline-primary position-btn" id="heightUp">
-                    <i class="fas fa-plus"></i>
-                  </button>
-                </div>
-                <small class="text-muted">Adjust frame proportions</small>
+              <div class="position-controls">
+                <button class="btn btn-outline-primary position-btn" id="heightDown">
+                  <i class="fas fa-minus"></i>
+                </button>
+                <span>Shorter / Taller</span>
+                <button class="btn btn-outline-primary position-btn" id="heightUp">
+                  <i class="fas fa-plus"></i>
+                </button>
               </div>
-              
-              <div class="control-group">
-                <div class="control-label">
-                  <span>Vertical Position</span>
-                  <span class="control-value" id="positionValue">0px</span>
-                </div>
-                <div class="position-controls">
-                  <button class="btn btn-outline-primary position-btn" id="positionDown">
-                    <i class="fas fa-arrow-down"></i>
-                  </button>
-                  <span>Move Up / Down</span>
-                  <button class="btn btn-outline-primary position-btn" id="positionUp">
-                    <i class="fas fa-arrow-up"></i>
-                  </button>
-                </div>
-                <small class="text-muted">Move frames higher or lower on face</small>
+              <small class="text-muted">Adjust frame proportions</small>
+            </div>
+            
+            <div class="control-group">
+              <div class="control-label">
+                <span>Vertical Position</span>
+                <span class="control-value" id="positionValue">0px</span>
               </div>
+              <div class="position-controls">
+                <button class="btn btn-outline-primary position-btn" id="positionDown">
+                  <i class="fas fa-arrow-down"></i>
+                </button>
+                <span>Move Up / Down</span>
+                <button class="btn btn-outline-primary position-btn" id="positionUp">
+                  <i class="fas fa-arrow-up"></i>
+                </button>
+              </div>
+              <small class="text-muted">Move frames higher or lower on face</small>
             </div>
           </div>
+        </div>
+      </div>
 
+
+      <div class="frames-column">
+        <div class="card">
+          <div class="card-header">
+            <span><i class="fas fa-glasses me-2"></i>Frame Styles</span>
+            <span class="step-badge">3</span>
+          </div>
+          <div class="card-body">
+            <a href="https://santosopticalclinic.com/face-shape-detector.php" class="btn-face-shape" target="_blank">
+              <i class="fas fa-face-smile"></i>
+              <span>Discover Your Face Shape</span>
+            </a>
+            <div class="frame-grid">
+              <button class="frame-btn active" data-frame="A-TRIANGLE">
+                <img src="Images/frames/ashape-frame-removebg-preview.png" alt="A-Shape" class="frame-img">
+                <span class="frame-label">A-Shape</span>
+              </button>
+              <button class="frame-btn" data-frame="V-TRIANGLE">
+                <img src="Images/frames/vshape-frame-removebg-preview.png" alt="V-Shape" class="frame-img">
+                <span class="frame-label">V-Shape</span>
+              </button>
+              <button class="frame-btn" data-frame="ROUND">
+                <img src="Images/frames/round-frame-removebg-preview.png" alt="Round" class="frame-img">
+                <span class="frame-label">Round</span>
+              </button>
+              <button class="frame-btn" data-frame="SQUARE">
+                <img src="Images/frames/square-frame-removebg-preview.png" alt="Square" class="frame-img">
+                <span class="frame-label">Square</span>
+              </button>
+              <button class="frame-btn" data-frame="RECTANGLE">
+                <img src="Images/frames/rectangle-frame-removebg-preview.png" alt="Rectangle" class="frame-img">
+                <span class="frame-label">Rectangle</span>
+              </button>
+              <button class="frame-btn" data-frame="OBLONG">
+                <img src="Images/frames/oblong-frame-removebg-preview.png" alt="Oblong" class="frame-img">
+                <span class="frame-label">Oblong</span>
+              </button>
+              <button class="frame-btn" data-frame="DIAMOND">
+                <img src="Images/frames/diamond-frame-removebg-preview.png" alt="Diamond" class="frame-img">
+                <span class="frame-label">Diamond</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
       <div class="right-column">
-        <div class="right-column-inner">
-          <div class="frames-area">
-            <div class="card">
-              <div class="card-header">
-                <span><i class="fas fa-glasses me-2"></i>Frame Styles</span>
-                <span class="step-badge">3</span>
-              </div>
-              <div class="card-body">
-                <a href="https://santosopticalclinic.com/face-shape-detector.php" class="btn-face-shape" target="_blank">
-                  <i class="fas fa-face-smile"></i>
-                  <span>Discover Your Face Shape</span>
-                </a>
-                <div class="frame-grid">
-                  <button class="frame-btn active" data-frame="A-TRIANGLE">
-                    <img src="Images/frames/ashape-frame-removebg-preview.png" alt="A-Shape" class="frame-img">
-                    <span class="frame-label">A-Shape</span>
-                  </button>
-                  <button class="frame-btn" data-frame="V-TRIANGLE">
-                    <img src="Images/frames/vshape-frame-removebg-preview.png" alt="V-Shape" class="frame-img">
-                    <span class="frame-label">V-Shape</span>
-                  </button>
-                  <button class="frame-btn" data-frame="ROUND">
-                    <img src="Images/frames/round-frame-removebg-preview.png" alt="Round" class="frame-img">
-                    <span class="frame-label">Round</span>
-                  </button>
-                  <button class="frame-btn" data-frame="SQUARE">
-                    <img src="Images/frames/square-frame-removebg-preview.png" alt="Square" class="frame-img">
-                    <span class="frame-label">Square</span>
-                  </button>
-                  <button class="frame-btn" data-frame="RECTANGLE">
-                    <img src="Images/frames/rectangle-frame-removebg-preview.png" alt="Rectangle" class="frame-img">
-                    <span class="frame-label">Rectangle</span>
-                  </button>
-                  <button class="frame-btn" data-frame="OBLONG">
-                    <img src="Images/frames/oblong-frame-removebg-preview.png" alt="Oblong" class="frame-img">
-                    <span class="frame-label">Oblong</span>
-                  </button>
-                  <button class="frame-btn" data-frame="DIAMOND">
-                    <img src="Images/frames/diamond-frame-removebg-preview.png" alt="Diamond" class="frame-img">
-                    <span class="frame-label">Diamond</span>
-                  </button>
-                </div>
-              </div>
+        <div class="card">
+          <div class="card-header">
+            <span><i class="fas fa-cubes me-2"></i>Material Effect</span>
+            <span class="step-badge">4</span>
+          </div>
+          <div class="card-body">
+            <div class="material-controls">
+              <button class="material-btn active" data-material="Matte">Matte</button>
+              <button class="material-btn" data-material="Glossy">Glossy</button>
+              <button class="material-btn" data-material="Pattern">Pattern</button>
             </div>
           </div>
+        </div>
 
-          <div class="colors-area">
-            <div class="card">
-              <div class="card-header">
-                <span><i class="fas fa-palette me-2"></i>Colors & Materials</span>
-                <span class="step-badge">5</span>
-              </div>
-              <div class="card-body">
-                <!-- moved colors here -->
-                <div class="accordion" id="colorAccordion">
+        <div class="colors-area">
+          <div class="card">
+            <div class="card-header">
+              <span><i class="fas fa-palette me-2"></i>Colors</span>
+              <span class="step-badge">5</span>
+            </div>
+            <div class="card-body">
+              <div class="accordion" id="colorAccordion">
                   <div class="accordion-item">
                     <h2 class="accordion-header">
                       <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#classicColors" aria-expanded="true">
@@ -1194,17 +1211,7 @@ padding: 8px;
                   </div>
                 </div>
 
-                <div class="control-group mt-3">
-                  <div class="control-label">
-                    <span>Material Effect</span>
-                    <span class="step-badge">4</span>
-                  </div>
-                  <div class="material-controls">
-                    <button class="material-btn active" data-material="Matte">Matte</button>
-                    <button class="material-btn" data-material="Glossy">Glossy</button>
-                    <button class="material-btn" data-material="Pattern">Pattern</button>
-                  </div>
-                </div>
+                
               </div>
             </div>
           </div>
