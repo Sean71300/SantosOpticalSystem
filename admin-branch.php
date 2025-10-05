@@ -347,14 +347,15 @@ if ($rid !== 4) {
         // Modal handling
         document.addEventListener('DOMContentLoaded', function() {
             <?php if (isset($_POST['addBranchBtn'])): ?>
-                var addModal = new bootstrap.Modal(document.getElementById('addBranchModal'));
-                addModal.show();               
+                // Prefer showing the success modal if insert succeeded; fall back to form modal.
+                var modalEl = document.getElementById('addBranchModalSuccess') || document.getElementById('addBranchModal');
+                if (modalEl) { new bootstrap.Modal(modalEl).show(); }
             <?php elseif (isset($_POST['editBranchBtn'])): ?>
-                var editModal = new bootstrap.Modal(document.getElementById('editBranchModal'));
-                editModal.show();
+                var editModalEl = document.getElementById('editBranchModal');
+                if (editModalEl) { new bootstrap.Modal(editModalEl).show(); }
             <?php elseif (isset($_POST['deleteBranchBtn'])): ?>
-                var deleteModal = new bootstrap.Modal(document.getElementById('deleteBranchModal'));
-                deleteModal.show();
+                var deleteModalEl = document.getElementById('deleteBranchModal');
+                if (deleteModalEl) { new bootstrap.Modal(deleteModalEl).show(); }
             <?php endif; ?>
         });
     </script>
