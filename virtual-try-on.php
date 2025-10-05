@@ -102,7 +102,7 @@
       overflow: hidden;
       box-shadow: 0 10px 30px rgba(0,0,0,0.15);
       aspect-ratio: 4/3;
-      min-height: 420px; /* ensure camera appears larger on desktop */
+      min-height: 380px; /* slightly reduced so frames fit the viewport better */
     }
 
     /* CTA over camera */
@@ -385,8 +385,8 @@
     
     .frame-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
-      gap: 10px;
+      grid-template-columns: repeat(2, minmax(60px, 1fr));
+      gap: 8px;
       margin-top: 10px;
     }
 
@@ -416,7 +416,7 @@
       background: white;
       border: 2px solid var(--border);
       border-radius: 12px;
-padding: 8px;
+      padding: 6px;
       cursor: pointer;
       transition: all 0.3s ease;
       display: flex;
@@ -440,8 +440,8 @@ padding: 8px;
     }
     
     .frame-img {
-      width: 45px;
-      height: 25px;
+      width: 40px;
+      height: 24px;
       object-fit: contain;
     }
     
@@ -1019,45 +1019,48 @@ padding: 8px;
             <span class="step-badge">2</span>
           </div>
           <div class="card-body">
-            <div class="control-group text-center">
-              <div class="control-label" style="justify-content:center;">
-                <span>Frame Size</span>
-                <!-- top redundant value removed in favor of inline control under the slider -->
+            <div class="control-group">
+              <div class="control-label" style="justify-content:space-between;">
+                <div style="display:flex; align-items:center; gap:8px;"><span>Frame Size</span>
+                  <button id="sizeResetIcon" class="btn btn-outline-secondary btn-sm" title="Reset size"><i class="fas fa-undo"></i></button>
+                </div>
+                <span class="control-value" id="sizeValue">2.4x</span>
               </div>
               <!-- Visible slider centered -->
               <div style="padding: 8px 0;">
                 <input type="range" class="form-range" id="sizeSlider" min="1.8" max="3.0" step="0.1" value="2.4" aria-label="Frame size slider">
               </div>
-              <div style="margin-top:8px; display:flex; justify-content:center; gap:8px; align-items:center;">
-                <button id="sizeResetBtn" class="btn btn-outline-primary btn-sm">Reset</button>
-                <button id="sizeValueBtn" class="btn btn-primary btn-sm" aria-label="Current size">2.4x</button>
-              </div>
+              <hr />
               <small class="text-muted">Drag to change the frame size</small>
             </div>
 
             <div class="control-group">
-              <div class="control-label" style="justify-content:center;">
-                <span>Frame Height</span>
+              <div class="control-label" style="justify-content:space-between;">
+                <div style="display:flex; align-items:center; gap:8px;"><span>Frame Height</span>
+                  <button id="heightResetIcon" class="btn btn-outline-secondary btn-sm" title="Reset height"><i class="fas fa-undo"></i></button>
+                </div>
                 <span class="control-value" id="heightValue">70%</span>
               </div>
               <div class="position-controls" style="justify-content:center; gap:18px; margin-top:8px;">
                 <button class="btn btn-outline-primary position-btn" id="heightDown" aria-label="Decrease height"><i class="fas fa-minus"></i></button>
-                <span class="center-value" id="heightDisplay">70%</span>
                 <button class="btn btn-outline-primary position-btn" id="heightUp" aria-label="Increase height"><i class="fas fa-plus"></i></button>
               </div>
+              <hr />
               <small class="text-muted">Adjust frame proportions</small>
             </div>
 
             <div class="control-group">
-              <div class="control-label" style="justify-content:center;">
-                <span>Vertical Position</span>
+              <div class="control-label" style="justify-content:space-between;">
+                <div style="display:flex; align-items:center; gap:8px;"><span>Vertical Position</span>
+                  <button id="positionResetIcon" class="btn btn-outline-secondary btn-sm" title="Reset vertical position"><i class="fas fa-undo"></i></button>
+                </div>
                 <span class="control-value" id="positionValue">0px</span>
               </div>
               <div class="position-controls" style="justify-content:center; gap:18px; margin-top:8px;">
                 <button class="btn btn-outline-primary position-btn" id="positionDown" aria-label="Move down"><i class="fas fa-arrow-down"></i></button>
-                <span class="center-value" id="positionDisplay">0px</span>
                 <button class="btn btn-outline-primary position-btn" id="positionUp" aria-label="Move up"><i class="fas fa-arrow-up"></i></button>
               </div>
+              <hr />
               <small class="text-muted">Move frames higher or lower on face</small>
             </div>
           </div>
@@ -1393,13 +1396,11 @@ padding: 8px;
     function updateHeightDisplay() {
       const text = Math.round(glassesHeightRatio * 100) + '%';
       if (heightValue) heightValue.textContent = text;
-      const hd = document.getElementById('heightDisplay'); if (hd) hd.textContent = text;
     }
 
     function updatePositionDisplay() {
       const text = verticalOffset + 'px';
       if (positionValue) positionValue.textContent = text;
-      const pd = document.getElementById('positionDisplay'); if (pd) pd.textContent = text;
     }
 
     function createMaterialTexture(width, height, baseColor, materialType) {
@@ -1725,6 +1726,31 @@ padding: 8px;
     if (positionUp) {
       positionUp.addEventListener('click', () => {
         verticalOffset -= 2;
+        updatePositionDisplay();
+      });
+    }
+
+    // Reset icon handlers
+    const sizeResetIcon = document.getElementById('sizeResetIcon');
+    const heightResetIcon = document.getElementById('heightResetIcon');
+    const positionResetIcon = document.getElementById('positionResetIcon');
+    if (sizeResetIcon) {
+      sizeResetIcon.addEventListener('click', () => {
+        glassesSizeMultiplier = 2.4;
+        if (sizeSlider) sizeSlider.value = '2.4';
+        const sizeValueBtn = document.getElementById('sizeValueBtn'); if (sizeValueBtn) sizeValueBtn.textContent = '2.4x';
+        if (sizeValue) sizeValue.textContent = '2.4x';
+      });
+    }
+    if (heightResetIcon) {
+      heightResetIcon.addEventListener('click', () => {
+        glassesHeightRatio = 0.7;
+        updateHeightDisplay();
+      });
+    }
+    if (positionResetIcon) {
+      positionResetIcon.addEventListener('click', () => {
+        verticalOffset = 0;
         updatePositionDisplay();
       });
     }
