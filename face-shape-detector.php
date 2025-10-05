@@ -1,5 +1,67 @@
 <?php
 include 'ActivityTracker.php';
+require_once 'connect.php'; // This creates $link variable
+
+/**
+ * Get recommended frames for a specific face shape from the database
+ */
+function getRecommendedFrames($shapeID, $limit = 3) {
+    global $link; // Use the $link variable from connect.php
+    
+    $sql = "SELECT DISTINCT p.*, 
+            (SELECT GROUP_CONCAT(DISTINCT b.BranchName SEPARATOR ', ') 
+             FROM ProductBranchMaster pb 
+             JOIN BranchMaster b ON pb.BranchCode = b.BranchCode 
+             WHERE pb.ProductID = p.ProductID 
+             AND (pb.Avail_FL = 'Available' OR pb.Avail_FL IS NULL)
+             AND pb.Stocks > 0) as AvailableBranches,
+            (SELECT SUM(pb.Stocks) 
+             FROM ProductBranchMaster pb 
+             WHERE pb.ProductID = p.ProductID 
+             AND (pb.Avail_FL = 'Available' OR pb.Avail_FL IS NULL)) as TotalStocks,
+            br.BrandName
+            FROM productMstr p
+            LEFT JOIN brandMaster br ON p.BrandID = br.BrandID
+            LEFT JOIN archives a ON (p.ProductID = a.TargetID AND a.TargetType = 'product')
+            WHERE p.ShapeID = ?
+            AND (p.Avail_FL = 'Available' OR p.Avail_FL IS NULL)
+            AND a.ArchiveID IS NULL
+            AND p.CategoryType IN ('Frame', 'Sunglasses')
+            HAVING TotalStocks > 0
+            ORDER BY TotalStocks DESC, p.Model ASC
+            LIMIT ?";
+    
+    $stmt = mysqli_prepare($link, $sql);
+    mysqli_stmt_bind_param($stmt, "ii", $shapeID, $limit);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    
+    $frames = [];
+    while ($row = mysqli_fetch_assoc($result)) {
+        $frames[] = $row;
+    }
+    
+    mysqli_stmt_close($stmt);
+    
+    return $frames;
+}
+
+/**
+ * Map detected face shape names to database ShapeID
+ */
+function mapShapeToID($detectedShape) {
+    $shapeMap = [
+        'SQUARE'      => 5,
+        'ROUND'       => 4,
+        'OBLONG'      => 1,
+        'DIAMOND'     => 3,
+        'V-TRIANGLE'  => 2,
+        'A-TRIANGLE'  => 6,
+        'RECTANGLE'   => 7
+    ];
+    
+    return $shapeMap[$detectedShape] ?? 1;
+}
 
 // face-shape-detector.php
 $pageTitle = "What's Your Face Shape? | Santos Optical";
@@ -8,8 +70,7 @@ $result = '';
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $apiUrl = "http://69.62.77.137:5000/detect";
-    
+  $apiUrl = "http://72.60.210.48:5000/detect"; 
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $apiUrl);
     curl_setopt($ch, CURLOPT_POST, true);
@@ -163,7 +224,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             color: var(--primary);
         }
         
-        /* Results Section */
         .result-card {
             background: white;
             border-radius: 15px;
@@ -199,77 +259,207 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         .result-image {
-            width: 200px;
-            height: 200px;
+            width: 220px;
+            height: 220px;
             object-fit: cover;
-            border-radius: 12px; /* Changed from 50% to make it square with slightly rounded corners */
-            border: 5px solid white;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-            margin: 20px auto;
+            border-radius: 50%;
+            border: 6px solid white;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            margin: 25px auto;
         }
         
-        .result-details {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
+        .primary-cta {
+            background: linear-gradient(135deg, #FF3E6C, #FF6B8B);
+            border-radius: 15px;
+            padding: 30px;
             margin: 30px 0;
+            color: white;
+            text-align: center;
         }
         
-        .detail-card {
-            background: #f8fbff;
+        .primary-cta h3 {
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+        
+        .primary-cta p {
+            opacity: 0.95;
+            margin-bottom: 20px;
+        }
+        
+        .btn-shop-now {
+            background: white;
+            color: var(--primary);
+            padding: 15px 50px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            border: none;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-shop-now:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 25px rgba(0,0,0,0.3);
+            color: var(--primary);
+        }
+        
+        .recommendation {
+            background: #F8FBFF;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+            border-left: 5px solid var(--secondary);
+            text-align: left;
+        }
+        
+        .recommendation h4 {
+            color: var(--secondary);
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        
+        .recommendation-text {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .why-it-works {
+            background: white;
             border-radius: 10px;
             padding: 20px;
-            border-left: 4px solid var(--secondary);
-            text-align: left;
-            flex: 1;
+            margin-top: 20px;
         }
         
-        .detail-card h5 {
+        .why-it-works h5 {
+            color: var(--dark);
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .why-item {
+            display: flex;
+            align-items: start;
+            margin-bottom: 12px;
+        }
+        
+        .why-item i {
             color: var(--secondary);
+            margin-right: 10px;
+            margin-top: 3px;
+        }
+        
+        .frame-showcase {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
+        }
+        
+        .frame-item {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .frame-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .frame-item img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
+        
+        .frame-info {
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .frame-info h6 {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--dark);
+        }
+        
+        .frame-info p {
+            font-size: 0.9rem;
+            color: #666;
+            margin: 0;
+        }
+        
+        .fact-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+            margin-bottom: 15px;
+        }
+        
+        .fact-card h5 {
+            color: var(--primary);
             margin-bottom: 10px;
             display: flex;
             align-items: center;
             gap: 8px;
         }
         
-        .recommendation {
-            background: #F8FBFF;
-            border-radius: 12px;
-            padding: 25px;
-            margin: 30px 0;
-            position: relative;
-            border-left: 4px solid var(--secondary);
+        .fact-card p {
+            margin: 0;
+            line-height: 1.6;
         }
         
-        .frame-showcase {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            flex-wrap: wrap;
+        .social-share {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
             margin: 25px 0;
+            text-align: center;
         }
         
-        .frame-item {
-            width: 120px;
-            height: 120px;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        .social-share h5 {
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .share-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .share-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
             transition: all 0.3s ease;
+            cursor: pointer;
         }
         
-        .frame-item:hover {
-            transform: scale(1.05);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        .share-btn:hover {
+            transform: scale(1.1);
         }
         
-        .frame-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+        .share-btn.facebook { background: #1877F2; }
+        .share-btn.twitter { background: #1DA1F2; }
+        .share-btn.whatsapp { background: #25D366; }
+        .share-btn.link { background: #666; }
         
-        /* Camera Modal and other styles remain the same */
         .camera-modal {
             display: none;
             position: fixed;
@@ -343,7 +533,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(255,255,255,0.8);
+            background: rgba(255,255,255,0.95);
             display: none;
             flex-direction: column;
             justify-content: center;
@@ -352,10 +542,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         .loader {
-            width: 50px;
-            height: 50px;
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid var(--primary);
+            width: 60px;
+            height: 60px;
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid var(--primary);
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin-bottom: 20px;
@@ -454,7 +644,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         .permission-step {
             font-weight: bold;
-            color: #2a6496; /* or any highlight color you prefer */
+            color: #2a6496;
         }
         
         @media (max-width: 768px) {
@@ -480,8 +670,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 justify-content: center;
             }
             
-            .result-details {
-                flex-direction: column;
+            .frame-showcase {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+            
+            .share-buttons {
+                flex-wrap: wrap;
             }
         }
     </style>
@@ -503,11 +697,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <p class="text-center mb-4">Make sure it's clear, front-facing, and taken in good lighting. For best results, remove your glasses.</p>
             
             <div class="upload-options">
-                <div class="upload-option active" id="uploadOption">
-                    <i class="fas fa-upload"></i> Upload Photo
-                </div>
-                <div class="upload-option" id="cameraOption">
+                <div class="upload-option active" id="cameraOption">
                     <i class="fas fa-camera"></i> Take Photo
+                </div>
+                <div class="upload-option" id="uploadOption">
+                    <i class="fas fa-upload"></i> Upload Photo
                 </div>
             </div>
             
@@ -561,6 +755,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="step-number">4</div>
                         <p>Keep a neutral expression</p>
                     </div>
+                </div>
                 
                 <div class="text-center">
                     <button class="btn btn-quiz" id="openCameraBtn">
@@ -595,138 +790,243 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             <?php else: ?>
                 <div class="result-title">All done!</div>
-                    <div class="text-center mb-4" style="font-size: 1.3rem; color: var(--dark);">
-                        Your dominant face shape is <span style="font-weight: 700; color: var(--primary);"><?= htmlspecialchars($result) ?></span>
+                <div class="text-center mb-4" style="font-size: 1.3rem; color: var(--dark);">
+                    Your dominant face shape is <span style="font-weight: 700; color: var(--primary);"><?= htmlspecialchars($result) ?></span>
                 </div>
-                <div class="result-image-container">
-        <?php 
-        $shapeImages = [
-            'SQUARE'      => 'Images/faces/square-face.jpg',
-            'ROUND'       => 'Images/faces/round-face.jpg',
-            'OBLONG'      => 'Images/faces/oval-face.jpg',
-            'DIAMOND'     => 'Images/faces/diamond-face.jpg',
-            'V-TRIANGLE'  => 'Images/faces/triangle-face.jpg',
-            'A-TRIANGLE'  => 'Images/faces/triangle-soft-face.jpg',
-            'RECTANGLE'   => 'Images/faces/rectangle-face.jpg'
-        ];
-        $defaultImage = 'Images/faces/default-face.jpg';
-        $image = $shapeImages[$result] ?? $defaultImage;
-        ?>
-        <img src="<?= htmlspecialchars($image) ?>" alt="<?= htmlspecialchars($result) ?> face shape" class="result-image">
-    </div>
-
-    
-    <!-- Fun Facts Section -->
-    <div class="fun-facts" style="background: #FFF0F5; border-radius: 12px; padding: 25px; margin: 25px 0;">
-        <h4 class="text-center mb-4"><i class="fas fa-star"></i> Fun Facts About Your Face Shape</h4>
-        
-        <div class="row">
-            <div class="col-md-6">
-                <div class="fact-card mb-4" style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 3px 10px rgba(0,0,0,0.05);">
-                    <h5 style="color: var(--primary);"><i class="fas fa-user-tie"></i> Celebrity Match</h5>
-                    <p>
-                        <?php
-                        $celebrities = [
-                            'SQUARE' => "You share your face shape with strong-featured stars like Angelina Jolie and Brad Pitt!",
-                            'ROUND' => "Your face shape is similar to charming celebrities like Emma Stone and Leonardo DiCaprio!",
-                            'OBLONG' => "You have the elegant proportions seen on stars like Sarah Jessica Parker and Jude Law!",
-                            'DIAMOND' => "Your striking features match stars like Rihanna and Johnny Depp!",
-                            'V-TRIANGLE' => "You share this distinctive shape with stars like Reese Witherspoon and Chris Hemsworth!",
-                            'A-TRIANGLE' => "Your soft angles are similar to celebrities like Jennifer Aniston and Ryan Gosling!",
-                            'RECTANGLE' => "Your strong bone structure matches stars like Keira Knightley and Idris Elba!"
-                        ];
-                        echo htmlspecialchars($celebrities[$result] ?? "Your face shape is seen on many Hollywood A-listers!");
-                        ?>
-                    </p>
-                </div>
-            </div>
-            
-            <div class="col-md-6">
-                <div class="fact-card mb-4" style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 3px 10px rgba(0,0,0,0.05);">
-                    <h5 style="color: var(--primary);"><i class="fas fa-brain"></i> Personality Association</h5>
-                    <p>
-                        <?php
-                        $personalities = [
-                            'SQUARE' => "People often perceive square-faced individuals as strong-willed, decisive leaders with a practical approach to life.",
-                            'ROUND' => "Round faces are often associated with creative, kind-hearted people who value harmony and relationships.",
-                            'OBLONG' => "Oblong faces suggest intelligence, sophistication, and a balanced, methodical approach to challenges.",
-                            'DIAMOND' => "Diamond-shaped faces are linked to energetic, expressive personalities who love being the center of attention.",
-                            'V-TRIANGLE' => "V-shapes indicate dynamic, ambitious personalities with strong determination and focus.",
-                            'A-TRIANGLE' => "A-shapes suggest gentle, empathetic personalities who are great listeners and peacemakers.",
-                            'RECTANGLE' => "Rectangular faces are associated with analytical, logical thinkers who value structure and efficiency."
-                        ];
-                        echo htmlspecialchars($personalities[$result] ?? "Your face shape suggests a balanced, adaptable personality!");
-                        ?>
-                    </p>
-                </div>
-            </div>
-        </div>
-        
-        <div class="fact-card" style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 3px 10px rgba(0,0,0,0.05);">
-            <h5 style="color: var(--primary);"><i class="fas fa-lightbulb"></i> Did You Know?</h5>
-            <p>
-                <?php
-                $funfacts = [
-                    'SQUARE' => "Square faces are the rarest face shape, making up only about 9% of the population!",
-                    'ROUND' => "Round faces are considered the most youthful-looking face shape throughout life.",
-                    'OBLONG' => "Oblong faces are sometimes called the 'aristocratic' shape due to their elegant proportions.",
-                    'DIAMOND' => "Diamond faces are the most symmetrical shape, with cheekbones as the widest point.",
-                    'V-TRIANGLE' => "V-shaped faces are considered the most masculine shape, while inverted triangles are more feminine.",
-                    'A-TRIANGLE' => "A-shaped faces are sometimes called 'heart-shaped' and are associated with approachability.",
-                    'RECTANGLE' => "Rectangular faces are most common among models due to their photogenic bone structure."
-                ];
-                echo htmlspecialchars($funfacts[$result] ?? "Your unique face shape combination makes you stand out in a crowd!");
-                ?>
-            </p>
-        </div>
-    </div>
-    
                 
+                <div class="result-image-container">
+                    <?php 
+                    $shapeImages = [
+                        'SQUARE'      => 'Images/faces/square-face.jpg',
+                        'ROUND'       => 'Images/faces/round-face.jpg',
+                        'OBLONG'      => 'Images/faces/oval-face.jpg',
+                        'DIAMOND'     => 'Images/faces/diamond-face.jpg',
+                        'V-TRIANGLE'  => 'Images/faces/triangle-face.jpg',
+                        'A-TRIANGLE'  => 'Images/faces/triangle-soft-face.jpg',
+                        'RECTANGLE'   => 'Images/faces/rectangle-face.jpg'
+                    ];
+                    $defaultImage = 'Images/faces/default-face.jpg';
+                    $image = $shapeImages[$result] ?? $defaultImage;
+                    ?>
+                    <img src="<?= htmlspecialchars($image) ?>" alt="<?= htmlspecialchars($result) ?> face shape" class="result-image">
+                </div>
+                
+                <!-- Fun Facts -->
+                <div class="fun-facts" style="background: #FFF0F5; border-radius: 12px; padding: 25px; margin: 25px 0;">
+                    <h4 class="text-center mb-4"><i class="fas fa-star"></i> Fun Facts About Your Face Shape</h4>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="fact-card">
+                                <h5><i class="fas fa-user-tie"></i> Celebrity Match</h5>
+                                <p>
+                                    <?php
+                                    $celebrities = [
+                                        'SQUARE' => "You share your face shape with strong-featured stars like Angelina Jolie, Dwayne Johnson, Angel Locsin, and Dingdong Dantes!",
+                                        'ROUND' => "Your face shape is similar to charming celebrities like Selena Gomez, Leonardo DiCaprio, Nadine Lustre, and James Reid!",
+                                        'OBLONG' => "You have the elegant proportions seen on stars like Sarah Jessica Parker, Adam Levine, Liza Soberano, and Piolo Pascual!",
+                                        'DIAMOND' => "Your striking features match stars like Rihanna, Ryan Gosling, Heart Evangelista, and Alden Richards!",
+                                        'V-TRIANGLE' => "You share this distinctive shape with stars like Scarlett Johansson, Chris Hemsworth, Anne Curtis, and Coco Martin!",
+                                        'A-TRIANGLE' => "Your soft angles are similar to celebrities like Reese Witherspoon, Zac Efron, Kathryn Bernardo, and Daniel Padilla!",
+                                        'RECTANGLE' => "Your strong bone structure matches stars like Keira Knightley, Henry Cavill, Marian Rivera, and Richard Gutierrez!"
+                                    ];
+                                    echo htmlspecialchars($celebrities[$result] ?? "Your face shape is seen on many Hollywood A-listers!");
+                                    ?>
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="fact-card">
+                                <h5><i class="fas fa-lightbulb"></i> Did You Know?</h5>
+                                <p>
+                                    <?php
+                                    $funfacts = [
+                                        'SQUARE' => "Square faces are among the rarer face shapes, making up only about 9% of the population!",
+                                        'ROUND' => "Round faces are considered the most youthful-looking face shape throughout life.",
+                                        'OBLONG' => "Oblong faces are sometimes called the 'aristocratic' shape due to their elegant proportions.",
+                                        'DIAMOND' => "Diamond faces have the most symmetrical proportions, with cheekbones as the widest point.",
+                                        'V-TRIANGLE' => "V-shaped faces are associated with strong, angular features that photograph exceptionally well.",
+                                        'A-TRIANGLE' => "A-shaped faces are sometimes called 'heart-shaped' and are associated with approachability.",
+                                        'RECTANGLE' => "Rectangular faces are commonly seen among fashion models due to their photogenic bone structure."
+                                    ];
+                                    echo htmlspecialchars($funfacts[$result] ?? "Your unique face shape combination makes you stand out in a crowd!");
+                                    ?>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Frame Recommendations Section -->
                 <div class="recommendation">
                     <h4><i class="fas fa-glasses me-2"></i> Perfect Frames For You</h4>
-                    <?php
-                    $recommendations = [
-                        'SQUARE' => "Round or oval frames will soften your strong jawline and add balance to your facial features.",
-                        'ROUND' => "Angular or rectangular frames will add definition and contrast beautifully with your soft curves.",
-                        'OBLONG' => "Deep frames with decorative temples will add width and break up the length of your face.",
-                        'DIAMOND' => "Cat-eye or oval frames will emphasize your cheekbones while softening your forehead and chin.",
-                        'V-TRIANGLE' => "Frames with heavier top lines will balance your wider jawline perfectly.",
-                        'A-TRIANGLE' => "Slightly rounded square frames will complement your face proportions nicely.",
-                        'RECTANGLE' => "Oversized or round frames will help soften your angular features."
-                    ];
-                    
-                    echo '<p>'.htmlspecialchars($recommendations[$result] ?? "Our opticians recommend visiting our store for personalized frame recommendations.").'</p>';
-                    ?>
-                    
-                    <div class="frame-showcase">
+                    <p class="recommendation-text">
                         <?php
-                        $frameExamples = [
-                            'SQUARE' => ['round-frame1.jpg', 'oval-frame1.jpg', 'round-frame2.jpg'],
-                            'ROUND' => ['rectangular-frame1.jpg', 'square-frame1.jpg', 'wayfarer-frame1.jpg'],
-                            'OBLONG' => ['browline-frame1.jpg', 'decorative-frame1.jpg', 'aviator-frame1.jpg'],
-                            'DIAMOND' => ['cateye-frame1.jpg', 'oval-frame2.jpg', 'butterfly-frame1.jpg'],
-                            'V-TRIANGLE' => ['browline-frame2.jpg', 'clubmaster-frame1.jpg', 'halfrim-frame1.jpg'],
-                            'A-TRIANGLE' => ['rounded-square1.jpg', 'rounded-square2.jpg', 'wayfarer-frame2.jpg'],
-                            'RECTANGLE' => ['round-frame3.jpg', 'oval-frame3.jpg', 'oversized-frame1.jpg']
+                        $recommendations = [
+                            'SQUARE' => "Round or oval frames will soften your strong jawline and add balance to your facial features.",
+                            'ROUND' => "Angular or rectangular frames will add definition and contrast beautifully with your soft curves.",
+                            'OBLONG' => "Deep frames with decorative temples will add width and break up the length of your face.",
+                            'DIAMOND' => "Cat-eye or oval frames will emphasize your cheekbones while softening your forehead and chin.",
+                            'V-TRIANGLE' => "Frames with heavier top lines will balance your wider jawline perfectly.",
+                            'A-TRIANGLE' => "Slightly rounded square frames will complement your face proportions nicely.",
+                            'RECTANGLE' => "Oversized or round frames will help soften your angular features."
+                        ];
+                        echo htmlspecialchars($recommendations[$result] ?? "Our opticians recommend visiting our store for personalized frame recommendations.");
+                        ?>
+                    </p>
+                    
+                    <div class="why-it-works">
+                        <h5><i class="fas fa-lightbulb"></i> Why This Works</h5>
+                        <?php
+                        $whyItWorks = [
+                            'SQUARE' => [
+                                "Curved frames counterbalance your angular jaw",
+                                "Soft shapes create visual harmony",
+                                "Wider frames add proportion to your strong features"
+                            ],
+                            'ROUND' => [
+                                "Angular frames add structure to soft features",
+                                "Rectangular shapes create length",
+                                "Sharp lines provide visual contrast"
+                            ],
+                            'OBLONG' => [
+                                "Deeper frames add width to long faces",
+                                "Decorative details draw attention horizontally",
+                                "Oversized styles balance facial proportions"
+                            ],
+                            'DIAMOND' => [
+                                "Cat-eyes accentuate your best feature (cheekbones)",
+                                "Curves soften narrow forehead and chin",
+                                "Rimless options highlight natural beauty"
+                            ],
+                            'V-TRIANGLE' => [
+                                "Top-heavy frames balance wider jaw",
+                                "Decorative upper portions draw eyes up",
+                                "Bold brows add width to forehead"
+                            ],
+                            'A-TRIANGLE' => [
+                                "Rounded squares balance all proportions",
+                                "Soft angles complement natural curves",
+                                "Medium width frames suit delicate features"
+                            ],
+                            'RECTANGLE' => [
+                                "Round frames soften strong angles",
+                                "Oversized styles add presence",
+                                "Curved shapes create facial balance"
+                            ]
                         ];
                         
-                        $frames = $frameExamples[$result] ?? ['classic-frame1.jpg', 'classic-frame2.jpg', 'classic-frame3.jpg'];
-                        
-                        foreach ($frames as $frame) {
-                            echo '<div class="frame-item">';
-                            echo '<img src="Images/frames/'.htmlspecialchars($frame).'" alt="Recommended frame">';
-                            echo '</div>';
+                        $reasons = $whyItWorks[$result] ?? ["Professional fitting ensures optimal comfort and appearance"];
+                        foreach ($reasons as $reason) {
+                            echo '<div class="why-item"><i class="fas fa-check-circle"></i><span>'.htmlspecialchars($reason).'</span></div>';
                         }
                         ?>
+                    </div>
+                    
+                    <?php
+                    // Get the ShapeID for the detected face shape
+                    $shapeID = mapShapeToID($result);
+                    
+                    // Get recommended frames from database
+                    $recommendedFrames = getRecommendedFrames($shapeID, 3);
+                    ?>
+                    
+                    <?php if (!empty($recommendedFrames)): ?>
+                        <div class="frame-showcase">
+                            <?php foreach ($recommendedFrames as $frame): ?>
+                                <?php
+                                // Format price
+                                $price = $frame['Price'];
+                                $numeric_price = preg_replace('/[^0-9.]/', '', $price);
+                                $formatted_price = is_numeric($numeric_price) ? '₱' . number_format((float)$numeric_price, 2) : '₱0.00';
+                                
+                                // Determine style description based on category
+                                $styleDesc = ($frame['CategoryType'] === 'Sunglasses') ? 'Sunglasses' : $frame['Material'];
+                                ?>
+                                
+                                <div class="frame-item" onclick="window.location.href='product-gallery.php?page=1&shape=<?php echo $shapeID; ?>'">
+                                    <img src="<?php echo htmlspecialchars($frame['ProductImage']); ?>" 
+                                         alt="<?php echo htmlspecialchars($frame['Model']); ?>">
+                                    <div class="frame-info">
+                                        <h6><?php echo htmlspecialchars($frame['Model']); ?></h6>
+                                        <p><?php echo htmlspecialchars($styleDesc); ?></p>
+                                        <p class="text-muted small"><?php echo htmlspecialchars($formatted_price); ?></p>
+                                        <?php if ($frame['AvailableBranches']): ?>
+                                            <p class="text-success small">
+                                                <i class="fas fa-check-circle"></i> In Stock
+                                            </p>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php else: ?>
+                        <div class="alert alert-info mt-3">
+                            <i class="fas fa-info-circle"></i> 
+                            We're currently updating our inventory for your face shape. 
+                            Please visit our store or <a href="product-gallery.php">browse all products</a>.
+                        </div>
+                    <?php endif; ?>
+                </div>
+                
+                <!-- Primary CTA -->
+                <div class="primary-cta container my-5">
+                    <div class="card text-center border-0 shadow-sm rounded-4 p-4 p-md-5" 
+                        style="background-color: var(--light); color: var(--dark);">
+
+                        <h3 class="fw-semibold mb-3" style="color: var(--dark);">
+                            <i class="fas fa-shopping-bag me-2" style="color: var(--primary);"></i>
+                            Ready to Find Your Perfect Frames?
+                        </h3>
+
+                        <p class="mb-4" style="color: var(--dark);">
+                            Explore our curated collection designed specifically for 
+                            <span style="font-weight: 600; color: var(--primary);">
+                                <?= htmlspecialchars($result) ?>
+                            </span> face shapes.
+                        </p>
+
+                        <?php
+                        $shapeID = mapShapeToID($result);
+                        $shopUrl = 'product-gallery.php?page=1&shape=' . $shapeID;
+                        ?>
+
+                        <a href="<?= htmlspecialchars($shopUrl) ?>" 
+                        class="btn px-4 py-2 rounded-pill fw-semibold"
+                        style="background-color: var(--primary); color: #fff; transition: background-color 0.3s ease;"
+                        onmouseover="this.style.backgroundColor='var(--primary-dark)'"
+                        onmouseout="this.style.backgroundColor='var(--primary)'">
+                            Shop Recommended Frames
+                        </a>
+                    </div>
+</div>
+
+
+                
+                <!-- Social Share -->
+                <div class="social-share">
+                    <h5><i class="fas fa-share-alt me-2"></i> Share This Face Shape Tool</h5>
+                    <p style="font-size: 0.9rem; color: #666; margin-bottom: 15px;">Help your friends find their perfect frames too!</p>
+                    <div class="share-buttons">
+                        <div class="share-btn facebook" onclick="shareResults('facebook')" title="Share on Facebook">
+                            <i class="fab fa-facebook-f"></i>
+                        </div>
+                        <div class="share-btn twitter" onclick="shareResults('twitter')" title="Share on Twitter">
+                            <i class="fab fa-twitter"></i>
+                        </div>
+                        <div class="share-btn whatsapp" onclick="shareResults('whatsapp')" title="Share on WhatsApp">
+                            <i class="fab fa-whatsapp"></i>
+                        </div>
+                        <div class="share-btn link" onclick="copyLink()" title="Copy Link">
+                            <i class="fas fa-link"></i>
+                        </div>
                     </div>
                 </div>
                 
                 <div class="d-flex justify-content-center gap-3 mt-4">
-                    <a href="product-gallery.php" class="btn btn-quiz">
-                        <i class="fas fa-shopping-bag me-2"></i> Shop Frames
-                    </a>
                     <a href="face-shape-detector.php" class="btn btn-quiz btn-outline">
-                        <i class="fas fa-redo me-2"></i> Try Again
+                        <i class="fas fa-redo me-2"></i> Analyze Another Photo
                     </a>
                 </div>
             <?php endif; ?>
@@ -771,7 +1071,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 once: true
             });
             
-            // File upload elements
             const fileInput = document.getElementById('fileInput');
             const uploadArea = document.getElementById('uploadArea');
             const uploadPrompt = document.getElementById('uploadPrompt');
@@ -782,7 +1081,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             const analyzeBtn = document.getElementById('analyzeBtn');
             const loadingOverlay = document.getElementById('loadingOverlay');
             
-            // Camera elements
             const uploadOption = document.getElementById('uploadOption');
             const cameraOption = document.getElementById('cameraOption');
             const fileUploadSection = document.getElementById('fileUploadSection');
@@ -794,14 +1092,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             const closeCameraBtn = document.getElementById('closeCameraBtn');
             let stream = null;
             
-            // Initialize
             imagePreviewContainer.style.display = 'none';
             
-            // File selection handler
             fileInput.addEventListener('change', function() {
                 if (this.files && this.files[0]) {
                     const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
-                    const maxSize = 5 * 1024 * 1024; // 5MB
+                    const maxSize = 5 * 1024 * 1024;
                     
                     if (!validTypes.includes(this.files[0].type)) {
                         alert('Please upload a JPEG or PNG image');
@@ -824,7 +1120,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             });
             
-            // Change image button
             changeImageBtn.addEventListener('click', function() {
                 fileInput.value = '';
                 uploadPrompt.style.display = 'block';
@@ -832,17 +1127,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 analyzeBtn.disabled = true;
             });
             
-            // Click on upload area
             uploadArea.addEventListener('click', function() {
                 fileInput.click();
             });
             
-            // Form submission
             quizForm.addEventListener('submit', function(e) {
                 e.preventDefault();
                 loadingOverlay.style.display = 'flex';
                 
-                // Simulate analysis steps for demo purposes
                 const loadingPhrases = [
                     "Detecting facial features...",
                     "Measuring proportions...",
@@ -861,13 +1153,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                 }, 1500);
                 
-                // Submit the form
                 setTimeout(() => {
                     this.submit();
                 }, 6000);
             });
             
-            // Toggle between upload and camera options
             uploadOption.addEventListener('click', function() {
                 this.classList.add('active');
                 cameraOption.classList.remove('active');
@@ -882,7 +1172,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 cameraSection.style.display = 'block';
             });
             
-            // Open camera modal
             openCameraBtn.addEventListener('click', async function() {
                 cameraModal.style.display = 'flex';
                 
@@ -899,42 +1188,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             });
             
-            // Capture photo
             captureBtn.addEventListener('click', function() {
                 const canvas = document.createElement('canvas');
                 canvas.width = cameraPreview.videoWidth;
                 canvas.height = cameraPreview.videoHeight;
                 const ctx = canvas.getContext('2d');
                 
-                // Draw video frame to canvas
                 ctx.drawImage(cameraPreview, 0, 0, canvas.width, canvas.height);
                 
-                // Convert to data URL and create file
                 canvas.toBlob(function(blob) {
                     const file = new File([blob], 'capture.jpg', { type: 'image/jpeg' });
                     
-                    // Create a fake FileList
                     const dataTransfer = new DataTransfer();
                     dataTransfer.items.add(file);
                     
-                    // Assign to file input
                     fileInput.files = dataTransfer.files;
                     
-                    // Show in preview
                     previewImage.src = URL.createObjectURL(blob);
                     uploadPrompt.style.display = 'none';
                     imagePreviewContainer.style.display = 'block';
                     analyzeBtn.disabled = false;
                     
-                    // Switch back to upload view
                     uploadOption.click();
                 }, 'image/jpeg');
                 
-                // Close camera
                 closeCamera();
             });
             
-            // Close camera
             function closeCamera() {
                 if (stream) {
                     stream.getTracks().forEach(track => track.stop());
@@ -945,7 +1225,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             closeCameraBtn.addEventListener('click', closeCamera);
             
-            // Drag and drop functionality
             ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
                 uploadArea.addEventListener(eventName, preventDefaults, false);
             });
@@ -986,6 +1265,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
         });
+        
+        function shareResults(platform) {
+            const url = window.location.href;
+            const text = "I just discovered my face shape! Find yours too at Santos Optical.";
+            
+            switch(platform) {
+                case 'facebook':
+                    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+                    break;
+                case 'twitter':
+                    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+                    break;
+                case 'whatsapp':
+                    window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`, '_blank');
+                    break;
+            }
+        }
+        
+        function copyLink() {
+            const url = window.location.href;
+            navigator.clipboard.writeText(url).then(() => {
+                alert('Link copied to clipboard!');
+            }).catch(() => {
+                alert('Failed to copy link');
+            });
+        }
     </script>
 </body>
 </html>

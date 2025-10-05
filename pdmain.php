@@ -202,42 +202,7 @@
         </div>
     </div>
 
-    <footer class="py-5 border-top mt-5 pt-4" style="background-color: #ffffff; margin-top: 50px; border-color: #ffffff;">
-        <div class="container">
-            <div class="row text-center text-md-start">
-                <div class="col-md-3 mb-3 mb-md-0 text-center">
-                    <img src="Images/logo.png" alt="Logo" width="200">
-                </div>
-
-                <div class="col-md-3 mb-3 mb-md-0">
-                    <h6 class="fw-bold">PRODUCTS</h6>
-                    <ul class="list-unstyled">
-                        <li><a href="#" class="text-dark text-decoration-none">Frames</a></li>
-                        <li><a href="#" class="text-dark text-decoration-none">Sunglasses</a></li>
-                    </ul>
-                </div>
-
-                <div class="col-md-3 mb-3 mb-md-0">
-                    <h6 class="fw-bold">About</h6>
-                    <ul class="list-unstyled">
-                        <li><a href="aboutus.php" class="text-dark text-decoration-none">About Us</a></li>
-                        <li><a href="ourservices.php" class="text-dark text-decoration-none">Services</a></li>
-                    </ul>
-                </div>
-
-                <div class="col-md-3">
-                    <h6 class="fw-bold">CONTACT US!</h6>
-                    <p class="mb-1">Address: #6 Rizal Avenue Extension, Brgy. San Agustin, Malabon City</p>
-                    <p class="mb-1">Phone: 027-508-4792</p>
-                    <p class="mb-1">Cell: 0932-844-7068</p>
-                    <p>Email: <a href="mailto:Santosoptical@gmail.com" class="text-dark">Santosoptical@gmail.com</a></p>
-                </div>
-            </div>
-            <div class="container-fluid text-center py-3" style="background-color: white">
-                <p class="m-0">COPYRIGHT &copy; SANTOS OPTICAL co., ltd. ALL RIGHTS RESERVED.</p>
-            </div>
-        </div>
-    </footer>
+    <?php include 'footer.php'; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>

@@ -87,6 +87,14 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
             .sortable.active .sort-icon {
                 display: inline-block;                
             }
+
+            /* Wider modal for Super Admin profile (adds ~1-2 columns vs modal-xl) */
+            @media (min-width: 1200px) {
+                .modal-dialog.modal-xxl-sa { max-width: 1240px; }
+            }
+            @media (min-width: 1400px) {
+                .modal-dialog.modal-xxl-sa { max-width: 1320px; }
+            }
         </style>
     </head>
     <body>
@@ -97,9 +105,11 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
             <div class="table-container">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h1><i class="fas fa-user-plus ms-2"></i> Customer Records</h1>
+                    <?php $rid = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0; if (in_array($rid, [1,4], true)) : ?>
                     <button class="btn btn-primary" id="newCustomerBtn" type="button">
                         <i class="fas fa-plus me-2"></i> New Customer
                     </button>
+                    <?php endif; ?>
                 </div>
                 
                 <div class="table-instructions alert alert-info" style="margin-bottom: 20px; padding: 10px 15px; border-radius: 4px;">
@@ -158,6 +168,7 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
+                        <div style="max-height:65vh; overflow-y:auto;">
                         <table class="table">
                             <thead>
                                 <tr>
@@ -171,6 +182,7 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                                 <!-- Orders will be populated here by JavaScript -->
                             </tbody>
                         </table>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -225,7 +237,7 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
 
         <!-- Customer Profile / Edit modal (centered large dialog) -->
         <div class="modal fade" id="profileModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-dialog modal-xl modal-dialog-centered <?php echo (isset($_SESSION['roleid']) && $_SESSION['roleid'] === 4) ? 'modal-xxl-sa' : ''; ?>">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="profileModalTitle">Customer Profile</h5>
@@ -549,11 +561,13 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                                         <form id="medicalRecordFormInline" method="post" action="medical-records-funcs.php">
                                             <input type="hidden" name="customerID" value="${cid}">
                                             <div class="row mb-2">
-                                                <div class="col-md-4">
+                                                <div class="col-12">
                                                     <label class="form-label">Visit Date</label>
                                                     <input type="date" name="visit_date" class="form-control" required value="${new Date().toISOString().split('T')[0]}">
                                                 </div>
-                                                <div class="col-md-8">
+                                            </div>
+                                            <div class="row mb-2">
+                                                <div class="col-12">
                                                     <label class="form-label">Eye Condition</label>
                                                     <input type="text" name="eye_condition" class="form-control">
                                                 </div>
@@ -796,11 +810,13 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                         <form id="medicalRecordFormInline" method="post" action="medical-records-funcs.php">
                             <input type="hidden" name="customerID" value="${customerID}">
                             <div class="row mb-2">
-                                <div class="col-md-4">
+                                <div class="col-12">
                                     <label class="form-label">Visit Date</label>
                                     <input type="date" name="visit_date" class="form-control" required value="${new Date().toISOString().split('T')[0]}">
                                 </div>
-                                <div class="col-md-8">
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-12">
                                     <label class="form-label">Eye Condition</label>
                                     <input type="text" name="eye_condition" class="form-control">
                                 </div>
