@@ -290,7 +290,7 @@ if ($rid !== 4) {
         <div class="main-content">
             <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
                 <h1><i class="fas fa-boxes me-2"></i> Branches</h1>
-                <button class="btn btn-primary" name="addBranchBtn">
+                <button class="btn btn-primary" id="addBranchBtn" data-bs-toggle="modal" data-bs-target="#addBranchModal" type="button">
                     <i class="fas fa-plus me-2"></i> Add New Branch
                 </button>            
             </div>
@@ -319,6 +319,11 @@ if ($rid !== 4) {
                 </table>
             </div>
         </div>
+
+        <?php
+            // Render the Add Branch modal HTML so it can be opened client-side
+            addBranch();
+        ?>
 
         <?php
             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
