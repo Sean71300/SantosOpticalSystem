@@ -818,6 +818,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="row">
                         <div class="col-md-6">
                             <div class="fact-card">
+                                <h5><i class="fas fa-user-tie"></i> Celebrity Match</h5>
+                                <p>
+                                    <?php
+                                    $celebrities = [
+                                        'SQUARE' => "You share your face shape with strong-featured stars like Angelina Jolie, Dwayne Johnson, Angel Locsin, and Dingdong Dantes!",
+                                        'ROUND' => "Your face shape is similar to charming celebrities like Selena Gomez, Leonardo DiCaprio, Nadine Lustre, and James Reid!",
+                                        'OBLONG' => "You have the elegant proportions seen on stars like Sarah Jessica Parker, Adam Levine, Liza Soberano, and Piolo Pascual!",
+                                        'DIAMOND' => "Your striking features match stars like Rihanna, Ryan Gosling, Heart Evangelista, and Alden Richards!",
+                                        'V-TRIANGLE' => "You share this distinctive shape with stars like Scarlett Johansson, Chris Hemsworth, Anne Curtis, and Coco Martin!",
+                                        'A-TRIANGLE' => "Your soft angles are similar to celebrities like Reese Witherspoon, Zac Efron, Kathryn Bernardo, and Daniel Padilla!",
+                                        'RECTANGLE' => "Your strong bone structure matches stars like Keira Knightley, Henry Cavill, Marian Rivera, and Richard Gutierrez!"
+                                    ];
+                                    echo htmlspecialchars($celebrities[$result] ?? "Your face shape is seen on many Hollywood A-listers!");
+                                    ?>
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="fact-card">
                                 <h5><i class="fas fa-lightbulb"></i> Did You Know?</h5>
                                 <p>
                                     <?php
