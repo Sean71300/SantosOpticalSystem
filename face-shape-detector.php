@@ -211,9 +211,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     
     .btn-quiz:hover {
-        background: #FF2B5D;
+        background: linear-gradient(135deg, #00b3a0, var(--secondary));
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(255, 62, 108, 0.4);
+        box-shadow: 0 6px 20px rgba(0, 200, 179, 0.4);
         color: white;
     }
     
