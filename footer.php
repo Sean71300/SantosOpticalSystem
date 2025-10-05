@@ -279,6 +279,11 @@
                                 </a>
                             </li>
                             <li class="mb-2">
+                                <a href="virtual-try-on.php" class="footer-link text-decoration-none">
+                                    <i class="fas fa-glasses ms-1"></i>Virtual Try-On
+                                </a>
+                            </li>
+                            <li class="mb-2">
                                 <a href="trackorder.php" class="footer-link text-decoration-none">
                                     <i class="fas fa-shipping-fast me-2"></i>Track Your Order
                                 </a>
