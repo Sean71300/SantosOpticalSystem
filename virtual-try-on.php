@@ -103,15 +103,14 @@
     }
     
       .camera-container {
-        position: relative;
-        background: black;
-        border-radius: 20px;
-        overflow: hidden;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-        /* Use portrait 9:16 aspect to emulate a selfie screen */
-        aspect-ratio: 9/16;
-        min-height: 640px; /* ensure enough vertical room for a portrait canvas */
-      }
+      position: relative;
+      background: black;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      aspect-ratio: 4/3;
+      min-height: 340px; /* slightly reduced so frames fit the viewport better and right column gains space */
+    }
 
     /* CTA over camera */
     .camera-cta {
@@ -234,9 +233,7 @@
     video, canvas {
       width: 100%;
       height: 100%;
-      /* keep original pixel aspect; do not auto-fit/zoom/stretch */
-      object-fit: none;
-      object-position: center center;
+      object-fit: cover;
       display: block;
     }
     
@@ -1366,9 +1363,6 @@
     let verticalOffset = 0;
     let currentFrame = 'A-TRIANGLE';
     let currentColor = '#1a1a1a';
-  // Destination rect inside the fixed canvas where the video image is drawn (in device pixels)
-  // We compute this per-frame in onResults so the video is "contained" (no auto-zoom/cover).
-  let drawDest = { x: 0, y: 0, w: 0, h: 0 };
     let currentColorName = 'Matte Black';
     let currentMaterial = 'Matte';
 
@@ -1495,24 +1489,21 @@
     }
 
     function drawGlasses(landmarks) {
-  const leftEye = landmarks[33];
-  const rightEye = landmarks[263];
+      const leftEye = landmarks[33];
+      const rightEye = landmarks[263];
       let headAngle = calculateHeadAngle(landmarks);
       
       if (isCalibrated) headAngle += angleOffset;
       
-      // Map normalized landmark coordinates into the drawDest rectangle (which holds the contained video)
-      const lx = drawDest.x + leftEye.x * drawDest.w;
-      const ly = drawDest.y + leftEye.y * drawDest.h;
-      const rx = drawDest.x + rightEye.x * drawDest.w;
-      const ry = drawDest.y + rightEye.y * drawDest.h;
-
-      const eyeDist = Math.hypot(rx - lx, ry - ly);
+      const eyeDist = Math.hypot(
+        rightEye.x * canvasElement.width - leftEye.x * canvasElement.width,
+        rightEye.y * canvasElement.height - leftEye.y * canvasElement.height
+      );
 
       const glassesWidth = eyeDist * glassesSizeMultiplier;
       const glassesHeight = glassesWidth * glassesHeightRatio;
-      let centerX = (lx + rx) / 2;
-      let centerY = (ly + ry) / 2;
+      let centerX = (leftEye.x * canvasElement.width + rightEye.x * canvasElement.width) / 2;
+      let centerY = (leftEye.y * canvasElement.height + rightEye.y * canvasElement.height) / 2;
       centerY += verticalOffset;
 
       if (centerX > 0 && centerY > 0 && glassesWidth > 10 && glassesImages[currentFrame]) {
@@ -1561,29 +1552,10 @@
       frameCount++;
       if (isMobile && frameCount % 3 !== 0) return;
 
-  isProcessing = true;
-  canvasCtx.save();
-  canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-
-  // Draw the incoming image into the fixed canvas using "contain" scaling so it never auto-zooms.
-  const img = results.image;
-  const imgW = img.width || img.videoWidth || canvasElement.width;
-  const imgH = img.height || img.videoHeight || canvasElement.height;
-
-  // compute scale to contain image inside canvas while preserving aspect
-  const scale = Math.min(canvasElement.width / imgW, canvasElement.height / imgH);
-  const drawW = Math.round(imgW * scale);
-  const drawH = Math.round(imgH * scale);
-  const drawX = Math.round((canvasElement.width - drawW) / 2);
-  const drawY = Math.round((canvasElement.height - drawH) / 2);
-
-  // remember dest rect (in device pixels) for mapping normalized landmarks to canvas coordinates
-  drawDest.x = drawX;
-  drawDest.y = drawY;
-  drawDest.w = drawW;
-  drawDest.h = drawH;
-
-  canvasCtx.drawImage(img, 0, 0, imgW, imgH, drawX, drawY, drawW, drawH);
+      isProcessing = true;
+      canvasCtx.save();
+      canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+      canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
 
       if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
         faceTrackingActive = true;
@@ -1600,24 +1572,9 @@
     }
 
     function resizeCanvasToDisplay() {
-      // Fix the render buffer to a 9:16 selfie resolution (1080x1920) for consistent proportions
-      const DPR = window.devicePixelRatio || 1;
-      const targetWidth = 1080; // logical pixels
-      const targetHeight = 1920;
-      canvasElement.width = Math.round(targetWidth * DPR);
-      canvasElement.height = Math.round(targetHeight * DPR);
-      // keep CSS sizing responsive — make canvas fill its container while preserving aspect
-      canvasElement.style.width = '100%';
-      canvasElement.style.height = '100%';
-      // update drawing context scale
-      canvasCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
-
-      // initialize drawDest to centered contain area (assume video has a natural aspect similar to the stream)
-      // Default to full canvas until first frame arrives; onResults will compute precise contain rect.
-      drawDest.x = 0;
-      drawDest.y = 0;
-      drawDest.w = canvasElement.width; // in device pixels
-      drawDest.h = canvasElement.height;
+      const container = canvasElement.parentElement;
+      canvasElement.width = container.clientWidth;
+      canvasElement.height = container.clientHeight;
     }
 
     async function initializeFaceMesh() {
@@ -1668,42 +1625,17 @@
 
     // Snapshot functionality (reusable)
     function showSnapshotFromCanvas() {
-      // Produce a portrait 'selfie' snapshot (center-cropped) with good resolution.
-      // Mobile: 1080 x 1350 (4:5). Desktop: larger 1600 x 2000 (4:5) to keep quality.
+      // Create a higher-resolution snapshot so saved images are good size
       const snapshotCanvas = document.createElement('canvas');
-      const targetWidth = isMobile ? 1080 : 1600;
-      const targetHeight = Math.round(targetWidth * 5 / 4); // 4:5 portrait
+      // Prefer at least 800px wide or twice the display canvas width for better quality
+      const targetWidth = Math.round(Math.max(800, canvasElement.width * 2));
+      const aspect = canvasElement.width && canvasElement.height ? (canvasElement.height / canvasElement.width) : (3/4);
+      const targetHeight = Math.round(targetWidth * aspect);
       snapshotCanvas.width = targetWidth;
       snapshotCanvas.height = targetHeight;
       const ctx = snapshotCanvas.getContext('2d');
-
-      // Cover-crop: determine source crop rectangle that matches target aspect ratio
-      const srcW = canvasElement.width;
-      const srcH = canvasElement.height;
-      const targetAspect = targetWidth / targetHeight;
-      let sx = 0, sy = 0, sWidth = srcW, sHeight = srcH;
-
-      if (srcW > 0 && srcH > 0) {
-        const srcAspect = srcW / srcH;
-        if (srcAspect > targetAspect) {
-          // source is wider -> crop left/right
-          sHeight = srcH;
-          sWidth = Math.round(srcH * targetAspect);
-          sx = Math.round((srcW - sWidth) / 2);
-          sy = 0;
-        } else {
-          // source is taller -> crop top/bottom
-          sWidth = srcW;
-          sHeight = Math.round(srcW / targetAspect);
-          sx = 0;
-          sy = Math.round((srcH - sHeight) / 2);
-        }
-      }
-
-      // Draw cropped source into the target canvas, scaling to fit
-      ctx.fillStyle = '#fff';
-      ctx.fillRect(0, 0, targetWidth, targetHeight);
-      ctx.drawImage(canvasElement, sx, sy, sWidth, sHeight, 0, 0, targetWidth, targetHeight);
+      // drawImage will scale the current display canvas into the larger snapshot canvas
+      ctx.drawImage(canvasElement, 0, 0, snapshotCanvas.width, snapshotCanvas.height);
 
       const dataUrl = snapshotCanvas.toDataURL('image/png');
       snapshotImage.src = dataUrl;
