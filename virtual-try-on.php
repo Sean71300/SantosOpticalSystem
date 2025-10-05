@@ -590,6 +590,23 @@
       justify-content: space-between;
       align-items: center;
     }
+
+    /* Center labels and helper text for Adjust Fit column */
+    .center-column .control-label {
+      justify-content: center !important;
+      gap: 10px;
+      text-align: center;
+    }
+    .center-column .card-body small.text-muted {
+      display: block;
+      text-align: center;
+      margin-top: 8px;
+      color: #6c757d;
+    }
+    .center-column .control-value {
+      display: inline-block;
+      margin-left: 8px;
+    }
     
     .control-value {
       font-weight: 700;
