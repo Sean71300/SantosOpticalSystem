@@ -55,6 +55,18 @@
     .btn-primary:disabled {
       background-color: #6c757d;
     }
+    .btn-outline-primary {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .btn-outline-primary:hover {
+      background-color: var(--primary);
+      color: white;
+    }
+    .btn-sm {
+      padding: 8px 12px;
+      font-size: 14px;
+    }
     .frame-btn {
       width: 70px;
       height: 70px;
@@ -110,10 +122,10 @@
       color: #666;
       margin-top: 10px;
     }
-    .size-controls {
+    .controls-container {
       background: #e9ecef;
       border-radius: 8px;
-      padding: 10px;
+      padding: 15px;
       margin: 10px 0;
     }
     .frame-selector {
@@ -129,6 +141,25 @@
       color: #333;
       margin-bottom: 10px;
     }
+    .control-group {
+      margin-bottom: 10px;
+    }
+    .control-label {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+    .height-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 5px;
+    }
+    .height-value {
+      min-width: 40px;
+      font-weight: bold;
+    }
   </style>
 </head>
 
@@ -141,14 +172,23 @@
       <canvas id="outputCanvas"></canvas>
     </div>
 
-    <div class="size-controls d-none" id="sizeControls">
-      <div class="row align-items-center">
-        <div class="col">
-          <label class="form-label"><small>Glasses Size:</small></label>
-          <input type="range" class="form-range" id="sizeSlider" min="1.8" max="3.0" step="0.1" value="2.4">
-        </div>
-        <div class="col-auto">
-          <small id="sizeValue">2.4x</small>
+    <div class="controls-container d-none" id="controlsContainer">
+      <div class="control-group">
+        <div class="control-label">Glasses Size</div>
+        <input type="range" class="form-range" id="sizeSlider" min="1.8" max="3.0" step="0.1" value="2.4">
+        <small id="sizeValue">2.4x</small>
+      </div>
+      
+      <div class="control-group">
+        <div class="control-label">Glasses Height</div>
+        <div class="height-controls">
+          <button class="btn btn-outline-primary btn-sm" id="heightDown">
+            <i class="bi bi-dash"></i>
+          </button>
+          <span class="height-value" id="heightValue">70%</span>
+          <button class="btn btn-outline-primary btn-sm" id="heightUp">
+            <i class="bi bi-plus"></i>
+          </button>
         </div>
       </div>
     </div>
@@ -191,6 +231,9 @@
       <button id="startBtn" class="btn btn-primary px-4">
         <i class="bi bi-camera me-2"></i>Start Camera
       </button>
+      <button id="calibrateBtn" class="btn btn-outline-primary px-4 ms-2 d-none">
+        <i class="bi bi-arrow-clockwise me-2"></i>Recalibrate
+      </button>
     </div>
 
     <div class="loading-spinner" id="loadingSpinner"></div>
@@ -219,9 +262,13 @@
     const canvasElement = document.getElementById('outputCanvas');
     const canvasCtx = canvasElement.getContext('2d');
     const startBtn = document.getElementById('startBtn');
-    const sizeControls = document.getElementById('sizeControls');
+    const calibrateBtn = document.getElementById('calibrateBtn');
+    const controlsContainer = document.getElementById('controlsContainer');
     const sizeSlider = document.getElementById('sizeSlider');
     const sizeValue = document.getElementById('sizeValue');
+    const heightDown = document.getElementById('heightDown');
+    const heightUp = document.getElementById('heightUp');
+    const heightValue = document.getElementById('heightValue');
     const frameSelector = document.getElementById('frameSelector');
     const frameButtons = document.querySelectorAll('.frame-btn');
     const statusMsg = document.getElementById('statusMsg');
@@ -299,6 +346,8 @@
     let isProcessing = false;
     let frameCount = 0;
     let faceTrackingActive = false;
+    let angleOffset = 0;
+    let isCalibrated = false;
     let glassesSizeMultiplier = 2.4;
     let glassesHeightRatio = 0.7;
     let currentFrame = 'A-TRIANGLE';
@@ -312,10 +361,26 @@
       return Math.atan2(deltaY, deltaX);
     }
 
+    function calibrateStraightPosition(landmarks) {
+      const currentAngle = calculateHeadAngle(landmarks);
+      angleOffset = -currentAngle;
+      isCalibrated = true;
+      console.log("✅ Calibrated! Offset:", angleOffset);
+    }
+
+    function updateHeightDisplay() {
+      heightValue.textContent = Math.round(glassesHeightRatio * 100) + '%';
+    }
+
     function drawGlasses(landmarks) {
       const leftEye = landmarks[33];
       const rightEye = landmarks[263];
-      const headAngle = calculateHeadAngle(landmarks);
+      let headAngle = calculateHeadAngle(landmarks);
+      
+      // Apply calibration offset if calibrated
+      if (isCalibrated) {
+        headAngle += angleOffset;
+      }
       
       const eyeDist = Math.hypot(
         rightEye.x * canvasElement.width - leftEye.x * canvasElement.width,
@@ -362,6 +427,11 @@
       // Draw glasses if face detected
       if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
         faceTrackingActive = true;
+        
+        // Auto-calibrate on first face detection if not already calibrated
+        if (!isCalibrated && frameCount > 10) {
+          calibrateStraightPosition(results.multiFaceLandmarks[0]);
+        }
         
         for (const landmarks of results.multiFaceLandmarks) {
           drawGlasses(landmarks);
@@ -480,6 +550,28 @@
       sizeValue.textContent = glassesSizeMultiplier.toFixed(1) + 'x';
     });
 
+    // Height controls
+    heightDown.addEventListener('click', () => {
+      glassesHeightRatio = Math.max(0.4, glassesHeightRatio - 0.05);
+      updateHeightDisplay();
+    });
+
+    heightUp.addEventListener('click', () => {
+      glassesHeightRatio = Math.min(1.0, glassesHeightRatio + 0.05);
+      updateHeightDisplay();
+    });
+
+    // Calibrate button handler
+    calibrateBtn.addEventListener('click', () => {
+      if (faceTrackingActive) {
+        statusMsg.innerText = "Recalibrating... Look straight at camera";
+        isCalibrated = false;
+        setTimeout(() => {
+          statusMsg.innerText = "Recalibrated! Glasses should now appear straight.";
+        }, 1000);
+      }
+    });
+
     startBtn.addEventListener('click', async () => {
       try {
         startBtn.disabled = true;
@@ -496,8 +588,10 @@
         resizeCanvasToDisplay();
 
         // Show all controls
-        sizeControls.classList.remove('d-none');
+        controlsContainer.classList.remove('d-none');
         frameSelector.classList.remove('d-none');
+        calibrateBtn.classList.remove('d-none');
+        updateHeightDisplay();
 
         const processingWidth = isMobile ? 320 : 640;
         const processingHeight = isMobile ? 240 : 480;
@@ -520,7 +614,11 @@
         setInterval(() => {
           if (faceTrackingActive) {
             const frameLabel = FRAMES[currentFrame].label;
-            statusMsg.innerHTML = `Glasses active ✅ | <small>${frameLabel} Frame</small>`;
+            if (isCalibrated) {
+              statusMsg.innerHTML = `Glasses active ✅ | <small>${frameLabel} Frame - Calibrated</small>`;
+            } else {
+              statusMsg.innerHTML = `Glasses active ✅ | <small>${frameLabel} Frame - Calibrating...</small>`;
+            }
           } else {
             statusMsg.innerHTML = "Ready! Look at the camera | <small>Searching for face...</small>";
           }
