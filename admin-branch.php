@@ -324,11 +324,13 @@ if ($rid !== 4) {
             addBranchModal();
 
             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                if (isset($_POST['confirmDeleteBtn'])) {
+                    confirmDeleteBranch();
+                }
                 if (isset($_POST['addBranchBtn'])) {
                     addBranch();
                 }
-                else
-                if (isset($_POST['editBranchBtn'])) {
+                elseif (isset($_POST['editBranchBtn'])) {
                     editBranch();
                 }
                 elseif (isset($_POST['deleteBranchBtn'])) {
