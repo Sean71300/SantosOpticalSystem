@@ -73,18 +73,19 @@
     }
     
     @media (min-width: 992px) {
-      /* Train-like layout: Camera | Adjust Fit | Frames | Material+Colors
-         Make camera more prominent: take ~50% (half) of the main content width */
+      /* 3-column layout: camera(left, tall) | center(col2) | frames(col3)
+         grid rows: top and bottom. Camera spans both rows. */
       .main-content {
-        grid-template-columns: 1fr 1fr 260px 240px; /* camera (half), adjust (half), frames, material/colors */
-        align-items: start;
+        grid-template-columns: 1fr 1fr 260px; /* camera, adjust/material, frames/colors */
+        grid-auto-rows: auto;
         gap: 20px;
       }
-      .left-column, .center-column, .frames-column, .right-column { display: block; }
-      .left-column { grid-column: 1 / 2; }
-      .center-column { grid-column: 2 / 3; }
-      .frames-column { grid-column: 3 / 4; }
-      .right-column { grid-column: 4 / 5; }
+      .left-column, .center-column, .frames-column, .right-column, .material-column { display: block; }
+      .left-column { grid-column: 1; grid-row: 1 / span 2; }
+      .center-column { grid-column: 2; grid-row: 1; }
+      .frames-column { grid-column: 3; grid-row: 1; }
+      .material-column { grid-column: 2; grid-row: 2; }
+      .right-column { grid-column: 3; grid-row: 2; }
     }
     
     .camera-section {
@@ -589,6 +590,23 @@
       justify-content: space-between;
       align-items: center;
     }
+
+    /* Center labels and helper text for Adjust Fit column */
+    .center-column .control-label {
+      justify-content: center !important;
+      gap: 10px;
+      text-align: center;
+    }
+    .center-column .card-body small.text-muted {
+      display: block;
+      text-align: center;
+      margin-top: 8px;
+      color: #6c757d;
+    }
+    .center-column .control-value {
+      display: inline-block;
+      margin-left: 8px;
+    }
     
     .control-value {
       font-weight: 700;
@@ -889,12 +907,16 @@
       
       .position-controls {
         gap: 10px;
-        flex-direction: column;
+        flex-direction: row; /* keep buttons and value inline on mobile, center the value */
+        align-items: center;
+        justify-content: center;
       }
       
       .position-controls span {
-        order: -1;
-        font-size: 0.9rem;
+        order: 0;
+        font-size: 0.95rem;
+        min-width: 48px;
+        text-align: center;
       }
       
       .position-btn {
@@ -1114,8 +1136,9 @@
           </div>
         </div>
       </div>
+      </div>
 
-      <div class="right-column">
+      <div class="material-column">
         <div class="card">
           <div class="card-header">
             <span><i class="fas fa-cubes me-2"></i>Material Effect</span>
@@ -1130,6 +1153,9 @@
           </div>
         </div>
 
+      </div>
+
+      <div class="right-column">
         <div class="colors-area">
           <div class="card">
             <div class="card-header">
@@ -1275,9 +1301,12 @@
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.min.js"></script>
 
   <script>
-    // Initialize Bootstrap tooltips
-    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+    // Initialize Bootstrap tooltips (disabled on mobile)
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (!isMobile) {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+    }
 
     const videoElement = document.getElementById('inputVideo');
     const canvasElement = document.getElementById('outputCanvas');
@@ -1810,7 +1839,6 @@
       }
     });
 
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     window.addEventListener('load', () => {
       setTimeout(initializeFaceMesh, 1000);
     });
