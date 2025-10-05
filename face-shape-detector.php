@@ -339,54 +339,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             margin: 0;
         }
         
-        /* Fun Facts - Collapsible */
-        .fun-facts-toggle {
-            background: #FFF0F5;
-            border-radius: 12px;
-            padding: 20px;
-            margin: 25px 0;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-        }
-        
-        .fun-facts-toggle:hover {
-            border-color: var(--primary);
-        }
-        
-        .toggle-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .toggle-header h4 {
-            margin: 0;
-            color: var(--primary);
-            font-weight: 700;
-        }
-        
-        .toggle-icon {
-            font-size: 1.5rem;
-            color: var(--primary);
-            transition: transform 0.3s ease;
-        }
-        
-        .toggle-icon.active {
-            transform: rotate(180deg);
-        }
-        
-        .fun-facts-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-        }
-        
-        .fun-facts-content.active {
-            max-height: 2000px;
-            padding-top: 20px;
-        }
-        
         .fact-card {
             background: white;
             padding: 20px;
@@ -802,54 +754,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <img src="<?= htmlspecialchars($image) ?>" alt="<?= htmlspecialchars($result) ?> face shape" class="result-image">
                 </div>
                 
-                <!-- Fun Facts - Collapsible (Moved Higher) -->
-                <div class="fun-facts-toggle" onclick="toggleFunFacts()">
-                    <div class="toggle-header">
-                        <h4><i class="fas fa-star me-2"></i> Fun Facts About Your Face Shape</h4>
-                        <i class="fas fa-chevron-down toggle-icon" id="toggleIcon"></i>
-                    </div>
-                    <p style="font-size: 0.9rem; color: #666; margin: 10px 0 0 0;">Celebrity matches, personality traits & interesting tidbits</p>
+                <!-- Fun Facts (Always Visible) -->
+                <div class="fun-facts" style="background: #FFF0F5; border-radius: 12px; padding: 25px; margin: 25px 0;">
+                    <h4 class="text-center mb-4"><i class="fas fa-star"></i> Fun Facts About Your Face Shape</h4>
                     
-                    <div class="fun-facts-content" id="funFactsContent">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="fact-card">
-                                    <h5><i class="fas fa-user-tie"></i> Celebrity Match</h5>
-                                    <p>
-                                        <?php
-                                        $celebrities = [
-                                            'SQUARE' => "You share your face shape with strong-featured stars like Angelina Jolie, Dwayne Johnson, Angel Locsin, and Dingdong Dantes!",
-                                            'ROUND' => "Your face shape is similar to charming celebrities like Selena Gomez, Leonardo DiCaprio, Nadine Lustre, and James Reid!",
-                                            'OBLONG' => "You have the elegant proportions seen on stars like Sarah Jessica Parker, Adam Levine, Liza Soberano, and Piolo Pascual!",
-                                            'DIAMOND' => "Your striking features match stars like Rihanna, Ryan Gosling, Heart Evangelista, and Alden Richards!",
-                                            'V-TRIANGLE' => "You share this distinctive shape with stars like Scarlett Johansson, Chris Hemsworth, Anne Curtis, and Coco Martin!",
-                                            'A-TRIANGLE' => "Your soft angles are similar to celebrities like Reese Witherspoon, Zac Efron, Kathryn Bernardo, and Daniel Padilla!",
-                                            'RECTANGLE' => "Your strong bone structure matches stars like Keira Knightley, Henry Cavill, Marian Rivera, and Richard Gutierrez!"
-                                        ];
-                                        echo htmlspecialchars($celebrities[$result] ?? "Your face shape is seen on many Hollywood A-listers!");
-                                        ?>
-                                    </p>
-                                </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="fact-card">
+                                <h5><i class="fas fa-user-tie"></i> Celebrity Match</h5>
+                                <p>
+                                    <?php
+                                    $celebrities = [
+                                        'SQUARE' => "You share your face shape with strong-featured stars like Angelina Jolie, Dwayne Johnson, Angel Locsin, and Dingdong Dantes!",
+                                        'ROUND' => "Your face shape is similar to charming celebrities like Selena Gomez, Leonardo DiCaprio, Nadine Lustre, and James Reid!",
+                                        'OBLONG' => "You have the elegant proportions seen on stars like Sarah Jessica Parker, Adam Levine, Liza Soberano, and Piolo Pascual!",
+                                        'DIAMOND' => "Your striking features match stars like Rihanna, Ryan Gosling, Heart Evangelista, and Alden Richards!",
+                                        'V-TRIANGLE' => "You share this distinctive shape with stars like Scarlett Johansson, Chris Hemsworth, Anne Curtis, and Coco Martin!",
+                                        'A-TRIANGLE' => "Your soft angles are similar to celebrities like Reese Witherspoon, Zac Efron, Kathryn Bernardo, and Daniel Padilla!",
+                                        'RECTANGLE' => "Your strong bone structure matches stars like Keira Knightley, Henry Cavill, Marian Rivera, and Richard Gutierrez!"
+                                    ];
+                                    echo htmlspecialchars($celebrities[$result] ?? "Your face shape is seen on many Hollywood A-listers!");
+                                    ?>
+                                </p>
                             </div>
-                            
-                            <div class="col-md-6">
-                                <div class="fact-card">
-                                    <h5><i class="fas fa-lightbulb"></i> Did You Know?</h5>
-                                    <p>
-                                        <?php
-                                        $funfacts = [
-                                            'SQUARE' => "Square faces are among the rarer face shapes, making up only about 9% of the population!",
-                                            'ROUND' => "Round faces are considered the most youthful-looking face shape throughout life.",
-                                            'OBLONG' => "Oblong faces are sometimes called the 'aristocratic' shape due to their elegant proportions.",
-                                            'DIAMOND' => "Diamond faces have the most symmetrical proportions, with cheekbones as the widest point.",
-                                            'V-TRIANGLE' => "V-shaped faces are associated with strong, angular features that photograph exceptionally well.",
-                                            'A-TRIANGLE' => "A-shaped faces are sometimes called 'heart-shaped' and are associated with approachability.",
-                                            'RECTANGLE' => "Rectangular faces are commonly seen among fashion models due to their photogenic bone structure."
-                                        ];
-                                        echo htmlspecialchars($funfacts[$result] ?? "Your unique face shape combination makes you stand out in a crowd!");
-                                        ?>
-                                    </p>
-                                </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="fact-card">
+                                <h5><i class="fas fa-lightbulb"></i> Did You Know?</h5>
+                                <p>
+                                    <?php
+                                    $funfacts = [
+                                        'SQUARE' => "Square faces are among the rarer face shapes, making up only about 9% of the population!",
+                                        'ROUND' => "Round faces are considered the most youthful-looking face shape throughout life.",
+                                        'OBLONG' => "Oblong faces are sometimes called the 'aristocratic' shape due to their elegant proportions.",
+                                        'DIAMOND' => "Diamond faces have the most symmetrical proportions, with cheekbones as the widest point.",
+                                        'V-TRIANGLE' => "V-shaped faces are associated with strong, angular features that photograph exceptionally well.",
+                                        'A-TRIANGLE' => "A-shaped faces are sometimes called 'heart-shaped' and are associated with approachability.",
+                                        'RECTANGLE' => "Rectangular faces are commonly seen among fashion models due to their photogenic bone structure."
+                                    ];
+                                    echo htmlspecialchars($funfacts[$result] ?? "Your unique face shape combination makes you stand out in a crowd!");
+                                    ?>
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -1005,58 +951,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                         <div class="share-btn link" onclick="copyLink()" title="Copy Link">
                             <i class="fas fa-link"></i>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Fun Facts - Collapsible -->
-                <div class="fun-facts-toggle" onclick="toggleFunFacts()">
-                    <div class="toggle-header">
-                        <h4><i class="fas fa-star me-2"></i> Fun Facts About Your Face Shape</h4>
-                        <i class="fas fa-chevron-down toggle-icon" id="toggleIcon"></i>
-                    </div>
-                    
-                    <div class="fun-facts-content" id="funFactsContent">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="fact-card">
-                                    <h5><i class="fas fa-user-tie"></i> Celebrity Match</h5>
-                                    <p>
-                                        <?php
-                                        $celebrities = [
-                                            'SQUARE' => "You share your face shape with strong-featured stars like Angelina Jolie, Dwayne Johnson, Angel Locsin, and Dingdong Dantes!",
-                                            'ROUND' => "Your face shape is similar to charming celebrities like Selena Gomez, Leonardo DiCaprio, Nadine Lustre, and James Reid!",
-                                            'OBLONG' => "You have the elegant proportions seen on stars like Sarah Jessica Parker, Adam Levine, Liza Soberano, and Piolo Pascual!",
-                                            'DIAMOND' => "Your striking features match stars like Rihanna, Ryan Gosling, Heart Evangelista, and Alden Richards!",
-                                            'V-TRIANGLE' => "You share this distinctive shape with stars like Scarlett Johansson, Chris Hemsworth, Anne Curtis, and Coco Martin!",
-                                            'A-TRIANGLE' => "Your soft angles are similar to celebrities like Reese Witherspoon, Zac Efron, Kathryn Bernardo, and Daniel Padilla!",
-                                            'RECTANGLE' => "Your strong bone structure matches stars like Keira Knightley, Henry Cavill, Marian Rivera, and Richard Gutierrez!"
-                                        ];
-                                        echo htmlspecialchars($celebrities[$result] ?? "Your face shape is seen on many Hollywood A-listers!");
-                                        ?>
-                                    </p>
-                                </div>
-                            </div>
-                            
-                            <div class="col-md-6">
-                                <div class="fact-card">
-                                    <h5><i class="fas fa-lightbulb"></i> Did You Know?</h5>
-                                    <p>
-                                        <?php
-                                        $funfacts = [
-                                            'SQUARE' => "Square faces are among the rarer face shapes, making up only about 9% of the population!",
-                                            'ROUND' => "Round faces are considered the most youthful-looking face shape throughout life.",
-                                            'OBLONG' => "Oblong faces are sometimes called the 'aristocratic' shape due to their elegant proportions.",
-                                            'DIAMOND' => "Diamond faces have the most symmetrical proportions, with cheekbones as the widest point.",
-                                            'V-TRIANGLE' => "V-shaped faces are associated with strong, angular features that photograph exceptionally well.",
-                                            'A-TRIANGLE' => "A-shaped faces are sometimes called 'heart-shaped' and are associated with approachability.",
-                                            'RECTANGLE' => "Rectangular faces are commonly seen among fashion models due to their photogenic bone structure."
-                                        ];
-                                        echo htmlspecialchars($funfacts[$result] ?? "Your unique face shape combination makes you stand out in a crowd!");
-                                        ?>
-                                    </p>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -1314,15 +1208,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
         });
-        
-        // Fun Facts Toggle
-        function toggleFunFacts() {
-            const content = document.getElementById('funFactsContent');
-            const icon = document.getElementById('toggleIcon');
-            
-            content.classList.toggle('active');
-            icon.classList.toggle('active');
-        }
         
         // Social Sharing Functions
         function shareResults(platform) {
