@@ -48,6 +48,20 @@
     .btn-primary:hover {
       background-color: #1558b0;
     }
+    .loading-spinner {
+      display: none;
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 10px auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
   </style>
 </head>
 
@@ -66,7 +80,17 @@
       </button>
     </div>
 
+    <div class="loading-spinner" id="loadingSpinner"></div>
+
     <p class="mt-3 text-muted" id="statusMsg">Camera is off</p>
+
+    <!-- Performance tips for mobile -->
+    <div class="alert alert-info mt-3 d-none" id="mobileTips">
+      <small>
+        <strong>Mobile Tips:</strong> For better performance, ensure good lighting and hold device steady.
+        Face detection works best in portrait mode.
+      </small>
+    </div>
   </div>
 
   <!-- Bootstrap Icons -->
@@ -83,8 +107,16 @@
     const canvasCtx = canvasElement.getContext('2d');
     const startBtn = document.getElementById('startBtn');
     const statusMsg = document.getElementById('statusMsg');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    const mobileTips = document.getElementById('mobileTips');
 
-    // Load glasses image
+    // Check if mobile device
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (isMobile) {
+      mobileTips.classList.remove('d-none');
+    }
+
+    // Load glasses image with error handling
     const glassesImg = new Image();
     glassesImg.src = "Images/frames/ashape-frame-removebg-preview.png";
     let glassesLoaded = false;
@@ -92,17 +124,32 @@
       glassesLoaded = true;
       console.log("✅ Glasses image loaded successfully");
     };
+    glassesImg.onerror = () => {
+      console.error("❌ Failed to load glasses image");
+      statusMsg.innerText = "Error loading glasses image";
+    };
 
     let camera = null;
     let faceMesh = null;
+    let isProcessing = false;
+    let frameCount = 0;
 
     async function onResults(results) {
-      if (!results.multiFaceLandmarks || !glassesLoaded) return;
+      if (!results.multiFaceLandmarks || !glassesLoaded || isProcessing) return;
+
+      isProcessing = true;
+      frameCount++;
+
+      // Skip frames on mobile for better performance (process every 3rd frame)
+      if (isMobile && frameCount % 3 !== 0) {
+        isProcessing = false;
+        return;
+      }
 
       canvasCtx.save();
       canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
       
-      // Draw the video frame maintaining aspect ratio
+      // Draw the video frame
       canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
 
       for (const landmarks of results.multiFaceLandmarks) {
@@ -119,16 +166,20 @@
         const centerX = (leftEye.x * canvasElement.width + rightEye.x * canvasElement.width) / 2;
         const centerY = (leftEye.y * canvasElement.height + rightEye.y * canvasElement.height) / 2;
 
-        canvasCtx.drawImage(
-          glassesImg,
-          centerX - glassesWidth / 2,
-          centerY - glassesHeight / 2,
-          glassesWidth,
-          glassesHeight
-        );
+        // Only draw if we have valid coordinates
+        if (centerX > 0 && centerY > 0 && glassesWidth > 10) {
+          canvasCtx.drawImage(
+            glassesImg,
+            centerX - glassesWidth / 2,
+            centerY - glassesHeight / 2,
+            glassesWidth,
+            glassesHeight
+          );
+        }
       }
 
       canvasCtx.restore();
+      isProcessing = false;
     }
 
     function resizeCanvasToDisplay() {
@@ -142,49 +193,77 @@
       }
     }
 
-    startBtn.addEventListener('click', async () => {
-      try {
-        statusMsg.innerText = "Requesting camera access...";
-        startBtn.disabled = true;
-
+    async function initializeFaceMesh() {
+      return new Promise((resolve) => {
         faceMesh = new FaceMesh({
           locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
         });
+
+        // Optimized settings for mobile
         faceMesh.setOptions({
           maxNumFaces: 1,
-          refineLandmarks: true,
-          minDetectionConfidence: 0.5,
+          refineLandmarks: false, // Disable refinement for better performance
+          minDetectionConfidence: 0.7, // Higher confidence threshold
           minTrackingConfidence: 0.5
         });
-        faceMesh.onResults(onResults);
 
-        // Request camera with specific aspect ratio
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-          video: { 
-            width: { ideal: 1280 },
-            height: { ideal: 960 }, // 4:3 aspect ratio
-            aspectRatio: { ideal: 4/3 },
-            frameRate: { ideal: 30 }
-          } 
+        faceMesh.onResults(onResults);
+        faceMesh.initialize().then(() => {
+          console.log("✅ FaceMesh initialized");
+          resolve();
+        }).catch(err => {
+          console.error("❌ FaceMesh initialization failed:", err);
+          resolve(); // Resolve anyway to continue
         });
+      });
+    }
+
+    startBtn.addEventListener('click', async () => {
+      try {
+        statusMsg.innerText = "Initializing...";
+        startBtn.disabled = true;
+        loadingSpinner.style.display = 'block';
+
+        // Pre-initialize FaceMesh
+        await initializeFaceMesh();
+
+        // Optimize camera settings for mobile
+        const constraints = {
+          video: {
+            width: { ideal: isMobile ? 640 : 1280 },
+            height: { ideal: isMobile ? 480 : 960 },
+            aspectRatio: { ideal: 4/3 },
+            frameRate: { ideal: isMobile ? 24 : 30 }, // Lower FPS for mobile
+            facingMode: 'user'
+          }
+        };
+
+        statusMsg.innerText = "Requesting camera access...";
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
         
         videoElement.srcObject = stream;
 
         videoElement.onloadedmetadata = () => {
           videoElement.play();
-          statusMsg.innerText = "Camera active — aligning frames...";
+          statusMsg.innerText = "Camera active — detecting face...";
           
           // Resize canvas to match display size
           resizeCanvasToDisplay();
           
           camera = new Camera(videoElement, {
             onFrame: async () => {
-              await faceMesh.send({ image: videoElement });
+              if (faceMesh && !isProcessing) {
+                await faceMesh.send({ image: videoElement });
+              }
             },
-            width: videoElement.videoWidth,
-            height: videoElement.videoHeight
+            width: isMobile ? 320 : 640, // Lower resolution for processing on mobile
+            height: isMobile ? 240 : 480
           });
-          camera.start();
+          
+          camera.start().then(() => {
+            loadingSpinner.style.display = 'none';
+            statusMsg.innerText = "Ready! Look at the camera to try glasses.";
+          });
         };
 
         // Handle window resizing
@@ -194,7 +273,20 @@
         console.error("❌ Camera startup error:", err);
         statusMsg.innerText = "Unable to access camera. Check browser permissions.";
         startBtn.disabled = false;
+        loadingSpinner.style.display = 'none';
+        
+        if (err.name === 'NotAllowedError') {
+          statusMsg.innerText = "Camera permission denied. Please allow camera access.";
+        } else if (err.name === 'NotFoundError') {
+          statusMsg.innerText = "No camera found on this device.";
+        }
       }
+    });
+
+    // Preload and initialize when page loads
+    window.addEventListener('load', () => {
+      // Pre-initialize FaceMesh in background
+      initializeFaceMesh();
     });
   </script>
 </body>
