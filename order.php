@@ -29,6 +29,94 @@ if (!$conn) { die('DB connection error'); }
 function _get_scalar($key){ if(!isset($_GET[$key])) return ''; $v=$_GET[$key]; return is_array($v)? reset($v): trim((string)$v); }
 function _bind(&$stmt,$types,&$params){ if(!$params) return; $refs=[]; foreach($params as $k=>$v){ $refs[$k]=&$params[$k]; } array_unshift($refs,$types); return call_user_func_array([$stmt,'bind_param'],$refs); }
 
+// ---- Order actions (Complete / Claim / Cancel / Return) ----
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $orderId = isset($_POST['order_id']) ? (int)$_POST['order_id'] : 0;
+    if ($orderId > 0) {
+        // Enforce branch scope for Admin/Employee
+        $ridAct = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0;
+        $restrictedAct = in_array($ridAct, [1,2], true);
+        $allowed = true;
+        if ($restrictedAct && !empty($_SESSION['branchcode'])) {
+            $chk = $conn->prepare('SELECT BranchCode FROM Order_hdr WHERE Orderhdr_id = ?');
+            $chk->bind_param('i', $orderId); $chk->execute();
+            $bc = $chk->get_result()->fetch_assoc()['BranchCode'] ?? null; $chk->close();
+            if ($bc !== $_SESSION['branchcode']) { $allowed = false; }
+        }
+        if ($allowed) {
+            // Helper to fetch details for stock restore
+            $fetchDetails = function($cid) use ($conn) {
+                $s = $conn->prepare('SELECT Quantity, ProductBranchID FROM orderDetails WHERE OrderHdr_id = ?');
+                $s->bind_param('i', $cid); $s->execute(); $rows = $s->get_result()->fetch_all(MYSQLI_ASSOC); $s->close(); return $rows;
+            };
+            try {
+                $conn->begin_transaction();
+                if (isset($_POST['complete_order'])) {
+                    $u = $conn->prepare("UPDATE orderDetails SET Status='Completed', ActivityCode=1 WHERE OrderHdr_id=?");
+                    $u->bind_param('i', $orderId); $u->execute(); $u->close();
+                    // Log
+                    if (function_exists('generate_LogsID')) {
+                        $LID = generate_LogsID();
+                        $CID = 0; $q=$conn->prepare('SELECT CustomerID FROM Order_hdr WHERE Orderhdr_id=?'); $q->bind_param('i',$orderId); $q->execute(); $r=$q->get_result()->fetch_assoc(); $q->close(); $CID = (int)($r['CustomerID']??0);
+                        $CName = function_exists('getCustomerName') ? getCustomerName($conn, $CID) : '';
+                        $desc = "#$orderId for customer ".$CName;
+                        $lg = $conn->prepare("INSERT INTO Logs (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description) VALUES (?, ?, ?, 'order', 1, ?)");
+                        $emp = (int)($_SESSION['id'] ?? 0); $lg->bind_param('iiis', $LID, $emp, $orderId, $desc); $lg->execute(); $lg->close();
+                    }
+                } elseif (isset($_POST['claim_order'])) {
+                    $u = $conn->prepare("UPDATE orderDetails SET Status='Claimed', ActivityCode=9 WHERE OrderHdr_id=?");
+                    $u->bind_param('i', $orderId); $u->execute(); $u->close();
+                    if (function_exists('generate_LogsID')) {
+                        $LID = generate_LogsID();
+                        $CID = 0; $q=$conn->prepare('SELECT CustomerID FROM Order_hdr WHERE Orderhdr_id=?'); $q->bind_param('i',$orderId); $q->execute(); $r=$q->get_result()->fetch_assoc(); $q->close(); $CID = (int)($r['CustomerID']??0);
+                        $CName = function_exists('getCustomerName') ? getCustomerName($conn, $CID) : '';
+                        $desc = "#$orderId for customer ".$CName;
+                        $lg = $conn->prepare("INSERT INTO Logs (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description) VALUES (?, ?, ?, 'order', 9, ?)");
+                        $emp = (int)($_SESSION['id'] ?? 0); $lg->bind_param('iiis', $LID, $emp, $orderId, $desc); $lg->execute(); $lg->close();
+                    }
+                } elseif (isset($_POST['cancel_order'])) {
+                    $u = $conn->prepare("UPDATE orderDetails SET Status='Cancelled', ActivityCode=7 WHERE OrderHdr_id=?");
+                    $u->bind_param('i', $orderId); $u->execute(); $u->close();
+                    // Restore stocks
+                    foreach ($fetchDetails($orderId) as $d) {
+                        $rs = $conn->prepare('UPDATE ProductBranchMaster SET Stocks = Stocks + ? WHERE ProductBranchID = ?');
+                        $qty=(int)$d['Quantity']; $pbid=(int)$d['ProductBranchID']; $rs->bind_param('ii', $qty, $pbid); $rs->execute(); $rs->close();
+                    }
+                    if (function_exists('generate_LogsID')) {
+                        $LID = generate_LogsID();
+                        $CID = 0; $q=$conn->prepare('SELECT CustomerID FROM Order_hdr WHERE Orderhdr_id=?'); $q->bind_param('i',$orderId); $q->execute(); $r=$q->get_result()->fetch_assoc(); $q->close(); $CID = (int)($r['CustomerID']??0);
+                        $CName = function_exists('getCustomerName') ? getCustomerName($conn, $CID) : '';
+                        $desc = "#$orderId for customer ".$CName;
+                        $lg = $conn->prepare("INSERT INTO Logs (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description) VALUES (?, ?, ?, 'order', 7, ?)");
+                        $emp = (int)($_SESSION['id'] ?? 0); $lg->bind_param('iiis', $LID, $emp, $orderId, $desc); $lg->execute(); $lg->close();
+                    }
+                } elseif (isset($_POST['return_order'])) {
+                    $u = $conn->prepare("UPDATE orderDetails SET Status='Returned', ActivityCode=8 WHERE OrderHdr_id=?");
+                    $u->bind_param('i', $orderId); $u->execute(); $u->close();
+                    // Restore stocks on return
+                    foreach ($fetchDetails($orderId) as $d) {
+                        $rs = $conn->prepare('UPDATE ProductBranchMaster SET Stocks = Stocks + ? WHERE ProductBranchID = ?');
+                        $qty=(int)$d['Quantity']; $pbid=(int)$d['ProductBranchID']; $rs->bind_param('ii', $qty, $pbid); $rs->execute(); $rs->close();
+                    }
+                    if (function_exists('generate_LogsID')) {
+                        $LID = generate_LogsID();
+                        $CID = 0; $q=$conn->prepare('SELECT CustomerID FROM Order_hdr WHERE Orderhdr_id=?'); $q->bind_param('i',$orderId); $q->execute(); $r=$q->get_result()->fetch_assoc(); $q->close(); $CID = (int)($r['CustomerID']??0);
+                        $CName = function_exists('getCustomerName') ? getCustomerName($conn, $CID) : '';
+                        $desc = "#$orderId from customer ".$CName;
+                        $lg = $conn->prepare("INSERT INTO Logs (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description) VALUES (?, ?, ?, 'order', 8, ?)");
+                        $emp = (int)($_SESSION['id'] ?? 0); $lg->bind_param('iiis', $LID, $emp, $orderId, $desc); $lg->execute(); $lg->close();
+                    }
+                }
+                $conn->commit();
+            } catch (Throwable $t) {
+                $conn->rollback(); _order_log('Action error: '.$t->getMessage());
+            }
+        }
+    }
+    header('Location: order.php');
+    exit;
+}
+
 // Inputs
 $perPage = 10;
 $page = max(1, (int)($_GET['page'] ?? 1));
@@ -97,7 +185,14 @@ if (isset($_GET['action']) && $_GET['action']==='details' && isset($_GET['id']))
     $st->execute(); $hdr=$st->get_result()->fetch_assoc(); $st->close();
     if(!$hdr){ echo json_encode(['error'=>'Order not found']); exit; }
 
-    $sd = $conn->prepare('SELECT od.Quantity, od.Status, od.ProductBranchID, p.Model, p.Price, p.CategoryType, b.BrandName FROM orderDetails od JOIN ProductBranchMaster pb ON od.ProductBranchID=pb.ProductBranchID JOIN productMstr p ON pb.ProductID=p.ProductID JOIN brandMaster b ON p.BrandID=b.BrandID WHERE od.OrderHdr_id=?');
+    $sd = $conn->prepare("SELECT od.Quantity, od.Status, od.ProductBranchID, p.Model,
+        CAST(REPLACE(REPLACE(REPLACE(p.Price, '₱', ''), ',', ''), 'PHP', '') AS DECIMAL(12,2)) AS Price,
+        p.CategoryType, b.BrandName
+        FROM orderDetails od
+        JOIN ProductBranchMaster pb ON od.ProductBranchID=pb.ProductBranchID
+        JOIN productMstr p ON pb.ProductID=p.ProductID
+        JOIN brandMaster b ON p.BrandID=b.BrandID
+        WHERE od.OrderHdr_id=?");
     $sd->bind_param('s',$id); $sd->execute(); $details=$sd->get_result()->fetch_all(MYSQLI_ASSOC); $sd->close();
     // Normalize numeric fields to avoid NaN on client
     foreach ($details as &$d) { $d['Price'] = (float)($d['Price'] ?? 0); $d['Quantity'] = (int)($d['Quantity'] ?? 0); }
@@ -269,6 +364,12 @@ body { background:#f5f7fa; padding-top:60px; }
   </div></div>
 </div>
 
+<!-- Hidden forms for actions -->
+<form id="completeOrderForm" method="post" style="display:none"><input type="hidden" name="complete_order" value="1"><input type="hidden" name="order_id" id="completeOrderId"></form>
+<form id="cancelOrderForm" method="post" style="display:none"><input type="hidden" name="cancel_order" value="1"><input type="hidden" name="order_id" id="cancelOrderId"></form>
+<form id="claimOrderForm" method="post" style="display:none"><input type="hidden" name="claim_order" value="1"><input type="hidden" name="order_id" id="claimOrderId"></form>
+<form id="returnOrderForm" method="post" style="display:none"><input type="hidden" name="return_order" value="1"><input type="hidden" name="order_id" id="returnOrderId"></form>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 function showDetails(id){
@@ -285,8 +386,43 @@ function showDetails(id){
       </div>`;
       html += '<h6 class="mt-3">Items</h6><div class="table-responsive"><table class="table table-sm"><thead><tr><th>Product</th><th>Brand</th><th>Category</th><th>Price</th><th>Qty</th><th>Status</th></tr></thead><tbody>';
             (data.Details||[]).forEach(d=>{ const price = Number.isFinite(d.Price)? d.Price : parseFloat(d.Price||0); html += `<tr><td>${d.Model||'N/A'}</td><td>${d.BrandName||'N/A'}</td><td>${d.CategoryType||'N/A'}</td><td>₱${(price||0).toFixed(2)}</td><td>${d.Quantity||0}</td><td>${d.Status||''}</td></tr>`; });
-      html += '</tbody></table></div>';
-      body.innerHTML = html; modal.show();
+            html += '</tbody></table></div>';
+
+            // Action buttons by status
+            const status = (data.Status||'').toLowerCase();
+            if (status === 'pending') {
+                html += `<div class="d-flex justify-content-end gap-2 mt-3">
+                    <button type="button" class="btn btn-success" id="btnComplete"><i class="fas fa-check-circle me-1"></i> Complete Order</button>
+                    <button type="button" class="btn btn-danger" id="btnCancel"><i class="fas fa-times-circle me-1"></i> Cancel Order</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>`;
+            } else if (status === 'completed') {
+                html += `<div class="d-flex justify-content-end gap-2 mt-3">
+                    <button type="button" class="btn btn-primary" id="btnClaim"><i class="fas fa-box-open me-1"></i> Claim Order</button>
+                    <button type="button" class="btn btn-danger" id="btnCancel"><i class="fas fa-times-circle me-1"></i> Cancel Order</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>`;
+            } else if (status === 'claimed') {
+                html += `<div class="d-flex justify-content-end gap-2 mt-3">
+                    <button type="button" class="btn btn-warning" id="btnReturn"><i class="fas fa-undo me-1"></i> Return</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>`;
+            } else {
+                html += `<div class="d-flex justify-content-end mt-3"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button></div>`;
+            }
+
+            body.innerHTML = html; modal.show();
+
+            // Wire buttons
+            const oid = data.Orderhdr_id;
+            const bComplete = document.getElementById('btnComplete');
+            const bCancel = document.getElementById('btnCancel');
+            const bClaim = document.getElementById('btnClaim');
+            const bReturn = document.getElementById('btnReturn');
+            if (bComplete) bComplete.addEventListener('click', ()=>{ if (confirm('Mark this order as Completed?')) { document.getElementById('completeOrderId').value=oid; document.getElementById('completeOrderForm').submit(); }});
+            if (bCancel) bCancel.addEventListener('click', ()=>{ if (confirm('Cancel this order? This will restore stocks.')) { document.getElementById('cancelOrderId').value=oid; document.getElementById('cancelOrderForm').submit(); }});
+            if (bClaim) bClaim.addEventListener('click', ()=>{ if (confirm('Mark this order as Claimed?')) { document.getElementById('claimOrderId').value=oid; document.getElementById('claimOrderForm').submit(); }});
+            if (bReturn) bReturn.addEventListener('click', ()=>{ if (confirm('Return this order? This will restore stocks.')) { document.getElementById('returnOrderId').value=oid; document.getElementById('returnOrderForm').submit(); }});
     })
     .catch(()=>{ body.innerHTML='<div class="alert alert-danger">Error loading details</div>'; modal.show(); });
 }
