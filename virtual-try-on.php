@@ -64,66 +64,7 @@
       margin-bottom: 0;
     }
     
-    .step-wizard {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 25px;
-      padding: 20px;
-      background: white;
-      border-radius: 15px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    
-    .step-item {
-      flex: 1;
-      min-width: 120px;
-      text-align: center;
-      position: relative;
-    }
-    
-    .step-number {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: #e9ecef;
-      color: #6c757d;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 10px;
-      font-weight: 700;
-      font-size: 18px;
-      transition: all 0.3s ease;
-    }
-    
-    .step-item.active .step-number {
-      background: linear-gradient(135deg, var(--primary), #FF2B5D);
-      color: white;
-      transform: scale(1.1);
-      box-shadow: 0 4px 15px rgba(255, 62, 108, 0.3);
-    }
-    
-    .step-item.completed .step-number {
-      background: var(--secondary);
-      color: white;
-    }
-    
-    .step-label {
-      font-size: 12px;
-      font-weight: 600;
-      color: #6c757d;
-    }
-    
-    .step-item.active .step-label {
-      color: var(--primary);
-      font-weight: 700;
-    }
-    
-    .step-item.completed .step-label {
-      color: var(--secondary);
-    }
+    /* step-wizard styles removed (wizard UI moved/removed) */
     
     .main-content {
       display: grid;
@@ -132,9 +73,18 @@
     }
     
     @media (min-width: 992px) {
+      /* Train-like layout: Camera | Adjust Fit | Frames | Material+Colors
+         Make camera more prominent: take ~50% (half) of the main content width */
       .main-content {
-        grid-template-columns: 1fr 400px;
+        grid-template-columns: 1fr 1fr 260px 240px; /* camera (half), adjust (half), frames, material/colors */
+        align-items: start;
+        gap: 20px;
       }
+      .left-column, .center-column, .frames-column, .right-column { display: block; }
+      .left-column { grid-column: 1 / 2; }
+      .center-column { grid-column: 2 / 3; }
+      .frames-column { grid-column: 3 / 4; }
+      .right-column { grid-column: 4 / 5; }
     }
     
     .camera-section {
@@ -152,6 +102,125 @@
       overflow: hidden;
       box-shadow: 0 10px 30px rgba(0,0,0,0.15);
       aspect-ratio: 4/3;
+      min-height: 420px; /* ensure camera appears larger on desktop */
+    }
+
+    /* CTA over camera */
+    .camera-cta {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 30;
+      pointer-events: none; /* allow underlying elements until button enabled */
+    }
+    .camera-cta button { pointer-events: auto; }
+    .camera-cta .btn {
+      padding: 18px 28px;
+      font-size: 1.05rem;
+      border-radius: 999px;
+      box-shadow: 0 10px 30px rgba(255,62,108,0.25);
+      transform: translateY(0);
+      transition: transform 220ms ease, box-shadow 220ms ease;
+      background: linear-gradient(135deg, var(--primary), #FF2B5D);
+    }
+    .camera-cta .btn:active { transform: translateY(1px) scale(0.995); }
+    .camera-cta .btn:hover { transform: translateY(-4px); }
+    @keyframes pulseCTA { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
+    .camera-cta .btn.pulse { animation: pulseCTA 2.2s infinite; }
+
+    .camera-top-actions {
+      position: absolute;
+      top: 12px;
+      right: 58px; /* moved slightly left to avoid colliding with step badge */
+      left: auto;
+      z-index: 35;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      background: rgba(255,255,255,0.95);
+      padding: 6px;
+      border-radius: 999px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    }
+    .camera-top-actions .btn-sm {
+      background: white;
+      color: var(--dark);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-weight: 700;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    }
+
+    /* Camera status badge (top-left inside camera) */
+    .camera-status {
+      position: absolute;
+      left: 12px;
+      top: 12px;
+      z-index: 40;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 18px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      background: rgba(0,0,0,0.45);
+      backdrop-filter: blur(4px);
+    }
+    .camera-status.status-online { background: rgba(16,185,129,0.95); }
+    .camera-status.status-offline { background: rgba(220,38,38,0.9); }
+
+    /* Right column split: frames (left) + colors (right) */
+    .right-column-inner {
+      display: grid;
+      grid-template-columns: 1fr 240px;
+      gap: 12px;
+    }
+    .frames-area .frame-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .frames-column .frame-btn, .frames-area .frame-btn { padding: 6px; }
+    .frames-column .frame-img, .frames-area .frame-img { width: 48px; height: 32px; }
+    .frames-column .frame-label { font-size: 11px; }
+
+  /* colors area should visually match other cards (use primary gradient) */
+  .colors-area .card { box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+  .colors-area .card-header { background: linear-gradient(135deg, var(--primary), #FF2B5D); }
+  .colors-area .card-header, .colors-area .card-header * { color: #111 !important; }
+  /* frames column simple wrapper */
+  .frames-column { }
+
+    /* Step badges used in place of tooltip icons */
+    .step-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--secondary), #00bfa8); /* complementary to primary */
+      color: #fff;
+      font-weight: 800;
+      font-size: 13px;
+      margin-left: 8px;
+      box-shadow: 0 8px 22px rgba(0,0,0,0.12);
+      border: 2px solid rgba(255,255,255,0.12);
+    }
+
+    /* ensure step 5 (colors) uses white text like other badges */
+    .colors-area .step-badge { color: #fff !important; }
+
+    .camera-step-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 45;
+      display: inline-block;
+      pointer-events: none;
     }
     
     video, canvas {
@@ -245,7 +314,7 @@
     }
     
     .card-body {
-      padding: 20px;
+      padding: 16px;
     }
     
     .btn-primary {
@@ -320,6 +389,28 @@
       gap: 10px;
       margin-top: 10px;
     }
+
+    /* Vertical frames list for right column */
+    .vertical-frames {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: stretch;
+    }
+    /* Make frame items look more like product list items */
+    .right-column .frame-btn {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: white;
+    }
+    .right-column .frame-img { width: 64px; height: 36px; }
+    .right-column .frame-label { font-size: 13px; text-align: left; flex: 1; }
+    .right-column .frame-btn .frame-meta { font-size: 12px; color: #6c757d; }
+    .right-column .frame-btn:hover { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
     
     .frame-btn {
       background: white;
@@ -336,15 +427,16 @@ padding: 8px;
     
     .frame-btn:hover {
       border-color: var(--primary);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(255, 62, 108, 0.2);
+      transform: translateY(-6px) scale(1.02);
+      box-shadow: 0 14px 32px rgba(0,0,0,0.12);
+      background: linear-gradient(180deg, rgba(255,62,108,0.04), rgba(255,62,108,0.02));
     }
-    
+
     .frame-btn.active {
       border-color: var(--primary);
-      background: rgba(255, 62, 108, 0.1);
-      transform: scale(1.05);
-      box-shadow: 0 6px 15px rgba(255, 62, 108, 0.3);
+      background: linear-gradient(180deg, rgba(255,62,108,0.12), rgba(255,62,108,0.06));
+      transform: translateY(-2px) scale(1.04);
+      box-shadow: 0 10px 28px rgba(255, 62, 108, 0.16);
     }
     
     .frame-img {
@@ -506,11 +598,19 @@ padding: 8px;
       border-radius: 8px;
       font-size: 12px;
     }
+    .center-value {
+      display: inline-block;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--dark);
+      margin-top: 8px;
+    }
     
     .form-range {
       width: 100%;
-      height: 8px;
-      border-radius: 4px;
+      height: 10px;
+      border-radius: 6px;
+      background: linear-gradient(90deg, rgba(255,62,108,0.12), rgba(0,200,179,0.06));
     }
     
     .form-range::-webkit-slider-thumb {
@@ -753,24 +853,7 @@ padding: 8px;
         padding: 15px;
       }
       
-      .step-wizard {
-        padding: 15px 10px;
-        gap: 5px;
-      }
-      
-      .step-item {
-        min-width: 80px;
-      }
-      
-      .step-number {
-        width: 35px;
-        height: 35px;
-        font-size: 16px;
-      }
-      
-      .step-label {
-        font-size: 10px;
-      }
+      /* step-wizard removed for mobile */
       
       .frame-grid {
         grid-template-columns: repeat(4, 1fr);
@@ -837,6 +920,7 @@ padding: 8px;
       .snapshot-controls {
         bottom: 10px;
       }
+      .camera-cta .btn { padding: 12px 18px; font-size: 0.95rem; }
     }
     
     @media (max-width: 480px) {
@@ -866,80 +950,131 @@ padding: 8px;
   </div>
 
   <div class="app-container">
-    <!-- Step Wizard -->
-    <div class="step-wizard">
-      <div class="step-item active" id="step1">
-        <div class="step-number">1</div>
-        <div class="step-label">Start Camera</div>
-      </div>
-      <div class="step-item" id="step2">
-        <div class="step-number">2</div>
-        <div class="step-label">Choose Frame</div>
-      </div>
-      <div class="step-item" id="step3">
-        <div class="step-number">3</div>
-        <div class="step-label">Pick Color</div>
-      </div>
-      <div class="step-item" id="step4">
-        <div class="step-number">4</div>
-        <div class="step-label">Capture Look</div>
-      </div>
-    </div>
-
+    <!-- New shop-like layout: left = adjustments, center = camera + color/material, right = frames -->
     <div class="main-content">
-      <div class="camera-section">
-        <div class="camera-container">
-          <video id="inputVideo" autoplay muted playsinline></video>
-          <canvas id="outputCanvas"></canvas>
-          <div class="camera-overlay d-none" id="cameraOverlay">
-            <div class="loading-spinner"></div>
-            <p class="mt-3">Starting camera...</p>
-          </div>
-          
-          <div class="snapshot-controls" id="snapshotControls">
-            <button class="btn-snapshot" id="takeSnapshotBtn" title="Take Photo" data-bs-toggle="tooltip" data-bs-placement="top">
-              <i class="fas fa-camera"></i>
-            </button>
-          </div>
-        </div>
-        
-        <div class="status-indicator status-offline" id="statusIndicator">
-          <div class="status-dot"></div>
-          <span id="statusText">Camera is off</span>
-        </div>
+      <div class="left-column">
+        <!-- Camera moved to left for mobile-first flow -->
+        <div class="camera-section">
+          <div class="camera-container">
+            <video id="inputVideo" autoplay muted playsinline></video>
+            <canvas id="outputCanvas"></canvas>
 
-        <div class="card">
-          <div class="card-header">
-            <span><i class="fas fa-video me-2"></i>Camera Controls</span>
-            <span class="tooltip-icon" data-bs-toggle="tooltip" data-bs-placement="left" title="Allow camera access and position your face in the center for best results">?</span>
-          </div>
-          <div class="card-body">
-            <div class="action-buttons">
-              <button id="startBtn" class="btn btn-primary">
+            <!-- Top actions: Save & Calibrate -->
+            <div class="camera-top-actions">
+              <button id="saveBtn" class="btn btn-outline-primary btn-sm me-2" title="Save">
+                <i class="fas fa-save me-1"></i>Save
+              </button>
+                      <button id="calibrateBtn" class="btn btn-outline-primary btn-sm" title="Re-center">
+                        <i class="fas fa-sync-alt me-1"></i>Re-center
+                      </button>
+            </div>
+
+                    <!-- Standalone camera step badge (outside the white pill) -->
+                            <div class="camera-step-badge" aria-hidden="true">
+                              <span class="step-badge">1</span>
+                            </div>
+
+            <!-- Centered start CTA over camera -->
+            <div class="camera-cta" id="cameraCta">
+              <button id="startBtn" class="btn btn-primary btn-lg">
                 <i class="fas fa-camera-video me-2"></i>Start Camera
               </button>
-              <button id="calibrateBtn" class="btn btn-outline-primary d-none">
-                <i class="fas fa-sync-alt me-2"></i>Reset Position
+            </div>
+
+            <div class="camera-overlay d-none" id="cameraOverlay">
+              <div class="loading-spinner"></div>
+              <p class="mt-3">Starting camera...</p>
+            </div>
+
+            <div class="snapshot-controls" id="snapshotControls">
+              <button class="btn-snapshot" id="takeSnapshotBtn" title="Take Photo" data-bs-toggle="tooltip" data-bs-placement="top">
+                <i class="fas fa-camera"></i>
               </button>
+            </div>
+            <!-- small camera status badge (moved inside camera) -->
+            <div class="camera-status status-offline" id="cameraStatus">
+              <span id="cameraStatusText">Camera is off</span>
+            </div>
+          </div>
+        </div>
+
+        <?php if (preg_match('/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i', $_SERVER['HTTP_USER_AGENT'])): ?>
+        <div class="mobile-tips">
+          <h6>Mobile Tips</h6>
+          <ul>
+            <li>Ensure good lighting for best results</li>
+            <li>Hold device steady at eye level</li>
+            <li>Keep face centered in frame</li>
+            <li>Close other apps for better performance</li>
+          </ul>
+        </div>
+        <?php endif; ?>
+      </div>
+
+      <div class="center-column">
+        <!-- Adjust Fit moved to center as step 2 -->
+        <div class="card">
+          <div class="card-header">
+            <span><i class="fas fa-sliders-h me-2"></i>Adjust Fit</span>
+            <span class="step-badge">2</span>
+          </div>
+          <div class="card-body">
+            <div class="control-group text-center">
+              <div class="control-label" style="justify-content:center;">
+                <span>Frame Size</span>
+                <!-- top redundant value removed in favor of inline control under the slider -->
+              </div>
+              <!-- Visible slider centered -->
+              <div style="padding: 8px 0;">
+                <input type="range" class="form-range" id="sizeSlider" min="1.8" max="3.0" step="0.1" value="2.4" aria-label="Frame size slider">
+              </div>
+              <div style="margin-top:8px; display:flex; justify-content:center; gap:8px; align-items:center;">
+                <button id="sizeResetBtn" class="btn btn-outline-primary btn-sm">Reset</button>
+                <button id="sizeValueBtn" class="btn btn-primary btn-sm" aria-label="Current size">2.4x</button>
+              </div>
+              <small class="text-muted">Drag to change the frame size</small>
+            </div>
+
+            <div class="control-group">
+              <div class="control-label" style="justify-content:center;">
+                <span>Frame Height</span>
+                <span class="control-value" id="heightValue">70%</span>
+              </div>
+              <div class="position-controls" style="justify-content:center; gap:18px; margin-top:8px;">
+                <button class="btn btn-outline-primary position-btn" id="heightDown" aria-label="Decrease height"><i class="fas fa-minus"></i></button>
+                <span class="center-value" id="heightDisplay">70%</span>
+                <button class="btn btn-outline-primary position-btn" id="heightUp" aria-label="Increase height"><i class="fas fa-plus"></i></button>
+              </div>
+              <small class="text-muted">Adjust frame proportions</small>
+            </div>
+
+            <div class="control-group">
+              <div class="control-label" style="justify-content:center;">
+                <span>Vertical Position</span>
+                <span class="control-value" id="positionValue">0px</span>
+              </div>
+              <div class="position-controls" style="justify-content:center; gap:18px; margin-top:8px;">
+                <button class="btn btn-outline-primary position-btn" id="positionDown" aria-label="Move down"><i class="fas fa-arrow-down"></i></button>
+                <span class="center-value" id="positionDisplay">0px</span>
+                <button class="btn btn-outline-primary position-btn" id="positionUp" aria-label="Move up"><i class="fas fa-arrow-up"></i></button>
+              </div>
+              <small class="text-muted">Move frames higher or lower on face</small>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="controls-section">
-        <div class="controls-scroll-indicator">
-          Scroll down to adjust frame fit <i class="fas fa-arrow-down"></i>
-        </div>
 
+      <div class="frames-column">
         <div class="card">
           <div class="card-header">
             <span><i class="fas fa-glasses me-2"></i>Frame Styles</span>
-            <span class="tooltip-icon" data-bs-toggle="tooltip" data-bs-placement="left" title="Choose a frame style that complements your face shape">?</span>
+            <span class="step-badge">3</span>
           </div>
           <div class="card-body">
             <a href="https://santosopticalclinic.com/face-shape-detector.php" class="btn-face-shape" target="_blank">
               <i class="fas fa-face-smile"></i>
-              <span>Discover Your Face Shape</span>
+              <span>Click here to figure out your face shape</span>
             </a>
             <div class="frame-grid">
               <button class="frame-btn active" data-frame="A-TRIANGLE">
@@ -973,202 +1108,141 @@ padding: 8px;
             </div>
           </div>
         </div>
-
-        <div class="card">
-          <div class="card-header">
-            <span><i class="fas fa-palette me-2"></i>Frame Colors & Materials</span>
-            <span class="tooltip-icon" data-bs-toggle="tooltip" data-bs-placement="left" title="Select from classic, modern, or premium metallic colors">?</span>
-          </div>
-          <div class="card-body">
-            <!-- Accordion for Colors -->
-            <div class="accordion" id="colorAccordion">
-              <!-- Classic Neutrals -->
-              <div class="accordion-item">
-                <h2 class="accordion-header">
-                  <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#classicColors" aria-expanded="true">
-                    Classic Neutrals
-                  </button>
-                </h2>
-                <div id="classicColors" class="accordion-collapse collapse show" data-bs-parent="#colorAccordion">
-                  <div class="accordion-body">
-                    <div class="color-grid">
-                      <div class="color-option">
-                        <div class="color-btn active" style="background: #1a1a1a;" data-color="#1a1a1a" data-color-name="Matte Black"></div>
-                        <div class="color-label">Black</div>
-                      </div>
-                      <div class="color-option">
-                        <div class="color-btn" style="background: #2d3436;" data-color="#2d3436" data-color-name="Charcoal"></div>
-                        <div class="color-label">Charcoal</div>
-                      </div>
-                      <div class="color-option">
-                        <div class="color-btn" style="background: #636e72;" data-color="#636e72" data-color-name="Slate Gray"></div>
-                        <div class="color-label">Slate</div>
-                      </div>
-                      <div class="color-option">
-                        <div class="color-btn" style="background: #704214;" data-color="#704214" data-color-name="Havana"></div>
-                        <div class="color-label">Havana</div>
-                      </div>
-                      <div class="color-option">
-                        <div class="color-btn" style="background: #8b7355;" data-color="#8b7355" data-color-name="Taupe"></div>
-                        <div class="color-label">Taupe</div>
-                      </div>
-                      <div class="color-option">
-                        <div class="color-btn" style="background: #5f4339;" data-color="#5f4339" data-color-name="Espresso"></div>
-                        <div class="color-label">Espresso</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <!-- Modern Tones -->
-              <div class="accordion-item">
-                <h2 class="accordion-header">
-                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#modernTones">
-                    Modern Tones
-                  </button>
-                </h2>
-                <div id="modernTones" class="accordion-collapse collapse" data-bs-parent="#colorAccordion">
-                  <div class="accordion-body">
-                    <div class="color-grid">
-                      <div class="color-option">
-                        <div class="color-btn" style="background: #2c5f7c;" data-color="#2c5f7c" data-color-name="Ocean Blue"></div>
-                        <div class="color-label">Ocean</div>
-                      </div>
-                      <div class="color-option">
-                        <div class="color-btn" style="background: #34495e;" data-color="#34495e" data-color-name="Navy"></div>
-                        <div class="color-label">Navy</div>
-                      </div>
-                      <div class="color-option">
-                        <div class="color-btn" style="background: #16a085;" data-color="#16a085" data-color-name="Teal"></div>
-                        <div class="color-label">Teal</div>
-                      </div>
-                      <div class="color-option">
-                        <div class="color-btn" style="background: #7f5539;" data-color="#7f5539" data-color-name="Cognac"></div>
-                        <div class="color-label">Cognac</div>
-                      </div>
-                      <div class="color-option">
-                        <div class="color-btn" style="background: #95a5a6;" data-color="#95a5a6" data-color-name="Smoke"></div>
-                        <div class="color-label">Smoke</div>
-                      </div>
-                      <div class="color-option">
-                        <div class="color-btn" style="background: #8e44ad;" data-color="#8e44ad" data-color-name="Plum"></div>
-                        <div class="color-label">Plum</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <!-- Premium Metallic -->
-              <div class="accordion-item">
-                <h2 class="accordion-header">
-                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#premiumMetallic">
-                    Premium Metallic
-                  </button>
-                </h2>
-                <div id="premiumMetallic" class="accordion-collapse collapse" data-bs-parent="#colorAccordion">
-                  <div class="accordion-body">
-                    <div class="color-grid">
-                      <div class="color-option">
-                        <div class="color-btn" style="background: linear-gradient(135deg, #bdc3c7, #ecf0f1);" data-color="#bdc3c7" data-color-name="Brushed Silver"></div>
-                        <div class="color-label">Silver</div>
-                      </div>
-                      <div class="color-option">
-                        <div class="color-btn" style="background: linear-gradient(135deg, #b8860b, #d4af37);" data-color="#c5a647" data-color-name="Champagne Gold"></div>
-                        <div class="color-label">Gold</div>
-                      </div>
-                      <div class="color-option">
-                        <div class="color-btn" style="background: linear-gradient(135deg, #cd7f32, #e8a87c);" data-color="#cd7f32" data-color-name="Rose Gold"></div>
-                        <div class="color-label">Rose Gold</div>
-                      </div>
-                      <div class="color-option">
-                        <div class="color-btn" style="background: linear-gradient(135deg, #4a4a4a, #6b6b6b);" data-color="#5a5a5a" data-color-name="Gunmetal"></div>
-                        <div class="color-label">Gunmetal</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="control-group mt-3">
-              <div class="control-label">
-                <span>Material Effect</span>
-                <span class="tooltip-icon" data-bs-toggle="tooltip" title="Change the finish of your frames">?</span>
-              </div>
-              <div class="material-controls">
-                <button class="material-btn active" data-material="Matte">Matte</button>
-                <button class="material-btn" data-material="Glossy">Glossy</button>
-                <button class="material-btn" data-material="Pattern">Pattern</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-header">
-            <span><i class="fas fa-sliders-h me-2"></i>Adjust Fit</span>
-            <span class="tooltip-icon" data-bs-toggle="tooltip" data-bs-placement="left" title="Fine-tune how the frames sit on your face for the perfect fit">?</span>
-          </div>
-          <div class="card-body">
-            <div class="control-group">
-              <div class="control-label">
-                <span>Frame Size</span>
-                <span class="control-value" id="sizeValue">2.4x</span>
-              </div>
-              <input type="range" class="form-range" id="sizeSlider" min="1.8" max="3.0" step="0.1" value="2.4">
-              <small class="text-muted">Drag to make frames larger or smaller</small>
-            </div>
-            
-            <div class="control-group">
-              <div class="control-label">
-                <span>Frame Height</span>
-                <span class="control-value" id="heightValue">70%</span>
-              </div>
-              <div class="position-controls">
-                <button class="btn btn-outline-primary position-btn" id="heightDown">
-                  <i class="fas fa-minus"></i>
-                </button>
-                <span>Shorter / Taller</span>
-                <button class="btn btn-outline-primary position-btn" id="heightUp">
-                  <i class="fas fa-plus"></i>
-                </button>
-              </div>
-              <small class="text-muted">Adjust frame proportions</small>
-            </div>
-            
-            <div class="control-group">
-              <div class="control-label">
-                <span>Vertical Position</span>
-                <span class="control-value" id="positionValue">0px</span>
-              </div>
-              <div class="position-controls">
-                <button class="btn btn-outline-primary position-btn" id="positionDown">
-                  <i class="fas fa-arrow-down"></i>
-                </button>
-                <span>Move Up / Down</span>
-                <button class="btn btn-outline-primary position-btn" id="positionUp">
-                  <i class="fas fa-arrow-up"></i>
-                </button>
-              </div>
-              <small class="text-muted">Move frames higher or lower on face</small>
-            </div>
-          </div>
-        </div>
-
-        <?php if (preg_match('/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i', $_SERVER['HTTP_USER_AGENT'])): ?>
-        <div class="mobile-tips">
-          <h6>Mobile Tips</h6>
-          <ul>
-            <li>Ensure good lighting for best results</li>
-            <li>Hold device steady at eye level</li>
-            <li>Keep face centered in frame</li>
-            <li>Close other apps for better performance</li>
-          </ul>
-        </div>
-        <?php endif; ?>
       </div>
+
+      <div class="right-column">
+        <div class="card">
+          <div class="card-header">
+            <span><i class="fas fa-cubes me-2"></i>Material Effect</span>
+            <span class="step-badge">4</span>
+          </div>
+          <div class="card-body">
+            <div class="material-controls">
+              <button class="material-btn active" data-material="Matte">Matte</button>
+              <button class="material-btn" data-material="Glossy">Glossy</button>
+              <button class="material-btn" data-material="Pattern">Pattern</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="colors-area">
+          <div class="card">
+            <div class="card-header">
+              <span><i class="fas fa-palette me-2"></i>Colors</span>
+              <span class="step-badge">5</span>
+            </div>
+            <div class="card-body">
+              <div class="accordion" id="colorAccordion">
+                  <div class="accordion-item">
+                    <h2 class="accordion-header">
+                      <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#classicColors" aria-expanded="true">
+                        Classic Neutrals
+                      </button>
+                    </h2>
+                    <div id="classicColors" class="accordion-collapse collapse show" data-bs-parent="#colorAccordion">
+                      <div class="accordion-body">
+                        <div class="color-grid">
+                          <div class="color-option">
+                            <div class="color-btn active" style="background: #1a1a1a;" data-color="#1a1a1a" data-color-name="Matte Black"></div>
+                            <div class="color-label">Black</div>
+                          </div>
+                          <div class="color-option">
+                            <div class="color-btn" style="background: #2d3436;" data-color="#2d3436" data-color-name="Charcoal"></div>
+                            <div class="color-label">Charcoal</div>
+                          </div>
+                          <div class="color-option">
+                            <div class="color-btn" style="background: #636e72;" data-color="#636e72" data-color-name="Slate Gray"></div>
+                            <div class="color-label">Slate</div>
+                          </div>
+                          <div class="color-option">
+                            <div class="color-btn" style="background: #704214;" data-color="#704214" data-color-name="Havana"></div>
+                            <div class="color-label">Havana</div>
+                          </div>
+                          <div class="color-option">
+                            <div class="color-btn" style="background: #8b7355;" data-color="#8b7355" data-color-name="Taupe"></div>
+                            <div class="color-label">Taupe</div>
+                          </div>
+                          <div class="color-option">
+                            <div class="color-btn" style="background: #5f4339;" data-color="#5f4339" data-color-name="Espresso"></div>
+                            <div class="color-label">Espresso</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="accordion-item">
+                    <h2 class="accordion-header">
+                      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#modernTones">
+                        Modern Tones
+                      </button>
+                    </h2>
+                    <div id="modernTones" class="accordion-collapse collapse" data-bs-parent="#colorAccordion">
+                      <div class="accordion-body">
+                        <div class="color-grid">
+                          <div class="color-option">
+                            <div class="color-btn" style="background: #2c5f7c;" data-color="#2c5f7c" data-color-name="Ocean Blue"></div>
+                            <div class="color-label">Ocean</div>
+                          </div>
+                          <div class="color-option">
+                            <div class="color-btn" style="background: #34495e;" data-color="#34495e" data-color-name="Navy"></div>
+                            <div class="color-label">Navy</div>
+                          </div>
+                          <div class="color-option">
+                            <div class="color-btn" style="background: #16a085;" data-color="#16a085" data-color-name="Teal"></div>
+                            <div class="color-label">Teal</div>
+                          </div>
+                          <div class="color-option">
+                            <div class="color-btn" style="background: #7f5539;" data-color="#7f5539" data-color-name="Cognac"></div>
+                            <div class="color-label">Cognac</div>
+                          </div>
+                          <div class="color-option">
+                            <div class="color-btn" style="background: #95a5a6;" data-color="#95a5a6" data-color-name="Smoke"></div>
+                            <div class="color-label">Smoke</div>
+                          </div>
+                          <div class="color-option">
+                            <div class="color-btn" style="background: #8e44ad;" data-color="#8e44ad" data-color-name="Plum"></div>
+                            <div class="color-label">Plum</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="accordion-item">
+                    <h2 class="accordion-header">
+                      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#premiumMetallic">
+                        Premium Metallic
+                      </button>
+                    </h2>
+                    <div id="premiumMetallic" class="accordion-collapse collapse" data-bs-parent="#colorAccordion">
+                      <div class="accordion-body">
+                        <div class="color-grid">
+                          <div class="color-option">
+                            <div class="color-btn" style="background: linear-gradient(135deg, #bdc3c7, #ecf0f1);" data-color="#bdc3c7" data-color-name="Brushed Silver"></div>
+                            <div class="color-label">Silver</div>
+                          </div>
+                          <div class="color-option">
+                            <div class="color-btn" style="background: linear-gradient(135deg, #b8860b, #d4af37);" data-color="#c5a647" data-color-name="Champagne Gold"></div>
+                            <div class="color-label">Gold</div>
+                          </div>
+                          <div class="color-option">
+                            <div class="color-btn" style="background: linear-gradient(135deg, #cd7f32, #e8a87c);" data-color="#cd7f32" data-color-name="Rose Gold"></div>
+                            <div class="color-label">Rose Gold</div>
+                          </div>
+                          <div class="color-option">
+                            <div class="color-btn" style="background: linear-gradient(135deg, #4a4a4a, #6b6b6b);" data-color="#5a5a5a" data-color-name="Gunmetal"></div>
+                            <div class="color-label">Gunmetal</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                
+              </div>
+            </div>
+          </div>
+        </div>
     </div>
   </div>
 
@@ -1203,19 +1277,20 @@ padding: 8px;
     const videoElement = document.getElementById('inputVideo');
     const canvasElement = document.getElementById('outputCanvas');
     const canvasCtx = canvasElement.getContext('2d');
-    const startBtn = document.getElementById('startBtn');
-    const calibrateBtn = document.getElementById('calibrateBtn');
-    const cameraOverlay = document.getElementById('cameraOverlay');
-    const statusIndicator = document.getElementById('statusIndicator');
-    const statusText = document.getElementById('statusText');
+  const startBtn = document.getElementById('startBtn');
+  const calibrateBtn = document.getElementById('calibrateBtn');
+  const saveBtn = document.getElementById('saveBtn');
+  const cameraOverlay = document.getElementById('cameraOverlay');
+  const cameraStatus = document.getElementById('cameraStatus');
+  const cameraStatusText = document.getElementById('cameraStatusText');
     const sizeSlider = document.getElementById('sizeSlider');
     const sizeValue = document.getElementById('sizeValue');
-    const heightDown = document.getElementById('heightDown');
-    const heightUp = document.getElementById('heightUp');
-    const heightValue = document.getElementById('heightValue');
-    const positionDown = document.getElementById('positionDown');
-    const positionUp = document.getElementById('positionUp');
-    const positionValue = document.getElementById('positionValue');
+  const heightDown = document.getElementById('heightDown');
+  const heightUp = document.getElementById('heightUp');
+  const heightValue = document.getElementById('heightValue');
+  const positionDown = document.getElementById('positionDown');
+  const positionUp = document.getElementById('positionUp');
+  const positionValue = document.getElementById('positionValue');
     const frameButtons = document.querySelectorAll('.frame-btn');
     const colorButtons = document.querySelectorAll('.color-btn');
     const materialButtons = document.querySelectorAll('.material-btn');
@@ -1226,11 +1301,11 @@ padding: 8px;
     const downloadSnapshotBtn = document.getElementById('downloadSnapshotBtn');
     const closeSnapshotBtn = document.getElementById('closeSnapshotBtn');
 
-    // Step wizard elements
-    const step1 = document.getElementById('step1');
-    const step2 = document.getElementById('step2');
-    const step3 = document.getElementById('step3');
-    const step4 = document.getElementById('step4');
+  // Step wizard elements (may be removed) - keep references if present
+  const step1 = document.getElementById('step1');
+  const step2 = document.getElementById('step2');
+  const step3 = document.getElementById('step3');
+  const step4 = document.getElementById('step4');
 
     const FRAMES = {
       'SQUARE': { path: 'Images/frames/square-frame-removebg-preview.png', label: 'Square' },
@@ -1282,7 +1357,8 @@ padding: 8px;
     const textureCache = new Map();
 
     function updateStepWizard(stepNumber) {
-      const steps = [step1, step2, step3, step4];
+      const steps = [step1, step2, step3, step4].filter(Boolean);
+      if (steps.length === 0) return; // step wizard removed in layout
       steps.forEach((step, index) => {
         step.classList.remove('active', 'completed');
         if (index < stepNumber - 1) {
@@ -1294,8 +1370,10 @@ padding: 8px;
     }
 
     function updateStatus(status, type) {
-      statusText.textContent = status;
-      statusIndicator.className = `status-indicator status-${type}`;
+      if (cameraStatusText) cameraStatusText.textContent = status;
+      if (cameraStatus) {
+        cameraStatus.className = `camera-status status-${type}`;
+      }
     }
 
     function calculateHeadAngle(landmarks) {
@@ -1313,11 +1391,15 @@ padding: 8px;
     }
 
     function updateHeightDisplay() {
-      heightValue.textContent = Math.round(glassesHeightRatio * 100) + '%';
+      const text = Math.round(glassesHeightRatio * 100) + '%';
+      if (heightValue) heightValue.textContent = text;
+      const hd = document.getElementById('heightDisplay'); if (hd) hd.textContent = text;
     }
 
     function updatePositionDisplay() {
-      positionValue.textContent = verticalOffset + 'px';
+      const text = verticalOffset + 'px';
+      if (positionValue) positionValue.textContent = text;
+      const pd = document.getElementById('positionDisplay'); if (pd) pd.textContent = text;
     }
 
     function createMaterialTexture(width, height, baseColor, materialType) {
@@ -1531,19 +1613,23 @@ padding: 8px;
       }
     }
 
-    // Snapshot functionality
-    takeSnapshotBtn.addEventListener('click', () => {
+    // Snapshot functionality (reusable)
+    function showSnapshotFromCanvas() {
       const snapshotCanvas = document.createElement('canvas');
       snapshotCanvas.width = canvasElement.width;
       snapshotCanvas.height = canvasElement.height;
       const ctx = snapshotCanvas.getContext('2d');
       ctx.drawImage(canvasElement, 0, 0);
-      
+
       const dataUrl = snapshotCanvas.toDataURL('image/png');
       snapshotImage.src = dataUrl;
       snapshotModal.classList.add('active');
-      updateStepWizard(4);
-    });
+      try { updateStepWizard(4); } catch (e) { /* ignore if wizard removed */ }
+    }
+
+    takeSnapshotBtn.addEventListener('click', showSnapshotFromCanvas);
+
+    if (saveBtn) saveBtn.addEventListener('click', showSnapshotFromCanvas);
 
     downloadSnapshotBtn.addEventListener('click', () => {
       const link = document.createElement('a');
@@ -1591,28 +1677,57 @@ padding: 8px;
 
     sizeSlider.addEventListener('input', (e) => {
       glassesSizeMultiplier = parseFloat(e.target.value);
-      sizeValue.textContent = glassesSizeMultiplier.toFixed(1) + 'x';
+      // update legacy display if present
+      if (sizeValue) sizeValue.textContent = glassesSizeMultiplier.toFixed(1) + 'x';
+      // update the new size value button
+      const sizeValueBtn = document.getElementById('sizeValueBtn'); if (sizeValueBtn) sizeValueBtn.textContent = glassesSizeMultiplier.toFixed(1) + 'x';
     });
 
-    heightDown.addEventListener('click', () => {
-      glassesHeightRatio = Math.max(0.4, glassesHeightRatio - 0.05);
-      updateHeightDisplay();
-    });
+    // New Reset and size button handlers
+    const sizeResetBtn = document.getElementById('sizeResetBtn');
+    const sizeValueBtn = document.getElementById('sizeValueBtn');
+    if (sizeResetBtn) {
+      sizeResetBtn.addEventListener('click', () => {
+        glassesSizeMultiplier = 2.4;
+        if (sizeSlider) { sizeSlider.value = '2.4'; }
+        if (sizeValue) sizeValue.textContent = '2.4x';
+        if (sizeValueBtn) sizeValueBtn.textContent = '2.4x';
+      });
+    }
+    if (sizeValueBtn) {
+      sizeValueBtn.addEventListener('click', () => {
+        // clicking the value toggles reset to default as a convenience
+        glassesSizeMultiplier = 2.4;
+        if (sizeSlider) { sizeSlider.value = '2.4'; }
+        if (sizeValue) sizeValue.textContent = '2.4x';
+        if (sizeValueBtn) sizeValueBtn.textContent = '2.4x';
+      });
+    }
 
-    heightUp.addEventListener('click', () => {
-      glassesHeightRatio = Math.min(1.0, glassesHeightRatio + 0.05);
-      updateHeightDisplay();
-    });
-
-    positionDown.addEventListener('click', () => {
-      verticalOffset += 2;
-      updatePositionDisplay();
-    });
-
-    positionUp.addEventListener('click', () => {
-      verticalOffset -= 2;
-      updatePositionDisplay();
-    });
+    if (heightDown) {
+      heightDown.addEventListener('click', () => {
+        glassesHeightRatio = Math.max(0.4, glassesHeightRatio - 0.05);
+        updateHeightDisplay();
+      });
+    }
+    if (heightUp) {
+      heightUp.addEventListener('click', () => {
+        glassesHeightRatio = Math.min(1.0, glassesHeightRatio + 0.05);
+        updateHeightDisplay();
+      });
+    }
+    if (positionDown) {
+      positionDown.addEventListener('click', () => {
+        verticalOffset += 2;
+        updatePositionDisplay();
+      });
+    }
+    if (positionUp) {
+      positionUp.addEventListener('click', () => {
+        verticalOffset -= 2;
+        updatePositionDisplay();
+      });
+    }
 
     calibrateBtn.addEventListener('click', () => {
       if (faceTrackingActive) {
@@ -1624,6 +1739,10 @@ padding: 8px;
       }
     });
 
+    const cameraCta = document.getElementById('cameraCta');
+    // pulse CTA to draw attention
+    const ctaBtn = cameraCta ? cameraCta.querySelector('button') : null;
+    if (ctaBtn) ctaBtn.classList.add('pulse');
     startBtn.addEventListener('click', async () => {
       try {
         startBtn.disabled = true;
@@ -1632,9 +1751,12 @@ padding: 8px;
         await initializeFaceMesh();
         const stream = await startCamera();
         
-        resizeCanvasToDisplay();
-        calibrateBtn.classList.remove('d-none');
-        snapshotControls.classList.add('active');
+  resizeCanvasToDisplay();
+  // hide CTA overlay after camera starts
+  if (cameraCta) cameraCta.style.display = 'none';
+  if (ctaBtn) ctaBtn.classList.remove('pulse');
+  calibrateBtn.classList.remove('d-none');
+  if (snapshotControls) snapshotControls.classList.add('active');
         updateHeightDisplay();
         updatePositionDisplay();
         updateStepWizard(1);
