@@ -914,7 +914,7 @@
         gap: 8px;
       }
 
-    /* when JS toggles camera-fixed on mobile */
+    /* when JS toggles camera-fixed on mobile - mini video header (video-call style) */
     .camera-fixed {
       position: fixed !important;
       top: 10px !important;
@@ -929,7 +929,17 @@
       box-shadow: 0 12px 40px rgba(0,0,0,0.12);
       border-radius: 12px;
       background: rgba(255,255,255,0.01);
+      transition: height 220ms ease, transform 220ms ease;
+      height: 96px; /* mini header height */
     }
+    .camera-fixed .camera-container { height: 96px !important; aspect-ratio: auto !important; }
+    .camera-fixed .camera-cta { display: none !important; }
+    .camera-fixed .snapshot-controls { display: none !important; }
+    .camera-fixed .camera-status { transform: scale(0.92); }
+    .camera-fixed .camera-bottom-actions { right: 12px; bottom: 12px; }
+
+    /* while mini camera active, add top padding so content doesn't jump under the fixed bar */
+    .camera-mini-active .main-content { padding-top: 120px; }
 
     /* prevent horizontal scroll on mobile */
     @media (max-width: 767px) {
@@ -1961,9 +1971,15 @@
         }
         const scrollY = window.scrollY || document.documentElement.scrollTop;
         if (scrollY >= origOffsetTop - 10) {
-          cameraSection.classList.add('camera-fixed');
+          if (!cameraSection.classList.contains('camera-fixed')) {
+            cameraSection.classList.add('camera-fixed');
+            document.body.classList.add('camera-mini-active');
+          }
         } else {
-          cameraSection.classList.remove('camera-fixed');
+          if (cameraSection.classList.contains('camera-fixed')) {
+            cameraSection.classList.remove('camera-fixed');
+            document.body.classList.remove('camera-mini-active');
+          }
         }
       }
 
