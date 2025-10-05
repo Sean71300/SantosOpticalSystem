@@ -55,24 +55,17 @@
     .btn-primary:disabled {
       background-color: #6c757d;
     }
-    .btn-outline-primary {
-      border-color: var(--primary);
-      color: var(--primary);
-    }
-    .btn-outline-primary:hover {
-      background-color: var(--primary);
-      color: white;
-    }
     .frame-btn {
-      width: 60px;
-      height: 60px;
+      width: 70px;
+      height: 70px;
       padding: 5px;
       border: 2px solid #dee2e6;
       border-radius: 8px;
-      margin: 2px;
+      margin: 3px;
       background: white;
       cursor: pointer;
       transition: all 0.2s;
+      position: relative;
     }
     .frame-btn:hover {
       border-color: var(--primary);
@@ -87,6 +80,16 @@
       width: 100%;
       height: 100%;
       object-fit: contain;
+    }
+    .frame-label {
+      position: absolute;
+      bottom: -20px;
+      left: 0;
+      right: 0;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--dark);
+      white-space: nowrap;
     }
     .loading-spinner {
       display: none;
@@ -107,14 +110,6 @@
       color: #666;
       margin-top: 10px;
     }
-    .calibration-notice {
-      background: #fff3cd;
-      border: 1px solid #ffeaa7;
-      border-radius: 8px;
-      padding: 10px;
-      margin: 10px 0;
-      font-size: 14px;
-    }
     .size-controls {
       background: #e9ecef;
       border-radius: 8px;
@@ -129,10 +124,10 @@
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     .frame-category {
-      font-size: 12px;
+      font-size: 14px;
       font-weight: bold;
-      color: #666;
-      margin-bottom: 5px;
+      color: #333;
+      margin-bottom: 10px;
     }
   </style>
 </head>
@@ -144,10 +139,6 @@
     <div class="camera-container mb-3">
       <video id="inputVideo" autoplay muted playsinline></video>
       <canvas id="outputCanvas"></canvas>
-    </div>
-
-    <div class="calibration-notice d-none" id="calibrationNotice">
-      <strong>Tip:</strong> Look straight at the camera, then click "Calibrate Straight Position" below
     </div>
 
     <div class="size-controls d-none" id="sizeControls">
@@ -165,26 +156,33 @@
     <div class="frame-selector d-none" id="frameSelector">
       <div class="frame-category">CHOOSE FRAME STYLE</div>
       <div class="d-flex flex-wrap justify-content-center">
-        <button class="frame-btn active" data-frame="A-TRIANGLE" title="A-Shape Triangle">
+        <button class="frame-btn active" data-frame="A-TRIANGLE">
           <img src="Images/frames/ashape-frame-removebg-preview.png" alt="A-Shape">
+          <div class="frame-label">A-Shape</div>
         </button>
-        <button class="frame-btn" data-frame="V-TRIANGLE" title="V-Shape Triangle">
+        <button class="frame-btn" data-frame="V-TRIANGLE">
           <img src="Images/frames/vshape-frame-removebg-preview.png" alt="V-Shape">
+          <div class="frame-label">V-Shape</div>
         </button>
-        <button class="frame-btn" data-frame="ROUND" title="Round">
+        <button class="frame-btn" data-frame="ROUND">
           <img src="Images/frames/round-frame-removebg-preview.png" alt="Round">
+          <div class="frame-label">Round</div>
         </button>
-        <button class="frame-btn" data-frame="SQUARE" title="Square">
+        <button class="frame-btn" data-frame="SQUARE">
           <img src="Images/frames/square-frame-removebg-preview.png" alt="Square">
+          <div class="frame-label">Square</div>
         </button>
-        <button class="frame-btn" data-frame="RECTANGLE" title="Rectangle">
+        <button class="frame-btn" data-frame="RECTANGLE">
           <img src="Images/frames/rectangle-frame-removebg-preview.png" alt="Rectangle">
+          <div class="frame-label">Rectangle</div>
         </button>
-        <button class="frame-btn" data-frame="OBLONG" title="Oblong">
+        <button class="frame-btn" data-frame="OBLONG">
           <img src="Images/frames/oblong-frame-removebg-preview.png" alt="Oblong">
+          <div class="frame-label">Oblong</div>
         </button>
-        <button class="frame-btn" data-frame="DIAMOND" title="Diamond">
+        <button class="frame-btn" data-frame="DIAMOND">
           <img src="Images/frames/diamond-frame-removebg-preview.png" alt="Diamond">
+          <div class="frame-label">Diamond</div>
         </button>
       </div>
     </div>
@@ -192,9 +190,6 @@
     <div class="mt-3">
       <button id="startBtn" class="btn btn-primary px-4">
         <i class="bi bi-camera me-2"></i>Start Camera
-      </button>
-      <button id="calibrateBtn" class="btn btn-outline-primary px-4 ms-2 d-none">
-        <i class="bi bi-arrow-clockwise me-2"></i>Calibrate Straight Position
       </button>
     </div>
 
@@ -224,8 +219,6 @@
     const canvasElement = document.getElementById('outputCanvas');
     const canvasCtx = canvasElement.getContext('2d');
     const startBtn = document.getElementById('startBtn');
-    const calibrateBtn = document.getElementById('calibrateBtn');
-    const calibrationNotice = document.getElementById('calibrationNotice');
     const sizeControls = document.getElementById('sizeControls');
     const sizeSlider = document.getElementById('sizeSlider');
     const sizeValue = document.getElementById('sizeValue');
@@ -236,15 +229,36 @@
     const mobileTips = document.getElementById('mobileTips');
     const performanceWarning = document.getElementById('performanceWarning');
 
-    // Frame definitions
+    // Frame definitions with proper labels
     const FRAMES = {
-      'SQUARE': 'Images/frames/square-frame-removebg-preview.png',
-      'ROUND': 'Images/frames/round-frame-removebg-preview.png',
-      'OBLONG': 'Images/frames/oblong-frame-removebg-preview.png',
-      'DIAMOND': 'Images/frames/diamond-frame-removebg-preview.png',
-      'V-TRIANGLE': 'Images/frames/vshape-frame-removebg-preview.png',
-      'A-TRIANGLE': 'Images/frames/ashape-frame-removebg-preview.png',
-      'RECTANGLE': 'Images/frames/rectangle-frame-removebg-preview.png'
+      'SQUARE': {
+        path: 'Images/frames/square-frame-removebg-preview.png',
+        label: 'Square'
+      },
+      'ROUND': {
+        path: 'Images/frames/round-frame-removebg-preview.png',
+        label: 'Round'
+      },
+      'OBLONG': {
+        path: 'Images/frames/oblong-frame-removebg-preview.png',
+        label: 'Oblong'
+      },
+      'DIAMOND': {
+        path: 'Images/frames/diamond-frame-removebg-preview.png',
+        label: 'Diamond'
+      },
+      'V-TRIANGLE': {
+        path: 'Images/frames/vshape-frame-removebg-preview.png',
+        label: 'V-Shape'
+      },
+      'A-TRIANGLE': {
+        path: 'Images/frames/ashape-frame-removebg-preview.png',
+        label: 'A-Shape'
+      },
+      'RECTANGLE': {
+        path: 'Images/frames/rectangle-frame-removebg-preview.png',
+        label: 'Rectangle'
+      }
     };
 
     // Check if mobile device
@@ -261,13 +275,13 @@
     const totalImages = Object.keys(FRAMES).length;
 
     // Preload all frame images
-    Object.entries(FRAMES).forEach(([frameType, framePath]) => {
+    Object.entries(FRAMES).forEach(([frameType, frameData]) => {
       const img = new Image();
-      img.src = framePath;
+      img.src = frameData.path;
       img.onload = () => {
         loadedImagesCount++;
         glassesImages[frameType] = img;
-        console.log(`✅ ${frameType} frame loaded`);
+        console.log(`✅ ${frameData.label} frame loaded`);
         
         if (loadedImagesCount === totalImages) {
           glassesLoaded = true;
@@ -275,7 +289,7 @@
         }
       };
       img.onerror = () => {
-        console.error(`❌ Failed to load frame: ${frameType}`);
+        console.error(`❌ Failed to load frame: ${frameData.label}`);
         loadedImagesCount++;
       };
     });
@@ -285,11 +299,9 @@
     let isProcessing = false;
     let frameCount = 0;
     let faceTrackingActive = false;
-    let angleOffset = 0;
-    let isCalibrated = false;
     let glassesSizeMultiplier = 2.4;
     let glassesHeightRatio = 0.7;
-    let currentFrame = 'A-TRIANGLE'; // Default frame
+    let currentFrame = 'A-TRIANGLE';
 
     function calculateHeadAngle(landmarks) {
       const leftEyeInner = landmarks[133];
@@ -300,22 +312,10 @@
       return Math.atan2(deltaY, deltaX);
     }
 
-    function calibrateStraightPosition(landmarks) {
-      const currentAngle = calculateHeadAngle(landmarks);
-      angleOffset = -currentAngle;
-      isCalibrated = true;
-      console.log("✅ Calibrated! Offset:", angleOffset);
-    }
-
     function drawGlasses(landmarks) {
       const leftEye = landmarks[33];
       const rightEye = landmarks[263];
-      let headAngle = calculateHeadAngle(landmarks);
-      
-      // Apply calibration offset if calibrated
-      if (isCalibrated) {
-        headAngle += angleOffset;
-      }
+      const headAngle = calculateHeadAngle(landmarks);
       
       const eyeDist = Math.hypot(
         rightEye.x * canvasElement.width - leftEye.x * canvasElement.width,
@@ -362,12 +362,6 @@
       // Draw glasses if face detected
       if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
         faceTrackingActive = true;
-        
-        // Auto-calibrate on first face detection if not already calibrated
-        if (!isCalibrated && frameCount > 10) {
-          calibrateStraightPosition(results.multiFaceLandmarks[0]);
-          calibrationNotice.classList.add('d-none');
-        }
         
         for (const landmarks of results.multiFaceLandmarks) {
           drawGlasses(landmarks);
@@ -475,7 +469,8 @@
         btn.classList.add('active');
         // Update current frame
         currentFrame = btn.dataset.frame;
-        console.log(`🎯 Selected frame: ${currentFrame}`);
+        const frameLabel = FRAMES[currentFrame].label;
+        console.log(`🎯 Selected frame: ${frameLabel}`);
       });
     });
 
@@ -483,18 +478,6 @@
     sizeSlider.addEventListener('input', (e) => {
       glassesSizeMultiplier = parseFloat(e.target.value);
       sizeValue.textContent = glassesSizeMultiplier.toFixed(1) + 'x';
-    });
-
-    // Calibrate button handler
-    calibrateBtn.addEventListener('click', () => {
-      if (faceTrackingActive) {
-        statusMsg.innerText = "Calibrating straight position...";
-        isCalibrated = false;
-        calibrationNotice.classList.remove('d-none');
-        setTimeout(() => {
-          statusMsg.innerText = "Calibrated! Glasses should now appear straight.";
-        }, 1000);
-      }
     });
 
     startBtn.addEventListener('click', async () => {
@@ -513,8 +496,6 @@
         resizeCanvasToDisplay();
 
         // Show all controls
-        calibrationNotice.classList.remove('d-none');
-        calibrateBtn.classList.remove('d-none');
         sizeControls.classList.remove('d-none');
         frameSelector.classList.remove('d-none');
 
@@ -538,11 +519,8 @@
 
         setInterval(() => {
           if (faceTrackingActive) {
-            if (isCalibrated) {
-              statusMsg.innerHTML = `Glasses active ✅ | <small>${currentFrame} - Calibrated</small>`;
-            } else {
-              statusMsg.innerHTML = `Glasses active ✅ | <small>${currentFrame} - Calibrating...</small>`;
-            }
+            const frameLabel = FRAMES[currentFrame].label;
+            statusMsg.innerHTML = `Glasses active ✅ | <small>${frameLabel} Frame</small>`;
           } else {
             statusMsg.innerHTML = "Ready! Look at the camera | <small>Searching for face...</small>";
           }
