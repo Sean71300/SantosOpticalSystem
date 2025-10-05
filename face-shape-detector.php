@@ -1028,7 +1028,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <i class="fas fa-redo me-2"></i> Analyze Another Photo
                     </a>
                     <!-- In your results section, replace the virtual try-on button with: -->
-                    <a href="virtual-try-on.php?shape=<?= urlencode($result) ?>" class="btn btn-quiz">
+                    <a href="virtual-try-on.php" class="btn btn-quiz">
                             <i class="fas fa-camera me-2"></i> Check out Virtual Try-On! 
                         </a>
                 </div>
