@@ -105,7 +105,7 @@
       console.log("📸 Camera started successfully.");
     } catch (error) {
       console.error("❌ Camera failed to start:", error);
-    }
+    }//a
   </script>
 </body>
 </html>
