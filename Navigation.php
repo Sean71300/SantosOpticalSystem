@@ -97,8 +97,7 @@ if (isset($_SESSION['role'])) {
 .nav-item.dropdown { position: relative; }
 .nav-item.dropdown .dropdown-menu { position: absolute; top: 100%; right: 0; left: auto; min-width: 10rem; pointer-events: auto; }
 
-/* Custom user dropdown (used when logged in). We keep it simple and deterministic. */
-.user-dropdown { display: none; position: absolute; right: 0; top: 100%; background: white; border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 6px 20px rgba(0,0,0,0.08); padding: 0.25rem 0; z-index: 2500; min-width: 12rem; }
+.user-dropdown { display: none; position: absolute; right: 0; top: 100%; background: white; border: 1px solid rgba(0,0,0,0.12); border-radius: 15px; box-shadow: 0 6px 20px rgba(0,0,0,0.08); padding: 0.25rem 0; z-index: 2500; min-width: 12rem; overflow: hidden; }
 .user-dropdown .dropdown-link { display: block; padding: 0.5rem 1rem; color: #333; text-decoration: none; }
 .user-dropdown .dropdown-link:hover { background: #f8f9fa; }
 .user-dropdown.show { display: block; }
