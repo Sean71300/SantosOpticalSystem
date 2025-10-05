@@ -297,7 +297,7 @@
     /* bottom-right calibrate button inside camera */
     .camera-bottom-actions {
       position: absolute;
-      right: 12px;
+      right: 16px;
       bottom: 12px;
       z-index: 40;
       display: flex;
@@ -905,13 +905,17 @@
       }
 
     /* when JS toggles camera-fixed on mobile */
-      .camera-fixed {
+    .camera-fixed {
       position: fixed !important;
       top: 10px !important;
-      left: 10px;
-      right: 10px;
+      left: 0 !important;
+      right: 0 !important;
+      margin: 0 10px !important;
       z-index: 9999;
-      width: calc(100% - 20px);
+      width: auto !important;
+      max-width: calc(100% - 20px) !important;
+      box-sizing: border-box !important;
+      overflow: hidden !important;
       box-shadow: 0 12px 40px rgba(0,0,0,0.12);
       border-radius: 12px;
       background: rgba(255,255,255,0.01);
@@ -919,7 +923,8 @@
 
     /* prevent horizontal scroll on mobile */
     @media (max-width: 767px) {
-      body, .app-container { overflow-x: hidden; }
+      html, body, .app-container { overflow-x: hidden; }
+      .camera-section .camera-container { width: 100%; max-width: 100%; box-sizing: border-box; }
     }
       
       .frame-btn {
