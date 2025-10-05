@@ -84,7 +84,7 @@ if (isset($_SESSION['role'])) {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    transform: translateY(3px);
+    transform: translateY(30px);
 }
 /* Ensure dropdown appears above other elements */
 .dropdown-menu { z-index: 2000; }
