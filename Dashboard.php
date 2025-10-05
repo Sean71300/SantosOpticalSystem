@@ -85,10 +85,13 @@ if (!is_numeric($orderCount)) { $orderCount = 0; }
             // Determine employee-only early so we can switch layouts
             $ridLocal = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0; 
             $isEmployeeOnly = ($ridLocal === 2) && !$isAdmin; 
+            // Optometrist role flag (roleid 3)
+            $isOptometrist = ($ridLocal === 3);
         ?>
 
         <?php if (!$isEmployeeOnly): ?>
         <div class="row">
+            <?php if (!$isOptometrist): ?>
             <div class="col-md-3">
                 <div class="dashboard-card">
                     <div class="card-icon text-primary"><i class="fas fa-users"></i></div>
@@ -97,6 +100,17 @@ if (!is_numeric($orderCount)) { $orderCount = 0; }
                     <a href="customerRecords.php" class="btn btn-sm btn-outline-primary mt-2">View All</a>
                 </div>
             </div>
+            <?php else: ?>
+            <!-- Optometrist: show Medical History card instead of Customers/Inventory/Orders -->
+            <div class="col-md-3">
+                <div class="dashboard-card">
+                    <div class="card-icon text-primary"><i class="fas fa-notes-medical"></i></div>
+                    <h5>Medical History</h5>
+                    <div class="stat-number"><?php echo number_format($customerCount); ?></div>
+                    <a href="customerRecords.php" class="btn btn-sm btn-outline-primary mt-2">View Records</a>
+                </div>
+            </div>
+            <?php endif; ?>
             
             <?php if ($isAdmin): ?>
             <div class="col-md-3">
@@ -109,7 +123,8 @@ if (!is_numeric($orderCount)) { $orderCount = 0; }
             </div>
             <?php endif; ?>
 
-            <!-- Inventory card (visible to all roles) -->
+            <!-- Inventory card (hidden for optometrist) -->
+            <?php if (!$isOptometrist): ?>
             <div class="col-md-3">
                 <div class="dashboard-card">
                     <div class="card-icon text-warning"><i class="fas fa-boxes-stacked"></i></div>
@@ -118,8 +133,10 @@ if (!is_numeric($orderCount)) { $orderCount = 0; }
                     <a href="<?php echo ($isAdmin) ? 'admin-inventory.php' : 'Employee-inventory.php'; ?>" class="btn btn-sm btn-outline-warning mt-2">View All</a>
                 </div>
             </div>
+            <?php endif; ?>
 
-            <!-- Orders card (visible to all roles) -->
+            <!-- Orders card (hidden for optometrist) -->
+            <?php if (!$isOptometrist): ?>
             <div class="col-md-3">
                 <div class="dashboard-card">
                     <div class="card-icon text-info"><i class="fas fa-receipt"></i></div>
@@ -128,6 +145,7 @@ if (!is_numeric($orderCount)) { $orderCount = 0; }
                     <a href="order.php" class="btn btn-sm btn-outline-info mt-2">View All</a>
                 </div>
             </div>
+            <?php endif; ?>
             <?php // $isEmployeeOnly already computed above ?>
             <?php if ($isAdmin): ?>
                 <div class="row mt-4 equal-height-row">
