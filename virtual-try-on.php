@@ -38,7 +38,7 @@
     .app-container {
       max-width: 1400px;
       margin: 0 auto;
-      padding: 15px;
+      padding: 20px 18px; /* slightly larger horizontal padding for breathing room */
       overflow: visible;
     }
     
@@ -78,11 +78,12 @@
       .main-content {
         display: flex;
         flex-direction: row;
-        gap: 18px;
+        gap: 24px; /* increased gap for better horizontal spacing */
         overflow-x: auto;
         scroll-behavior: smooth;
         align-items: stretch;
-        padding-bottom: 6px;
+        padding-bottom: 8px;
+        padding-left: 6px; /* small offset so first car doesn't stick to edge */
       }
       /* hide native scrollbar for WebKit while still allowing scroll */
       .main-content::-webkit-scrollbar { height: 8px; }
@@ -95,9 +96,10 @@
         display: flex;
         align-items: stretch;
         height: 520px; /* ensure left-column also matches card height */
+        padding: 6px; /* small internal padding so cards don't touch edges */
       }
   .left-column { min-width: 180px; }
-  .left-column .camera-section { flex: 1; display: flex; align-items: center; justify-content: center; }
+  .left-column .camera-section { flex: 1; display: flex; align-items: center; justify-content: center; padding: 6px; }
       .center-column { min-width: 340px; }
       .frames-column { min-width: 460px; }
       .right-column { min-width: 280px; }
@@ -355,7 +357,7 @@
     }
     
     .card-body {
-      padding: 16px;
+      padding: 16px 14px; /* consistent horizontal padding */
     }
     
     .btn-primary {
@@ -427,8 +429,8 @@
     .frame-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(60px, 1fr));
-      gap: 8px;
-      margin-top: 10px;
+      gap: 10px;
+      margin-top: 8px;
     }
 
     /* Vertical frames list for right column */
@@ -457,13 +459,13 @@
       background: white;
       border: 2px solid var(--border);
       border-radius: 12px;
-      padding: 6px 8px;
+      padding: 8px 10px;
       cursor: pointer;
       transition: all 0.3s ease;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 5px;
+      gap: 6px;
     }
     
     .frame-btn:hover {
@@ -481,13 +483,13 @@
     }
     
     .frame-img {
-      width: 34px;
-      height: 20px;
+      width: 40px;
+      height: 24px;
       object-fit: contain;
     }
     
     .frame-label {
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 700;
       color: var(--dark);
       text-align: center;
@@ -498,12 +500,12 @@
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
       gap: 8px;
-      margin-top: 10px;
+      margin-top: 8px;
     }
     
     .color-btn {
-      width: 40px;
-      height: 40px;
+      width: 36px;
+      height: 36px;
       border: 3px solid var(--border);
       border-radius: 50%;
       cursor: pointer;
