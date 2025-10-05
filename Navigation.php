@@ -114,17 +114,16 @@ if (isset($_SESSION['role'])) {
                         echo '</li>';
                     }
                     else {
-                        echo '<div class="dropdown">';
-                        echo '<button class="btn dropdown-toggle fs-5 fw-bold" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">';
-                        echo '|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'. htmlspecialchars($_SESSION["full_name"]);
-                        
+                        echo '<li class="nav-item dropdown">';
+                        echo '<a class="nav-link dropdown-toggle fs-5 fw-bold" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">';
+                        echo '|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' . htmlspecialchars($_SESSION["full_name"]);
+
                         // Only show image if it exists (for employees)
                         if (isset($_SESSION["img"]) && $_SESSION["user_type"] !== 'customer') {
                             echo '<img src="' . $_SESSION["img"] . '" class="logo">';
                         }
-                        
-                        echo '</button>';
-                        echo '<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">';
+                        echo '</a>';
+                        echo '<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">';
                         
                         // Menu items based on user type
                         if (isset($_SESSION["user_type"]) && $_SESSION["user_type"] == 'employee') {
@@ -154,7 +153,7 @@ if (isset($_SESSION['role'])) {
                         
                         echo '<li><a class="dropdown-item" href="logout.php">Log Out</a></li>';
                         echo '</ul>';
-                        echo '</div>';
+                        echo '</li>';
                     }
                     ?>                               
                 </ul>        
