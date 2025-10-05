@@ -1,3 +1,6 @@
+<?php
+// virtual-try-on.php
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -24,8 +27,8 @@
       display: inline-block;
     }
     video, canvas {
-      width: 480px;
-      height: 360px;
+      width: 640px;
+      height: 480px;
       border-radius: 12px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     }
@@ -33,18 +36,6 @@
       position: absolute;
       top: 0;
       left: 0;
-    }
-    .focus-target {
-      position: absolute;
-      width: 20px;
-      height: 20px;
-      background: rgba(255, 255, 255, 0.3);
-      border: 2px solid white;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      pointer-events: none;
-      z-index: 10;
     }
     .btn-primary {
       background-color: var(--primary);
@@ -63,15 +54,11 @@
     <div class="camera-container mb-3">
       <video id="inputVideo" autoplay muted playsinline></video>
       <canvas id="outputCanvas"></canvas>
-      <div class="focus-target" id="focusTarget"></div>
     </div>
 
     <div class="mt-3">
       <button id="startBtn" class="btn btn-primary px-4">
         <i class="bi bi-camera me-2"></i>Start Camera
-      </button>
-      <button id="focusBtn" class="btn btn-outline-primary px-4 ms-2">
-        <i class="bi bi-crosshair me-2"></i>Refocus
       </button>
     </div>
 
@@ -91,9 +78,7 @@
     const canvasElement = document.getElementById('outputCanvas');
     const canvasCtx = canvasElement.getContext('2d');
     const startBtn = document.getElementById('startBtn');
-    const focusBtn = document.getElementById('focusBtn');
     const statusMsg = document.getElementById('statusMsg');
-    const focusTarget = document.getElementById('focusTarget');
 
     // Load glasses image
     const glassesImg = new Image();
@@ -106,49 +91,6 @@
 
     let camera = null;
     let faceMesh = null;
-    let stream = null;
-
-    // Function to force camera refocus
-    function forceRefocus() {
-      if (!stream) return;
-      
-      // Stop all tracks
-      stream.getTracks().forEach(track => track.stop());
-      
-      // Restart camera with focus constraints
-      restartCameraWithFocus();
-    }
-
-    async function restartCameraWithFocus() {
-      try {
-        statusMsg.innerText = "Refocusing camera...";
-        
-        const constraints = {
-          video: {
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-            facingMode: "user",
-            focusMode: "continuous" // Request continuous autofocus
-          }
-        };
-
-        stream = await navigator.mediaDevices.getUserMedia(constraints);
-        videoElement.srcObject = stream;
-
-        videoElement.onloadedmetadata = () => {
-          videoElement.play();
-          statusMsg.innerText = "Camera refocused";
-          
-          // Hide focus target after a delay
-          setTimeout(() => {
-            focusTarget.style.display = 'none';
-          }, 1000);
-        };
-      } catch (err) {
-        console.error("❌ Refocus error:", err);
-        statusMsg.innerText = "Refocus failed";
-      }
-    }
 
     async function onResults(results) {
       if (!results.multiFaceLandmarks || !glassesLoaded) return;
@@ -187,10 +129,6 @@
       try {
         statusMsg.innerText = "Requesting camera access...";
         startBtn.disabled = true;
-        focusBtn.disabled = false;
-
-        // Show focus target
-        focusTarget.style.display = 'block';
 
         faceMesh = new FaceMesh({
           locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
@@ -203,33 +141,33 @@
         });
         faceMesh.onResults(onResults);
 
-        const constraints = {
-          video: {
+        // Request higher quality camera
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { 
             width: { ideal: 1280 },
             height: { ideal: 720 },
-            facingMode: "user"
-          }
-        };
-
-        stream = await navigator.mediaDevices.getUserMedia(constraints);
+            frameRate: { ideal: 30 }
+          } 
+        });
+        
         videoElement.srcObject = stream;
 
         videoElement.onloadedmetadata = () => {
           videoElement.play();
           statusMsg.innerText = "Camera active — aligning frames...";
+          
+          // Set canvas to match video dimensions for better quality
+          canvasElement.width = videoElement.videoWidth;
+          canvasElement.height = videoElement.videoHeight;
+          
           camera = new Camera(videoElement, {
             onFrame: async () => {
               await faceMesh.send({ image: videoElement });
             },
-            width: 480,
-            height: 360
+            width: videoElement.videoWidth,
+            height: videoElement.videoHeight
           });
           camera.start();
-
-          // Hide focus target after camera is stable
-          setTimeout(() => {
-            focusTarget.style.display = 'none';
-          }, 2000);
         };
       } catch (err) {
         console.error("❌ Camera startup error:", err);
@@ -237,22 +175,6 @@
         startBtn.disabled = false;
       }
     });
-
-    // Add refocus button event listener
-    focusBtn.addEventListener('click', forceRefocus);
-    focusBtn.disabled = true;
-
-    // Auto-refocus when blur is detected (simplified)
-    let lastFaceDetection = Date.now();
-    setInterval(() => {
-      if (Date.now() - lastFaceDetection > 3000 && stream) {
-        console.log("Face lost - possible blur, attempting refocus");
-        focusTarget.style.display = 'block';
-        setTimeout(() => {
-          forceRefocus();
-        }, 500);
-      }
-    }, 1000);
   </script>
 </body>
 </html>
