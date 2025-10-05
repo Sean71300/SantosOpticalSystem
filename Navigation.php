@@ -149,14 +149,14 @@ if (isset($_SESSION['role'])) {
                         <a class="nav-link m-2 <?php echo ($current_page == 'face-shape-detector.php') ? 'active' : ''; ?>" href="face-shape-detector.php">
                             SHAPE SCAN AI
                         </a>
-                        <span class="badge badge-ai position-absolute top-0 start-100 translate-middle">AI-Powered</span>
+                        <span class="badge badge-ai position-absolute top-0 start-50 translate-middle">AI-Powered</span>
                     </li>
 
                     <li class="nav-item position-relative">
                         <a class="nav-link m-2 <?php echo ($current_page == 'virtual-try-on.php') ? 'active' : ''; ?>" href="virtual-try-on.php">
                             VIRTUAL FIT
                         </a>
-                        <span class="badge badge-try position-absolute top-0 start-100 translate-middle">Try Now</span>
+                        <span class="badge badge-try position-absolute top-0 start-50 translate-middle">Try Now</span>
                     </li>
   
                     <li class="nav-item">
