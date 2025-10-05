@@ -419,6 +419,23 @@
                   </div>
                 </div>
               </div>
+
+              <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                <div class="branch-card" data-aos="fade-up" data-aos-delay="500">
+                    <div class="image-container">
+                    <a href="https://maps.app.goo.gl/your-map-link-here" target="_blank">
+                        <img src="Images/pasodeblas.jpg" alt="Paso De Blas, Valenzuela" class="branch-image">
+                        <img src="Images/loc.png" alt="Map Icon" class="map-icon">
+                    </a>
+                    </div>
+                    <div class="branch-info">
+                    <strong>SO Santos Optical Paso De Blas</strong><br>
+                    621-B Paso de Blas Rd, Valenzuela, 1442 Metro Manila<br>
+                    ☎️ 0932 844 7068<br>
+                    <small>Along busy streets in Valenzuela</small>
+                    </div>
+                </div>
+            </div>
           </div>
         </div>  
 
