@@ -102,13 +102,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Get generic frame image based on face shape
 function getGenericFrameImage($faceShape) {
     $frameMap = [
-        'SQUARE'      => 'Images/frames/round.png',      // Round frames for square faces
-        'ROUND'       => 'Images/frames/rectangular.png', // Rectangular frames for round faces
-        'OBLONG'      => 'Images/frames/oblong.png',       // Deep frames for oblong faces
-        'DIAMOND'     => 'Images/frames/diamond.png',     // Cat-eye frames for diamond faces
-        'V-TRIANGLE'  => 'Images/frames/vshape.png',   // Browline frames for V-triangle
-        'A-TRIANGLE'  => 'Images/frames/ashape.png', // Rounded square for A-triangle
-        'RECTANGLE'   => 'Images/frames/oval.png'        // Oval frames for rectangle faces
+        'SQUARE'      => 'Images/frames/square-frame-removebg-preview.png',      // Round frames for square faces
+        'ROUND'       => 'Images/frames/round-frame-removebg-preview.png', // Rectangular frames for round faces
+        'OBLONG'      => 'Images/frames/oblong-frame-removebg-preview.png',       // Deep frames for oblong faces
+        'DIAMOND'     => 'Images/frames/diamond-frame-removebg-preview.png',     // Cat-eye frames for diamond faces
+        'V-TRIANGLE'  => 'Images/frames/vshape-frame-removebg-preview.png',   // Browline frames for V-triangle
+        'A-TRIANGLE'  => 'Images/frames/ashape-frame-removebg-preview.png', // Rounded square for A-triangle
+        'RECTANGLE'   => 'Images/frames/rectangle-frame-removebg-preview.png'        // Oval frames for rectangle faces
     ];
     
     return $frameMap[$faceShape] ?? 'Images/frames/default.png';
