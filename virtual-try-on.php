@@ -1,111 +1,167 @@
+<?php
+// virtual-try-on.php
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Virtual Try-On</title>
-
-  <!-- Bootstrap (optional for layout) -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
   <style>
+    :root {
+      --primary: #1a73e8;
+      --dark: #222;
+      --light: #f8f9fa;
+    }
     body {
-      background-color: #f7f9fb;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
+      background-color: var(--light);
+      font-family: 'Poppins', sans-serif;
+      color: var(--dark);
+      text-align: center;
+      padding-top: 40px;
+    }
+    .camera-container {
+      position: relative;
+      display: inline-block;
     }
     video, canvas {
-      border-radius: 10px;
-      max-width: 90%;
+      width: 480px;
+      height: 360px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    #outputCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+    .btn-primary {
+      background-color: var(--primary);
+      border: none;
+    }
+    .btn-primary:hover {
+      background-color: #1558b0;
     }
   </style>
 </head>
 
 <body>
-  <h2 class="mb-3">Virtual Glasses Try-On</h2>
-  <video id="video" autoplay muted playsinline width="640" height="480"></video>
-  <canvas id="output" width="640" height="480"></canvas>
+  <div class="container">
+    <h2 class="mb-4 fw-bold">👓 Virtual Try-On</h2>
 
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <div class="camera-container mb-3">
+      <video id="inputVideo" autoplay muted playsinline></video>
+      <canvas id="outputCanvas"></canvas>
+    </div>
+
+    <div class="mt-3">
+      <button id="startBtn" class="btn btn-primary px-4">
+        <i class="bi bi-camera me-2"></i>Start Camera
+      </button>
+    </div>
+
+    <p class="mt-3 text-muted" id="statusMsg">Camera is off</p>
+  </div>
+
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+  <!-- ✅ Stable Mediapipe Versions -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/face_mesh.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.4.1633559619/camera_utils.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.4.1633559619/drawing_utils.js"></script>
 
   <script>
-    const video = document.getElementById("video");
-    const canvas = document.getElementById("output");
-    const ctx = canvas.getContext("2d");
+    const videoElement = document.getElementById('inputVideo');
+    const canvasElement = document.getElementById('outputCanvas');
+    const canvasCtx = canvasElement.getContext('2d');
+    const startBtn = document.getElementById('startBtn');
+    const statusMsg = document.getElementById('statusMsg');
 
+    // 🕶️ Load the glasses image
     const glassesImg = new Image();
-    glassesImg.src = "Images/frames/ashape-frame-removebg-preview.png";
-    glassesImg.onload = () => console.log("✅ Glasses image loaded.");
-    glassesImg.onerror = () => console.error("❌ Failed to load glasses image. Check the path:", glassesImg.src);
+    glassesImg.src = "Images/frames/ashape-frame-removebg-preview.png"; // adjust path if needed
+    let glassesLoaded = false;
+    glassesImg.onload = () => {
+      glassesLoaded = true;
+      console.log("✅ Glasses image loaded successfully");
+    };
 
-    // Initialize FaceMesh
-    const faceMesh = new FaceMesh({
-      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`,
-    });
+    let camera = null;
+    let faceMesh = null;
 
-    faceMesh.setOptions({
-      maxNumFaces: 1,
-      refineLandmarks: true,
-      minDetectionConfidence: 0.5,
-      minTrackingConfidence: 0.5,
-    });
+    async function onResults(results) {
+      if (!results.multiFaceLandmarks || !glassesLoaded) return;
 
-    faceMesh.onResults((results) => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
+      canvasCtx.save();
+      canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+      canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
 
-      if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
-        const landmarks = results.multiFaceLandmarks[0];
+      for (const landmarks of results.multiFaceLandmarks) {
         const leftEye = landmarks[33];
         const rightEye = landmarks[263];
-        const nose = landmarks[1];
 
-        // Debug logs
-        console.log("👁️ Left Eye:", leftEye);
-        console.log("👁️ Right Eye:", rightEye);
-        console.log("👃 Nose:", nose);
-
-        const eyeDistance = Math.sqrt(
-          Math.pow(rightEye.x - leftEye.x, 2) + Math.pow(rightEye.y - leftEye.y, 2)
+        const eyeDist = Math.hypot(
+          rightEye.x * canvasElement.width - leftEye.x * canvasElement.width,
+          rightEye.y * canvasElement.height - leftEye.y * canvasElement.height
         );
 
-        const glassesWidth = eyeDistance * 2.3 * canvas.width;
-        const glassesHeight = glassesWidth * 0.45;
+        const glassesWidth = eyeDist * 2.2;
+        const glassesHeight = glassesWidth * 0.5;
+        const centerX = (leftEye.x * canvasElement.width + rightEye.x * canvasElement.width) / 2;
+        const centerY = (leftEye.y * canvasElement.height + rightEye.y * canvasElement.height) / 2;
 
-        const x = (leftEye.x + rightEye.x) / 2 * canvas.width - glassesWidth / 2;
-        const y = nose.y * canvas.height - glassesHeight * 0.6;
+        canvasCtx.drawImage(
+          glassesImg,
+          centerX - glassesWidth / 2,
+          centerY - glassesHeight / 2,
+          glassesWidth,
+          glassesHeight
+        );
+      }
 
-        if (glassesImg.complete) {
-          ctx.drawImage(glassesImg, x, y, glassesWidth, glassesHeight);
-          console.log("🕶️ Glasses drawn at:", x, y);
-        } else {
-          console.warn("⚠️ Glasses image not yet loaded.");
-        }
-      } else {
-        console.log("No face detected.");
+      canvasCtx.restore();
+    }
+
+    startBtn.addEventListener('click', async () => {
+      try {
+        statusMsg.innerText = "Requesting camera access...";
+        startBtn.disabled = true;
+
+        faceMesh = new FaceMesh({
+          locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/${file}`
+        });
+        faceMesh.setOptions({
+          maxNumFaces: 1,
+          refineLandmarks: true,
+          minDetectionConfidence: 0.5,
+          minTrackingConfidence: 0.5
+        });
+        faceMesh.onResults(onResults);
+
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        videoElement.srcObject = stream;
+
+        videoElement.onloadedmetadata = () => {
+          videoElement.play();
+          statusMsg.innerText = "Camera active — aligning frames...";
+          camera = new Camera(videoElement, {
+            onFrame: async () => {
+              await faceMesh.send({ image: videoElement });
+            },
+            width: 480,
+            height: 360
+          });
+          camera.start();
+        };
+      } catch (err) {
+        console.error("❌ Camera startup error:", err);
+        statusMsg.innerText = "Unable to access camera. Check browser permissions.";
+        startBtn.disabled = false;
       }
     });
-
-    // Start camera
-    const camera = new Camera(video, {
-      onFrame: async () => {
-        await faceMesh.send({ image: video });
-      },
-      width: 640,
-      height: 480,
-    });
-
-    try {
-      camera.start();
-      console.log("📸 Camera started successfully.");
-    } catch (error) {
-      console.error("❌ Camera failed to start:", error);
-    }
   </script>
 </body>
 </html>
