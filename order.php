@@ -67,31 +67,54 @@ function getOrderHeaders($conn, $search = '', $branch = '', $status = '', $limit
     // matching headers, compute their statuses, then slice the array for the
     // requested page (offset/limit).
     if (!empty($status)) {
-        $query .= " ORDER BY Created_dt DESC";
-        $stmt = $conn->prepare($query);
-        if (!empty($params)) {
-            bind_params_stmt($stmt, $types, $params);
+        // Build a grouped query that computes an order-level status and filters using HAVING
+        $having = '';
+        switch ($status) {
+            case 'Completed':
+                $having = "SUM(od.Status != 'Completed') = 0";
+                break;
+            case 'Cancelled':
+                $having = "SUM(od.Status != 'Cancelled') = 0";
+                break;
+            case 'Returned':
+                $having = "SUM(od.Status != 'Returned') = 0";
+                break;
+            case 'Claimed':
+                $having = "SUM(od.Status != 'Claimed') = 0";
+                break;
+            default:
+                // Pending: none of the "all equal" conditions match
+                $having = "NOT (SUM(od.Status != 'Completed') = 0 OR SUM(od.Status != 'Cancelled') = 0 OR SUM(od.Status != 'Returned') = 0 OR SUM(od.Status != 'Claimed') = 0)";
+        }
+
+        $groupQuery = "SELECT oh.Orderhdr_id, oh.CustomerID, oh.BranchCode, oh.Created_dt, oh.Created_by
+                       FROM Order_hdr oh
+                       JOIN orderDetails od ON od.OrderHdr_id = oh.Orderhdr_id";
+        if (!empty($where)) {
+            $groupQuery .= " WHERE " . implode(' AND ', $where);
+        }
+        $groupQuery .= " GROUP BY oh.Orderhdr_id HAVING " . $having . " ORDER BY oh.Created_dt DESC LIMIT ? OFFSET ?";
+
+        $params2 = $params;
+        $types2 = $types . 'ii';
+        // add limit/offset
+        $params2[] = $limit;
+        $params2[] = $offset;
+
+        $stmt = $conn->prepare($groupQuery);
+        if (!empty($params2)) {
+            bind_params_stmt($stmt, $types2, $params2);
         }
         $stmt->execute();
         $result = $stmt->get_result();
 
-        $allOrders = [];
+        $orders = [];
         while ($header = $result->fetch_assoc()) {
             $header['CustomerName'] = getCustomerName($conn, $header['CustomerID']);
-            $allOrders[] = $header;
+            $orders[] = $header;
         }
         $stmt->close();
-
-        $filteredOrders = [];
-        foreach ($allOrders as $order) {
-            $orderStatus = getOrderStatus($conn, $order['Orderhdr_id']);
-            if ($orderStatus === $status) {
-                $filteredOrders[] = $order;
-            }
-        }
-
-        // Return the requested page slice
-        return array_slice($filteredOrders, $offset, $limit ?: null);
+        return $orders;
     }
 
     // No status filter: apply LIMIT/OFFSET in SQL for performance
@@ -305,26 +328,39 @@ function countOrderHeaders($conn, $search = '', $branch = '', $status = '') {
     $total = $row ? $row['total'] : 0;
     
     if (!empty($status)) {
-        $filteredCount = 0;
-        $allOrdersQuery = "SELECT Orderhdr_id FROM Order_hdr" . (!empty($where) ? " WHERE " . implode(' AND ', $where) : "");
-        $allStmt = $conn->prepare($allOrdersQuery);
-        
-        if (!empty($params)) {
-            bind_params_stmt($allStmt, $types, $params);
+        // Use a grouped query to count orders matching the computed status
+        switch ($status) {
+            case 'Completed':
+                $having = "SUM(od.Status != 'Completed') = 0";
+                break;
+            case 'Cancelled':
+                $having = "SUM(od.Status != 'Cancelled') = 0";
+                break;
+            case 'Returned':
+                $having = "SUM(od.Status != 'Returned') = 0";
+                break;
+            case 'Claimed':
+                $having = "SUM(od.Status != 'Claimed') = 0";
+                break;
+            default:
+                $having = "NOT (SUM(od.Status != 'Completed') = 0 OR SUM(od.Status != 'Cancelled') = 0 OR SUM(od.Status != 'Returned') = 0 OR SUM(od.Status != 'Claimed') = 0)";
         }
-        
-        $allStmt->execute();
-        $allResult = $allStmt->get_result();
-        
-        while ($order = $allResult->fetch_assoc()) {
-            $orderStatus = getOrderStatus($conn, $order['Orderhdr_id']);
-            if ($orderStatus === $status) {
-                $filteredCount++;
-            }
+
+        $countQuery = "SELECT COUNT(*) as total FROM (SELECT oh.Orderhdr_id FROM Order_hdr oh JOIN orderDetails od ON od.OrderHdr_id = oh.Orderhdr_id";
+        if (!empty($where)) {
+            $countQuery .= " WHERE " . implode(' AND ', $where);
         }
-        
-        $allStmt->close();
-        return $filteredCount;
+        $countQuery .= " GROUP BY oh.Orderhdr_id HAVING " . $having . ") as t";
+
+        $countStmt = $conn->prepare($countQuery);
+        $params2 = $params;
+        if (!empty($params2)) {
+            bind_params_stmt($countStmt, $types, $params2);
+        }
+        $countStmt->execute();
+        $res = $countStmt->get_result()->fetch_assoc();
+        $countStmt->close();
+        return (int)($res['total'] ?? 0);
     }
     
     return $total;
@@ -571,6 +607,17 @@ $conn = connect();
 $orderHeaders = getOrderHeaders($conn, $search, $branch, $status, $ordersPerPage, $offset);
 $totalOrders = countOrderHeaders($conn, $search, $branch, $status);
 $totalPages = ceil($totalOrders / $ordersPerPage);
+
+// Defensive fallback: if there are orders overall but the requested page returned
+// no headers (possible edge-case when filters/pagination mismatch), reset to
+// page 1 and fetch again so the user still sees results instead of "No orders found".
+if (empty($orderHeaders) && $totalOrders > 0) {
+    $currentPage = 1;
+    $offset = 0;
+    $orderHeaders = getOrderHeaders($conn, $search, $branch, $status, $ordersPerPage, $offset);
+    // Recompute totalPages just in case
+    $totalPages = ceil($totalOrders / $ordersPerPage);
+}
 
 $orders = [];
 foreach ($orderHeaders as $header) {
