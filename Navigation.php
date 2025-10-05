@@ -87,7 +87,7 @@ if (isset($_SESSION['role'])) {
     transform: translateY(10px);
 }
 /* Small chevron indicator to show there's a dropdown */
-.user-chevron { width: 12px; height: 12px; display: inline-block; vertical-align: middle; margin-left: 6px; transform: translateY(2px); }
+.user-chevron { width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-left: 6px; transform: translateY(3px); }
 /* Ensure dropdown appears above other elements */
 .dropdown-menu { z-index: 2000; }
 /* Force visible when JS adds .show (defensive against conflicting CSS) */
@@ -163,10 +163,10 @@ if (isset($_SESSION['role'])) {
                         echo '<li class="nav-item dropdown">';
                         echo '<a href="#" id="userDropdown" class="nav-link user-toggle" aria-haspopup="true" aria-expanded="false">';
                         echo '|&nbsp;&nbsp;&nbsp;' . $fullNameHtml;
-                        // chevron SVG indicator
+                        // thicker chevron SVG indicator (stroked polyline for bolder look)
                         echo ' <span class="user-chevron" aria-hidden="true">'
-                            . '<svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor">'
-                            . '<path fill-rule="evenodd" d="M3.204 5.5a.5.5 0 0 1 .592-.184l.07.045L8 8.293l4.134-2.932a.5.5 0 0 1 .606.78l-.07.055-4.5 3.2a.5.5 0 0 1-.58 0l-4.5-3.2a.5.5 0 0 1-.06-.716z"/>'
+                            . '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">'
+                            . '<polyline points="6 9 12 15 18 9"></polyline>'
                             . '</svg>'
                         . '</span>';
                         if (isset($_SESSION['img']) && $_SESSION['user_type'] !== 'customer') { echo ' <img src="' . htmlspecialchars($_SESSION['img']) . '" class="logo">'; }
