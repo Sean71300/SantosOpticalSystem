@@ -224,12 +224,48 @@ foreach ($headers as $h) {
     ];
 }
 
-// If this is an AJAX request for details, respond JSON
+// If this is an AJAX request for details, respond JSON (fetch by id directly)
 if (isset($_GET['action']) && $_GET['action'] === 'details' && isset($_GET['id'])) {
     header('Content-Type: application/json');
-    $id = $_GET['id'];
-    foreach ($orders as $o) if ($o['Orderhdr_id'] == $id) { echo json_encode($o); exit; }
-    echo json_encode(['error' => 'Order not found']); exit;
+    $id = trim((string)$_GET['id']);
+    $ridAjax = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0;
+    $restricted = in_array($ridAjax, [1,2], true);
+    $branchAjax = $_SESSION['branchcode'] ?? '';
+
+    $sqlH = "SELECT oh.Orderhdr_id, oh.CustomerID, oh.BranchCode, oh.Created_dt, c.CustomerName FROM Order_hdr oh LEFT JOIN customer c ON c.CustomerID = oh.CustomerID WHERE oh.Orderhdr_id = ?";
+    if ($restricted && $branchAjax !== '') { $sqlH .= " AND oh.BranchCode = ?"; }
+    $stmtH = $conn->prepare($sqlH);
+    if ($restricted && $branchAjax !== '') { $stmtH->bind_param('ss', $id, $branchAjax); } else { $stmtH->bind_param('s', $id); }
+    $stmtH->execute();
+    $hdr = $stmtH->get_result()->fetch_assoc();
+    $stmtH->close();
+    if (!$hdr) { echo json_encode(['error' => 'Order not found']); exit; }
+
+    $stmtD = $conn->prepare("SELECT od.Quantity, od.Status, od.ProductBranchID, p.Model, p.Price, p.CategoryType, b.BrandName FROM orderDetails od JOIN ProductBranchMaster pb ON od.ProductBranchID = pb.ProductBranchID JOIN productMstr p ON pb.ProductID = p.ProductID JOIN brandMaster b ON p.BrandID = b.BrandID WHERE od.OrderHdr_id = ?");
+    $stmtD->bind_param('s', $id);
+    $stmtD->execute();
+    $details = $stmtD->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmtD->close();
+
+    $complete = $cancel = $returned = $claimed = 0; $totalItems = 0;
+    foreach ($details as $det) { $totalItems++; if($det['Status']==='Completed') $complete++; elseif($det['Status']==='Cancelled') $cancel++; elseif($det['Status']==='Returned') $returned++; elseif($det['Status']==='Claimed') $claimed++; }
+    $orderStatus = $totalItems>0 ? ($complete===$totalItems?'Completed':($cancel===$totalItems?'Cancelled':($returned===$totalItems?'Returned':($claimed===$totalItems?'Claimed':'Pending')))) : 'Pending';
+
+    $stmtB = $conn->prepare("SELECT BranchName FROM BranchMaster WHERE BranchCode = ?");
+    $stmtB->bind_param('s', $hdr['BranchCode']);
+    $stmtB->execute();
+    $bName = $stmtB->get_result()->fetch_assoc()['BranchName'] ?? '';
+    $stmtB->close();
+
+    echo json_encode([
+        'Orderhdr_id' => $hdr['Orderhdr_id'],
+        'CustomerName' => $hdr['CustomerName'] ?? 'Unknown',
+        'BranchName' => $bName,
+        'Created_dt' => $hdr['Created_dt'],
+        'Status' => $orderStatus,
+        'Details' => $details
+    ]);
+    exit;
 }
 
 // HTML
@@ -239,7 +275,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'details' && isset($_GET['id']
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2Pkf1R9In6v1ZP1zj5eGqf2FqHkGJ5G99jM7l+M2i1vZk5wOMo9fQ0YQ9A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
 <title>Orders Management</title>
 <style>
 body { background:#f5f7fa; padding-top:60px; }
