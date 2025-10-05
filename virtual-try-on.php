@@ -1,104 +1,108 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Virtual Try-On</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #f8f9fa;
-            color: #333;
-            text-align: center;
-            padding: 30px;
-        }
-        #video {
-            width: 100%;
-            max-width: 480px;
-            border-radius: 12px;
-            background: #000;
-        }
-        #canvas {
-            display: none;
-        }
-        .btn-start {
-            margin-top: 20px;
-            background-color: var(--bs-primary);
-            color: white;
-        }
-        .btn-start:hover {
-            background-color: #0d6efd;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Virtual Try-On</title>
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+  <style>
+    body {
+      background-color: #f8f9fa;
+      color: #333;
+      text-align: center;
+      padding: 30px;
+    }
+    #video {
+      width: 100%;
+      max-width: 480px;
+      border-radius: 12px;
+      background: #000;
+    }
+    .btn-start {
+      margin-top: 20px;
+      background-color: var(--bs-primary);
+      color: white;
+    }
+    .btn-start:hover {
+      background-color: #0d6efd;
+    }
+  </style>
 </head>
 <body>
+  <div class="container">
+    <h2 class="mb-3">
+      <i class="bi bi-camera"></i> Virtual Try-On
+    </h2>
+    <p class="text-muted">Click the button below to start your camera.</p>
 
-    <div class="container">
-        <h2 class="mb-3"><i class="bi bi-camera"></i> Virtual Try-On</h2>
-        <p class="text-muted">Click the button below to start your camera.</p>
+    <video id="video" autoplay playsinline></video>
+    <br />
+    <button id="startCamera" class="btn btn-start">Start Camera</button>
+    <p id="status" class="mt-3 text-muted"></p>
+  </div>
 
-        <video id="video" autoplay playsinline></video>
-        <canvas id="canvas"></canvas>
-        <br>
-        <button id="startCamera" class="btn btn-start">Start Camera</button>
+  <!-- ✅ Load Mediapipe Scripts in Correct Order -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.4/camera_utils.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.4/drawing_utils.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils@0.4/control_utils.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/face_mesh.js"></script>
 
-        <p id="status" class="mt-3 text-muted"></p>
-    </div>
+  <script>
+    const video = document.getElementById("video");
+    const startButton = document.getElementById("startCamera");
+    const status = document.getElementById("status");
 
-    <!-- ✅ Correct updated MediaPipe & dependencies -->
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/face_mesh.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.4/camera_utils.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.4/drawing_utils.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils@0.4/control_utils.js"></script>
+    let cameraActive = false;
 
-    <script>
-        const video = document.getElementById('video');
-        const startButton = document.getElementById('startCamera');
-        const status = document.getElementById('status');
+    startButton.addEventListener("click", async () => {
+      if (cameraActive) return;
 
-        let cameraActive = false;
-        let camera;
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+        cameraActive = true;
+        status.textContent = "Camera started successfully!";
+      } catch (error) {
+        console.error(error);
+        status.textContent = "Camera access denied or not available.";
+        return;
+      }
 
-        startButton.addEventListener('click', async () => {
-            if (cameraActive) return;
+      // ✅ Initialize FaceMesh
+      const faceMesh = new FaceMesh({
+        locateFile: (file) =>
+          `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/${file}`,
+      });
 
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                video.srcObject = stream;
-                cameraActive = true;
-                status.textContent = "Camera started successfully!";
-            } catch (error) {
-                console.error(error);
-                status.textContent = "Camera access denied or not available.";
-            }
+      faceMesh.setOptions({
+        maxNumFaces: 1,
+        refineLandmarks: true,
+        minDetectionConfidence: 0.5,
+        minTrackingConfidence: 0.5,
+      });
 
-            // Initialize MediaPipe FaceMesh
-            const faceMesh = new FaceMesh({
-                locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/${file}`
-            });
+      faceMesh.onResults((results) => {
+        console.log("Face detected:", results.multiFaceLandmarks?.length || 0);
+      });
 
-            faceMesh.setOptions({
-                maxNumFaces: 1,
-                refineLandmarks: true,
-                minDetectionConfidence: 0.5,
-                minTrackingConfidence: 0.5
-            });
-
-            faceMesh.onResults((results) => {
-                console.log("Face detected:", results.multiFaceLandmarks?.length || 0);
-            });
-
-            camera = new Camera(video, {
-                onFrame: async () => {
-                    await faceMesh.send({ image: video });
-                },
-                width: 480,
-                height: 360
-            });
-
-            camera.start();
+      // ✅ Wait for Camera class to be ready before using it
+      if (typeof Camera !== "undefined") {
+        const camera = new Camera(video, {
+          onFrame: async () => {
+            await faceMesh.send({ image: video });
+          },
+          width: 480,
+          height: 360,
         });
-    </script>
-
+        camera.start();
+      } else {
+        console.error("Camera class not loaded properly.");
+        status.textContent = "Error: Camera class missing.";
+      }
+    });
+  </script>
 </body>
 </html>
