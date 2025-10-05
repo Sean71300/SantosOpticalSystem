@@ -997,8 +997,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                         <a href="<?= htmlspecialchars($shopUrl) ?>" 
                         class="btn px-4 py-2 rounded-pill fw-semibold"
-                        style="background-color: var(--primary-dark); color: var(--dark);"
-                        >
+                        style="background-color: var(--primary);">
                             Shop Recommended Frames
                         </a>
                     </div>
