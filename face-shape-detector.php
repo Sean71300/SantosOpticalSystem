@@ -972,15 +972,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 
                 <!-- Primary CTA -->
                 <div class="primary-cta container my-5">
-                    <div class="card text-center shadow-sm border-0 rounded-4 p-4 p-md-5">
-                        <h3 class="fw-semibold mb-3">
-                            <i class="fas fa-shopping-bag me-2 text-primary"></i>
+                    <div class="card text-center border-0 shadow-sm rounded-4 p-4 p-md-5" 
+                        style="background-color: var(--light); color: var(--dark);">
+
+                        <h3 class="fw-semibold mb-3" style="color: var(--dark);">
+                            <i class="fas fa-shopping-bag me-2" style="color: var(--primary);"></i>
                             Ready to Find Your Perfect Frames?
                         </h3>
 
-                        <p class="text-muted mb-4">
+                        <p class="mb-4" style="color: var(--dark);">
                             Explore our curated collection designed specifically for 
-                            <span class="fw-bold text-primary"><?= htmlspecialchars($result) ?></span> face shapes.
+                            <span style="font-weight: 600; color: var(--primary);">
+                                <?= htmlspecialchars($result) ?>
+                            </span> face shapes.
                         </p>
 
                         <?php
@@ -988,11 +992,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $shopUrl = 'product-gallery.php?page=1&shape=' . $shapeID;
                         ?>
 
-                        <a href="<?= htmlspecialchars($shopUrl) ?>" class="btn btn-primary btn-lg px-4 py-2 rounded-pill">
+                        <a href="<?= htmlspecialchars($shopUrl) ?>" 
+                        class="btn px-4 py-2 rounded-pill fw-semibold"
+                        style="background-color: var(--primary); color: #fff; transition: background-color 0.3s ease;"
+                        onmouseover="this.style.backgroundColor='var(--primary-dark)'"
+                        onmouseout="this.style.backgroundColor='var(--primary)'">
                             Shop Recommended Frames
                         </a>
                     </div>
-                </div>
+</div>
+
 
                 
                 <!-- Social Share -->
