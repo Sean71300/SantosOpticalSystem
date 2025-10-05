@@ -87,7 +87,7 @@
       .right-column { grid-column: 4 / 5; }
       /* Add breathing room: shift right-column content slightly left on desktop */
       .right-column {
-        padding-left: 12px;
+        padding-right: 12px;
       }
       .right-column .card {
         margin-right: 6px; /* keep cards slightly inset from the very right edge */
