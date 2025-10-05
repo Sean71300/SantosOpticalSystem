@@ -997,8 +997,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                         <a href="<?= htmlspecialchars($shopUrl) ?>" 
                         class="btn px-4 py-2 rounded-pill fw-semibold"
-                        style="background-color: var(--primary); color: #fff; transition: background-color 0.3s ease;"
-                        onmouseover="this.style.backgroundColor='var(--primary-dark)'">
+                        style="background-color: var(--primary-dark);"
+                        onmouseover="this.style.backgroundColor='var(--primary-dark)'"
+                        onmouseout="this.style.backgroundColor='var(--primary)'">
                             Shop Recommended Frames
                         </a>
                     </div>
