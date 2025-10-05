@@ -359,7 +359,9 @@ if ($rid !== 4) {
                 var deleteModalEl = document.getElementById('deleteBranchModal');
                 if (deleteModalEl) { new bootstrap.Modal(deleteModalEl).show(); }
             <?php elseif (isset($_POST['confirmDeleteBtn'])): ?>
-                var confirmDeleteModalEl = document.getElementById('confirmDeleteModal');
+                // confirmDeleteBranch() outputs the modal with id 'deleteBranchModal' (success/error),
+                // so show the same element here.
+                var confirmDeleteModalEl = document.getElementById('deleteBranchModal');
                 if (confirmDeleteModalEl) { new bootstrap.Modal(confirmDeleteModalEl).show(); }
             <?php endif; ?>
         });
