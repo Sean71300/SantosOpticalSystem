@@ -1022,10 +1022,11 @@
             <div class="control-group">
               <div class="control-label" style="justify-content:space-between;">
                 <div style="display:flex; align-items:center; gap:8px;"><span>Frame Size</span>
-                  <small class="text-muted">Drag to change the frame size</small>
+                  
                   <button id="sizeResetIcon" class="btn btn-outline-secondary btn-sm" title="Reset size"><i class="fas fa-undo"></i></button>
                 </div>
               </div>
+              <small class="text-muted">Drag to change the frame size</small>
               <!-- Visible slider centered -->
               <div style="padding: 8px 0;">
                 <input type="range" class="form-range" id="sizeSlider" min="1.8" max="3.0" step="0.1" value="2.4" aria-label="Frame size slider">
@@ -1039,10 +1040,11 @@
             <div class="control-group">
               <div class="control-label" style="justify-content:space-between;">
                 <div style="display:flex; align-items:center; gap:8px;"><span>Frame Height</span>
-                  <small class="text-muted">Adjust frame proportions</small>
+                
                   <button id="heightResetIcon" class="btn btn-outline-secondary btn-sm" title="Reset height"><i class="fas fa-undo"></i></button>
                 </div>
               </div>
+              <small class="text-muted">Adjust frame proportions</small>
               <div class="position-controls" style="justify-content:center; gap:18px; margin-top:8px; align-items:center;">
                 <button class="btn btn-outline-primary position-btn" id="heightDown" aria-label="Decrease height"><i class="fas fa-minus"></i></button>
                 <span class="control-value" id="heightValue">70%</span>
@@ -1054,10 +1056,11 @@
             <div class="control-group">
               <div class="control-label" style="justify-content:space-between;">
                 <div style="display:flex; align-items:center; gap:8px;"><span>Vertical Position</span>
-                    <small class="text-muted">Move frames higher or lower on face</small>
+                  
                   <button id="positionResetIcon" class="btn btn-outline-secondary btn-sm" title="Reset vertical position"><i class="fas fa-undo"></i></button>
                 </div>
               </div>
+              <small class="text-muted">Move frames higher or lower on face</small>
               <div class="position-controls" style="justify-content:center; gap:18px; margin-top:8px; align-items:center;">
                 <button class="btn btn-outline-primary position-btn" id="positionDown" aria-label="Move down"><i class="fas fa-arrow-down"></i></button>
                 <span class="control-value" id="positionValue">0px</span>
