@@ -12,6 +12,8 @@ if (isset($_SESSION['roleid'])) {
         $isAdmin = true;
     }
 }
+// Super admin flag (roleid 4) — used to show Recent Activity only for super admins
+$isSuperAdmin = (isset($_SESSION['roleid']) && (int)$_SESSION['roleid'] === 4);
 
 // Get all counts
 $customerCount = getCustomerCount();
@@ -83,10 +85,13 @@ if (!is_numeric($orderCount)) { $orderCount = 0; }
             // Determine employee-only early so we can switch layouts
             $ridLocal = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0; 
             $isEmployeeOnly = ($ridLocal === 2) && !$isAdmin; 
+            // Optometrist role flag (roleid 3)
+            $isOptometrist = ($ridLocal === 3);
         ?>
 
         <?php if (!$isEmployeeOnly): ?>
         <div class="row">
+            <?php if (!$isOptometrist): ?>
             <div class="col-md-3">
                 <div class="dashboard-card">
                     <div class="card-icon text-primary"><i class="fas fa-users"></i></div>
@@ -95,6 +100,17 @@ if (!is_numeric($orderCount)) { $orderCount = 0; }
                     <a href="customerRecords.php" class="btn btn-sm btn-outline-primary mt-2">View All</a>
                 </div>
             </div>
+            <?php else: ?>
+            <!-- Optometrist: show Medical History card instead of Customers/Inventory/Orders -->
+            <div class="col-md-12">
+                <div class="dashboard-card">
+                    <div class="card-icon text-primary"><i class="fas fa-notes-medical"></i></div>
+                    <h5>Medical History</h5>
+                    <div class="stat-number"><?php echo number_format($customerCount); ?></div>
+                    <a href="customerRecords.php" class="btn btn-sm btn-outline-primary mt-2">View Records</a>
+                </div>
+            </div>
+            <?php endif; ?>
             
             <?php if ($isAdmin): ?>
             <div class="col-md-3">
@@ -107,7 +123,8 @@ if (!is_numeric($orderCount)) { $orderCount = 0; }
             </div>
             <?php endif; ?>
 
-            <!-- Inventory card (visible to all roles) -->
+            <!-- Inventory card (hidden for optometrist) -->
+            <?php if (!$isOptometrist): ?>
             <div class="col-md-3">
                 <div class="dashboard-card">
                     <div class="card-icon text-warning"><i class="fas fa-boxes-stacked"></i></div>
@@ -116,8 +133,10 @@ if (!is_numeric($orderCount)) { $orderCount = 0; }
                     <a href="<?php echo ($isAdmin) ? 'admin-inventory.php' : 'Employee-inventory.php'; ?>" class="btn btn-sm btn-outline-warning mt-2">View All</a>
                 </div>
             </div>
+            <?php endif; ?>
 
-            <!-- Orders card (visible to all roles) -->
+            <!-- Orders card (hidden for optometrist) -->
+            <?php if (!$isOptometrist): ?>
             <div class="col-md-3">
                 <div class="dashboard-card">
                     <div class="card-icon text-info"><i class="fas fa-receipt"></i></div>
@@ -126,6 +145,7 @@ if (!is_numeric($orderCount)) { $orderCount = 0; }
                     <a href="order.php" class="btn btn-sm btn-outline-info mt-2">View All</a>
                 </div>
             </div>
+            <?php endif; ?>
             <?php // $isEmployeeOnly already computed above ?>
             <?php if ($isAdmin): ?>
                 <div class="row mt-4 equal-height-row">
@@ -270,8 +290,8 @@ if (!is_numeric($orderCount)) { $orderCount = 0; }
                 </div>
             <?php endif; ?>
 
-            <?php if ($isAdmin): ?>
-                    <div class="dashboard-card mt-3">
+        <?php if ($isSuperAdmin): ?>
+            <div class="dashboard-card mt-3">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Recent Activity</h5>
                             <?php if (isset($_SESSION['roleid']) && (int)$_SESSION['roleid'] === 4): ?>
