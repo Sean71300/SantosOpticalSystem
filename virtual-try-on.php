@@ -76,7 +76,7 @@
       /* Train-like layout: Camera | Adjust Fit | Frames | Material+Colors
          Make camera more prominent: take ~50% (half) of the main content width */
       .main-content {
-        grid-template-columns: 1fr 1fr 260px 240px; /* camera (half), adjust (half), frames, material/colors */
+        grid-template-columns: 0.9fr 0.95fr 260px 240px; /* slightly reduce camera and adjust columns so right column breathes */
         align-items: start;
         gap: 20px;
       }
@@ -102,14 +102,14 @@
       position: relative;
     }
     
-    .camera-container {
+      .camera-container {
       position: relative;
       background: black;
       border-radius: 20px;
       overflow: hidden;
       box-shadow: 0 10px 30px rgba(0,0,0,0.15);
       aspect-ratio: 4/3;
-      min-height: 380px; /* slightly reduced so frames fit the viewport better */
+      min-height: 340px; /* slightly reduced so frames fit the viewport better and right column gains space */
     }
 
     /* CTA over camera */
