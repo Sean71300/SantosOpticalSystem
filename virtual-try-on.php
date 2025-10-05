@@ -69,7 +69,7 @@
     const cameraReady = document.getElementById('cameraReady');
 
     const glassesImg = new Image();
-    glassesImg.src = 'Images/frames/ashape-frame-removebg-preview.png'; // your glasses image
+    glassesImg.src = 'Images/frames/ashape-frame-removebg-preview.png; // your glasses image
     glassesImg.onload = () => (glassesLoaded.checked = true);
 
     // Access webcam
@@ -112,15 +112,15 @@
             rightEye[0].y - leftEye[3].y
           );
 
-          // Adjusted for better fit - reduced width, increased height
-          const glassesWidth = eyeDistance * 1.8;  // Reduced from 2.3
-          const glassesHeight = glassesWidth * (glassesImg.height / glassesImg.width) * 1.3; // Added height multiplier
+          // adjust multiplier for better fit
+          const glassesWidth = eyeDistance * 2.3;  
+          const glassesHeight = glassesWidth * (glassesImg.height / glassesImg.width);
 
           const centerX = (leftEye[0].x + rightEye[3].x) / 2;
           const centerY = (leftEye[0].y + rightEye[3].y) / 2;
 
-          // Adjusted Y offset for better positioning
-          const offsetY = glassesHeight * 0.35; // Reduced from 0.45
+          // adjust Y offset to bring glasses lower
+          const offsetY = glassesHeight * 0.45;
 
           const x = centerX - glassesWidth / 2;
           const y = centerY - offsetY;
