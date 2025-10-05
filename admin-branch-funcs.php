@@ -35,7 +35,7 @@ include 'setup.php';
         }
     }
 
-    function addBranch() {
+    function addBranchModal() {
         echo 
         '<div class = "modal fade" id="addBranchModal" aria-labelledby="addBranchModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" role="document">
@@ -69,6 +69,60 @@ include 'setup.php';
                 </div>
             </div>
         </div>';
+    }
+
+    function addBranch() {
+        $link = connect();
+        $branchCode = generate_BranchCode();
+        $branchName = $_POST['branchName'] ?? '';
+        $branchLocation = $_POST['branchLocation'] ?? '';
+        $contactNo = $_POST['contactNo'] ?? '';
+
+        $sql = "INSERT INTO BranchMaster (BranchCode, BranchName, BranchLocation, ContactNo) VALUES (?, ?, ?, ?)";
+        $stmt = mysqli_prepare($link, $sql);
+        mysqli_stmt_bind_param($stmt, 'ssss', $branchCode, $branchName, $branchLocation, $contactNo);
+        $stmt = mysqli_stmt_execute($stmt);
+        if ($stmt) {
+            echo 
+            '<div class="modal fade" id="addBranchModal" tabindex="-1" aria-labelledby="addBranchModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content bg-secondary-subtle">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="addBranchModalLabel">Success</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body" style="margin-top: -1.5rem;">
+                            <hr>
+                            <p>Branch added successfully.</p>
+                            <hr>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-success w-25" data-bs-dismiss="modal">OK</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>';
+        } else {
+            echo
+            '<div class="modal fade" id="addBranchModal" tabindex="-1" aria-labelledby="addBranchModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content bg-secondary-subtle">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="addBranchModalLabel">Error</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body" style="margin-top: -1.5rem;">
+                            <hr>
+                            <p>Error adding branch: '.mysqli_error($link).'</p>
+                            <hr>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-danger w-25" data-bs-dismiss="modal">OK</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>';
+        }
     }
     function editBranch(){
         $branchCode = $_POST['branchCode'] ?? '';
