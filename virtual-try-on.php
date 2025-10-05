@@ -666,6 +666,37 @@
       border-radius: 10px;
       border: 2px solid var(--border);
     }
+
+    /* Adjust Fit: smaller caption and centered layout */
+    .center-column .card-body small.text-muted {
+      font-size: 0.76rem; /* smaller small text */
+      color: #6c757d;
+      display: block;
+      text-align: center;
+      margin: 4px 0 8px 0;
+    }
+
+    .center-column .control-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center; /* center everything inside each control group */
+      text-align: center;
+    }
+
+    .center-column .control-label {
+      justify-content: center !important; /* ensure label and reset icon centered */
+      gap: 10px;
+    }
+
+    .center-column .position-controls {
+      justify-content: center !important;
+    }
+
+    .center-column .control-value {
+      display: inline-block;
+      margin-top: 6px;
+      font-size: 0.92rem;
+    }
     
     .status-indicator {
       display: inline-flex;
