@@ -60,12 +60,46 @@ function getOrderHeaders($conn, $search = '', $branch = '', $status = '', $limit
     if (!empty($where)) {
         $query .= " WHERE " . implode(' AND ', $where);
     }
-    
+
+    // If status filtering is requested, we must apply it BEFORE pagination.
+    // orderDetails contains item-level statuses; the existing getOrderStatus() helper
+    // computes an order's overall status. To paginate correctly we fetch all
+    // matching headers, compute their statuses, then slice the array for the
+    // requested page (offset/limit).
+    if (!empty($status)) {
+        $query .= " ORDER BY Created_dt DESC";
+        $stmt = $conn->prepare($query);
+        if (!empty($params)) {
+            bind_params_stmt($stmt, $types, $params);
+        }
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $allOrders = [];
+        while ($header = $result->fetch_assoc()) {
+            $header['CustomerName'] = getCustomerName($conn, $header['CustomerID']);
+            $allOrders[] = $header;
+        }
+        $stmt->close();
+
+        $filteredOrders = [];
+        foreach ($allOrders as $order) {
+            $orderStatus = getOrderStatus($conn, $order['Orderhdr_id']);
+            if ($orderStatus === $status) {
+                $filteredOrders[] = $order;
+            }
+        }
+
+        // Return the requested page slice
+        return array_slice($filteredOrders, $offset, $limit ?: null);
+    }
+
+    // No status filter: apply LIMIT/OFFSET in SQL for performance
     $query .= " ORDER BY Created_dt DESC LIMIT ? OFFSET ?";
     $params[] = $limit;
     $params[] = $offset;
     $types .= 'ii';
-    
+
     $stmt = $conn->prepare($query);
     if (!empty($params)) {
         bind_params_stmt($stmt, $types, $params);
@@ -73,26 +107,14 @@ function getOrderHeaders($conn, $search = '', $branch = '', $status = '', $limit
     $stmt->execute();
     $result = $stmt->get_result();
     $orders = [];
-    
+
     while ($header = $result->fetch_assoc()) {
         $customerName = getCustomerName($conn, $header['CustomerID']);
         $header['CustomerName'] = $customerName;
         $orders[] = $header;
     }
-    
+
     $stmt->close();
-    
-    if (!empty($status)) {
-        $filteredOrders = [];
-        foreach ($orders as $order) {
-            $orderStatus = getOrderStatus($conn, $order['Orderhdr_id']);
-            if ($orderStatus === $status) {
-                $filteredOrders[] = $order;
-            }
-        }
-        return $filteredOrders;
-    }
-    
     return $orders;
 }
 
@@ -742,6 +764,7 @@ $conn->close();
 
     <div class="orders-container">
         <form method="get" action="order.php" class="mb-4 filter-form">
+            <input type="hidden" name="page" value="1">
             <div class="row g-3">
                 <div class="col-md-4">
                     <label for="search" class="form-label">Search</label>
@@ -841,13 +864,19 @@ $conn->close();
 
             <nav aria-label="Orders pagination" class="mt-4">
                 <ul class="pagination justify-content-center">
+                    <?php
+                        // Build canonical base params from current variables so pagination
+                        // links always preserve the active filters (don't rely on raw 
+                        // \\$_GET which may be modified elsewhere).
+                        $baseParams = [
+                            'search' => $search,
+                            'branch' => $branch,
+                            'status' => $status
+                        ];
+                    ?>
                     <?php if ($currentPage > 1): ?>
                         <li class="page-item">
-                            <a class="page-link" href="?<?php 
-                                $newParams = $_GET;
-                                $newParams['page'] = $currentPage - 1;
-                                echo http_build_query($newParams); 
-                            ?>" aria-label="Previous">
+                            <a class="page-link" href="?<?php echo http_build_query(array_merge($baseParams, ['page' => $currentPage - 1])); ?>" aria-label="Previous">
                                 <span aria-hidden="true">&laquo;</span>
                             </a>
                         </li>
@@ -855,21 +884,13 @@ $conn->close();
 
                     <?php for ($i = 1; $i <= $totalPages; $i++): ?>
                         <li class="page-item <?php echo ($i == $currentPage) ? 'active' : ''; ?>">
-                            <a class="page-link" href="?<?php 
-                                $newParams = $_GET;
-                                $newParams['page'] = $i;
-                                echo http_build_query($newParams); 
-                            ?>"><?php echo $i; ?></a>
+                            <a class="page-link" href="?<?php echo http_build_query(array_merge($baseParams, ['page' => $i])); ?>"><?php echo $i; ?></a>
                         </li>
                     <?php endfor; ?>
 
                     <?php if ($currentPage < $totalPages): ?>
                         <li class="page-item">
-                            <a class="page-link" href="?<?php 
-                                $newParams = $_GET;
-                                $newParams['page'] = $currentPage + 1;
-                                echo http_build_query($newParams); 
-                            ?>" aria-label="Next">
+                            <a class="page-link" href="?<?php echo http_build_query(array_merge($baseParams, ['page' => $currentPage + 1])); ?>" aria-label="Next">
                                 <span aria-hidden="true">&raquo;</span>
                             </a>
                         </li>
