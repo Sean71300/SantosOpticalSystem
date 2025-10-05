@@ -97,7 +97,7 @@ include 'setup.php';
                             <p>Branch added successfully.</p>
                             <hr>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-success w-25" data-bs-dismiss="modal">OK</button>
+                                <button type="button" class="btn btn-success w-25" data-bs-dismiss="modal" onclick="location.reload()">OK</button>
                             </div>
                         </div>
                     </div>
@@ -117,7 +117,7 @@ include 'setup.php';
                             <p>Error adding branch: '.mysqli_error($link).'</p>
                             <hr>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-danger w-25" data-bs-dismiss="modal">OK</button>
+                                <button type="button" class="btn btn-danger w-25" data-bs-dismiss="modal" onclick="location.reload()">OK</button>
                             </div>
                         </div>
                     </div>
