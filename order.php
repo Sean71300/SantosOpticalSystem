@@ -1,10 +1,4 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-include_once 'setup.php';
-include 'ActivityTracker.php'; 
-include 'loginChecker.php';
-<?php
 // Fresh implementation of Orders Management page
 // - Robust GET sanitization
 // - Filter by search / branch / status (status computed at DB level)
@@ -13,6 +7,38 @@ include 'loginChecker.php';
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
+
+// Simple runtime logger to capture fatal errors that cause HTTP 500.
+function _order_log($msg) {
+    $logDir = __DIR__ . DIRECTORY_SEPARATOR . 'logs';
+    if (!is_dir($logDir)) @mkdir($logDir, 0755, true);
+    $file = $logDir . DIRECTORY_SEPARATOR . 'order_debug.log';
+    $time = date('Y-m-d H:i:s');
+    @file_put_contents($file, "[{$time}] " . $msg . PHP_EOL, FILE_APPEND);
+}
+
+set_error_handler(function($severity, $message, $file, $line) {
+    _order_log("PHP Error: {$message} in {$file}:{$line} (severity={$severity})");
+    // let normal error handling continue
+    return false;
+});
+
+set_exception_handler(function($ex){
+    _order_log("Uncaught Exception: " . $ex->getMessage() . " in " . $ex->getFile() . ":" . $ex->getLine());
+    http_response_code(500);
+    echo "<h3>Server error</h3><p>Check logs/order_debug.log for details.</p>";
+    exit;
+});
+
+register_shutdown_function(function(){
+    $err = error_get_last();
+    if ($err && in_array($err['type'], [E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_PARSE])) {
+        _order_log("Shutdown error: " . json_encode($err));
+        http_response_code(500);
+        echo "<h3>Server shutdown error</h3><p>Check logs/order_debug.log for details.</p>";
+        exit;
+    }
+});
 include_once 'setup.php';
 include 'loginChecker.php';
 
