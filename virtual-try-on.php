@@ -6,16 +6,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Virtual Glasses Try-On</title>
+  <title>Virtual Glasses Try-On | Santos Optical</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="customCodes/custom.css">
+  <link rel="shortcut icon" type="image/x-icon" href="Images/logo.png"/>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
 
   <style>
     :root {
-      --primary: #1a73e8;
-      --secondary: #6c757d;
-      --success: #28a745;
-      --dark: #222;
-      --light: #f8f9fa;
+      --primary: #FF3E6C;
+      --secondary: #00C8B3;
+      --dark: #333333;
+      --light: #F8F9FA;
       --border: #dee2e6;
     }
     
@@ -24,9 +28,9 @@
     }
     
     body {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #FFF5F7;
       color: var(--dark);
+      font-family: 'Montserrat', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 0;
       padding: 0;
       min-height: 100vh;
@@ -40,19 +44,23 @@
     
     .header {
       text-align: center;
-      margin-bottom: 20px;
+      padding: 40px 0;
+      background: linear-gradient(135deg, #FF3E6C, #FF6B8B);
       color: white;
+      margin-bottom: 30px;
+      border-radius: 0 0 20px 20px;
+      box-shadow: 0 4px 20px rgba(255, 62, 108, 0.2);
     }
     
     .header h1 {
-      font-weight: 700;
-      font-size: 2.2rem;
+      font-weight: 800;
+      font-size: 2.5rem;
       margin-bottom: 5px;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
     }
     
     .header p {
-      font-size: 1.1rem;
+      font-size: 1.2rem;
       opacity: 0.9;
       margin-bottom: 0;
     }
@@ -85,7 +93,7 @@
       background: black;
       border-radius: 20px;
       overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
       aspect-ratio: 4/3;
     }
     
@@ -121,17 +129,23 @@
       background: white;
       border-radius: 20px;
       border: none;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.08);
       margin-bottom: 20px;
       overflow: hidden;
+      transition: transform 0.3s ease;
+    }
+    
+    .card:hover {
+      transform: translateY(-2px);
     }
     
     .card-header {
-      background: linear-gradient(135deg, var(--primary), #1558b0);
+      background: linear-gradient(135deg, var(--primary), #FF2B5D);
       color: white;
       border: none;
       padding: 15px 20px;
-      font-weight: 600;
+      font-weight: 700;
+      font-size: 1.1rem;
     }
     
     .card-body {
@@ -139,34 +153,38 @@
     }
     
     .btn-primary {
-      background: linear-gradient(135deg, var(--primary), #1558b0);
+      background: linear-gradient(135deg, var(--primary), #FF2B5D);
       border: none;
-      border-radius: 12px;
-      padding: 12px 24px;
-      font-weight: 600;
+      border-radius: 50px;
+      padding: 12px 30px;
+      font-weight: 700;
       font-size: 16px;
       transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(26, 115, 232, 0.3);
+      box-shadow: 0 4px 15px rgba(255, 62, 108, 0.3);
+      letter-spacing: 0.5px;
     }
     
     .btn-primary:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(26, 115, 232, 0.4);
+      box-shadow: 0 6px 20px rgba(255, 62, 108, 0.4);
+      background: linear-gradient(135deg, #FF2B5D, var(--primary));
     }
     
     .btn-outline-primary {
       border: 2px solid var(--primary);
       color: var(--primary);
-      border-radius: 12px;
+      border-radius: 50px;
       padding: 10px 20px;
-      font-weight: 600;
+      font-weight: 700;
       transition: all 0.3s ease;
+      background: transparent;
     }
     
     .btn-outline-primary:hover {
       background: var(--primary);
       color: white;
       transform: translateY(-1px);
+      box-shadow: 0 4px 15px rgba(255, 62, 108, 0.3);
     }
     
     .btn-sm {
@@ -197,14 +215,14 @@
     .frame-btn:hover {
       border-color: var(--primary);
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 12px rgba(255, 62, 108, 0.2);
     }
     
     .frame-btn.active {
       border-color: var(--primary);
-      background: #e3f2fd;
+      background: rgba(255, 62, 108, 0.1);
       transform: scale(1.05);
-      box-shadow: 0 6px 15px rgba(26, 115, 232, 0.2);
+      box-shadow: 0 6px 15px rgba(255, 62, 108, 0.3);
     }
     
     .frame-img {
@@ -215,7 +233,7 @@
     
     .frame-label {
       font-size: 10px;
-      font-weight: 600;
+      font-weight: 700;
       color: var(--dark);
       text-align: center;
       line-height: 1.2;
@@ -246,7 +264,7 @@
     .color-btn.active {
       border-color: var(--primary);
       transform: scale(1.15);
-      box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+      box-shadow: 0 6px 15px rgba(255, 62, 108, 0.4);
     }
     
     .color-btn.active::after {
@@ -296,7 +314,7 @@
       cursor: pointer;
       transition: all 0.3s ease;
       font-size: 11px;
-      font-weight: 600;
+      font-weight: 700;
     }
     
     .material-btn:hover {
@@ -315,7 +333,7 @@
     }
     
     .control-label {
-      font-weight: 600;
+      font-weight: 700;
       margin-bottom: 8px;
       color: var(--dark);
       display: flex;
@@ -326,7 +344,7 @@
     .control-value {
       font-weight: 700;
       color: var(--primary);
-      background: #e3f2fd;
+      background: rgba(255, 62, 108, 0.1);
       padding: 2px 8px;
       border-radius: 8px;
       font-size: 12px;
@@ -344,7 +362,16 @@
       width: 20px;
       height: 20px;
       border-radius: 50%;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      box-shadow: 0 2px 6px rgba(255, 62, 108, 0.3);
+    }
+    
+    .form-range::-moz-range-thumb {
+      background: var(--primary);
+      border: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      box-shadow: 0 2px 6px rgba(255, 62, 108, 0.3);
     }
     
     .position-controls {
@@ -369,7 +396,7 @@
     
     .position-btn:hover {
       transform: scale(1.1);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      box-shadow: 0 4px 12px rgba(255, 62, 108, 0.3);
     }
     
     .position-value {
@@ -389,7 +416,7 @@
       gap: 8px;
       padding: 8px 16px;
       border-radius: 20px;
-      font-weight: 600;
+      font-weight: 700;
       font-size: 14px;
       margin: 10px 0;
     }
@@ -439,12 +466,13 @@
     }
     
     .mobile-tips {
-      background: linear-gradient(135deg, #667eea, #764ba2);
+      background: linear-gradient(135deg, #FF3E6C, #FF6B8B);
       color: white;
       border-radius: 15px;
       padding: 15px;
       margin-top: 20px;
       text-align: center;
+      box-shadow: 0 4px 15px rgba(255, 62, 108, 0.2);
     }
     
     .mobile-tips h6 {
@@ -466,6 +494,10 @@
     @media (max-width: 767px) {
       .app-container {
         padding: 10px;
+      }
+      
+      .header {
+        padding: 30px 0;
       }
       
       .header h1 {
@@ -548,15 +580,19 @@
 </head>
 
 <body>
-  <div class="app-container">
-    <div class="header">
+  <?php include "Navigation.php"; ?>
+
+  <div class="header" data-aos="fade">
+    <div class="container">
       <h1>👓 Virtual Glasses Try-On</h1>
       <p>Find your perfect frame and color in real-time</p>
     </div>
+  </div>
 
+  <div class="app-container">
     <div class="main-content">
       <div class="camera-section">
-        <div class="camera-container">
+        <div class="camera-container" data-aos="fade-right">
           <video id="inputVideo" autoplay muted playsinline></video>
           <canvas id="outputCanvas"></canvas>
           <div class="camera-overlay d-none" id="cameraOverlay">
@@ -570,17 +606,17 @@
           <span id="statusText">Camera is off</span>
         </div>
 
-        <div class="card">
+        <div class="card" data-aos="fade-up">
           <div class="card-header">
-            Camera Controls
+            <i class="fas fa-video me-2"></i>Camera Controls
           </div>
           <div class="card-body">
             <div class="action-buttons">
               <button id="startBtn" class="btn btn-primary">
-                <i class="bi bi-camera-video me-2"></i>Start Camera
+                <i class="fas fa-camera-video me-2"></i>Start Camera
               </button>
               <button id="calibrateBtn" class="btn btn-outline-primary d-none">
-                <i class="bi bi-arrow-clockwise me-2"></i>Recalibrate
+                <i class="fas fa-sync-alt me-2"></i>Recalibrate
               </button>
             </div>
           </div>
@@ -588,9 +624,9 @@
       </div>
 
       <div class="controls-section">
-        <div class="card">
+        <div class="card" data-aos="fade-left">
           <div class="card-header">
-            Frame Styles
+            <i class="fas fa-glasses me-2"></i>Frame Styles
           </div>
           <div class="card-body">
             <div class="frame-grid">
@@ -626,9 +662,9 @@
           </div>
         </div>
 
-        <div class="card">
+        <div class="card" data-aos="fade-left" data-aos-delay="100">
           <div class="card-header">
-            Frame Colors & Materials
+            <i class="fas fa-palette me-2"></i>Frame Colors & Materials
           </div>
           <div class="card-body">
             <div class="color-group">
@@ -636,7 +672,7 @@
               <div class="color-grid">
                 <div class="color-option">
                   <div class="color-btn active" style="background: #1a1a1a;" data-color="#1a1a1a" data-color-name="Matte Black"></div>
-                  <div class="color-label">Matte Black</div>
+                  <div class="color-label">Black</div>
                 </div>
                 <div class="color-option">
                   <div class="color-btn" style="background: #2d3436;" data-color="#2d3436" data-color-name="Charcoal"></div>
@@ -726,9 +762,9 @@
           </div>
         </div>
 
-        <div class="card">
+        <div class="card" data-aos="fade-left" data-aos-delay="200">
           <div class="card-header">
-            Adjust Fit
+            <i class="fas fa-sliders-h me-2"></i>Adjust Fit
           </div>
           <div class="card-body">
             <div class="control-group">
@@ -746,11 +782,11 @@
               </div>
               <div class="position-controls">
                 <button class="btn btn-outline-primary position-btn" id="heightDown">
-                  <i class="bi bi-dash"></i>
+                  <i class="fas fa-minus"></i>
                 </button>
                 <span>Shorter - Taller</span>
                 <button class="btn btn-outline-primary position-btn" id="heightUp">
-                  <i class="bi bi-plus"></i>
+                  <i class="fas fa-plus"></i>
                 </button>
               </div>
             </div>
@@ -762,11 +798,11 @@
               </div>
               <div class="position-controls">
                 <button class="btn btn-outline-primary position-btn" id="positionDown">
-                  <i class="bi bi-arrow-down"></i>
+                  <i class="fas fa-arrow-down"></i>
                 </button>
                 <span>Lower - Higher</span>
                 <button class="btn btn-outline-primary position-btn" id="positionUp">
-                  <i class="bi bi-arrow-up"></i>
+                  <i class="fas fa-arrow-up"></i>
                 </button>
               </div>
             </div>
@@ -774,7 +810,7 @@
         </div>
 
         <?php if (preg_match('/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i', $_SERVER['HTTP_USER_AGENT'])): ?>
-        <div class="mobile-tips">
+        <div class="mobile-tips" data-aos="fade-up">
           <h6>📱 Mobile Tips</h6>
           <ul>
             <li>Ensure good lighting for best results</li>
@@ -788,12 +824,22 @@
     </div>
   </div>
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <?php include "footer.php"; ?>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.min.js"></script>
 
   <script>
+    // Initialize AOS animations
+    AOS.init({
+      duration: 800,
+      easing: 'ease-in-out',
+      once: true
+    });
+
     const videoElement = document.getElementById('inputVideo');
     const canvasElement = document.getElementById('outputCanvas');
     const canvasCtx = canvasElement.getContext('2d');
@@ -837,11 +883,11 @@
         glassesImages[frameType] = img;
         if (loadedImagesCount === totalImages) {
           glassesLoaded = true;
-          console.log("✅ All frame images loaded successfully");
+          console.log("All frame images loaded successfully");
         }
       };
       img.onerror = () => {
-        console.error(`❌ Failed to load frame: ${frameData.label}`);
+        console.error(`Failed to load frame: ${frameData.label}`);
         loadedImagesCount++;
       };
     });
@@ -927,11 +973,9 @@
         textureCtx.putImageData(imageData, 0, 0);
         
       } else if (materialType === 'Glossy') {
-        // Simplified glossy plastic with subtle shine
         textureCtx.fillStyle = baseColor;
         textureCtx.fillRect(0, 0, width, height);
         
-        // Add gentle shine only
         const shine = textureCtx.createRadialGradient(
           width * 0.4, height * 0.3, 0,
           width * 0.4, height * 0.3, width * 0.6
@@ -943,7 +987,6 @@
         textureCtx.fillRect(0, 0, width, height);
         
       } else if (materialType === 'Pattern') {
-        // Original Pattern texture with metallic/wood grain effect
         const blockSize = 4;
         for (let x = 0; x < width; x += blockSize) {
           for (let y = 0; y < height; y += blockSize) {
@@ -957,7 +1000,6 @@
           }
         }
         
-        // Add pattern shine
         const shine = textureCtx.createLinearGradient(0, 0, width, height);
         shine.addColorStop(0, 'rgba(255,255,255,0.3)');
         shine.addColorStop(0.5, 'rgba(255,255,255,0.1)');
@@ -1198,7 +1240,9 @@
     });
 
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    window.addEventListener('load', () => setTimeout(initializeFaceMesh, 1000));
+    window.addEventListener('load', () => {
+      setTimeout(initializeFaceMesh, 1000);
+    });
   </script>
 </body>
 </html>
