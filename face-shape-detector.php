@@ -1031,13 +1031,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </a>
                     <!-- In your results section, replace the virtual try-on button with: -->
                     <a href="virtual-try-on.php?shape=<?= urlencode($result) ?>" class="btn btn-quiz">
-                            <i class="fas fa-camera me-2"></i> Virtual Try-On
+                            <i class="fas fa-camera me-2"></i> Check out Virtual Try-On! 
                         </a>
                         <div class="virtual-tryon-guide mt-2">
-                            <p class="small text-muted">
-                                <i class="fas fa-info-circle me-1"></i>
-                                See how recommended frames look on you in real-time using your camera
-                            </p>
                         </div>
                 </div>
             <?php endif; ?>
