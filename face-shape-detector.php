@@ -104,10 +104,10 @@ function getGenericFrameImage($faceShape) {
     $frameMap = [
         'SQUARE'      => 'Images/frames/round.png',      // Round frames for square faces
         'ROUND'       => 'Images/frames/rectangular.png', // Rectangular frames for round faces
-        'OBLONG'      => 'Images/frames/deep.png',       // Deep frames for oblong faces
-        'DIAMOND'     => 'Images/frames/cateye.png',     // Cat-eye frames for diamond faces
-        'V-TRIANGLE'  => 'Images/frames/browline.png',   // Browline frames for V-triangle
-        'A-TRIANGLE'  => 'Images/frames/rounded-square.png', // Rounded square for A-triangle
+        'OBLONG'      => 'Images/frames/oblong.png',       // Deep frames for oblong faces
+        'DIAMOND'     => 'Images/frames/diamond.png',     // Cat-eye frames for diamond faces
+        'V-TRIANGLE'  => 'Images/frames/vshape.png',   // Browline frames for V-triangle
+        'A-TRIANGLE'  => 'Images/frames/ashape.png', // Rounded square for A-triangle
         'RECTANGLE'   => 'Images/frames/oval.png'        // Oval frames for rectangle faces
     ];
     
