@@ -166,6 +166,14 @@ if ($rs = $conn->query('SELECT BranchCode, BranchName FROM BranchMaster ORDER BY
 // Canonical base query params for building links/redirects (compute AFTER branch scoping)
 $baseQuery = ['search'=>$search,'branch'=>$branch,'status'=>$status];
 
+// Prebuild status options HTML to avoid inline PHP rendering issues
+$statuses = ['Pending','Completed','Cancelled','Returned','Claimed'];
+$statusOptionsHtml = '<option value="">All Statuses</option>';
+foreach ($statuses as $sOpt) {
+    $sel = ($status === $sOpt) ? ' selected' : '';
+    $statusOptionsHtml .= '<option value="'.htmlspecialchars($sOpt).'"'.$sel.'>'.$sOpt.'</option>';
+}
+
 // Where
 $where=[]; $params=[]; $types='';
 if ($search !== '') { $where[]='(oh.Orderhdr_id LIKE ? OR c.CustomerName LIKE ?)'; $params[]="%$search%"; $params[]="%$search%"; $types.='ss'; }
@@ -320,10 +328,7 @@ body { background:#f5f7fa; padding-top:60px; }
                 <div class="col-md-3">
                     <label class="form-label">Filter by Status</label>
                     <select name="status" class="form-select">
-                        <option value="">All Statuses</option>
-                        <?php foreach(['Pending','Completed','Cancelled','Returned','Claimed'] as $s): ?>
-                        <option value="<?= $s ?>" <?= $status===$s?'selected':'' ?>><?= $s ?></option>
-                        <?php endforeach; ?>
+                        <?= $statusOptionsHtml ?>
                     </select>
                 </div>
                 <div class="col-md-1 d-grid">
