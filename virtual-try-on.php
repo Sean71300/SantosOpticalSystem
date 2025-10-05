@@ -1,6 +1,3 @@
-<?php
-// virtual-try-on.php
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,149 +6,231 @@
   <title>Virtual Glasses Try-On | Santos Optical</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="customCodes/custom.css">
-  <link rel="shortcut icon" type="image/x-icon" href="Images/logo.png"/>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
-
   <style>
     :root {
-      --primary: #FF3E6C;
-      --secondary: #00C8B3;
-      --dark: #333333;
-      --light: #F8F9FA;
-      --border: #dee2e6;
+      --primary: #2D3748;
+      --primary-light: #4A5568;
+      --secondary: #ED8936;
+      --secondary-light: #F6AD55;
+      --accent: #48BB78;
+      --accent-light: #68D391;
+      --danger: #F56565;
+      --surface: #FFFFFF;
+      --surface-dark: #F7FAFC;
+      --text-primary: #1A202C;
+      --text-secondary: #718096;
+      --border: #E2E8F0;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08);
+      --shadow-md: 0 4px 6px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06);
+      --shadow-lg: 0 10px 25px rgba(0,0,0,0.15), 0 6px 10px rgba(0,0,0,0.1);
+      --shadow-xl: 0 20px 40px rgba(0,0,0,0.2);
     }
     
     * {
       box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
     
     body {
-      background-color: #FFF5F7;
-      color: var(--dark);
-      font-family: 'Montserrat', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0;
-      padding: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
       min-height: 100vh;
+      color: var(--text-primary);
     }
     
     .app-container {
-      max-width: 1400px;
+      max-width: 1600px;
       margin: 0 auto;
-      padding: 15px;
+      padding: 20px;
     }
     
-    .header {
+    .hero-header {
       text-align: center;
-      padding: 40px 0;
-      background: linear-gradient(135deg, #FF3E6C, #FF6B8B);
+      padding: 40px 20px;
       color: white;
       margin-bottom: 30px;
-      border-radius: 0 0 20px 20px;
-      box-shadow: 0 4px 20px rgba(255, 62, 108, 0.2);
+      animation: fadeInDown 0.6s ease-out;
     }
     
-    .header h1 {
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .hero-header h1 {
+      font-size: clamp(2rem, 5vw, 3.5rem);
       font-weight: 800;
-      font-size: 2.5rem;
-      margin-bottom: 5px;
-      text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+      margin-bottom: 12px;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      letter-spacing: -0.02em;
     }
     
-    .header p {
-      font-size: 1.2rem;
-      opacity: 0.9;
-      margin-bottom: 0;
+    .hero-header p {
+      font-size: clamp(1rem, 3vw, 1.3rem);
+      opacity: 0.95;
+      font-weight: 400;
     }
     
-    .step-wizard {
+    .progress-bar-container {
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-md);
+      animation: fadeIn 0.8s ease-out 0.2s both;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    .step-progress {
       display: flex;
       justify-content: space-between;
-      margin-bottom: 25px;
-      padding: 20px;
-      background: white;
-      border-radius: 15px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-      gap: 10px;
-      flex-wrap: wrap;
+      position: relative;
+      margin-bottom: 12px;
+    }
+    
+    .step-progress::before {
+      content: '';
+      position: absolute;
+      top: 20px;
+      left: 5%;
+      right: 5%;
+      height: 3px;
+      background: var(--border);
+      z-index: 0;
+    }
+    
+    .progress-line {
+      position: absolute;
+      top: 20px;
+      left: 5%;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-light));
+      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 1;
     }
     
     .step-item {
       flex: 1;
-      min-width: 120px;
       text-align: center;
       position: relative;
+      z-index: 2;
     }
     
-    .step-number {
-      width: 40px;
-      height: 40px;
+    .step-circle {
+      width: 44px;
+      height: 44px;
       border-radius: 50%;
-      background: #e9ecef;
-      color: #6c757d;
+      background: var(--surface-dark);
+      border: 3px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: center;
       margin: 0 auto 10px;
       font-weight: 700;
       font-size: 18px;
-      transition: all 0.3s ease;
+      color: var(--text-secondary);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
     }
     
-    .step-item.active .step-number {
-      background: linear-gradient(135deg, var(--primary), #FF2B5D);
+    .step-item.active .step-circle {
+      background: linear-gradient(135deg, var(--accent), var(--accent-light));
+      border-color: var(--accent);
       color: white;
-      transform: scale(1.1);
-      box-shadow: 0 4px 15px rgba(255, 62, 108, 0.3);
+      transform: scale(1.15);
+      box-shadow: 0 0 0 6px rgba(72, 187, 120, 0.15);
     }
     
-    .step-item.completed .step-number {
-      background: var(--secondary);
+    .step-item.completed .step-circle {
+      background: var(--accent);
+      border-color: var(--accent);
       color: white;
+    }
+    
+    .step-item.completed .step-circle::after {
+      content: '✓';
+      position: absolute;
+      font-size: 20px;
     }
     
     .step-label {
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 600;
-      color: #6c757d;
+      color: var(--text-secondary);
+      transition: color 0.3s ease;
     }
     
-    .step-item.active .step-label {
-      color: var(--primary);
-      font-weight: 700;
-    }
-    
+    .step-item.active .step-label,
     .step-item.completed .step-label {
-      color: var(--secondary);
+      color: var(--accent);
     }
     
-    .main-content {
+    .main-grid {
       display: grid;
       grid-template-columns: 1fr;
-      gap: 20px;
+      gap: 24px;
+      animation: fadeIn 1s ease-out 0.4s both;
     }
     
-    @media (min-width: 992px) {
-      .main-content {
-        grid-template-columns: 1fr 400px;
+    @media (min-width: 1024px) {
+      .main-grid {
+        grid-template-columns: 1.2fr 0.8fr;
       }
     }
     
-    .camera-section {
-      position: relative;
+    .card {
+      background: var(--surface);
+      border-radius: 20px;
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      border: 1px solid rgba(255,255,255,0.1);
     }
     
-    .controls-section {
-      position: relative;
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-xl);
+    }
+    
+    .card-header {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: white;
+      padding: 18px 24px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 3px solid var(--secondary);
+    }
+    
+    .card-header i {
+      margin-right: 10px;
+      opacity: 0.9;
+    }
+    
+    .card-body {
+      padding: 24px;
     }
     
     .camera-container {
       position: relative;
-      background: black;
-      border-radius: 20px;
+      background: #000;
+      border-radius: 16px;
       overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
       aspect-ratio: 4/3;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
     }
     
     video, canvas {
@@ -169,441 +248,29 @@
     
     .camera-overlay {
       position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0,0,0,0.5);
+      inset: 0;
+      background: rgba(0,0,0,0.85);
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      flex-direction: column;
       color: white;
       z-index: 10;
+      backdrop-filter: blur(4px);
     }
     
-    .snapshot-controls {
-      position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
+    .camera-overlay.d-none {
       display: none;
-      gap: 10px;
-      z-index: 20;
-    }
-    
-    .snapshot-controls.active {
-      display: flex;
-    }
-    
-    .btn-snapshot {
-      background: white;
-      color: var(--primary);
-      border: 3px solid var(--primary);
-      border-radius: 50%;
-      width: 60px;
-      height: 60px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-    }
-    
-    .btn-snapshot:hover {
-      transform: scale(1.1);
-      background: var(--primary);
-      color: white;
-    }
-    
-    .card {
-      background: white;
-      border-radius: 20px;
-      border: none;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-      margin-bottom: 20px;
-      overflow: visible;
-      transition: transform 0.3s ease;
-    }
-    
-    .card:hover {
-      transform: translateY(-2px);
-    }
-    
-    .card-header {
-      background: linear-gradient(135deg, var(--primary), #FF2B5D);
-      color: white;
-      border: none;
-      padding: 15px 20px;
-      font-weight: 700;
-      font-size: 1.1rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    
-    .card-body {
-      padding: 20px;
-    }
-    
-    .btn-primary {
-      background: linear-gradient(135deg, var(--primary), #FF2B5D);
-      border: none;
-      border-radius: 50px;
-      padding: 12px 30px;
-      font-weight: 700;
-      font-size: 16px;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(255, 62, 108, 0.3);
-      letter-spacing: 0.5px;
-    }
-    
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(255, 62, 108, 0.4);
-      background: linear-gradient(135deg, #FF2B5D, var(--primary));
-    }
-    
-    .btn-outline-primary {
-      border: 2px solid var(--primary);
-      color: var(--primary);
-      border-radius: 50px;
-      padding: 10px 20px;
-      font-weight: 700;
-      transition: all 0.3s ease;
-      background: transparent;
-    }
-    
-    .btn-outline-primary:hover {
-      background: var(--primary);
-      color: white;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 15px rgba(255, 62, 108, 0.3);
-    }
-    
-    .btn-sm {
-      padding: 8px 16px;
-      font-size: 14px;
-    }
-    
-    .btn-face-shape {
-      background: linear-gradient(135deg, var(--secondary), #00b3a0);
-      color: white;
-      border: none;
-      border-radius: 50px;
-      padding: 10px 20px;
-      font-weight: 700;
-      font-size: 14px;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(0, 200, 179, 0.3);
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      text-decoration: none;
-      margin-bottom: 15px;
-      width: 100%;
-      justify-content: center;
-    }
-    
-    .btn-face-shape:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0, 200, 179, 0.4);
-      background: linear-gradient(135deg, #00b3a0, var(--secondary));
-      color: white;
-    }
-    
-    .frame-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
-      gap: 10px;
-      margin-top: 10px;
-    }
-    
-    .frame-btn {
-      background: white;
-      border: 2px solid var(--border);
-      border-radius: 12px;
-padding: 8px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 5px;
-    }
-    
-    .frame-btn:hover {
-      border-color: var(--primary);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(255, 62, 108, 0.2);
-    }
-    
-    .frame-btn.active {
-      border-color: var(--primary);
-      background: rgba(255, 62, 108, 0.1);
-      transform: scale(1.05);
-      box-shadow: 0 6px 15px rgba(255, 62, 108, 0.3);
-    }
-    
-    .frame-img {
-      width: 45px;
-      height: 25px;
-      object-fit: contain;
-    }
-    
-    .frame-label {
-      font-size: 10px;
-      font-weight: 700;
-      color: var(--dark);
-      text-align: center;
-      line-height: 1.2;
-    }
-    
-    .color-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
-      gap: 8px;
-      margin-top: 10px;
-    }
-    
-    .color-btn {
-      width: 40px;
-      height: 40px;
-      border: 3px solid var(--border);
-      border-radius: 50%;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      position: relative;
-    }
-    
-    .color-btn:hover {
-      transform: scale(1.1);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    }
-    
-    .color-btn.active {
-      border-color: var(--primary);
-      transform: scale(1.15);
-      box-shadow: 0 6px 15px rgba(255, 62, 108, 0.4);
-    }
-    
-    .color-btn.active::after {
-      content: '✓';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      color: white;
-      font-weight: bold;
-      font-size: 14px;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
-    }
-    
-    .color-label {
-      font-size: 9px;
-      text-align: center;
-      margin-top: 4px;
-      font-weight: 600;
-    }
-    
-    .color-group {
-      margin-bottom: 15px;
-    }
-    
-    .color-group-title {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--dark);
-      margin-bottom: 8px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    
-    .accordion-button {
-      background: white;
-      color: var(--dark);
-      font-weight: 700;
-      font-size: 14px;
-      padding: 12px 15px;
-      border: none;
-      box-shadow: none;
-    }
-    
-    .accordion-button:not(.collapsed) {
-      background: rgba(255, 62, 108, 0.05);
-      color: var(--primary);
-    }
-    
-    .accordion-button:focus {
-      box-shadow: none;
-      border-color: transparent;
-    }
-    
-    .accordion-button::after {
-      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23FF3E6C'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
-    }
-    
-    .accordion-item {
-      border: 1px solid var(--border);
-      margin-bottom: 8px;
-      border-radius: 10px;
-      overflow: hidden;
-    }
-    
-    .accordion-body {
-      padding: 15px;
-    }
-    
-    .material-controls {
-      display: flex;
-      gap: 10px;
-      margin-top: 10px;
-    }
-    
-    .material-btn {
-      flex: 1;
-      padding: 8px 12px;
-      border: 2px solid var(--border);
-      border-radius: 8px;
-      background: white;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-size: 11px;
-      font-weight: 700;
-    }
-    
-    .material-btn:hover {
-      border-color: var(--primary);
-      transform: translateY(-1px);
-    }
-    
-    .material-btn.active {
-      border-color: var(--primary);
-      background: var(--primary);
-      color: white;
-    }
-    
-    .control-group {
-      margin-bottom: 20px;
-    }
-    
-    .control-label {
-      font-weight: 700;
-      margin-bottom: 8px;
-      color: var(--dark);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    
-    .control-value {
-      font-weight: 700;
-      color: var(--primary);
-      background: rgba(255, 62, 108, 0.1);
-      padding: 2px 8px;
-      border-radius: 8px;
-      font-size: 12px;
-    }
-    
-    .form-range {
-      width: 100%;
-      height: 8px;
-      border-radius: 4px;
-    }
-    
-    .form-range::-webkit-slider-thumb {
-      background: var(--primary);
-      border: none;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      box-shadow: 0 2px 6px rgba(255, 62, 108, 0.3);
-    }
-    
-    .form-range::-moz-range-thumb {
-      background: var(--primary);
-      border: none;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      box-shadow: 0 2px 6px rgba(255, 62, 108, 0.3);
-    }
-    
-    .position-controls {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 15px;
-      margin-top: 10px;
-    }
-    
-    .position-btn {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      transition: all 0.3s ease;
-    }
-    
-    .position-btn:hover {
-      transform: scale(1.1);
-      box-shadow: 0 4px 12px rgba(255, 62, 108, 0.3);
-    }
-    
-    .position-value {
-      min-width: 50px;
-      font-weight: 700;
-      font-size: 16px;
-      text-align: center;
-      background: #f8f9fa;
-      padding: 8px 12px;
-      border-radius: 10px;
-      border: 2px solid var(--border);
-    }
-    
-    .status-indicator {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-weight: 700;
-      font-size: 14px;
-      margin: 10px 0;
-    }
-    
-    .status-online {
-      background: #d4edda;
-      color: #155724;
-      border: 2px solid #c3e6cb;
-    }
-    
-    .status-offline {
-      background: #f8d7da;
-      color: #721c24;
-      border: 2px solid #f5c6cb;
-    }
-    
-    .status-loading {
-      background: #fff3cd;
-      color: #856404;
-      border: 2px solid #ffeaa7;
     }
     
     .loading-spinner {
-      width: 30px;
-      height: 30px;
-      border: 3px solid #f3f3f3;
-      border-top: 3px solid var(--primary);
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(255,255,255,0.2);
+      border-top: 4px solid var(--accent);
       border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 10px auto;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 20px;
     }
     
     @keyframes spin {
@@ -611,493 +278,854 @@ padding: 8px;
       100% { transform: rotate(360deg); }
     }
     
-    .action-buttons {
+    .snapshot-overlay {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: none;
+      gap: 12px;
+      z-index: 20;
+    }
+    
+    .snapshot-overlay.active {
+      display: flex;
+    }
+    
+    .btn-snapshot {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: white;
+      border: 4px solid var(--secondary);
+      color: var(--secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+    
+    .btn-snapshot:hover {
+      transform: scale(1.1);
+      background: var(--secondary);
+      color: white;
+      box-shadow: 0 6px 30px rgba(237, 137, 54, 0.6);
+    }
+    
+    .btn-snapshot:active {
+      transform: scale(0.95);
+    }
+    
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 14px;
+      margin: 16px 0;
+      transition: all 0.3s ease;
+    }
+    
+    .status-badge::before {
+      content: '';
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    .status-badge.online {
+      background: #C6F6D5;
+      color: #22543D;
+    }
+    
+    .status-badge.online::before {
+      background: #38A169;
+    }
+    
+    .status-badge.offline {
+      background: #FED7D7;
+      color: #742A2A;
+    }
+    
+    .status-badge.offline::before {
+      background: #E53E3E;
+    }
+    
+    .status-badge.loading {
+      background: #FEEBC8;
+      color: #744210;
+    }
+    
+    .status-badge.loading::before {
+      background: #DD6B20;
+    }
+    
+    .btn {
+      padding: 12px 28px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 15px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-light));
+      color: white;
+    }
+    
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(72, 187, 120, 0.4);
+    }
+    
+    .btn-secondary {
+      background: linear-gradient(135deg, var(--secondary), var(--secondary-light));
+      color: white;
+    }
+    
+    .btn-secondary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(237, 137, 54, 0.4);
+    }
+    
+    .btn-outline {
+      background: transparent;
+      border: 2px solid var(--primary);
+      color: var(--primary);
+    }
+    
+    .btn-outline:hover:not(:disabled) {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .btn-lg {
+      padding: 14px 32px;
+      font-size: 16px;
+      width: 100%;
+      margin-bottom: 12px;
+    }
+    
+    .face-shape-cta {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      padding: 20px;
+      border-radius: 16px;
+      text-align: center;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-md);
+    }
+    
+    .face-shape-cta h6 {
+      color: white;
+      font-weight: 700;
+      margin-bottom: 12px;
+      font-size: 1rem;
+    }
+    
+    .face-shape-cta p {
+      color: rgba(255,255,255,0.9);
+      font-size: 0.9rem;
+      margin-bottom: 16px;
+    }
+    
+    .frame-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+      gap: 12px;
+    }
+    
+    .frame-card {
+      background: var(--surface-dark);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      text-align: center;
+    }
+    
+    .frame-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .frame-card.active {
+      border-color: var(--accent);
+      background: rgba(72, 187, 120, 0.1);
+      box-shadow: 0 0 0 4px rgba(72, 187, 120, 0.15);
+    }
+    
+    .frame-img {
+      width: 100%;
+      height: 40px;
+      object-fit: contain;
+      margin-bottom: 8px;
+    }
+    
+    .frame-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    
+    .color-section {
+      margin-top: 16px;
+    }
+    
+    .color-category {
+      margin-bottom: 20px;
+    }
+    
+    .category-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .category-title::before {
+      content: '';
+      width: 4px;
+      height: 16px;
+      background: var(--accent);
+      margin-right: 8px;
+      border-radius: 2px;
+    }
+    
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+      gap: 10px;
+    }
+    
+    .color-option {
+      text-align: center;
+    }
+    
+    .color-swatch {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      border: 3px solid var(--border);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin: 0 auto 6px;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+    }
+    
+    .color-swatch:hover {
+      transform: scale(1.1);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .color-swatch.active {
+      border-color: var(--accent);
+      transform: scale(1.15);
+      box-shadow: 0 0 0 4px rgba(72, 187, 120, 0.25);
+    }
+    
+    .color-swatch.active::after {
+      content: '✓';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      font-weight: bold;
+      font-size: 20px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+    
+    .color-name {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+    
+    .material-toggle {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+      padding: 4px;
+      background: var(--surface-dark);
+      border-radius: 12px;
+    }
+    
+    .material-btn {
+      flex: 1;
+      padding: 10px 16px;
+      border: none;
+      background: transparent;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .material-btn:hover {
+      background: rgba(72, 187, 120, 0.1);
+      color: var(--accent);
+    }
+    
+    .material-btn.active {
+      background: var(--accent);
+      color: white;
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .control-group {
+      margin-bottom: 24px;
+    }
+    
+    .control-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    
+    .control-label {
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--text-primary);
+    }
+    
+    .control-value {
+      font-weight: 700;
+      color: var(--accent);
+      background: rgba(72, 187, 120, 0.1);
+      padding: 4px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+    
+    .slider {
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: var(--border);
+      outline: none;
+      -webkit-appearance: none;
+    }
+    
+    .slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(72, 187, 120, 0.4);
+      transition: all 0.3s ease;
+    }
+    
+    .slider::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+      box-shadow: 0 4px 12px rgba(72, 187, 120, 0.6);
+    }
+    
+    .slider::-moz-range-thumb {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 2px 8px rgba(72, 187, 120, 0.4);
+    }
+    
+    .position-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 12px;
+    }
+    
+    .position-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      border: 2px solid var(--border);
+      background: var(--surface-dark);
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 18px;
+    }
+    
+    .position-btn:hover {
+      border-color: var(--accent);
+      background: rgba(72, 187, 120, 0.1);
+      color: var(--accent);
+      transform: scale(1.05);
+    }
+    
+    .position-btn:active {
+      transform: scale(0.95);
+    }
+    
+    .helper-text {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .helper-text i {
+      color: var(--accent);
+    }
+    
+    .tip-card {
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+      border: 2px dashed var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+    
+    .tip-card h6 {
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .tip-card ul {
+      margin: 0;
+      padding-left: 20px;
+      list-style: none;
+    }
+    
+    .tip-card li {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+      position: relative;
+      padding-left: 20px;
+    }
+    
+    .tip-card li::before {
+      content: '✓';
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-weight: bold;
+    }
+    
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.9);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      backdrop-filter: blur(8px);
+      animation: fadeIn 0.3s ease;
+    }
+    
+    .modal-overlay.active {
+      display: flex;
+    }
+    
+    .modal-content {
+      background: white;
+      border-radius: 24px;
+      padding: 32px;
+      max-width: 600px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow-xl);
+      animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(40px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .modal-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    
+    .modal-header h3 {
+      font-weight: 800;
+      color: var(--primary);
+      font-size: 1.8rem;
+      margin-bottom: 8px;
+    }
+    
+    .modal-header p {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+    
+    .snapshot-preview {
+      width: 100%;
+      border-radius: 16px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-lg);
+    }
+    
+    .reference-code {
+      background: var(--surface-dark);
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      text-align: center;
+      border: 2px dashed var(--border);
+    }
+    
+    .reference-code label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: block;
+      margin-bottom: 8px;
+    }
+    
+    .reference-code code {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--primary);
+      letter-spacing: 2px;
+      font-family: 'Courier New', monospace;
+    }
+    
+    .modal-actions {
       display: flex;
       gap: 12px;
       flex-wrap: wrap;
     }
     
-    .action-buttons .btn {
+    .modal-actions .btn {
       flex: 1;
-      min-width: 120px;
+      min-width: 140px;
     }
     
-    .mobile-tips {
-      background: linear-gradient(135deg, #FF3E6C, #FF6B8B);
-      color: white;
-      border-radius: 15px;
-      padding: 15px;
-      margin-top: 20px;
-      text-align: center;
-      box-shadow: 0 4px 15px rgba(255, 62, 108, 0.2);
-    }
-    
-    .mobile-tips h6 {
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-    
-    .mobile-tips ul {
-      text-align: left;
-      margin: 0;
-      padding-left: 20px;
-      font-size: 14px;
-    }
-    
-    .mobile-tips li {
-      margin-bottom: 5px;
-    }
-    
-    .snapshot-modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0,0,0,0.9);
-      z-index: 1000;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-    
-    .snapshot-modal.active {
-      display: flex;
-    }
-    
-    .snapshot-content {
-      background: white;
-      border-radius: 20px;
-      padding: 30px;
-      max-width: 600px;
-      width: 100%;
-      text-align: center;
-    }
-    
-    .snapshot-preview {
-      max-width: 100%;
-      border-radius: 15px;
-      margin: 20px 0;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.2);
-    }
-    
-    .snapshot-actions {
-      display: flex;
-      gap: 15px;
-      justify-content: center;
-      margin-top: 20px;
-      flex-wrap: wrap;
-    }
-    
-    .controls-scroll-indicator {
-      position: sticky;
-      top: 10px;
-      background: linear-gradient(135deg, rgba(255, 62, 108, 0.95), rgba(255, 43, 93, 0.95));
-      color: white;
-      padding: 10px 15px;
-      border-radius: 10px;
-      text-align: center;
-      font-size: 0.9rem;
-      font-weight: 600;
-      margin-bottom: 15px;
-      box-shadow: 0 4px 15px rgba(255, 62, 108, 0.3);
-      z-index: 10;
-    }
-    
-    .controls-scroll-indicator i {
-      margin-left: 8px;
-      animation: bounce 2s infinite;
-    }
-    
-    @keyframes bounce {
-      0%, 20%, 50%, 80%, 100% {
-        transform: translateY(0);
-      }
-      40% {
-        transform: translateY(-5px);
-      }
-      60% {
-        transform: translateY(-3px);
-      }
-    }
-    
-    @media (max-width: 991px) {
-      .controls-scroll-indicator {
-        display: none;
-      }
-      
-      .main-content {
-        grid-template-columns: 1fr;
-      }
-    }
-    
-    @media (max-width: 767px) {
+    @media (max-width: 768px) {
       .app-container {
-        padding: 10px;
+        padding: 12px;
       }
       
-      .header {
-        padding: 30px 0;
+      .hero-header {
+        padding: 30px 16px;
       }
       
-      .header h1 {
-        font-size: 1.8rem;
+      .progress-bar-container {
+        padding: 16px;
       }
       
-      .header p {
-        font-size: 1rem;
-      }
-      
-      .card-body {
-        padding: 15px;
-      }
-      
-      .step-wizard {
-        padding: 15px 10px;
-        gap: 5px;
-      }
-      
-      .step-item {
-        min-width: 80px;
-      }
-      
-      .step-number {
-        width: 35px;
-        height: 35px;
+      .step-circle {
+        width: 38px;
+        height: 38px;
         font-size: 16px;
       }
       
       .step-label {
-        font-size: 10px;
+        font-size: 11px;
+      }
+      
+      .card-body {
+        padding: 20px;
       }
       
       .frame-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+      }
+      
+      .color-grid {
         grid-template-columns: repeat(4, 1fr);
         gap: 8px;
       }
       
-      .frame-btn {
-        padding: 6px;
-      }
-      
-      .frame-img {
-        width: 35px;
-        height: 20px;
-      }
-      
-      .frame-label {
-        font-size: 9px;
-      }
-      
-      .color-grid {
-        grid-template-columns: repeat(6, 1fr);
-        gap: 6px;
-      }
-      
-      .color-btn {
-        width: 35px;
-        height: 35px;
-      }
-      
-      .material-controls {
-        flex-direction: column;
-      }
-      
-      .position-controls {
-        gap: 10px;
-        flex-direction: column;
-      }
-      
-      .position-controls span {
-        order: -1;
-        font-size: 0.9rem;
-      }
-      
-      .position-btn {
-        width: 40px;
-        height: 40px;
-        font-size: 16px;
-      }
-      
-      .action-buttons {
-        flex-direction: column;
-      }
-      
-      .action-buttons .btn {
-        width: 100%;
+      .color-swatch {
+        width: 45px;
+        height: 45px;
       }
       
       .btn-snapshot {
-        width: 50px;
-        height: 50px;
-        font-size: 20px;
+        width: 56px;
+        height: 56px;
+        font-size: 22px;
       }
       
-      .snapshot-controls {
-        bottom: 10px;
-      }
-    }
-    
-    @media (max-width: 480px) {
-      .frame-grid {
-        grid-template-columns: repeat(3, 1fr);
+      .modal-content {
+        padding: 24px;
       }
       
-      .color-grid {
-        grid-template-columns: repeat(5, 1fr);
+      .modal-actions {
+        flex-direction: column;
       }
       
-      .header h1 {
-        font-size: 1.5rem;
+      .modal-actions .btn {
+        width: 100%;
       }
     }
   </style>
 </head>
-
 <body>
-  <?php include "Navigation.php"; ?>
-
-  <div class="header">
-    <div class="container">
-      <h1>Virtual Glasses Try-On</h1>
-      <p>Find your perfect frame and color in real-time</p>
-    </div>
+  <div class="hero-header">
+    <h1>Virtual Try-On Studio</h1>
+    <p>Find your perfect frames with AI-powered fitting</p>
   </div>
 
   <div class="app-container">
-    <!-- Step Wizard -->
-    <div class="step-wizard">
-      <div class="step-item active" id="step1">
-        <div class="step-number">1</div>
-        <div class="step-label">Start Camera</div>
-      </div>
-      <div class="step-item" id="step2">
-        <div class="step-number">2</div>
-        <div class="step-label">Choose Frame</div>
-      </div>
-      <div class="step-item" id="step3">
-        <div class="step-number">3</div>
-        <div class="step-label">Pick Color</div>
-      </div>
-      <div class="step-item" id="step4">
-        <div class="step-number">4</div>
-        <div class="step-label">Capture Look</div>
+    <div class="progress-bar-container">
+      <div class="step-progress">
+        <div class="progress-line" id="progressLine"></div>
+        <div class="step-item active" id="step1">
+          <div class="step-circle">1</div>
+          <div class="step-label">Camera</div>
+        </div>
+        <div class="step-item" id="step2">
+          <div class="step-circle">2</div>
+          <div class="step-label">Frame</div>
+        </div>
+        <div class="step-item" id="step3">
+          <div class="step-circle">3</div>
+          <div class="step-label">Color</div>
+        </div>
+        <div class="step-item" id="step4">
+          <div class="step-circle">4</div>
+          <div class="step-label">Capture</div>
+        </div>
       </div>
     </div>
 
-    <div class="main-content">
+    <div class="main-grid">
       <div class="camera-section">
-        <div class="camera-container">
-          <video id="inputVideo" autoplay muted playsinline></video>
-          <canvas id="outputCanvas"></canvas>
-          <div class="camera-overlay d-none" id="cameraOverlay">
-            <div class="loading-spinner"></div>
-            <p class="mt-3">Starting camera...</p>
-          </div>
-          
-          <div class="snapshot-controls" id="snapshotControls">
-            <button class="btn-snapshot" id="takeSnapshotBtn" title="Take Photo" data-bs-toggle="tooltip" data-bs-placement="top">
-              <i class="fas fa-camera"></i>
-            </button>
+        <div class="card">
+          <div class="camera-container">
+            <video id="inputVideo" autoplay muted playsinline></video>
+            <canvas id="outputCanvas"></canvas>
+            <div class="camera-overlay d-none" id="cameraOverlay">
+              <div class="loading-spinner"></div>
+              <p style="margin-top: 16px; font-size: 1.1rem;">Initializing camera...</p>
+            </div>
+            
+            <div class="snapshot-overlay" id="snapshotOverlay">
+              <button class="btn-snapshot" id="takeSnapshotBtn" title="Capture Photo">
+                <i class="fas fa-camera"></i>
+              </button>
+            </div>
           </div>
         </div>
         
-        <div class="status-indicator status-offline" id="statusIndicator">
-          <div class="status-dot"></div>
-          <span id="statusText">Camera is off</span>
+        <div class="status-badge offline" id="statusBadge">
+          <span id="statusText">Camera inactive</span>
         </div>
 
         <div class="card">
           <div class="card-header">
-            <span><i class="fas fa-video me-2"></i>Camera Controls</span>
-            <span class="tooltip-icon" data-bs-toggle="tooltip" data-bs-placement="left" title="Allow camera access and position your face in the center for best results">?</span>
+            <span><i class="fas fa-video"></i>Camera Controls</span>
           </div>
           <div class="card-body">
-            <div class="action-buttons">
-              <button id="startBtn" class="btn btn-primary">
-                <i class="fas fa-camera-video me-2"></i>Start Camera
-              </button>
-              <button id="calibrateBtn" class="btn btn-outline-primary d-none">
-                <i class="fas fa-sync-alt me-2"></i>Reset Position
-              </button>
-            </div>
+            <button id="startBtn" class="btn btn-primary btn-lg">
+              <i class="fas fa-play-circle"></i>
+              Start Camera
+            </button>
+            <button id="calibrateBtn" class="btn btn-outline btn-lg d-none">
+              <i class="fas fa-sync-alt"></i>
+              Reset Position
+            </button>
           </div>
         </div>
       </div>
 
       <div class="controls-section">
-        <div class="controls-scroll-indicator">
-          Scroll down to adjust frame fit <i class="fas fa-arrow-down"></i>
-        </div>
-
         <div class="card">
           <div class="card-header">
-            <span><i class="fas fa-glasses me-2"></i>Frame Styles</span>
-            <span class="tooltip-icon" data-bs-toggle="tooltip" data-bs-placement="left" title="Choose a frame style that complements your face shape">?</span>
+            <span><i class="fas fa-glasses"></i>Frame Selection</span>
           </div>
           <div class="card-body">
-            <a href="https://santosopticalclinic.com/face-shape-detector.php" class="btn-face-shape" target="_blank">
-              <i class="fas fa-face-smile"></i>
-              <span>Discover Your Face Shape</span>
-            </a>
+            <div class="face-shape-cta">
+              <h6><i class="fas fa-sparkles"></i> Not sure which frame suits you?</h6>
+              <p>Let AI analyze your face shape and recommend the perfect frames</p>
+              <a href="face-shape-detector.php" class="btn btn-secondary btn-lg" target="_blank">
+                <i class="fas fa-wand-magic-sparkles"></i>
+                Detect My Face Shape
+              </a>
+            </div>
+            
             <div class="frame-grid">
-              <button class="frame-btn active" data-frame="A-TRIANGLE">
+              <div class="frame-card active" data-frame="A-TRIANGLE">
                 <img src="Images/frames/ashape-frame-removebg-preview.png" alt="A-Shape" class="frame-img">
-                <span class="frame-label">A-Shape</span>
-              </button>
-              <button class="frame-btn" data-frame="V-TRIANGLE">
+                <div class="frame-label">A-Shape</div>
+              </div>
+              <div class="frame-card" data-frame="V-TRIANGLE">
                 <img src="Images/frames/vshape-frame-removebg-preview.png" alt="V-Shape" class="frame-img">
-                <span class="frame-label">V-Shape</span>
-              </button>
-              <button class="frame-btn" data-frame="ROUND">
+                <div class="frame-label">V-Shape</div>
+              </div>
+              <div class="frame-card" data-frame="ROUND">
                 <img src="Images/frames/round-frame-removebg-preview.png" alt="Round" class="frame-img">
-                <span class="frame-label">Round</span>
-              </button>
-              <button class="frame-btn" data-frame="SQUARE">
+                <div class="frame-label">Round</div>
+              </div>
+              <div class="frame-card" data-frame="SQUARE">
                 <img src="Images/frames/square-frame-removebg-preview.png" alt="Square" class="frame-img">
-                <span class="frame-label">Square</span>
-              </button>
-              <button class="frame-btn" data-frame="RECTANGLE">
+                <div class="frame-label">Square</div>
+              </div>
+              <div class="frame-card" data-frame="RECTANGLE">
                 <img src="Images/frames/rectangle-frame-removebg-preview.png" alt="Rectangle" class="frame-img">
-                <span class="frame-label">Rectangle</span>
-              </button>
-              <button class="frame-btn" data-frame="OBLONG">
+                <div class="frame-label">Rectangle</div>
+              </div>
+              <div class="frame-card" data-frame="OBLONG">
                 <img src="Images/frames/oblong-frame-removebg-preview.png" alt="Oblong" class="frame-img">
-                <span class="frame-label">Oblong</span>
-              </button>
-              <button class="frame-btn" data-frame="DIAMOND">
+                <div class="frame-label">Oblong</div>
+              </div>
+              <div class="frame-card" data-frame="DIAMOND">
                 <img src="Images/frames/diamond-frame-removebg-preview.png" alt="Diamond" class="frame-img">
-                <span class="frame-label">Diamond</span>
-              </button>
+                <div class="frame-label">Diamond</div>
+              </div>
             </div>
           </div>
         </div>
 
         <div class="card">
           <div class="card-header">
-            <span><i class="fas fa-palette me-2"></i>Frame Colors & Materials</span>
-            <span class="tooltip-icon" data-bs-toggle="tooltip" data-bs-placement="left" title="Select from classic, modern, or premium metallic colors">?</span>
+            <span><i class="fas fa-palette"></i>Colors & Materials</span>
           </div>
           <div class="card-body">
-            <!-- Accordion for Colors -->
-            <div class="accordion" id="colorAccordion">
-              <!-- Classic Neutrals -->
-              <div class="accordion-item">
-                <h2 class="accordion-header">
-                  <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#classicColors" aria-expanded="true">
-                    Classic Neutrals
-                  </button>
-                </h2>
-                <div id="classicColors" class="accordion-collapse collapse show" data-bs-parent="#colorAccordion">
-                  <div class="accordion-body">
-                    <div class="color-grid">
-                      <div class="color-option">
-                        <div class="color-btn active" style="background: #1a1a1a;" data-color="#1a1a1a" data-color-name="Matte Black"></div>
-                        <div class="color-label">Black</div>
-                      </div>
-                      <div class="color-option">
-                        <div class="color-btn" style="background: #2d3436;" data-color="#2d3436" data-color-name="Charcoal"></div>
-                        <div class="color-label">Charcoal</div>
-                      </div>
-                      <div class="color-option">
-                        <div class="color-btn" style="background: #636e72;" data-color="#636e72" data-color-name="Slate Gray"></div>
-                        <div class="color-label">Slate</div>
-                      </div>
-                      <div class="color-option">
-                        <div class="color-btn" style="background: #704214;" data-color="#704214" data-color-name="Havana"></div>
-                        <div class="color-label">Havana</div>
-                      </div>
-                      <div class="color-option">
-                        <div class="color-btn" style="background: #8b7355;" data-color="#8b7355" data-color-name="Taupe"></div>
-                        <div class="color-label">Taupe</div>
-                      </div>
-                      <div class="color-option">
-                        <div class="color-btn" style="background: #5f4339;" data-color="#5f4339" data-color-name="Espresso"></div>
-                        <div class="color-label">Espresso</div>
-                      </div>
-                    </div>
+            <div class="color-section">
+              <div class="color-category">
+                <div class="category-title">Classic Neutrals</div>
+                <div class="color-grid">
+                  <div class="color-option">
+                    <div class="color-swatch active" style="background: #1a1a1a;" data-color="#1a1a1a" data-name="Matte Black"></div>
+                    <div class="color-name">Black</div>
+                  </div>
+                  <div class="color-option">
+                    <div class="color-swatch" style="background: #2d3436;" data-color="#2d3436" data-name="Charcoal"></div>
+                    <div class="color-name">Charcoal</div>
+                  </div>
+                  <div class="color-option">
+                    <div class="color-swatch" style="background: #636e72;" data-color="#636e72" data-name="Slate Gray"></div>
+                    <div class="color-name">Slate</div>
+                  </div>
+                  <div class="color-option">
+                    <div class="color-swatch" style="background: #704214;" data-color="#704214" data-name="Havana"></div>
+                    <div class="color-name">Havana</div>
+                  </div>
+                  <div class="color-option">
+                    <div class="color-swatch" style="background: #8b7355;" data-color="#8b7355" data-name="Taupe"></div>
+                    <div class="color-name">Taupe</div>
+                  </div>
+                  <div class="color-option">
+                    <div class="color-swatch" style="background: #5f4339;" data-color="#5f4339" data-name="Espresso"></div>
+                    <div class="color-name">Espresso</div>
                   </div>
                 </div>
               </div>
-              
-              <!-- Modern Tones -->
-              <div class="accordion-item">
-                <h2 class="accordion-header">
-                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#modernTones">
-                    Modern Tones
-                  </button>
-                </h2>
-                <div id="modernTones" class="accordion-collapse collapse" data-bs-parent="#colorAccordion">
-                  <div class="accordion-body">
-                    <div class="color-grid">
-                      <div class="color-option">
-                        <div class="color-btn" style="background: #2c5f7c;" data-color="#2c5f7c" data-color-name="Ocean Blue"></div>
-                        <div class="color-label">Ocean</div>
-                      </div>
-                      <div class="color-option">
-                        <div class="color-btn" style="background: #34495e;" data-color="#34495e" data-color-name="Navy"></div>
-                        <div class="color-label">Navy</div>
-                      </div>
-                      <div class="color-option">
-                        <div class="color-btn" style="background: #16a085;" data-color="#16a085" data-color-name="Teal"></div>
-                        <div class="color-label">Teal</div>
-                      </div>
-                      <div class="color-option">
-                        <div class="color-btn" style="background: #7f5539;" data-color="#7f5539" data-color-name="Cognac"></div>
-                        <div class="color-label">Cognac</div>
-                      </div>
-                      <div class="color-option">
-                        <div class="color-btn" style="background: #95a5a6;" data-color="#95a5a6" data-color-name="Smoke"></div>
-                        <div class="color-label">Smoke</div>
-                      </div>
-                      <div class="color-option">
-                        <div class="color-btn" style="background: #8e44ad;" data-color="#8e44ad" data-color-name="Plum"></div>
-                        <div class="color-label">Plum</div>
-                      </div>
-                    </div>
+
+              <div class="color-category">
+                <div class="category-title">Modern Tones</div>
+                <div class="color-grid">
+                  <div class="color-option">
+                    <div class="color-swatch" style="background: #2c5f7c;" data-color="#2c5f7c" data-name="Ocean Blue"></div>
+                    <div class="color-name">Ocean</div>
+                  </div>
+                  <div class="color-option">
+                    <div class="color-swatch" style="background: #34495e;" data-color="#34495e" data-name="Navy"></div>
+                    <div class="color-name">Navy</div>
+                  </div>
+                  <div class="color-option">
+                    <div class="color-swatch" style="background: #16a085;" data-color="#16a085" data-name="Teal"></div>
+                    <div class="color-name">Teal</div>
+                  </div>
+                  <div class="color-option">
+                    <div class="color-swatch" style="background: #7f5539;" data-color="#7f5539" data-name="Cognac"></div>
+                    <div class="color-name">Cognac</div>
+                  </div>
+                  <div class="color-option">
+                    <div class="color-swatch" style="background: #95a5a6;" data-color="#95a5a6" data-name="Smoke"></div>
+                    <div class="color-name">Smoke</div>
+                  </div>
+                  <div class="color-option">
+                    <div class="color-swatch" style="background: #8e44ad;" data-color="#8e44ad" data-name="Plum"></div>
+                    <div class="color-name">Plum</div>
                   </div>
                 </div>
               </div>
-              
-              <!-- Premium Metallic -->
-              <div class="accordion-item">
-                <h2 class="accordion-header">
-                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#premiumMetallic">
-                    Premium Metallic
-                  </button>
-                </h2>
-                <div id="premiumMetallic" class="accordion-collapse collapse" data-bs-parent="#colorAccordion">
-                  <div class="accordion-body">
-                    <div class="color-grid">
-                      <div class="color-option">
-                        <div class="color-btn" style="background: linear-gradient(135deg, #bdc3c7, #ecf0f1);" data-color="#bdc3c7" data-color-name="Brushed Silver"></div>
-                        <div class="color-label">Silver</div>
-                      </div>
-                      <div class="color-option">
-                        <div class="color-btn" style="background: linear-gradient(135deg, #b8860b, #d4af37);" data-color="#c5a647" data-color-name="Champagne Gold"></div>
-                        <div class="color-label">Gold</div>
-                      </div>
-                      <div class="color-option">
-                        <div class="color-btn" style="background: linear-gradient(135deg, #cd7f32, #e8a87c);" data-color="#cd7f32" data-color-name="Rose Gold"></div>
-                        <div class="color-label">Rose Gold</div>
-                      </div>
-                      <div class="color-option">
-                        <div class="color-btn" style="background: linear-gradient(135deg, #4a4a4a, #6b6b6b);" data-color="#5a5a5a" data-color-name="Gunmetal"></div>
-                        <div class="color-label">Gunmetal</div>
-                      </div>
-                    </div>
+
+              <div class="color-category">
+                <div class="category-title">Premium Metallic</div>
+                <div class="color-grid">
+                  <div class="color-option">
+                    <div class="color-swatch" style="background: linear-gradient(135deg, #bdc3c7, #ecf0f1);" data-color="#bdc3c7" data-name="Brushed Silver"></div>
+                    <div class="color-name">Silver</div>
+                  </div>
+                  <div class="color-option">
+                    <div class="color-swatch" style="background: linear-gradient(135deg, #b8860b, #d4af37);" data-color="#c5a647" data-name="Champagne Gold"></div>
+                    <div class="color-name">Gold</div>
+                  </div>
+                  <div class="color-option">
+                    <div class="color-swatch" style="background: linear-gradient(135deg, #cd7f32, #e8a87c);" data-color="#cd7f32" data-name="Rose Gold"></div>
+                    <div class="color-name">Rose Gold</div>
+                  </div>
+                  <div class="color-option">
+                    <div class="color-swatch" style="background: linear-gradient(135deg, #4a4a4a, #6b6b6b);" data-color="#5a5a5a" data-name="Gunmetal"></div>
+                    <div class="color-name">Gunmetal</div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div class="control-group mt-3">
-              <div class="control-label">
-                <span>Material Effect</span>
-                <span class="tooltip-icon" data-bs-toggle="tooltip" title="Change the finish of your frames">?</span>
-              </div>
-              <div class="material-controls">
+            <div class="control-group">
+              <div class="control-label">Material Finish</div>
+              <div class="material-toggle">
                 <button class="material-btn active" data-material="Matte">Matte</button>
                 <button class="material-btn" data-material="Glossy">Glossy</button>
                 <button class="material-btn" data-material="Pattern">Pattern</button>
@@ -1108,87 +1136,107 @@ padding: 8px;
 
         <div class="card">
           <div class="card-header">
-            <span><i class="fas fa-sliders-h me-2"></i>Adjust Fit</span>
-            <span class="tooltip-icon" data-bs-toggle="tooltip" data-bs-placement="left" title="Fine-tune how the frames sit on your face for the perfect fit">?</span>
+            <span><i class="fas fa-sliders-h"></i>Adjust Fit</span>
           </div>
           <div class="card-body">
             <div class="control-group">
-              <div class="control-label">
-                <span>Frame Size</span>
+              <div class="control-header">
+                <span class="control-label">Frame Size</span>
                 <span class="control-value" id="sizeValue">2.4x</span>
               </div>
-              <input type="range" class="form-range" id="sizeSlider" min="1.8" max="3.0" step="0.1" value="2.4">
-              <small class="text-muted">Drag to make frames larger or smaller</small>
+              <input type="range" class="slider" id="sizeSlider" min="1.8" max="3.0" step="0.1" value="2.4">
+              <div class="helper-text">
+                <i class="fas fa-info-circle"></i>
+                Adjust the overall size of the frames
+              </div>
             </div>
-            
+
             <div class="control-group">
-              <div class="control-label">
-                <span>Frame Height</span>
+              <div class="control-header">
+                <span class="control-label">Frame Height</span>
                 <span class="control-value" id="heightValue">70%</span>
               </div>
               <div class="position-controls">
-                <button class="btn btn-outline-primary position-btn" id="heightDown">
+                <button class="position-btn" id="heightDown">
                   <i class="fas fa-minus"></i>
                 </button>
-                <span>Shorter / Taller</span>
-                <button class="btn btn-outline-primary position-btn" id="heightUp">
+                <button class="position-btn" id="heightUp">
                   <i class="fas fa-plus"></i>
                 </button>
               </div>
-              <small class="text-muted">Adjust frame proportions</small>
+              <div class="helper-text">
+                <i class="fas fa-info-circle"></i>
+                Make frames taller or shorter
+              </div>
             </div>
-            
+
             <div class="control-group">
-              <div class="control-label">
-                <span>Vertical Position</span>
+              <div class="control-header">
+                <span class="control-label">Vertical Position</span>
                 <span class="control-value" id="positionValue">0px</span>
               </div>
               <div class="position-controls">
-                <button class="btn btn-outline-primary position-btn" id="positionDown">
+                <button class="position-btn" id="positionDown">
                   <i class="fas fa-arrow-down"></i>
                 </button>
-                <span>Move Up / Down</span>
-                <button class="btn btn-outline-primary position-btn" id="positionUp">
+                <button class="position-btn" id="positionUp">
                   <i class="fas fa-arrow-up"></i>
                 </button>
               </div>
-              <small class="text-muted">Move frames higher or lower on face</small>
+              <div class="helper-text">
+                <i class="fas fa-info-circle"></i>
+                Move frames up or down on your face
+              </div>
             </div>
           </div>
         </div>
 
-        <?php if (preg_match('/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i', $_SERVER['HTTP_USER_AGENT'])): ?>
-        <div class="mobile-tips">
-          <h6>Mobile Tips</h6>
+        <div class="tip-card">
+          <h6><i class="fas fa-lightbulb"></i> Pro Tips</h6>
           <ul>
-            <li>Ensure good lighting for best results</li>
-            <li>Hold device steady at eye level</li>
-            <li>Keep face centered in frame</li>
-            <li>Close other apps for better performance</li>
+            <li>Position your face in the center of the camera</li>
+            <li>Ensure good lighting for accurate try-on</li>
+            <li>Try multiple frames before capturing</li>
+            <li>Adjust fit settings for perfect alignment</li>
           </ul>
         </div>
-        <?php endif; ?>
       </div>
     </div>
   </div>
 
-  <!-- Snapshot Modal -->
-  <div class="snapshot-modal" id="snapshotModal">
-    <div class="snapshot-content">
-      <h3 style="color: var(--primary); font-weight: 700;">Your Perfect Look!</h3>
-      <img id="snapshotImage" class="snapshot-preview" src="" alt="Your snapshot">
-      <div class="snapshot-actions">
-        <button class="btn btn-primary" id="downloadSnapshotBtn">
-          <i class="fas fa-download me-2"></i>Download
+  <div class="modal-overlay" id="snapshotModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Your Perfect Look! 🎉</h3>
+        <p>Here's how you look in your selected frames</p>
+      </div>
+      
+      <img id="snapshotImage" class="snapshot-preview" src="" alt="Your try-on snapshot">
+      
+      <div class="reference-code">
+        <label>Reference Code</label>
+        <code id="referenceCode">XXXXX</code>
+        <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">
+          Share this code with our sales team
+        </p>
+      </div>
+      
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="downloadBtn">
+          <i class="fas fa-download"></i>
+          Download Image
         </button>
-        <button class="btn btn-outline-primary" id="closeSnapshotBtn">
-          <i class="fas fa-times me-2"></i>Close
+        <button class="btn btn-secondary" id="copyCodeBtn">
+          <i class="fas fa-copy"></i>
+          Copy Code
+        </button>
+        <button class="btn btn-outline" id="closeModalBtn">
+          <i class="fas fa-times"></i>
+          Close
         </button>
       </div>
     </div>
   </div>
-
-  <?php include "footer.php"; ?>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.min.js"></script>
@@ -1196,17 +1244,13 @@ padding: 8px;
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.min.js"></script>
 
   <script>
-    // Initialize Bootstrap tooltips
-    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
-
     const videoElement = document.getElementById('inputVideo');
     const canvasElement = document.getElementById('outputCanvas');
     const canvasCtx = canvasElement.getContext('2d');
     const startBtn = document.getElementById('startBtn');
     const calibrateBtn = document.getElementById('calibrateBtn');
     const cameraOverlay = document.getElementById('cameraOverlay');
-    const statusIndicator = document.getElementById('statusIndicator');
+    const statusBadge = document.getElementById('statusBadge');
     const statusText = document.getElementById('statusText');
     const sizeSlider = document.getElementById('sizeSlider');
     const sizeValue = document.getElementById('sizeValue');
@@ -1216,17 +1260,18 @@ padding: 8px;
     const positionDown = document.getElementById('positionDown');
     const positionUp = document.getElementById('positionUp');
     const positionValue = document.getElementById('positionValue');
-    const frameButtons = document.querySelectorAll('.frame-btn');
-    const colorButtons = document.querySelectorAll('.color-btn');
-    const materialButtons = document.querySelectorAll('.material-btn');
-    const snapshotControls = document.getElementById('snapshotControls');
+    const frameCards = document.querySelectorAll('.frame-card');
+    const colorSwatches = document.querySelectorAll('.color-swatch');
+    const materialBtns = document.querySelectorAll('.material-btn');
+    const snapshotOverlay = document.getElementById('snapshotOverlay');
     const takeSnapshotBtn = document.getElementById('takeSnapshotBtn');
     const snapshotModal = document.getElementById('snapshotModal');
     const snapshotImage = document.getElementById('snapshotImage');
-    const downloadSnapshotBtn = document.getElementById('downloadSnapshotBtn');
-    const closeSnapshotBtn = document.getElementById('closeSnapshotBtn');
-
-    // Step wizard elements
+    const referenceCode = document.getElementById('referenceCode');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const copyCodeBtn = document.getElementById('copyCodeBtn');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const progressLine = document.getElementById('progressLine');
     const step1 = document.getElementById('step1');
     const step2 = document.getElementById('step2');
     const step3 = document.getElementById('step3');
@@ -1255,7 +1300,7 @@ padding: 8px;
         glassesImages[frameType] = img;
         if (loadedImagesCount === totalImages) {
           glassesLoaded = true;
-          console.log("All frame images loaded successfully");
+          console.log("All frame images loaded");
         }
       };
       img.onerror = () => {
@@ -1278,24 +1323,29 @@ padding: 8px;
     let currentColor = '#1a1a1a';
     let currentColorName = 'Matte Black';
     let currentMaterial = 'Matte';
+    let currentStep = 1;
 
     const textureCache = new Map();
 
-    function updateStepWizard(stepNumber) {
+    function updateProgressBar(step) {
+      currentStep = step;
       const steps = [step1, step2, step3, step4];
-      steps.forEach((step, index) => {
-        step.classList.remove('active', 'completed');
-        if (index < stepNumber - 1) {
-          step.classList.add('completed');
-        } else if (index === stepNumber - 1) {
-          step.classList.add('active');
+      const progress = ((step - 1) / 3) * 90;
+      progressLine.style.width = progress + '%';
+      
+      steps.forEach((stepEl, index) => {
+        stepEl.classList.remove('active', 'completed');
+        if (index < step - 1) {
+          stepEl.classList.add('completed');
+        } else if (index === step - 1) {
+          stepEl.classList.add('active');
         }
       });
     }
 
     function updateStatus(status, type) {
       statusText.textContent = status;
-      statusIndicator.className = `status-indicator status-${type}`;
+      statusBadge.className = `status-badge ${type}`;
     }
 
     function calculateHeadAngle(landmarks) {
@@ -1458,7 +1508,7 @@ padding: 8px;
     async function onResults(results) {
       if (!glassesLoaded || isProcessing) return;
       frameCount++;
-      if (isMobile && frameCount % 3 !== 0) return;
+      if (frameCount % 2 !== 0) return;
 
       isProcessing = true;
       canvasCtx.save();
@@ -1491,9 +1541,9 @@ padding: 8px;
           locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
         });
         faceMesh.setOptions({
-          maxNumFaces: 1, 
-          refineLandmarks: false, 
-          minDetectionConfidence: 0.7, 
+          maxNumFaces: 1,
+          refineLandmarks: false,
+          minDetectionConfidence: 0.7,
           minTrackingConfidence: 0.5
         });
         faceMesh.onResults(onResults);
@@ -1507,11 +1557,11 @@ padding: 8px;
         cameraOverlay.classList.remove('d-none');
         
         const constraints = {
-          video: { 
-            facingMode: 'user', 
-            width: { ideal: 640 }, 
-            height: { ideal: 480 }, 
-            aspectRatio: { ideal: 4/3 } 
+          video: {
+            facingMode: 'user',
+            width: { ideal: 640 },
+            height: { ideal: 480 },
+            aspectRatio: { ideal: 4/3 }
           }
         };
         const stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -1531,7 +1581,15 @@ padding: 8px;
       }
     }
 
-    // Snapshot functionality
+    function generateReferenceCode() {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let code = '';
+      for (let i = 0; i < 6; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return code;
+    }
+
     takeSnapshotBtn.addEventListener('click', () => {
       const snapshotCanvas = document.createElement('canvas');
       snapshotCanvas.width = canvasElement.width;
@@ -1541,18 +1599,30 @@ padding: 8px;
       
       const dataUrl = snapshotCanvas.toDataURL('image/png');
       snapshotImage.src = dataUrl;
+      referenceCode.textContent = generateReferenceCode();
       snapshotModal.classList.add('active');
-      updateStepWizard(4);
+      updateProgressBar(4);
     });
 
-    downloadSnapshotBtn.addEventListener('click', () => {
+    downloadBtn.addEventListener('click', () => {
       const link = document.createElement('a');
       link.download = `santos-optical-tryon-${Date.now()}.png`;
       link.href = snapshotImage.src;
       link.click();
     });
 
-    closeSnapshotBtn.addEventListener('click', () => {
+    copyCodeBtn.addEventListener('click', () => {
+      const code = referenceCode.textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        const originalText = copyCodeBtn.innerHTML;
+        copyCodeBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        setTimeout(() => {
+          copyCodeBtn.innerHTML = originalText;
+        }, 2000);
+      });
+    });
+
+    closeModalBtn.addEventListener('click', () => {
       snapshotModal.classList.remove('active');
     });
 
@@ -1562,28 +1632,28 @@ padding: 8px;
       }
     });
 
-    frameButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        frameButtons.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        currentFrame = btn.dataset.frame;
-        updateStepWizard(2);
+    frameCards.forEach(card => {
+      card.addEventListener('click', () => {
+        frameCards.forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+        currentFrame = card.dataset.frame;
+        if (currentStep < 2) updateProgressBar(2);
       });
     });
 
-    colorButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        colorButtons.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        currentColor = btn.dataset.color;
-        currentColorName = btn.dataset.colorName;
-        updateStepWizard(3);
+    colorSwatches.forEach(swatch => {
+      swatch.addEventListener('click', () => {
+        colorSwatches.forEach(s => s.classList.remove('active'));
+        swatch.classList.add('active');
+        currentColor = swatch.dataset.color;
+        currentColorName = swatch.dataset.name;
+        if (currentStep < 3) updateProgressBar(3);
       });
     });
 
-    materialButtons.forEach(btn => {
+    materialBtns.forEach(btn => {
       btn.addEventListener('click', () => {
-        materialButtons.forEach(b => b.classList.remove('active'));
+        materialBtns.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         currentMaterial = btn.dataset.material;
       });
@@ -1617,7 +1687,7 @@ padding: 8px;
     calibrateBtn.addEventListener('click', () => {
       if (faceTrackingActive) {
         isCalibrated = false;
-        updateStatus("Recalibrating... Look straight", "loading");
+        updateStatus("Recalibrating...", "loading");
         setTimeout(() => {
           updateStatus("Recalibrated!", "online");
         }, 1000);
@@ -1634,16 +1704,16 @@ padding: 8px;
         
         resizeCanvasToDisplay();
         calibrateBtn.classList.remove('d-none');
-        snapshotControls.classList.add('active');
+        snapshotOverlay.classList.add('active');
         updateHeightDisplay();
         updatePositionDisplay();
-        updateStepWizard(1);
+        updateProgressBar(1);
 
         camera = new Camera(videoElement, {
           onFrame: async () => {
             if (faceMesh && !isProcessing) await faceMesh.send({ image: videoElement });
-          }, 
-          width: 320, 
+          },
+          width: 320,
           height: 240
         });
 
@@ -1660,7 +1730,6 @@ padding: 8px;
       }
     });
 
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     window.addEventListener('load', () => {
       setTimeout(initializeFaceMesh, 1000);
     });
