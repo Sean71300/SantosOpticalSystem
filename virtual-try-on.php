@@ -39,6 +39,7 @@
       max-width: 1400px;
       margin: 0 auto;
       padding: 15px;
+      overflow: visible;
     }
     
     .header {
@@ -73,20 +74,29 @@
     }
     
     @media (min-width: 992px) {
-      /* 4-column desktop layout with two explicit rows so columns align neatly.
-         Row heights are fixed to match card heights; camera will fill the row height
-         (so it appears the same height as adjacent cards). */
+      /* Train layout: horizontal scrollable row of cards (train cars) */
       .main-content {
-        grid-template-columns: 220px 320px 420px 260px; /* camera | adjust | frames | colors/material */
-        grid-auto-rows: 420px; /* single row height for cards */
+        display: flex;
+        flex-direction: row;
         gap: 18px;
+        overflow-x: auto;
+        scroll-behavior: smooth;
+        align-items: stretch;
+        padding-bottom: 6px;
       }
-      .left-column, .center-column, .frames-column, .right-column { display: block; }
-  /* place each major column in the first row so we have one row layout */
-  .left-column { grid-column: 1; grid-row: 1; }
-  .center-column { grid-column: 2; grid-row: 1; }
-  .frames-column { grid-column: 3; grid-row: 1; }
-  .right-column { grid-column: 4; grid-row: 1; }
+      /* hide native scrollbar for WebKit while still allowing scroll */
+      .main-content::-webkit-scrollbar { height: 8px; }
+      .main-content::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 6px; }
+      .main-content > div {
+        flex: 0 0 auto; /* each column is a fixed-width 'car' */
+      }
+      .left-column { min-width: 260px; }
+      .center-column { min-width: 340px; }
+      .frames-column { min-width: 460px; }
+      .right-column { min-width: 280px; }
+      /* keep cards filling the car height */
+      .card { height: 420px; }
+      .camera-container { height: 100%; }
     }
     
     .camera-section {
