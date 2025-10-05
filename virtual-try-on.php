@@ -697,6 +697,15 @@
       margin-top: 6px;
       font-size: 0.92rem;
     }
+
+    /* Make horizontal separators in Adjust Fit visible and subtle */
+    .center-column .card-body hr {
+      border: 0;
+      height: 1px;
+      background: rgba(0,0,0,0.06);
+      margin: 12px 0;
+      width: 90%;
+    }
     
     .status-indicator {
       display: inline-flex;
