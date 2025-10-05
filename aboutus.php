@@ -353,7 +353,7 @@
         <h2 class="aboutus-h2">SO BRANCHES</h2>
         <div class="row justify-content-center g-4">
 
-            <!-- Row 1: 3 branches -->
+            <!-- Top row: 3 branches -->
             <div class="col-12 col-sm-6 col-md-4 col-lg-3">
             <div class="branch-card" data-aos="fade-up" data-aos-delay="100">
                 <div class="image-container">
@@ -405,8 +405,8 @@
             </div>
             </div>
 
-            <!-- Row 2: 2 branches -->
-            <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+            <!-- Bottom row: 2 branches, centered -->
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3 offset-lg-1">
             <div class="branch-card" data-aos="fade-up" data-aos-delay="400">
                 <div class="image-container">
                 <a href="https://maps.app.goo.gl/riu7zr7VhunhW1Tq8" target="_blank">
@@ -442,7 +442,6 @@
 
         </div>
         </div>
-
 
 
         <?php include 'footer.php'; ?>
