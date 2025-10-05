@@ -637,27 +637,27 @@
               <div class="color-group-title">Classic Colors</div>
               <div class="color-grid">
                 <div class="color-option">
-                  <div class="color-btn active" style="background: #2c2c2c;" data-color="#2c2c2c" data-color-name="Black" data-material="matte"></div>
+                  <div class="color-btn active" style="background: #2c2c2c;" data-color="#2c2c2c" data-color-name="Black"></div>
                   <div class="color-label">Black</div>
                 </div>
                 <div class="color-option">
-                  <div class="color-btn" style="background: #6c757d;" data-color="#6c757d" data-color-name="Gray" data-material="matte"></div>
+                  <div class="color-btn" style="background: #6c757d;" data-color="#6c757d" data-color-name="Gray"></div>
                   <div class="color-label">Gray</div>
                 </div>
                 <div class="color-option">
-                  <div class="color-btn" style="background: #8B4513;" data-color="#8B4513" data-color-name="Tortoise" data-material="textured"></div>
+                  <div class="color-btn" style="background: #8B4513;" data-color="#8B4513" data-color-name="Tortoise"></div>
                   <div class="color-label">Tortoise</div>
                 </div>
                 <div class="color-option">
-                  <div class="color-btn" style="background: #A52A2A;" data-color="#A52A2A" data-color-name="Brown" data-material="matte"></div>
+                  <div class="color-btn" style="background: #A52A2A;" data-color="#A52A2A" data-color-name="Brown"></div>
                   <div class="color-label">Brown</div>
                 </div>
                 <div class="color-option">
-                  <div class="color-btn" style="background: linear-gradient(45deg, #c0c0c0, #e8e8e8);" data-color="#c0c0c0" data-color-name="Silver" data-material="metallic"></div>
+                  <div class="color-btn" style="background: linear-gradient(45deg, #c0c0c0, #e8e8e8);" data-color="#c0c0c0" data-color-name="Silver"></div>
                   <div class="color-label">Silver</div>
                 </div>
                 <div class="color-option">
-                  <div class="color-btn" style="background: linear-gradient(45deg, #daa520, #b8860b);" data-color="#daa520" data-color-name="Gold" data-material="metallic"></div>
+                  <div class="color-btn" style="background: linear-gradient(45deg, #daa520, #b8860b);" data-color="#daa520" data-color-name="Gold"></div>
                   <div class="color-label">Gold</div>
                 </div>
               </div>
@@ -667,27 +667,27 @@
               <div class="color-group-title">Vibrant Colors</div>
               <div class="color-grid">
                 <div class="color-option">
-                  <div class="color-btn" style="background: #1a73e8;" data-color="#1a73e8" data-color-name="Blue" data-material="glossy"></div>
+                  <div class="color-btn" style="background: #1a73e8;" data-color="#1a73e8" data-color-name="Blue"></div>
                   <div class="color-label">Blue</div>
                 </div>
                 <div class="color-option">
-                  <div class="color-btn" style="background: #dc3545;" data-color="#dc3545" data-color-name="Red" data-material="glossy"></div>
+                  <div class="color-btn" style="background: #dc3545;" data-color="#dc3545" data-color-name="Red"></div>
                   <div class="color-label">Red</div>
                 </div>
                 <div class="color-option">
-                  <div class="color-btn" style="background: #28a745;" data-color="#28a745" data-color-name="Green" data-material="glossy"></div>
+                  <div class="color-btn" style="background: #28a745;" data-color="#28a745" data-color-name="Green"></div>
                   <div class="color-label">Green</div>
                 </div>
                 <div class="color-option">
-                  <div class="color-btn" style="background: #ffc107;" data-color="#ffc107" data-color-name="Yellow" data-material="glossy"></div>
+                  <div class="color-btn" style="background: #ffc107;" data-color="#ffc107" data-color-name="Yellow"></div>
                   <div class="color-label">Yellow</div>
                 </div>
                 <div class="color-option">
-                  <div class="color-btn" style="background: #6f42c1;" data-color="#6f42c1" data-color-name="Purple" data-material="glossy"></div>
+                  <div class="color-btn" style="background: #6f42c1;" data-color="#6f42c1" data-color-name="Purple"></div>
                   <div class="color-label">Purple</div>
                 </div>
                 <div class="color-option">
-                  <div class="color-btn" style="background: #e83e8c;" data-color="#e83e8c" data-color-name="Pink" data-material="glossy"></div>
+                  <div class="color-btn" style="background: #e83e8c;" data-color="#e83e8c" data-color-name="Pink"></div>
                   <div class="color-label">Pink</div>
                 </div>
               </div>
@@ -846,6 +846,9 @@
     let currentColorName = 'Black';
     let currentMaterial = 'realistic';
 
+    // Cache for textures to avoid regeneration
+    const textureCache = new Map();
+
     function updateStatus(status, type) {
       statusText.textContent = status;
       statusIndicator.className = `status-indicator status-${type}`;
@@ -874,6 +877,13 @@
     }
 
     function createMaterialTexture(width, height, baseColor, materialType) {
+      const cacheKey = `${baseColor}-${materialType}-${width}x${height}`;
+      
+      // Return cached texture if available
+      if (textureCache.has(cacheKey)) {
+        return textureCache.get(cacheKey);
+      }
+
       const textureCanvas = document.createElement('canvas');
       const textureCtx = textureCanvas.getContext('2d');
       textureCanvas.width = width;
@@ -895,11 +905,11 @@
         textureCtx.fillStyle = gradient;
         textureCtx.fillRect(0, 0, width, height);
         
-        // Add subtle noise for texture
+        // Add subtle noise for texture (optimized)
         const imageData = textureCtx.getImageData(0, 0, width, height);
         const data = imageData.data;
-        for (let i = 0; i < data.length; i += 4) {
-          const noise = (Math.random() - 0.5) * 10;
+        for (let i = 0; i < data.length; i += 16) { // Process every 4th pixel for performance
+          const noise = (Math.random() - 0.5) * 15;
           data[i] = Math.max(0, Math.min(255, data[i] + noise));
           data[i + 1] = Math.max(0, Math.min(255, data[i + 1] + noise));
           data[i + 2] = Math.max(0, Math.min(255, data[i + 2] + noise));
@@ -925,16 +935,17 @@
         textureCtx.fillRect(0, 0, width, height);
         
       } else if (materialType === 'metallic') {
-        // Metallic texture
-        for (let x = 0; x < width; x++) {
-          for (let y = 0; y < height; y++) {
-            const value = Math.sin(x * 0.1) * Math.cos(y * 0.1) * 30;
+        // Optimized metallic texture - use larger blocks
+        const blockSize = 4; // Process in 4x4 blocks for performance
+        for (let x = 0; x < width; x += blockSize) {
+          for (let y = 0; y < height; y += blockSize) {
+            const value = Math.sin(x * 0.05) * Math.cos(y * 0.05) * 40;
             const metallicR = Math.max(0, Math.min(255, r + value));
             const metallicG = Math.max(0, Math.min(255, g + value));
             const metallicB = Math.max(0, Math.min(255, b + value));
             
             textureCtx.fillStyle = `rgb(${metallicR}, ${metallicG}, ${metallicB})`;
-            textureCtx.fillRect(x, y, 1, 1);
+            textureCtx.fillRect(x, y, blockSize, blockSize);
           }
         }
         
@@ -947,6 +958,8 @@
         textureCtx.fillRect(0, 0, width, height);
       }
       
+      // Cache the texture
+      textureCache.set(cacheKey, textureCanvas);
       return textureCanvas;
     }
 
@@ -976,13 +989,13 @@
         // Create temporary canvas for the frame
         const tempCanvas = document.createElement('canvas');
         const tempCtx = tempCanvas.getContext('2d');
-        const frameWidth = glassesImages[currentFrame].width;
-        const frameHeight = glassesImages[currentFrame].height;
+        const frameWidth = Math.max(50, glassesImages[currentFrame].width); // Minimum size for texture quality
+        const frameHeight = Math.max(30, glassesImages[currentFrame].height);
         tempCanvas.width = frameWidth;
         tempCanvas.height = frameHeight;
         
         // Draw original frame to get the shape
-        tempCtx.drawImage(glassesImages[currentFrame], 0, 0);
+        tempCtx.drawImage(glassesImages[currentFrame], 0, 0, frameWidth, frameHeight);
         
         // Create material texture
         const textureCanvas = createMaterialTexture(frameWidth, frameHeight, currentColor, currentMaterial);
@@ -1081,20 +1094,14 @@
       });
     });
 
-    // Event listeners for color selection
+    // Event listeners for color selection - FIXED: Don't change material
     colorButtons.forEach(btn => {
       btn.addEventListener('click', () => {
         colorButtons.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         currentColor = btn.dataset.color;
         currentColorName = btn.dataset.colorName;
-        // Auto-set material based on color type
-        const suggestedMaterial = btn.dataset.material;
-        if (suggestedMaterial) {
-          materialButtons.forEach(mb => mb.classList.remove('active'));
-          document.querySelector(`[data-material="${suggestedMaterial}"]`).classList.add('active');
-          currentMaterial = suggestedMaterial;
-        }
+        // DON'T change material when selecting color - keep current material
       });
     });
 
