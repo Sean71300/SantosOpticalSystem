@@ -929,7 +929,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     <!-- In your results section, replace the virtual try-on button with: -->
                     <div class="text-center mt-4">
-                        <a href="virtual-try-on-fixed.php?shape=<?= urlencode($result) ?>" class="btn btn-quiz">
+                        <a href="virtual-try-on.php?shape=<?= urlencode($result) ?>" class="btn btn-quiz">
                             <i class="fas fa-camera me-2"></i> Virtual Try-On
                         </a>
                         <div class="virtual-tryon-guide mt-2">
