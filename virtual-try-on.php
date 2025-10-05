@@ -183,9 +183,9 @@
       grid-template-columns: repeat(2, 1fr);
       gap: 10px;
     }
-    .frames-column .frame-btn, .frames-area .frame-btn { padding: 6px; }
-    .frames-column .frame-img, .frames-area .frame-img { width: 48px; height: 32px; }
-    .frames-column .frame-label { font-size: 11px; }
+  .frames-column .frame-btn, .frames-area .frame-btn { padding: 4px 6px; }
+  .frames-column .frame-img, .frames-area .frame-img { width: 44px; height: 28px; }
+  .frames-column .frame-label { font-size: 10px; }
 
   /* colors area should visually match other cards (use primary gradient) */
   .colors-area .card { box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
@@ -1166,7 +1166,7 @@
         <div class="colors-area">
           <div class="card">
             <div class="card-header">
-              <span><i class="fas fa-palette me-2"></i>Colors</span>
+              <span><i class="fas fa-palette me-2"></i>Frame Color</span>
               <span class="step-badge">5</span>
             </div>
             <div class="card-body">
