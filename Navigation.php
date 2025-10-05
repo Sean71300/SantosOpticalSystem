@@ -79,6 +79,13 @@ if (isset($_SESSION['role'])) {
     object-fit: cover;
     margin-left: 5px;
 }
+/* Slightly lower the username text in the navbar so it lines up better with the bar */
+#userDropdown {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transform: translateY(3px);
+}
 /* Ensure dropdown appears above other elements */
 .dropdown-menu { z-index: 2000; }
 /* Force visible when JS adds .show (defensive against conflicting CSS) */
