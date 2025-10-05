@@ -152,11 +152,24 @@ if ($restrictedRole) {
     if (!empty($_SESSION['branchcode'])) { $branch = $_SESSION['branchcode']; }
 }
 
-// No locked-branch display name needed when interactive filter is used
+// Assigned branch name for display (for Admin/Employee)
+$assignedBranchName = '';
+if ($restrictedRole && !empty($_SESSION['branchcode'])) {
+    $bnStmt = $conn->prepare('SELECT BranchName FROM BranchMaster WHERE BranchCode = ? LIMIT 1');
+    if ($bnStmt) {
+        $bnStmt->bind_param('s', $_SESSION['branchcode']);
+        if ($bnStmt->execute()) {
+            $assignedBranchName = $bnStmt->get_result()->fetch_assoc()['BranchName'] ?? '';
+        }
+        $bnStmt->close();
+    }
+}
 
-// Branches list
+// Branches list (used for Super Admin branch filter)
 $branches = [];
-if ($rs = $conn->query('SELECT BranchCode, BranchName FROM BranchMaster ORDER BY BranchName')) { while($row=$rs->fetch_assoc()) $branches[]=$row; }
+if ($rs = $conn->query('SELECT BranchCode, BranchName FROM BranchMaster ORDER BY BranchName')) {
+    while ($row = $rs->fetch_assoc()) { $branches[] = $row; }
+}
 
 // Canonical base query params for building links/redirects (compute AFTER branch scoping)
 $baseQuery = ['search'=>$search,'branch'=>$branch,'status'=>$status];
@@ -349,24 +362,31 @@ body { background:#f5f7fa; padding-top:60px; }
         <h2><i class="fas fa-shopping-cart me-2"></i> Orders Management</h2>
     <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#addOrderModal"><i class="fas fa-plus me-1"></i> Add New Order</button>
     </div>
+    <?php if ($restrictedRole): ?>
+        <div class="mb-9">
+            <span class="bg-secondary-subtle text-secondary border rounded-3 px-3 py-2 fs-4 fw-semibold">Branch: <?= htmlspecialchars($assignedBranchName ?: ($_SESSION['branchcode'] ?? 'Unknown')) ?></span>
+        </div>
+    <?php endif; ?>
     
 
     <div class="card card-round p-4 mb-4">
         <form method="get" action="order.php">
             <div class="row g-3 align-items-end">
-                <div class="col-lg-5 col-md-6">
+                <div class="col-lg-<?= $restrictedRole ? '8' : '5' ?> col-md-6">
                     <label class="form-label">Search</label>
                     <input name="search" value="<?= htmlspecialchars($search) ?>" class="form-control" placeholder="Search orders or customers...">
                 </div>
-                <div class="col-lg-3 col-md-6">
+                <?php if (!$restrictedRole): ?>
+                <div class="col-lg-4 col-md-6">
                     <label class="form-label">Filter by Branch</label>
                     <select name="branch" class="form-select">
                         <option value="">All Branches</option>
                         <?php foreach($branches as $br): ?>
-                        <option value="<?= htmlspecialchars($br['BranchCode']) ?>" <?= $branch==$br['BranchCode']?'selected':'' ?>><?= htmlspecialchars($br['BranchName']) ?></option>
+                            <option value="<?= htmlspecialchars($br['BranchCode']) ?>" <?= $branch==$br['BranchCode']?'selected':'' ?>><?= htmlspecialchars($br['BranchName']) ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>
+                <?php endif; ?>
                 <div class="col-lg-3 col-md-6">
                     <label class="form-label">Filter by Status</label>
                     <select name="status" class="form-select">
