@@ -432,7 +432,7 @@
                     <strong>SO Santos Optical Paso De Blas</strong><br>
                     621-B Paso de Blas Rd, Valenzuela, 1442 Metro Manila<br>
                     ☎️ 0932 844 7068<br>
-                    <small>Along busy streets in Valenzuela</small>
+                    <small>In the busy city of Valenzuela</small>
                     </div>
                 </div>
             </div>
