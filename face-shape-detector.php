@@ -930,7 +930,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="primary-cta">
                     <h3><i class="fas fa-shopping-bag me-2"></i> Ready to Find Your Perfect Frames?</h3>
                     <p>Explore our curated collection designed specifically for <?= htmlspecialchars($result) ?> face shapes</p>
-                    <a href="product-gallery.php" class="btn-shop-now">
+                    <?php
+                    $shopLinks = [
+                        'SQUARE'      => 'https://santosopticalclinic.com/product-gallery.php?page=1&shape=5',
+                        'ROUND'       => 'https://santosopticalclinic.com/product-gallery.php?page=1&shape=4',
+                        'OBLONG'      => 'https://santosopticalclinic.com/product-gallery.php?page=1&shape=1',
+                        'DIAMOND'     => 'https://santosopticalclinic.com/product-gallery.php?page=1&shape=3',
+                        'V-TRIANGLE'  => 'https://santosopticalclinic.com/product-gallery.php?page=1&shape=2',
+                        'A-TRIANGLE'  => 'https://santosopticalclinic.com/product-gallery.php?page=1&shape=6',
+                        'RECTANGLE'   => 'https://santosopticalclinic.com/product-gallery.php?page=1&shape=7'
+                    ];
+                    $shopUrl = $shopLinks[$result] ?? 'product-gallery.php';
+                    ?>
+                    <a href="<?= htmlspecialchars($shopUrl) ?>" class="btn-shop-now">
                         Shop Recommended Frames
                     </a>
                 </div>
