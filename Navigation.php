@@ -200,7 +200,7 @@ if (isset($_SESSION['role'])) {
                                 default: $firstLabel = 'Dashboard'; $firstHref = 'Dashboard.php'; break;
                             }
                         } elseif (isset($_SESSION['user_type']) && $_SESSION['user_type'] === 'customer') {
-                            $firstLabel = 'Customer Page'; $firstHref = 'customer_dashboard.php';
+                            $firstLabel = 'Order/Med. History'; $firstHref = 'customer_dashboard.php';
                         } elseif (isset($_SESSION['role'])) {
                             $rnameLocal = strtolower((string)$_SESSION['role']);
                             if (in_array($rnameLocal, ['super admin', 'superadmin', 'admin'], true)) { $firstLabel = 'Admin Panel'; $firstHref = 'Dashboard.php'; }
