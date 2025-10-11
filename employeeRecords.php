@@ -270,14 +270,47 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
                 // Handle modal form submission via AJAX
                 const modalForm = document.getElementById('modalEditForm');
                 if (modalForm) {
-                    modalForm.addEventListener('submit', function(evt) {
+                    // Add an inline helper element for username validation
+                    const usernameInput = modalForm.querySelector('.modal-username');
+                    const helper = document.createElement('div');
+                    helper.className = 'form-text text-danger d-none modal-username-helper';
+                    helper.style.marginTop = '4px';
+                    usernameInput.parentNode.appendChild(helper);
+
+                    // Helper to check availability
+                    async function checkUsernameAvailable(uname, excludeId) {
+                        try {
+                            const params = new URLSearchParams({ username: uname });
+                            if (excludeId) params.set('exclude_id', excludeId);
+                            const res = await fetch('employeeCheckUsername.php?' + params.toString());
+                            const json = await res.json();
+                            return json.available === true;
+                        } catch (e) { return false; }
+                    }
+
+                    modalForm.addEventListener('submit', async function(evt) {
                         evt.preventDefault();
                         const submitBtn = modalForm.querySelector('.modal-save');
                         submitBtn.disabled = true;
                         submitBtn.textContent = 'Saving...';
 
+                        // inline username validation
+                        const uname = (modalForm.querySelector('.modal-username').value || '').trim();
+                        const id = (modalForm.querySelector('.modal-emp-id').value || '').trim();
+                        if (uname !== '') {
+                            const ok = await checkUsernameAvailable(uname, id);
+                            if (!ok) {
+                                helper.textContent = 'Username already taken. Please choose another.';
+                                helper.classList.remove('d-none');
+                                submitBtn.disabled = false;
+                                submitBtn.textContent = 'Save changes';
+                                return; // keep modal open for correction
+                            } else {
+                                helper.classList.add('d-none');
+                            }
+                        }
+
                         const formData = new FormData(modalForm);
-                        // Ensure required fields are explicitly present (some browsers/structures can omit selects)
                         try {
                             formData.set('id', modalForm.querySelector('.modal-emp-id').value || '');
                             formData.set('name', modalForm.querySelector('.modal-name').value || '');
@@ -286,34 +319,24 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
                             formData.set('phone', modalForm.querySelector('.modal-phone').value || '');
                             formData.set('role', modalForm.querySelector('.modal-role').value || '');
                             formData.set('branch', modalForm.querySelector('.modal-branch').value || '');
-                        } catch (e) {
-                            console.warn('Failed to set explicit form fields:', e);
-                        }
+                        } catch (e) { console.warn('Failed to set explicit form fields:', e); }
 
                         // Ensure we don't send an IMAGE field when no file was chosen
                         const fileInputForSubmit = modalForm.querySelector('#modalImage');
                         if (fileInputForSubmit && fileInputForSubmit.files && fileInputForSubmit.files.length === 0) {
-                            // remove any stray IMAGE entry
                             try { formData.delete('IMAGE'); } catch (e) { /* ignore */ }
                         }
 
-                        fetch('employeeUpdate.php', {
-                            method: 'POST',
-                            body: formData
-                        }).then(r => r.text())
-                        .then(text => {
-                            let resp;
-                            try {
-                                resp = JSON.parse(text);
-                            } catch (err) {
-                                // Server returned HTML or invalid JSON — show for debugging
-                                console.error('Invalid JSON response from server:', text);
-                                alert('Server returned invalid response. Check console for details.');
-                                return;
-                            }
-
+                        fetch('employeeUpdate.php', { method: 'POST', body: formData })
+                        .then(r => r.json())
+                        .then(resp => {
                             if (!resp.success) {
-                                alert('Update failed: ' + (resp.message || 'unknown'));
+                                if (resp.message && resp.message.toLowerCase().includes('username')) {
+                                    helper.textContent = resp.message;
+                                    helper.classList.remove('d-none');
+                                } else {
+                                    alert('Update failed: ' + (resp.message || 'unknown'));
+                                }
                                 return;
                             }
 
@@ -327,15 +350,15 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
                                     row.querySelector('td:nth-child(3)').textContent = data.email;
                                     row.querySelector('td:nth-child(4)').textContent = data.phone;
                                     row.querySelector('td:nth-child(5)').textContent = data.role_name || data.role;
-                                    row.querySelector('td:nth-child(6) img').src = data.image;
+                                    const img = row.querySelector('td:nth-child(6) img'); if (img) img.src = data.image;
                                     row.querySelector('td:nth-child(7)').textContent = data.branch_name || data.branch;
 
-                                    // Also update data-* attributes on Edit button so modal stays in sync
+                                    // update edit button attributes
                                     const editBtn = row.querySelector('.edit-btn');
                                     if (editBtn) {
                                         editBtn.setAttribute('data-name', data.name);
                                         editBtn.setAttribute('data-image', data.image);
-                                        editBtn.setAttribute('data-username', data.username || modal.querySelector('.modal-username').value);
+                                        editBtn.setAttribute('data-username', data.username || modalForm.querySelector('.modal-username').value);
                                         editBtn.setAttribute('data-email', data.email);
                                         editBtn.setAttribute('data-phone', data.phone);
                                         editBtn.setAttribute('data-role', data.role_name || data.role);
@@ -346,23 +369,13 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
                                 }
                             });
 
-                            // Close modal
+                            // Close modal and clear file input
                             var bsModalInstance = bootstrap.Modal.getInstance(document.getElementById('editConfirmModal'));
                             if (bsModalInstance) bsModalInstance.hide();
-                            // Clear file input after save to avoid accidental reuse
-                            const fileInputAfter = document.getElementById('modalImage');
-                            if (fileInputAfter) {
-                                try { fileInputAfter.value = ''; } catch(e) {}
-                            }
+                            const fileInputAfter = document.getElementById('modalImage'); if (fileInputAfter) try { fileInputAfter.value = ''; } catch(e) {}
                         })
-                        .catch(err => {
-                            console.error(err);
-                            alert('An error occurred while updating.');
-                        })
-                        .finally(() => {
-                            submitBtn.disabled = false;
-                            submitBtn.textContent = 'Save changes';
-                        });
+                        .catch(err => { console.error(err); alert('An error occurred while updating.'); })
+                        .finally(() => { submitBtn.disabled = false; submitBtn.textContent = 'Save changes'; });
                     });
                 }
             });
@@ -502,36 +515,61 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'asc';
         // Submit create form via AJAX
         const createForm = document.getElementById('createEmployeeForm');
         if (createForm) {
-            createForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                const btn = createForm.querySelector('button[type="submit"]');
-                btn.disabled = true; btn.textContent = 'Creating...';
-                const fd = new FormData(createForm);
+                createForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    const btn = createForm.querySelector('button[type="submit"]');
+                    btn.disabled = true; btn.textContent = 'Creating...';
 
-                fetch('employeeCreateAjax.php', { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-                .then(async r => {
-                    const txt = await r.text();
-                    console.debug('[Create] HTTP', r.status, txt);
-                    try {
-                        const json = JSON.parse(txt);
-                        return json;
-                    } catch (e) {
-                        throw new Error('Invalid JSON response: ' + txt);
+                    // inline username validation
+                    const unameEl = createForm.querySelector('input[name="username"]');
+                    const uname = (unameEl && unameEl.value) ? unameEl.value.trim() : '';
+                    // create helper under username if not exists
+                    let helper = unameEl.parentNode.querySelector('.username-helper');
+                    if (!helper) {
+                        helper = document.createElement('div'); helper.className = 'form-text text-danger username-helper'; helper.style.marginTop='4px'; unameEl.parentNode.appendChild(helper);
                     }
-                })
-                .then(json => {
-                    if (!json.success) {
-                        alert('Create failed: ' + (json.message || 'Unknown'));
-                        return;
+                    if (uname !== '') {
+                        try {
+                            const res = await fetch('employeeCheckUsername.php?username=' + encodeURIComponent(uname));
+                            const json = await res.json();
+                            if (!json.available) {
+                                helper.textContent = 'Username already taken. Please choose another.';
+                                btn.disabled = false; btn.textContent = 'Create';
+                                return;
+                            } else {
+                                helper.textContent = '';
+                            }
+                        } catch (e) {
+                            console.warn('Username check failed', e);
+                        }
                     }
-                    // success: reload to show new row (could insert row dynamically)
-                    location.reload();
-                })
-                .catch(err => {
-                    console.error(err); alert('Error creating employee - check console for details');
-                })
-                .finally(() => { btn.disabled = false; btn.textContent = 'Create'; });
-            });
+
+                    const fd = new FormData(createForm);
+
+                    fetch('employeeCreateAjax.php', { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                    .then(async r => {
+                        const txt = await r.text();
+                        console.debug('[Create] HTTP', r.status, txt);
+                        try {
+                            const json = JSON.parse(txt);
+                            return json;
+                        } catch (e) {
+                            throw new Error('Invalid JSON response: ' + txt);
+                        }
+                    })
+                    .then(json => {
+                        if (!json.success) {
+                            alert('Create failed: ' + (json.message || 'Unknown'));
+                            return;
+                        }
+                        // success: reload to show new row (could insert row dynamically)
+                        location.reload();
+                    })
+                    .catch(err => {
+                        console.error(err); alert('Error creating employee - check console for details');
+                    })
+                    .finally(() => { btn.disabled = false; btn.textContent = 'Create'; });
+                });
         }
     });
     </script>
