@@ -340,6 +340,37 @@ if ($rid !== 4) {
                     deleteBranch();
                 }
             }
+
+            // If redirected via PRG with a result param, render a simple modal container
+            if (isset($_GET['result'])) {
+                $res = $_GET['result'];
+                $title = 'Info';
+                $msg = '';
+                switch ($res) {
+                    case 'add_success': $title = 'Success'; $msg = 'Branch added successfully.'; break;
+                    case 'add_error': $title = 'Error'; $msg = 'Error adding branch.'; break;
+                    case 'edit_success': $title = 'Success'; $msg = 'Branch updated successfully.'; break;
+                    case 'edit_error': $title = 'Error'; $msg = 'Error updating branch.'; break;
+                    case 'delete_success': $title = 'Success'; $msg = 'Branch deleted successfully.'; break;
+                    case 'delete_error': $title = 'Error'; $msg = 'Error deleting branch.'; break;
+                }
+                echo "<div class='modal fade' id='resultModal' tabindex='-1' aria-hidden='false'>
+                        <div class='modal-dialog modal-dialog-centered'>
+                            <div class='modal-content'>
+                                <div class='modal-header'>
+                                    <h5 class='modal-title'>{$title}</h5>
+                                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                                </div>
+                                <div class='modal-body'>
+                                    <p>{$msg}</p>
+                                </div>
+                                <div class='modal-footer'>
+                                    <a href='admin-branch.php' class='btn btn-primary'>OK</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>";
+            }
         ?>
     </body>
 
@@ -367,6 +398,9 @@ if ($rid !== 4) {
                 var confirmDeleteModalEl = document.getElementById('deleteBranchModal');
                 if (confirmDeleteModalEl) { new bootstrap.Modal(confirmDeleteModalEl).show(); }
             <?php endif; ?>
+            // If PRG result modal exists, show it
+            var resultModal = document.getElementById('resultModal');
+            if (resultModal) { new bootstrap.Modal(resultModal).show(); }
         });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
