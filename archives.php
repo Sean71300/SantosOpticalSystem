@@ -17,13 +17,29 @@ $offset = ($currentPage - 1) * $logsPerPage;
 
 class ActivityTracker1 {
     public static function logActivity($employeeID, $targetID, $targetType, $actionType, $description) {
-        // Your existing implementation
+        // Align logging with the Logs table schema used across the app.
+        // Logs columns: LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description, Upd_dt
         $conn = connect();
-        $sql = "INSERT INTO Logs (EmployeeID, TargetID, TargetType, ActionType, Description, Timestamp) 
-                VALUES (?, ?, ?, ?, ?, NOW())";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param('iisis', $employeeID, $targetID, $targetType, $actionType, $description);
-        $stmt->execute();
+        // Prefer to generate a LogsID if the helper exists, otherwise insert without LogsID
+        if (function_exists('generate_LogsID')) {
+            $logsId = generate_LogsID();
+            $sql = "INSERT INTO Logs (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description, Upd_dt) VALUES (?, ?, ?, ?, ?, ?, NOW())";
+            $stmt = $conn->prepare($sql);
+            if ($stmt) {
+                $stmt->bind_param('iiisis', $logsId, $employeeID, $targetID, $targetType, $actionType, $description);
+                $stmt->execute();
+                $stmt->close();
+            }
+        } else {
+            $sql = "INSERT INTO Logs (EmployeeID, TargetID, TargetType, ActivityCode, Description, Upd_dt) VALUES (?, ?, ?, ?, ?, NOW())";
+            $stmt = $conn->prepare($sql);
+            if ($stmt) {
+                $stmt->bind_param('iisis', $employeeID, $targetID, $targetType, $actionType, $description);
+                $stmt->execute();
+                $stmt->close();
+            }
+        }
+        // close this connection instance
         $conn->close();
     }
 }
