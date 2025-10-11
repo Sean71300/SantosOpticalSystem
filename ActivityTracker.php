@@ -93,6 +93,7 @@ function log_action($employeeID, $targetID, $targetType, $activityCode, $descrip
         if ($conn) $conn->close();
     }
 }
+?>
 
             window.location.href = 'logout.php'; // Redirect to logout script
         }
