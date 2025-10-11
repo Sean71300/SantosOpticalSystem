@@ -22,13 +22,17 @@ function displayBranches() {
                  "<td>".
                      "<form method='post' style='display:inline-block;margin:0;'>".
                          "<input type='hidden' name='branchCode' value='{$codeEsc}'>".
-                         "<button type='submit' name='editBranchBtn' class='btn btn-sm btn-warning action-btn'>Edit</button>".
+                         "<button type='submit' name='editBranchBtn' class='btn btn-sm btn-success action-btn' title='Edit branch' aria-label='Edit branch'>".
+                             "<i class='fas fa-edit'></i>".
+                         "</button>".
                      "</form>".
                  "</td>".
                  "<td>".
                      "<form method='post' style='display:inline-block;margin:0;'>".
                          "<input type='hidden' name='branchCode' value='{$codeEsc}'>".
-                         "<button type='submit' name='deleteBranchBtn' class='btn btn-sm btn-danger action-btn'>Delete</button>".
+                         "<button type='submit' name='deleteBranchBtn' class='btn btn-sm btn-danger action-btn' title='Delete branch' aria-label='Delete branch'>".
+                             "<i class='fas fa-trash-alt'></i>".
+                         "</button>".
                      "</form>".
                  "</td>".
                  "</tr>";
