@@ -15,10 +15,10 @@ $logsPerPage = 10;
 $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($currentPage - 1) * $logsPerPage;
 
-$query = "SELECT l.LogsID, l.Upd_dt, l.TargetType, l.Description, l.ActivityCode,
-                 e.EmployeeName as Employee
-          FROM Logs l
-          JOIN employee e ON l.EmployeeID = e.EmployeeID";
+ $query = "SELECT l.LogsID, l.Upd_dt, l.TargetType, l.TargetID, l.Description, l.ActivityCode,
+           e.EmployeeName as Employee
+       FROM Logs l
+       JOIN employee e ON l.EmployeeID = e.EmployeeID";
 
 $where = [];
 $params = [];
@@ -303,9 +303,15 @@ $conn->close();
                                                 default: $activity = 'performed an action on';
                                             }                                            
                                             echo "<strong>" . $activity . "</strong> " . $log['TargetType'] .": ". $log['Description']; 
+                                            if ($log['TargetType'] === 'branch' && !empty($log['TargetID'])) {
+                                                echo " <span class=\"text-muted\">(Code: " . htmlspecialchars($log['TargetID']) . ")</span>";
+                                            }
                                         ?>
                                     </div>
                                 </div>
+                                <span class="badge bg-light text-dark">
+                                    ID: <?php echo $log['LogsID']; ?>
+                                </span>
                             </div>
                         </div>
                     <?php endwhile; ?>
