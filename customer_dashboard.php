@@ -25,6 +25,19 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
             <link rel="stylesheet" href="customCodes/custom.css">
             <link rel="stylesheet" href="customCodes/s1.css">
             <link rel="stylesheet" href="customCodes/s2.css">
+            <style>
+            /* pdmain header styles (carousel + vision overlay) - copied to match header look */
+            .carousel-container { position: relative; width: 100%; margin: 0; padding: 0; overflow: hidden; }
+            #eyeglassCarousel { width: 100%; margin: 0; position: relative; }
+            .carousel-inner { width: 100%; height: 100%; }
+            .carousel-item { height: 60vh; min-height: 260px; max-height: 600px; transition: transform 0.5s ease-in-out; }
+            .carousel-item img { width: 100%; height: 100%; object-fit: cover; transition: all 0.5s ease-out; }
+            .vision-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,215,0,0.06)); backdrop-filter: blur(6px); padding: 1.5rem 0; text-align: center; z-index: 10; border-top: 3px solid #FFD700; }
+            .vision-text { font-family: 'Georgia', serif; font-size: 1.8rem; font-weight: 300; color: #2C3E50; margin-bottom: 0.25rem; position: relative; text-shadow: 1px 1px 3px rgba(0,0,0,0.08); }
+            .vision-text::after { content: ''; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); width: 80px; height: 4px; background: linear-gradient(90deg, #DC3545, #FFD700, #DC3545); border-radius: 2px; }
+            .vision-subtext { font-family: 'Arial', sans-serif; font-size: 0.95rem; color: #DC3545; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; margin-top: 0.6rem; }
+            @media (max-width: 768px) { .carousel-item { height: 40vh; } .vision-text { font-size: 1.4rem; } }
+            </style>
     </head>
 
     <body>
@@ -34,6 +47,29 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
                 $showTrackOrder = false;
                 include 'Navigation.php';
             ?>
+
+            <div class="carousel-container">
+                <div id="eyeglassCarousel" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-inner">
+                        <div class="carousel-item active">
+                            <img src="Images/cp3.png" class="d-block w-100" alt="Eyeglass Sale 1">
+                        </div>
+                        <div class="carousel-item">
+                            <img src="Images/cp2.png" class="d-block w-100" alt="Eyeglass Sale 2">
+                        </div>
+                        <div class="carousel-item">
+                            <img src="Images/cp1.png" class="d-block w-100" alt="Eyeglass Sale 3">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="vision-overlay" data-aos="fade-up">
+                    <div class="container">
+                        <div class="vision-text floating-element">We value your sight. We care.</div>
+                        <div class="vision-subtext">QUALITY VISION FOR QUALITY LIFE</div>
+                    </div>
+                </div>
+            </div>
         </header>
         <div class="container mt-5 mb-5">
             <div class="row justify-content-center">
@@ -188,6 +224,19 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
                 </div>
             </div>
         </footer>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                try { AOS.init({ duration: 800, easing: 'ease-in-out', once: true, mirror: false }); } catch(e) {}
+
+                var myCarousel = document.querySelector('#eyeglassCarousel');
+                if (myCarousel && typeof bootstrap !== 'undefined' && bootstrap.Carousel) {
+                    try {
+                        new bootstrap.Carousel(myCarousel, { interval: 4000, wrap: true, ride: 'carousel', pause: 'hover' });
+                    } catch(e) { console.error('Carousel init error', e); }
+                }
+            });
+        </script>
     </body>
 </html>
