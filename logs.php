@@ -304,7 +304,7 @@ $conn->close();
                                             }                                            
                                             echo "<strong>" . $activity . "</strong> " . $log['TargetType'] .": ". $log['Description']; 
                                             if ($log['TargetType'] === 'branch' && !empty($log['TargetID'])) {
-                                                echo " <span class=\"text-muted\">(Code: " . htmlspecialchars($log['TargetID']) . ")</span>";
+                                                
                                             }
                                         ?>
                                     </div>
