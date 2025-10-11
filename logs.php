@@ -302,7 +302,28 @@ $conn->close();
                                                 case 9: $activity = 'delivered'; break;
                                                 default: $activity = 'performed an action on';
                                             }                                            
-                                            echo "<strong>" . $activity . "</strong> " . $log['TargetType'] .": ". $log['Description']; 
+                                            // Clean description to avoid duplication like: "added branch: Added branch: Tester"
+                                            $desc = $log['Description'];
+                                            if ($log['TargetType'] === 'branch') {
+                                                $activityLower = strtolower($activity);
+                                                $descLower = strtolower($desc);
+                                                $prefixes = [
+                                                    $activityLower . ' branch: ',
+                                                    $activityLower . ' branch - ',
+                                                    $activityLower . ': ',
+                                                    $activityLower . ' branch : '
+                                                ];
+                                                foreach ($prefixes as $p) {
+                                                    if (strpos($descLower, $p) === 0) {
+                                                        $desc = substr($desc, strlen($p));
+                                                        $descLower = strtolower($desc);
+                                                        break;
+                                                    }
+                                                }
+                                                // Remove any trailing "(Code: ####)" that may be included in the description
+                                                $desc = preg_replace('/\s*\(Code:\s*\d+\)\s*/i', '', $desc);
+                                            }
+                                            echo "<strong>" . $activity . "</strong> " . $log['TargetType'] . ": " . htmlspecialchars($desc);
                                         ?>
                                     </div>
                                 </div>
