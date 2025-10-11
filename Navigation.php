@@ -13,7 +13,11 @@ if (session_status() === PHP_SESSION_NONE) {
 if (isset($_SESSION['user_type'])) {
     $ut = strtolower((string)$_SESSION['user_type']);
     if ($ut === 'employee' || $ut === 'admin') {
+        // staff/admin: hide public nav and Track Order
         $hideNav = true;
+        $showTrackOrder = false;
+    } elseif ($ut === 'customer') {
+        // customers should not see Track Order in the main nav
         $showTrackOrder = false;
     }
 }
