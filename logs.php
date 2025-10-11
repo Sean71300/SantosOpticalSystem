@@ -303,9 +303,6 @@ $conn->close();
                                                 default: $activity = 'performed an action on';
                                             }                                            
                                             echo "<strong>" . $activity . "</strong> " . $log['TargetType'] .": ". $log['Description']; 
-                                            if ($log['TargetType'] === 'branch' && !empty($log['TargetID'])) {
-                                                
-                                            }
                                         ?>
                                     </div>
                                 </div>
