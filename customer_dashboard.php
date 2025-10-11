@@ -14,17 +14,155 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Customer Dashboard</title>
+        <title>About Us</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+        <link rel="stylesheet" href="customCodes/custom.css">
+        <link rel="stylesheet" href="customCodes/s1.css">
+        <link rel="stylesheet" href="customCodes/s2.css">
         <link rel="shortcut icon" type="image/x-icon" href="Images/logo.png"/>
-            <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-            <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-            <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-            <link rel="stylesheet" href="customCodes/custom.css">
-            <link rel="stylesheet" href="customCodes/s1.css">
-            <link rel="stylesheet" href="customCodes/s2.css">
+        <style>
+            /* Additional styles for new sections */
+            .mission-vision-section {
+                padding: 60px 0;
+                background-color: #fff9e6;
+            }
+            
+            .values-section {
+                padding: 60px 0;
+                background-color: #fff;
+            }
+            
+            .value-card {
+                text-align: center;
+                padding: 30px 20px;
+                border-radius: 10px;
+                transition: transform 0.3s ease;
+                height: 100%;
+                background-color: white;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+                border-top: 4px solid #dc3545;
+            }
+            
+            .value-card:hover {
+                transform: translateY(-10px);
+                box-shadow: 0 10px 25px rgba(220, 53, 69, 0.15);
+            }
+            
+            .value-icon {
+                width: 70px;
+                height: 70px;
+                margin: 0 auto 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                background-color: #ffc107;
+            }
+            
+            .timeline-section {
+                padding: 60px 0;
+                background-color: #fff9e6;
+            }
+            
+            .timeline-item {
+                position: relative;
+                padding: 20px 0;
+            }
+            
+            .timeline-content {
+                background: white;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+                border-left: 4px solid #dc3545;
+            }
+            
+            .timeline-item:before {
+                content: '';
+                position: absolute;
+                left: 50%;
+                top: 0;
+                bottom: 0;
+                width: 4px;
+                background: #dc3545;
+                transform: translateX(-50%);
+            }
+            
+            .timeline-item:nth-child(odd) .timeline-content {
+                margin-left: 50%;
+                margin-right: 20px;
+            }
+            
+            .timeline-item:nth-child(even) .timeline-content {
+                margin-right: 50%;
+                margin-left: 20px;
+            }
+            
+            .timeline-year {
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #dc3545;
+                color: white;
+                padding: 5px 15px;
+                border-radius: 20px;
+                font-weight: bold;
+                z-index: 1;
+            }
+            
+            .innovation-section {
+                padding: 60px 0;
+                background: linear-gradient(135deg, #dc3545 0%, #ff6b7a 100%);
+                color: white;
+            }
+            
+            .innovation-card {
+                background: rgba(255, 255, 255, 0.1);
+                backdrop-filter: blur(10px);
+                border-radius: 10px;
+                padding: 30px;
+                height: 100%;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+            }
+            
+            .branch-card {
+                border: 2px solid #ffc107;
+                border-radius: 10px;
+                overflow: hidden;
+                transition: transform 0.3s ease;
+                background: white;
+            }
+            
+            .branch-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 25px rgba(220, 53, 69, 0.15);
+            }
+            
+            .aboutus-h2 {
+                color: #dc3545;
+                border-bottom: 3px solid #ffc107;
+                padding-bottom: 10px;
+                display: inline-block;
+            }
+            
+            @media (max-width: 768px) {
+                .timeline-item:before {
+                    left: 30px;
+                }
+                
+                .timeline-item:nth-child(odd) .timeline-content,
+                .timeline-item:nth-child(even) .timeline-content {
+                    margin-left: 60px;
+                    margin-right: 0;
+                }
+                
+                .timeline-year {
+                    left: 30px;
+                }
+            }
+        </style>
     </head>
 
     <body>
