@@ -10,6 +10,25 @@ if ($rid !== 4) {
     header('Location: Dashboard.php');
     exit();
 }
+
+// Handle POST actions before any output (PRG pattern relies on header redirects)
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // Use exclusive branches to ensure only one action runs per POST
+    if (isset($_POST['confirmDeleteBtn'])) {
+        confirmDeleteBranch();
+    } elseif (isset($_POST['addBranchBtn'])) {
+        addBranch();
+    } elseif (isset($_POST['editBranchBtn'])) {
+        // Show the edit modal populated with data
+        editBranch();
+    } elseif (isset($_POST['saveBtn'])) {
+        // Save the edits from the edit modal
+        confirmEditBranch();
+    } elseif (isset($_POST['deleteBranchBtn'])) {
+        // Show delete confirmation modal
+        deleteBranch();
+    }
+}
 ?>
 
 <html>  
@@ -323,23 +342,7 @@ if ($rid !== 4) {
         <?php
             addBranchModal();
 
-            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                // Use exclusive branches to ensure only one action runs per POST
-                if (isset($_POST['confirmDeleteBtn'])) {
-                    confirmDeleteBranch();
-                } elseif (isset($_POST['addBranchBtn'])) {
-                    addBranch();
-                } elseif (isset($_POST['editBranchBtn'])) {
-                    // Show the edit modal populated with data
-                    editBranch();
-                } elseif (isset($_POST['saveBtn'])) {
-                    // Save the edits from the edit modal
-                    confirmEditBranch();
-                } elseif (isset($_POST['deleteBranchBtn'])) {
-                    // Show delete confirmation modal
-                    deleteBranch();
-                }
-            }
+            // POST handling is performed at the top of this file before any output
 
             // If redirected via PRG with a result param, render a simple modal container
             if (isset($_GET['result'])) {
