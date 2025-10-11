@@ -29,9 +29,7 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
 
     <body>
         <header>
-            <?php
-                // Hide Track Order link on customer dashboard
-                $showTrackOrder = false;
+            <?php                
                 include 'Navigation.php';
             ?>
         </header>
