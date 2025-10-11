@@ -56,6 +56,14 @@ if (isset($_SESSION['role'])) {
     border-radius: 2px;
 }
 
+/* Make navbar brand and links bold to match pdmain pages */
+.navbar-brand {
+    font-weight: 700; /* ensure brand text is bold */
+}
+.navbar .nav-link {
+    font-weight: 700; /* ensure nav items are bold like pdmain */
+}
+
 .badge-ai, .badge-try {
     font-size: 0.55rem;
     font-weight: 700;
