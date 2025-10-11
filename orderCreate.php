@@ -74,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_order'])) {
                 $stmt->close();
                 
                 // Fetch branch name
-                $branchQuery = "SELECT BranchName FROM BranchMaster WHERE BranchCode = ?";
+                $branchQuery = "SELECT BranchName FROM BranchMaster WHERE BranchCode = ? AND Status = 'Active'";
                 $stmt = $conn->prepare($branchQuery);
                 $stmt->bind_param('s', $branchCode);
                 $stmt->execute();
@@ -149,7 +149,7 @@ if (isset($_GET['customer_id'])) {
 }
 
 $branches = [];
-$branchQuery = "SELECT BranchCode, BranchName FROM BranchMaster";
+$branchQuery = "SELECT BranchCode, BranchName FROM BranchMaster WHERE Status = 'Active'";
 $result = $conn->query($branchQuery);
 while ($row = $result->fetch_assoc()) {
     $branches[] = $row;

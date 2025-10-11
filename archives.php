@@ -75,9 +75,9 @@ if (isset($_POST['action'])) {
                     $updateSet = "Status = 'Active'";
                     break;
                 case 'BranchMaster':
-                    // BranchMaster might have an active flag or we simply skip (branches are deleted/archived on purpose)
-                    // No default column to flip; we'll skip direct restore update and rely on re-insert or manual handling if needed
-                    $updateSet = '';
+                    // BranchMaster uses Status to indicate active/inactive state
+                    $updateSet = "Status = 'Active'";
+                    break;
                     break;
                 case 'Order_hdr':
                     // Order_hdr has no Status column in this schema; skip update

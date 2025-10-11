@@ -17,7 +17,7 @@ function getEmployeeID() {
 
 function displayBranchesWithCheckboxes() {
     $link = connect();
-    $sql = "SELECT BranchCode, BranchName FROM BranchMaster";
+    $sql = "SELECT BranchCode, BranchName FROM BranchMaster WHERE Status = 'Active'";
     $result = mysqli_query($link, $sql);
     
     echo '<div class="branch-selection-container">';
@@ -45,7 +45,7 @@ function displayBranchesWithCheckboxes() {
 
 function getBranches() { // For inventory show
     $link = connect();
-    $sql = "SELECT BranchName from BranchMaster";
+    $sql = "SELECT BranchName from BranchMaster WHERE Status = 'Active'";
     $result = mysqli_query($link, $sql);
     echo "<option class='form-select-sm' value='' selected>View All Branches</option>";
     while($row = mysqli_fetch_array($result)) {
@@ -55,7 +55,7 @@ function getBranches() { // For inventory show
 
 function getBranch() { // Function to get branches from the database
     $link = connect();
-    $sql = "SELECT * from BranchMaster";
+    $sql = "SELECT * from BranchMaster WHERE Status = 'Active'";
     $result = mysqli_query($link, $sql);
     while($row = mysqli_fetch_array($result)){
         echo "<option class='form-select-sm' value='".$row['BranchCode']."'>".$row['BranchName']."</option>";

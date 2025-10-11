@@ -62,7 +62,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['cancel'])) {
 
                             // Attempt to resolve and store the BranchName to avoid extra DB lookups in sidebar
                             $branchName = '';
-                            $bstmt = mysqli_prepare($link, "SELECT BranchName FROM BranchMaster WHERE BranchCode = ? LIMIT 1");
+                            $bstmt = mysqli_prepare($link, "SELECT BranchName FROM BranchMaster WHERE BranchCode = ? AND Status = 'Active' LIMIT 1");
                             if ($bstmt) {
                                 mysqli_stmt_bind_param($bstmt, 's', $branchcode);
                                 if (mysqli_stmt_execute($bstmt)) {

@@ -155,7 +155,7 @@ if ($restrictedRole) {
 // Assigned branch name for display (for Admin/Employee)
 $assignedBranchName = '';
 if ($restrictedRole && !empty($_SESSION['branchcode'])) {
-    $bnStmt = $conn->prepare('SELECT BranchName FROM BranchMaster WHERE BranchCode = ? LIMIT 1');
+    $bnStmt = $conn->prepare("SELECT BranchName FROM BranchMaster WHERE BranchCode = ? AND Status = 'Active' LIMIT 1");
     if ($bnStmt) {
         $bnStmt->bind_param('s', $_SESSION['branchcode']);
         if ($bnStmt->execute()) {
@@ -167,7 +167,7 @@ if ($restrictedRole && !empty($_SESSION['branchcode'])) {
 
 // Branches list (used for Super Admin branch filter)
 $branches = [];
-if ($rs = $conn->query('SELECT BranchCode, BranchName FROM BranchMaster ORDER BY BranchName')) {
+if ($rs = $conn->query("SELECT BranchCode, BranchName FROM BranchMaster WHERE Status = 'Active' ORDER BY BranchName")) {
     while ($row = $rs->fetch_assoc()) { $branches[] = $row; }
 }
 
@@ -265,7 +265,7 @@ if (isset($_GET['action']) && $_GET['action']==='details' && isset($_GET['id']))
     $totalItems=count($details); $c=$x=$rtn=$clm=0; foreach($details as $d){ if($d['Status']==='Completed')$c++; elseif($d['Status']==='Cancelled')$x++; elseif($d['Status']==='Returned')$rtn++; elseif($d['Status']==='Claimed')$clm++; }
     $orderStatus = $totalItems>0 ? ($c===$totalItems?'Completed':($x===$totalItems?'Cancelled':($rtn===$totalItems?'Returned':($clm===$totalItems?'Claimed':'Pending')))) : 'Pending';
 
-    $bn=''; $sb=$conn->prepare('SELECT BranchName FROM BranchMaster WHERE BranchCode=?'); $sb->bind_param('s',$hdr['BranchCode']); $sb->execute(); $bn=$sb->get_result()->fetch_assoc()['BranchName']??''; $sb->close();
+    $bn=''; $sb=$conn->prepare("SELECT BranchName FROM BranchMaster WHERE BranchCode=? AND Status = 'Active'"); $sb->bind_param('s',$hdr['BranchCode']); $sb->execute(); $bn=$sb->get_result()->fetch_assoc()['BranchName']??''; $sb->close();
 
     echo json_encode([
         'Orderhdr_id'=>$hdr['Orderhdr_id'],
@@ -300,7 +300,7 @@ foreach($headers as $h){
     $statusComputed = $totalItems>0 ? ($c===$totalItems?'Completed':($x===$totalItems?'Cancelled':($rtn===$totalItems?'Returned':($clm===$totalItems?'Claimed':'Pending')))) : 'Pending';
 
     $bn='';
-    $sb=$conn->prepare('SELECT BranchName FROM BranchMaster WHERE BranchCode=?');
+    $sb=$conn->prepare("SELECT BranchName FROM BranchMaster WHERE BranchCode=? AND Status = 'Active'");
     if ($sb) {
         $sb->bind_param('s',$h['BranchCode']);
         if ($sb->execute()) { $bn=$sb->get_result()->fetch_assoc()['BranchName']??''; }
