@@ -29,7 +29,11 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
 
     <body>
         <header>
-            <?php include 'Navigation.php'; ?>
+            <?php
+                // Hide Track Order link on customer dashboard
+                $showTrackOrder = false;
+                include 'Navigation.php';
+            ?>
         </header>
         <div class="container mt-5 mb-5">
             <div class="row justify-content-center">
