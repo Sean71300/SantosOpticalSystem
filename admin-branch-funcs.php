@@ -84,6 +84,10 @@ include 'setup.php';
         mysqli_stmt_bind_param($stmt, 'ssss', $branchCode, $branchName, $branchLocation, $contactNo);
         $stmt = mysqli_stmt_execute($stmt);
         if ($stmt) {
+            // Log the add action
+            $empId = isset($_SESSION['employee_id']) ? $_SESSION['employee_id'] : (isset($_SESSION['id']) ? $_SESSION['id'] : 0);
+            if ($empId) { log_action($empId, $branchCode, 'branch', 3, "Added branch: $branchName (Code: $branchCode)"); }
+
             echo 
             '<div class="modal fade" id="addBranchModalSuccess" tabindex="-1" aria-labelledby="addBranchModalSuccessLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered" role="document">
@@ -184,6 +188,10 @@ include 'setup.php';
                 WHERE BranchCode = '".mysqli_real_escape_string($link, $branchCode)."'";
         
         if (mysqli_query($link, $sql)) {
+            // Log the edit action
+            $empId = isset($_SESSION['employee_id']) ? $_SESSION['employee_id'] : (isset($_SESSION['id']) ? $_SESSION['id'] : 0);
+            if ($empId) { log_action($empId, $branchCode, 'branch', 4, "Edited branch: $branchName (Code: $branchCode)"); }
+
             echo '<div class="modal fade" id="editBranchModal" tabindex="-1" aria-labelledby="editBranchModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered" role="document">
                         <div class="modal-content bg-secondary-subtle">

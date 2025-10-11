@@ -240,6 +240,7 @@ $conn->close();
                             <option value="employee" <?php echo (isset($_GET['type']) && $_GET['type'] == 'employee') ? 'selected' : '' ?>>Employee</option>
                             <option value="product" <?php echo (isset($_GET['type']) && $_GET['type'] == 'product') ? 'selected' : '' ?>>Product</option>
                             <option value="order" <?php echo (isset($_GET['type']) && $_GET['type'] == 'order') ? 'selected' : '' ?>>Order</option>
+                            <option value="branch" <?php echo (isset($_GET['type']) && $_GET['type'] == 'branch') ? 'selected' : '' ?>>Branch</option>
                         </select>
                     </div>
                     <div class="col-md-3">
@@ -280,6 +281,7 @@ $conn->close();
                                                     case 'employee': echo 'badge-employee'; break;
                                                     case 'product': echo 'badge-product'; break;
                                                     case 'order': echo 'badge-order'; break;
+                                                    case 'branch': echo 'bg-primary text-white'; break;
                                                     default: echo 'bg-secondary';
                                                 }
                                             ?> me-2">

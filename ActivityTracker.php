@@ -37,6 +37,63 @@ if (!$isAjax) {
 
         // Function to log out the user
         function logout() {
+
+<?php
+// Reusable server-side log helper
+function log_action($employeeID, $targetID, $targetType, $activityCode, $description) {
+    // defensive: ensure numeric activityCode
+    $activityCode = (int)$activityCode;
+    $conn = null;
+    try {
+        $conn = connect();
+        // Prefer explicit LogsID generation if helper exists, otherwise omit
+        if (function_exists('generate_LogsID')) {
+            $logsId = generate_LogsID();
+            $sql = "INSERT INTO Logs (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description, Upd_dt) VALUES (?, ?, ?, ?, ?, ?, NOW())";
+            $stmt = $conn->prepare($sql);
+            if ($stmt) {
+                $stmt->bind_param('iiisis', $logsId, $employeeID, $targetID, $targetType, $activityCode, $description);
+                $stmt->execute();
+                $stmt->close();
+            }
+        } else {
+            $sql = "INSERT INTO Logs (EmployeeID, TargetID, TargetType, ActivityCode, Description, Upd_dt) VALUES (?, ?, ?, ?, ?, NOW())";
+            $stmt = $conn->prepare($sql);
+            if ($stmt) {
+                $stmt->bind_param('iisis', $employeeID, $targetID, $targetType, $activityCode, $description);
+                $stmt->execute();
+                if ($stmt->errno) {
+                    // If insertion failed due to enum restriction (unknown TargetType), try to add the value to the enum
+                    $errno = $stmt->errno;
+                }
+                $stmt->close();
+            }
+        }
+        // If we detected an enum error (unknown value), attempt to alter the Logs table to include the new type then retry once
+        if (isset($errno) && $errno == 1366 && $targetType) {
+            try {
+                // Read current enum definition and attempt to append the new value 'branch'
+                $alter = "ALTER TABLE Logs MODIFY COLUMN TargetType ENUM('customer','employee','product','order','branch') NOT NULL";
+                $conn->query($alter);
+                // retry insert
+                $sql2 = "INSERT INTO Logs (EmployeeID, TargetID, TargetType, ActivityCode, Description, Upd_dt) VALUES (?, ?, ?, ?, ?, NOW())";
+                $stmt2 = $conn->prepare($sql2);
+                if ($stmt2) {
+                    $stmt2->bind_param('iisis', $employeeID, $targetID, $targetType, $activityCode, $description);
+                    $stmt2->execute();
+                    $stmt2->close();
+                }
+            } catch (Exception $e) {
+                // ignore
+            }
+        }
+    } catch (Exception $e) {
+        // swallow errors to avoid failing the primary action; consider logging to file if desired
+    } finally {
+        if ($conn) $conn->close();
+    }
+}
+
             window.location.href = 'logout.php'; // Redirect to logout script
         }
 
