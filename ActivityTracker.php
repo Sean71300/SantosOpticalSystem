@@ -1,52 +1,59 @@
 <?php
+/**
+ * ActivityTracker helper
+ *
+ * This file no longer outputs any HTML or JavaScript on include. It provides:
+ * - enforce_session_timeout(): checks session timeout and redirects if expired
+ * - render_activity_tracker_script(): outputs the client-side inactivity script (call from pages that render HTML)
+ * - log_action(): helper to insert application logs into Logs table
+ */
+
 if (session_status() === PHP_SESSION_NONE) {
-    // Session has not started; start it
     session_start();
 }
 
-
-// Set session timeout duration (e.g., 5 minutes)
-$timeout_duration = 900; // 15 minutes
-
-// Check if the session is set and if the timeout has expired
-if (isset($_SESSION['LAST_ACTIVITY'])) {
-    if (time() - $_SESSION['LAST_ACTIVITY'] > $timeout_duration) {
-        // Last request was more than 15 minutes ago
-        session_unset();     // Unset session variables
-        session_destroy();   // Destroy session
-        header("Location: login.php"); // Redirect to login page
-        exit();
+/**
+ * Enforce session timeout. Call this early on pages to expire idle sessions.
+ * If expired, this will destroy the session and redirect to login.php.
+ */
+function enforce_session_timeout($timeout_seconds = 900) {
+    if (isset($_SESSION['LAST_ACTIVITY'])) {
+        if (time() - $_SESSION['LAST_ACTIVITY'] > (int)$timeout_seconds) {
+            session_unset();
+            session_destroy();
+            // Safe redirect: nothing has been output by this file
+            header("Location: login.php");
+            exit();
+        }
     }
+    $_SESSION['LAST_ACTIVITY'] = time();
 }
 
-// Update last activity time stamp
-$_SESSION['LAST_ACTIVITY'] = time();
+/**
+ * Render the client-side inactivity script. Call this from templates that output HTML
+ * (for example, just before </body> or in the header) when you want automatic logout.
+ */
+function render_activity_tracker_script($timeout_ms = 900000) {
+    $timeout_ms = (int)$timeout_ms;
+    // Output the script
+    echo "<script>\n";
+    echo "(function(){\n";
+    echo "  var timeout;\n";
+    echo "  function logout(){ window.location.href = 'logout.php'; }\n";
+    echo "  function resetTimer(){ clearTimeout(timeout); timeout = setTimeout(logout, {$timeout_ms}); }\n";
+    echo "  window.addEventListener('load', resetTimer); window.addEventListener('mousemove', resetTimer); window.addEventListener('keypress', resetTimer);\n";
+    echo "})();\n";
+    echo "</script>\n";
+}
 
-
-?>
-
-<?php
-// If this is a normal page load, output the small client-side activity script.
-// If it's an AJAX request (X-Requested-With: XMLHttpRequest), don't output the script
-// because AJAX endpoints should return clean JSON only.
-$isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
-if (!$isAjax) {
-    ?>
-    <script>
-        let timeout; // Variable to track the timeout
-
-        // Function to log out the user
-        function logout() {
-
-<?php
-// Reusable server-side log helper
+/**
+ * Reusable server-side log helper
+ */
 function log_action($employeeID, $targetID, $targetType, $activityCode, $description) {
-    // defensive: ensure numeric activityCode
     $activityCode = (int)$activityCode;
     $conn = null;
     try {
         $conn = connect();
-        // Prefer explicit LogsID generation if helper exists, otherwise omit
         if (function_exists('generate_LogsID')) {
             $logsId = generate_LogsID();
             $sql = "INSERT INTO Logs (LogsID, EmployeeID, TargetID, TargetType, ActivityCode, Description, Upd_dt) VALUES (?, ?, ?, ?, ?, ?, NOW())";
@@ -63,19 +70,16 @@ function log_action($employeeID, $targetID, $targetType, $activityCode, $descrip
                 $stmt->bind_param('iisis', $employeeID, $targetID, $targetType, $activityCode, $description);
                 $stmt->execute();
                 if ($stmt->errno) {
-                    // If insertion failed due to enum restriction (unknown TargetType), try to add the value to the enum
                     $errno = $stmt->errno;
                 }
                 $stmt->close();
             }
         }
-        // If we detected an enum error (unknown value), attempt to alter the Logs table to include the new type then retry once
+
         if (isset($errno) && $errno == 1366 && $targetType) {
             try {
-                // Read current enum definition and attempt to append the new value 'branch'
                 $alter = "ALTER TABLE Logs MODIFY COLUMN TargetType ENUM('customer','employee','product','order','branch') NOT NULL";
                 $conn->query($alter);
-                // retry insert
                 $sql2 = "INSERT INTO Logs (EmployeeID, TargetID, TargetType, ActivityCode, Description, Upd_dt) VALUES (?, ?, ?, ?, ?, NOW())";
                 $stmt2 = $conn->prepare($sql2);
                 if ($stmt2) {
@@ -88,26 +92,13 @@ function log_action($employeeID, $targetID, $targetType, $activityCode, $descrip
             }
         }
     } catch (Exception $e) {
-        // swallow errors to avoid failing the primary action; consider logging to file if desired
+        // swallow errors to avoid failing the primary action
     } finally {
         if ($conn) $conn->close();
     }
 }
+
+// Enforce session timeout by default when included
+enforce_session_timeout();
+
 ?>
-
-            window.location.href = 'logout.php'; // Redirect to logout script
-        }
-
-        // Function to reset the inactivity timer
-        function resetTimer() {
-            clearTimeout(timeout);
-            timeout = setTimeout(logout, 900000); // 900000 ms = 15 minutes
-        }
-
-        // Event listeners for user activity
-        window.onload = resetTimer; // Reset timer on page load
-        window.onmousemove = resetTimer; // Reset timer on mouse movement
-        window.onkeypress = resetTimer; // Reset timer on key press
-    </script>
-    <?php
-}
