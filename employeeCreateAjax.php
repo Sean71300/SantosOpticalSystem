@@ -89,7 +89,7 @@ try {
     $branch_name = '';
     $r = $conn->prepare("SELECT Description FROM roleMaster WHERE RoleID = ?");
     if ($r) { $r->bind_param('s', $role); $r->execute(); $r->bind_result($role_name); $r->fetch(); $r->close(); }
-    $b = $conn->prepare("SELECT BranchName FROM BranchMaster WHERE BranchCode = ? AND Status = 'Active'");
+    $b = $conn->prepare("SELECT BranchName FROM BranchMaster WHERE BranchCode = ?");
     if ($b) { $b->bind_param('s', $branch); $b->execute(); $b->bind_result($branch_name); $b->fetch(); $b->close(); }
 
     // log

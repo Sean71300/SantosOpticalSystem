@@ -47,7 +47,7 @@ if ($isAdminRole) {
     if ($sessionBranchCode !== '') {
         $tmp = connect();
         if ($tmp instanceof mysqli) {
-            if ($stmt = $tmp->prepare("SELECT BranchName FROM BranchMaster WHERE BranchCode = ? AND Status = 'Active' LIMIT 1")) {
+            if ($stmt = $tmp->prepare("SELECT BranchName FROM BranchMaster WHERE BranchCode = ? LIMIT 1")) {
                 // BranchCode stored as string in session; bind as string
                 $stmt->bind_param('s', $sessionBranchCode);
                 if ($stmt->execute()) {

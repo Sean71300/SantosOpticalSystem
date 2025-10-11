@@ -58,7 +58,6 @@ if (isset($_POST['action'])) {
             case 'employee': $tableName = 'employee'; break;
             case 'customer': $tableName = 'customer'; break;
             case 'order': $tableName = 'Order_hdr'; break;
-            case 'branch': $tableName = 'BranchMaster'; break;
         }
         
         if ($tableName) {
@@ -74,11 +73,6 @@ if (isset($_POST['action'])) {
                     // employee and customer tables use Status
                     $updateSet = "Status = 'Active'";
                     break;
-                case 'BranchMaster':
-                    // BranchMaster uses Status to indicate active/inactive state
-                    $updateSet = "Status = 'Active'";
-                    break;
-                    break;
                 case 'Order_hdr':
                     // Order_hdr has no Status column in this schema; skip update
                     $updateSet = '';
@@ -86,11 +80,8 @@ if (isset($_POST['action'])) {
             }
 
             if (!empty($updateSet)) {
-                // Determine identifier column name
-                $idColumn = ($tableName == 'Order_hdr') ? 'Orderhdr_id' : (
-                    $tableName == 'BranchMaster' ? 'BranchCode' : (ucfirst($targetType) . 'ID')
-                );
-                $sql = "UPDATE $tableName SET $updateSet WHERE $idColumn = ?";
+                $sql = "UPDATE $tableName SET $updateSet WHERE " .
+                       ($tableName == 'Order_hdr' ? 'Orderhdr_id' : ucfirst($targetType) . 'ID') . " = ?";
                 $stmt = $conn->prepare($sql);
                 if ($stmt) {
                     $stmt->bind_param('i', $targetID);
@@ -126,10 +117,8 @@ if (isset($_POST['action'])) {
         }
         
         if ($tableName) {
-            $idColumn = ($tableName == 'Order_hdr') ? 'Orderhdr_id' : (
-                $tableName == 'BranchMaster' ? 'BranchCode' : (ucfirst($targetType) . 'ID')
-            );
-            $sql = "DELETE FROM $tableName WHERE $idColumn = ?";
+            $sql = "DELETE FROM $tableName WHERE " . 
+                   ($tableName == 'Order_hdr' ? 'Orderhdr_id' : ucfirst($targetType) . 'ID') . " = ?";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param('i', $targetID);
             $stmt->execute();
@@ -161,13 +150,10 @@ if (isset($_POST['action'])) {
             case 'employee': $tableName = 'employee'; break;
             case 'customer': $tableName = 'customer'; break;
             case 'order': $tableName = 'Order_hdr'; break;
-            case 'branch': $tableName = 'BranchMaster'; break;
         }
         
         if ($tableName) {
-            $columnName = ($tableName == 'Order_hdr') ? 'Orderhdr_id' : (
-                $tableName == 'BranchMaster' ? 'BranchCode' : (ucfirst($targetType) . 'ID')
-            );
+            $columnName = ($tableName == 'Order_hdr' ? 'Orderhdr_id' : ucfirst($targetType) . 'ID');
             
             $targetIDs = [];
             while ($row = $result->fetch_assoc()) {
@@ -419,7 +405,6 @@ $conn->close();
                             <option value="customer" <?php echo (isset($_GET['type']) && $_GET['type'] == 'customer') ? 'selected' : '' ?>>Customer</option>
                             <option value="employee" <?php echo (isset($_GET['type']) && $_GET['type'] == 'employee') ? 'selected' : '' ?>>Employee</option>
                             <option value="product" <?php echo (isset($_GET['type']) && $_GET['type'] == 'product') ? 'selected' : '' ?>>Product</option>
-                            <option value="branch" <?php echo (isset($_GET['type']) && $_GET['type'] == 'branch') ? 'selected' : '' ?>>Branch</option>
                             <!-- Order filter removed per request -->
                         </select>
                     </div>

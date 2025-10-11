@@ -216,7 +216,7 @@
             echo "<h4>No products found for frame shape: $shapeName</h4>";
         } else if ($branch > 0) {
             $conn = connect();
-                                    $branchQuery = "SELECT BranchName FROM BranchMaster WHERE BranchCode = $branch AND Status = 'Active'";
+            $branchQuery = "SELECT BranchName FROM BranchMaster WHERE BranchCode = $branch";
             $branchResult = mysqli_query($conn, $branchQuery);
             $branchName = mysqli_fetch_assoc($branchResult)['BranchName'];
             $conn->close();
@@ -758,7 +758,7 @@
                                 <option value="">All Branches</option>
                                 <?php
                                     $conn = connect();
-                                    $branchQuery = "SELECT BranchCode, BranchName FROM BranchMaster WHERE Status = 'Active'";
+                                    $branchQuery = "SELECT BranchCode, BranchName FROM BranchMaster";
                                     $branchResult = mysqli_query($conn, $branchQuery);
                                     while ($branch = mysqli_fetch_assoc($branchResult)) {
                                         $selected = (isset($_GET['branch']) && $_GET['branch'] == $branch['BranchCode']) ? 'selected' : '';

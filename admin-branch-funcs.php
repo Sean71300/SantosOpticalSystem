@@ -6,7 +6,7 @@ include 'setup.php';
  */
 function displayBranches() {
     $link = connect();
-    $sql = "SELECT BranchCode, BranchName, BranchLocation, ContactNo FROM BranchMaster WHERE Status = 'Active' ORDER BY BranchName";
+    $sql = "SELECT BranchCode, BranchName, BranchLocation, ContactNo FROM BranchMaster ORDER BY BranchName";
     if ($stmt = mysqli_prepare($link, $sql)) {
         mysqli_stmt_execute($stmt);
         mysqli_stmt_bind_result($stmt, $code, $name, $location, $contact);
@@ -240,24 +240,7 @@ function deleteBranch() {
 function confirmDeleteBranch() {
     $link = connect();
     $branchCode = (int)($_POST['branchCode'] ?? 0);
-    // Archive the branch first
-    $ok = false;
-    $archiveInserted = false;
-    $archiveID = function_exists('generate_ArchiveID') ? generate_ArchiveID() : null;
-    if ($archiveID !== null) {
-        $aid = $archiveID;
-        $empIdSess = isset($_SESSION['id']) ? $_SESSION['id'] : (isset($_SESSION['employee_id']) ? $_SESSION['employee_id'] : 0);
-        $aSql = "INSERT INTO archives (ArchiveID, TargetID, EmployeeID, TargetType, ArchivedAt) VALUES (?, ?, ?, 'branch', NOW())";
-        $aStmt = mysqli_prepare($link, $aSql);
-        if ($aStmt) {
-            mysqli_stmt_bind_param($aStmt, 'iii', $aid, $branchCode, $empIdSess);
-            $archiveInserted = mysqli_stmt_execute($aStmt);
-            mysqli_stmt_close($aStmt);
-        }
-    }
-
-    // Now soft-delete the branch by setting Status = 'Inactive'
-    $sql = "UPDATE BranchMaster SET Status = 'Inactive' WHERE BranchCode = ?";
+    $sql = "DELETE FROM BranchMaster WHERE BranchCode = ?";
     $stmt = mysqli_prepare($link, $sql);
     if ($stmt) {
         mysqli_stmt_bind_param($stmt, 'i', $branchCode);
@@ -267,7 +250,6 @@ function confirmDeleteBranch() {
         $ok = false;
     }
 
-    // Log the deletion (archive) if possible
     if ($ok && function_exists('log_action')) {
         $empId = isset($_SESSION['employee_id']) ? $_SESSION['employee_id'] : (isset($_SESSION['id']) ? $_SESSION['id'] : 0);
         if ($empId) { log_action($empId, $branchCode, 'branch', 5, "Deleted branch: {$branchCode}"); }

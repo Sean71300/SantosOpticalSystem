@@ -147,7 +147,7 @@
             }
 
             if ($sessionBranch !== '') {
-                if ($stmt = $connection->prepare("SELECT BranchCode, BranchName FROM BranchMaster WHERE BranchCode = ? AND Status = 'Active'")) {
+                if ($stmt = $connection->prepare("SELECT BranchCode, BranchName FROM BranchMaster WHERE BranchCode = ?")) {
                     $stmt->bind_param('s', $sessionBranch);
                     $stmt->execute();
                     $result = $stmt->get_result();
@@ -165,8 +165,8 @@
             }
         }
 
-    // Super Admin and other unrestricted roles: list all active branches
-    $sql = "SELECT BranchCode, BranchName FROM BranchMaster WHERE Status = 'Active'";
+        // Super Admin and other unrestricted roles: list all branches
+        $sql = "SELECT BranchCode, BranchName FROM BranchMaster";
         $result = $connection->query($sql);
     
         if (!$result) {

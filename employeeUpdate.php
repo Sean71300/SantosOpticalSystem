@@ -173,7 +173,7 @@ if ($rstmt) {
     $rstmt->close();
 }
 
-$bstmt = $conn->prepare("SELECT BranchName FROM BranchMaster WHERE BranchCode = ? AND Status = 'Active'");
+$bstmt = $conn->prepare("SELECT BranchName FROM BranchMaster WHERE BranchCode = ?");
 if ($bstmt) {
     $bstmt->bind_param('s', $branch);
     $bstmt->execute();
