@@ -458,7 +458,7 @@
             ArchiveID INT(10) PRIMARY KEY AUTO_INCREMENT,
             TargetID INT(10) NOT NULL,
             EmployeeID INT(10) NOT NULL,
-            TargetType ENUM('product', 'employee', 'customer', 'order') NOT NULL,
+            TargetType ENUM('product', 'employee', 'customer', 'branch') NOT NULL,
             ArchivedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (EmployeeID) REFERENCES employee(EmployeeID) ON DELETE CASCADE
         )";
