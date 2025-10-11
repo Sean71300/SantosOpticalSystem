@@ -101,8 +101,8 @@ if (isset($_SESSION['role'])) {
 }
 
 .logo {
-    width: 30px;
-    height: 30px;
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
     object-fit: cover;
     margin-left: 5px;
@@ -112,7 +112,21 @@ if (isset($_SESSION['role'])) {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    transform: translateY(10px);
+    transform: none; /* remove downward shift so header is slimmer and aligned */
+}
+
+/* Smaller brand image and tighter brand alignment for slim header */
+.navbar-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.5rem;
+}
+.brand-logo {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
 }
 /* Small chevron indicator to show there's a dropdown */
 .user-chevron { width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-left: 6px; transform: translateY(3px); }
@@ -137,14 +151,14 @@ if (isset($_SESSION['role'])) {
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
         <div class="container-fluid">
             <a class="navbar-brand fw-bold mx-3" href="index.php">
-                <img src="Images/logo.png" alt="Logo" width="60" height="80"> 
-                Santos Optical
+                <img src="Images/logo.png" alt="Logo" class="brand-logo"> 
+                <span style="font-size:1rem;">Santos Optical</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav ps-5 fs-5 fw-bold ms-2 mb-lg-0 col d-flex justify-content-end">
+                <ul class="navbar-nav ms-auto me-3 fs-6 fw-bold mb-lg-0 d-flex align-items-center">
                     <li class="nav-item position-relative">
                         <a class="nav-link m-2 <?php echo ($current_page == 'face-shape-detector.php') ? 'active' : ''; ?>" href="face-shape-detector.php">
                             SHAPE SCAN AI
