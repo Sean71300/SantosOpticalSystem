@@ -82,8 +82,8 @@ include 'setup.php';
         $sql = "INSERT INTO BranchMaster (BranchCode, BranchName, BranchLocation, ContactNo) VALUES (?, ?, ?, ?)";
         $stmt = mysqli_prepare($link, $sql);
         mysqli_stmt_bind_param($stmt, 'ssss', $branchCode, $branchName, $branchLocation, $contactNo);
-        $stmt = mysqli_stmt_execute($stmt);
-        if ($stmt) {
+        $ok = mysqli_stmt_execute($stmt);
+        if ($ok) {
             // Log the add action
             $empId = isset($_SESSION['employee_id']) ? $_SESSION['employee_id'] : (isset($_SESSION['id']) ? $_SESSION['id'] : 0);
             if ($empId) { log_action($empId, $branchCode, 'branch', 3, "Added branch: $branchName (Code: $branchCode)"); }
@@ -181,13 +181,12 @@ include 'setup.php';
         $branchLocation = $_POST['branchLocation'] ?? '';
         $contactNo = $_POST['contactNo'] ?? '';
 
-        $sql = "UPDATE BranchMaster SET 
-                BranchName = '".mysqli_real_escape_string($link, $branchName)."', 
-                BranchLocation = '".mysqli_real_escape_string($link, $branchLocation)."', 
-                ContactNo = '".mysqli_real_escape_string($link, $contactNo)."' 
-                WHERE BranchCode = '".mysqli_real_escape_string($link, $branchCode)."'";
-        
-        if (mysqli_query($link, $sql)) {
+        $sql = "UPDATE BranchMaster SET BranchName = ?, BranchLocation = ?, ContactNo = ? WHERE BranchCode = ?";
+        $stmt = mysqli_prepare($link, $sql);
+        mysqli_stmt_bind_param($stmt, 'sssi', $branchName, $branchLocation, $contactNo, $branchCode);
+        $ok = mysqli_stmt_execute($stmt);
+
+        if ($ok) {
             // Log the edit action
             $empId = isset($_SESSION['employee_id']) ? $_SESSION['employee_id'] : (isset($_SESSION['id']) ? $_SESSION['id'] : 0);
             if ($empId) { log_action($empId, $branchCode, 'branch', 4, "Edited branch: $branchName (Code: $branchCode)"); }
@@ -263,8 +262,8 @@ include 'setup.php';
         $branchCode = $_POST['branchCode'] ?? '';
         $sql = "DELETE FROM BranchMaster WHERE BranchCode = ?";
         $stmt = mysqli_prepare($link, $sql);
-        mysqli_stmt_bind_param($stmt, 's', $branchCode);
-        $stmt = mysqli_stmt_execute($stmt);
+            mysqli_stmt_bind_param($stmt, 'i', $branchCode);
+            $ok = mysqli_stmt_execute($stmt);
 
         if ($stmt) {
             echo 
@@ -280,7 +279,7 @@ include 'setup.php';
                             <p>Branch deleted successfully.</p>
                             <hr>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-success w-25" data-bs-dismiss="modal" onclick="location.reload()">OK</button>
+                                    <button type="button" class="btn btn-success w-25" data-bs-dismiss="modal" onclick="window.location.href=\'admin-branch.php\'">OK</button>
                             </div>
                         </div>
                     </div>
@@ -300,7 +299,7 @@ include 'setup.php';
                             <p>Error deleting branch: '.mysqli_error($link).'</p>
                             <hr>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-danger w-25" data-bs-dismiss="modal" onclick="location.reload()">OK</button>
+                                    <button type="button" class="btn btn-danger w-25" data-bs-dismiss="modal" onclick="window.location.href=\'admin-branch.php\'">OK</button>
                             </div>
                         </div>
                     </div>

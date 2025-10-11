@@ -324,19 +324,22 @@ if ($rid !== 4) {
             addBranchModal();
 
             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                // Use exclusive branches to ensure only one action runs per POST
                 if (isset($_POST['confirmDeleteBtn'])) {
                     confirmDeleteBranch();
-                }
-                if (isset($_POST['addBranchBtn'])) {
+                } elseif (isset($_POST['addBranchBtn'])) {
                     addBranch();
-                }
-                elseif (isset($_POST['editBranchBtn'])) {
+                } elseif (isset($_POST['editBranchBtn'])) {
+                    // Show the edit modal populated with data
                     editBranch();
-                }
-                elseif (isset($_POST['deleteBranchBtn'])) {
+                } elseif (isset($_POST['saveBtn'])) {
+                    // Save the edits from the edit modal
+                    confirmEditBranch();
+                } elseif (isset($_POST['deleteBranchBtn'])) {
+                    // Show delete confirmation modal
                     deleteBranch();
                 }
-            }   
+            }
         ?>
     </body>
 
