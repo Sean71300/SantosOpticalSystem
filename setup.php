@@ -173,7 +173,7 @@
                 LogsID INT(10) PRIMARY KEY,
                 EmployeeID INT(10),
                 TargetID INT(10),
-                TargetType ENUM('customer', 'employee', 'product', 'order') NOT NULL,
+                TargetType ENUM('customer', 'employee', 'product', 'order', 'branch') NOT NULL,
                 ActivityCode INT(10),
                 Description VARCHAR(255),
                 Upd_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

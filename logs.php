@@ -287,7 +287,7 @@ $conn->close();
                                             ?> me-2">
                                             <?php echo ucfirst($log['TargetType']); ?>
                                         </span>
-                                        <strong><?php echo $log['Employee']; ?></strong> - 
+                                        <strong><?php echo ($log['TargetType'] === 'branch' ? 'Branch ' : '') . $log['Employee']; ?></strong> - 
                                         <?php 
                                             $activity = '';
                                             switch($log['ActivityCode']) {
@@ -306,9 +306,6 @@ $conn->close();
                                         ?>
                                     </div>
                                 </div>
-                                <span class="badge bg-light text-dark">
-                                    ID: <?php echo $log['LogsID']; ?>
-                                </span>
                             </div>
                         </div>
                     <?php endwhile; ?>
