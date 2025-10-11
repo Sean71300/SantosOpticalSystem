@@ -61,21 +61,45 @@ if (isset($_POST['action'])) {
         }
         
         if ($tableName) {
-            $sql = "UPDATE $tableName SET Status = 'Active' WHERE " . 
-                   ($tableName == 'Order_hdr' ? 'Orderhdr_id' : ucfirst($targetType) . 'ID') . " = ?";
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param('i', $targetID);
-            $stmt->execute();
-            
-            // Fixed: Changed ActivityTracker1 to ActivityTracker
-            ActivityTracker1::logActivity($_SESSION['id'], $targetID, $targetType, 3, 
+            // Determine which column to set when restoring depending on the table
+            $updateSet = '';
+            switch ($tableName) {
+                case 'productMstr':
+                    // productMstr uses Avail_FL to mark availability
+                    $updateSet = "Avail_FL = 'Available'";
+                    break;
+                case 'employee':
+                case 'customer':
+                    // employee and customer tables use Status
+                    $updateSet = "Status = 'Active'";
+                    break;
+                case 'Order_hdr':
+                    // Order_hdr has no Status column in this schema; skip update
+                    $updateSet = '';
+                    break;
+            }
+
+            if (!empty($updateSet)) {
+                $sql = "UPDATE $tableName SET $updateSet WHERE " .
+                       ($tableName == 'Order_hdr' ? 'Orderhdr_id' : ucfirst($targetType) . 'ID') . " = ?";
+                $stmt = $conn->prepare($sql);
+                if ($stmt) {
+                    $stmt->bind_param('i', $targetID);
+                    $stmt->execute();
+                    $stmt->close();
+                }
+            }
+
+            // Log the restore action
+            ActivityTracker1::logActivity($_SESSION['id'], $targetID, $targetType, 3,
                                        "Restored $targetType from archives");
-            
+
             $sql = "DELETE FROM archives WHERE ArchiveID = ?";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param('i', $archiveID);
             $stmt->execute();
-            
+            $stmt->close();
+
             $_SESSION['message'] = "Item restored successfully!";
         }
     } 
