@@ -459,7 +459,6 @@
 <body>
     <header>
     <?php include "Navigation.php"?>
-
         <div class="carousel-container">
             <div id="eyeglassCarousel" class="carousel slide" data-bs-ride="carousel">
                 <div class="carousel-inner">
