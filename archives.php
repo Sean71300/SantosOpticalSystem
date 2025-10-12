@@ -58,6 +58,7 @@ if (isset($_POST['action'])) {
             case 'employee': $tableName = 'employee'; break;
             case 'customer': $tableName = 'customer'; break;
             case 'order': $tableName = 'Order_hdr'; break;
+            case 'branch': $tableName = 'BranchMaster'; break;
         }
         
         if ($tableName) {
@@ -73,6 +74,10 @@ if (isset($_POST['action'])) {
                     // employee and customer tables use Status
                     $updateSet = "Status = 'Active'";
                     break;
+                case 'BranchMaster':
+                    // BranchMaster uses Status to indicate active/inactive
+                    $updateSet = "Status = 'Active'";
+                    break;
                 case 'Order_hdr':
                     // Order_hdr has no Status column in this schema; skip update
                     $updateSet = '';
@@ -80,8 +85,10 @@ if (isset($_POST['action'])) {
             }
 
             if (!empty($updateSet)) {
-                $sql = "UPDATE $tableName SET $updateSet WHERE " .
-                       ($tableName == 'Order_hdr' ? 'Orderhdr_id' : ucfirst($targetType) . 'ID') . " = ?";
+                $idColumn = ($tableName == 'Order_hdr') ? 'Orderhdr_id' : (
+                    $tableName == 'BranchMaster' ? 'BranchCode' : (ucfirst($targetType) . 'ID')
+                );
+                $sql = "UPDATE $tableName SET $updateSet WHERE $idColumn = ?";
                 $stmt = $conn->prepare($sql);
                 if ($stmt) {
                     $stmt->bind_param('i', $targetID);
@@ -114,6 +121,7 @@ if (isset($_POST['action'])) {
             case 'employee': $tableName = 'employee'; break;
             case 'customer': $tableName = 'customer'; break;
             case 'order': $tableName = 'Order_hdr'; break;
+            case 'branch': $tableName = 'BranchMaster'; break;
         }
         
         if ($tableName) {
