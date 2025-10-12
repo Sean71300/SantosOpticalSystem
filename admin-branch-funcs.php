@@ -6,7 +6,7 @@ include 'setup.php';
  */
 function displayBranches() {
     $link = connect();
-    $sql = "SELECT BranchCode, BranchName, BranchLocation, ContactNo FROM BranchMaster ORDER BY BranchName";
+    $sql = "SELECT BranchCode, BranchName, BranchLocation, ContactNo FROM BranchMaster WHERE Status = 'Active' ORDER BY BranchName";
     if ($stmt = mysqli_prepare($link, $sql)) {
         mysqli_stmt_execute($stmt);
         mysqli_stmt_bind_result($stmt, $code, $name, $location, $contact);
@@ -240,7 +240,8 @@ function deleteBranch() {
 function confirmDeleteBranch() {
     $link = connect();
     $branchCode = (int)($_POST['branchCode'] ?? 0);
-    $sql = "DELETE FROM BranchMaster WHERE BranchCode = ?";
+    // Soft-delete: mark branch as Inactive instead of removing the row
+    $sql = "UPDATE BranchMaster SET Status = 'Inactive' WHERE BranchCode = ?";
     $stmt = mysqli_prepare($link, $sql);
     if ($stmt) {
         mysqli_stmt_bind_param($stmt, 'i', $branchCode);
