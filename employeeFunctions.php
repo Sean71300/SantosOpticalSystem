@@ -409,12 +409,14 @@
 
         $conn = connect();
         $lowInventory = [];
-        $query = "SELECT pbm.ProductBranchID, pbm.ProductID, pbm.BranchCode, pbm.Stocks, pm.*
-                FROM ProductBranchMaster pbm 
-                JOIN productMstr pm ON pbm.ProductID = pm.ProductID
-                WHERE pbm.Stocks <= 10 
-                AND pbm.BranchCode = ?
-                ORDER BY pbm.Stocks ASC";
+    $query = "SELECT pbm.ProductBranchID, pbm.ProductID, pbm.BranchCode, pbm.Stocks, pm.*
+        FROM ProductBranchMaster pbm 
+        JOIN productMstr pm ON pbm.ProductID = pm.ProductID
+        JOIN BranchMaster b ON pbm.BranchCode = b.BranchCode
+        WHERE pbm.Stocks <= 10 
+        AND pbm.BranchCode = ?
+        AND b.Status = 'Active'
+        ORDER BY pbm.Stocks ASC";
         
         $stmt = mysqli_prepare($conn, $query);
         mysqli_stmt_bind_param($stmt, "s", $userBranchCode);

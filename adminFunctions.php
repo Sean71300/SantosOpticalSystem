@@ -105,12 +105,13 @@ function getLowInventoryProducts($threshold = 10, $limit = 5) {
 
     if ($rid === 4) {
         // Super Admin: all branches
-        $query = "SELECT p.ProductID, p.Model, p.ProductImage, pb.Stocks
-                  FROM productMstr p
-                  JOIN ProductBranchMaster pb ON p.ProductID = pb.ProductID
-                  WHERE pb.Stocks <= ? AND p.Avail_FL = 'Available'
-                  ORDER BY pb.Stocks ASC
-                  LIMIT ?";
+    $query = "SELECT p.ProductID, p.Model, p.ProductImage, pb.Stocks
+          FROM productMstr p
+          JOIN ProductBranchMaster pb ON p.ProductID = pb.ProductID
+          JOIN BranchMaster b ON pb.BranchCode = b.BranchCode
+          WHERE pb.Stocks <= ? AND p.Avail_FL = 'Available' AND b.Status = 'Active'
+          ORDER BY pb.Stocks ASC
+          LIMIT ?";
         if ($stmt = $conn->prepare($query)) {
             $stmt->bind_param('ii', $threshold, $limit);
             $stmt->execute();
@@ -126,12 +127,13 @@ function getLowInventoryProducts($threshold = 10, $limit = 5) {
             mysqli_close($conn);
             return [];
         }
-        $query = "SELECT p.ProductID, p.Model, p.ProductImage, pb.Stocks
-                  FROM productMstr p
-                  JOIN ProductBranchMaster pb ON p.ProductID = pb.ProductID
-                  WHERE pb.Stocks <= ? AND p.Avail_FL = 'Available' AND pb.BranchCode = ?
-                  ORDER BY pb.Stocks ASC
-                  LIMIT ?";
+    $query = "SELECT p.ProductID, p.Model, p.ProductImage, pb.Stocks
+          FROM productMstr p
+          JOIN ProductBranchMaster pb ON p.ProductID = pb.ProductID
+          JOIN BranchMaster b ON pb.BranchCode = b.BranchCode
+          WHERE pb.Stocks <= ? AND p.Avail_FL = 'Available' AND pb.BranchCode = ? AND b.Status = 'Active'
+          ORDER BY pb.Stocks ASC
+          LIMIT ?";
         if ($stmt = $conn->prepare($query)) {
             // Branch codes are treated as strings in app logic
             $stmt->bind_param('isi', $threshold, $branchCode, $limit);

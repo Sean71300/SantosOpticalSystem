@@ -1008,11 +1008,11 @@ function deleteProduct()
 
         // Super Admin (4): see all branches
         if ($roleid === '4') {
-            $sql = "SELECT pbm.ProductID, pm.Model, pm.ProductImage, bm.BranchName, pbm.Stocks 
-                    FROM ProductBranchMaster pbm
-                    JOIN productMstr pm ON pbm.ProductID = pm.ProductID
-                    JOIN BranchMaster bm ON pbm.BranchCode = bm.BranchCode
-                    WHERE pbm.Stocks <= ? AND pbm.Avail_FL = 'Available' AND pm.Avail_FL = 'Available'";
+        $sql = "SELECT pbm.ProductID, pm.Model, pm.ProductImage, bm.BranchName, pbm.Stocks 
+            FROM ProductBranchMaster pbm
+            JOIN productMstr pm ON pbm.ProductID = pm.ProductID
+            JOIN BranchMaster bm ON pbm.BranchCode = bm.BranchCode
+            WHERE pbm.Stocks <= ? AND pbm.Avail_FL = 'Available' AND pm.Avail_FL = 'Available' AND bm.Status = 'Active'";
             $stmt = mysqli_prepare($link, $sql);
             mysqli_stmt_bind_param($stmt, "i", $threshold);
         } else {
@@ -1039,11 +1039,11 @@ function deleteProduct()
                 return [];
             }
 
-            $sql = "SELECT pbm.ProductID, pm.Model, pm.ProductImage, bm.BranchName, pbm.Stocks 
-                    FROM ProductBranchMaster pbm
-                    JOIN productMstr pm ON pbm.ProductID = pm.ProductID
-                    JOIN BranchMaster bm ON pbm.BranchCode = bm.BranchCode
-                    WHERE pbm.Stocks <= ? AND pbm.Avail_FL = 'Available' AND pm.Avail_FL = 'Available' AND bm.BranchCode = ?";
+        $sql = "SELECT pbm.ProductID, pm.Model, pm.ProductImage, bm.BranchName, pbm.Stocks 
+            FROM ProductBranchMaster pbm
+            JOIN productMstr pm ON pbm.ProductID = pm.ProductID
+            JOIN BranchMaster bm ON pbm.BranchCode = bm.BranchCode
+            WHERE pbm.Stocks <= ? AND pbm.Avail_FL = 'Available' AND pm.Avail_FL = 'Available' AND bm.BranchCode = ? AND bm.Status = 'Active'";
             $stmt = mysqli_prepare($link, $sql);
             // Bind as string for consistency with other code paths
             mysqli_stmt_bind_param($stmt, "is", $threshold, $branchCode);
