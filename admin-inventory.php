@@ -426,7 +426,7 @@ $lowInventory = getLowInventoryProducts();
                                     die("Database connection failed: " . mysqli_connect_error());
                                 }
                                 
-                                $sql = "SELECT BranchName FROM BranchMaster";
+                                $sql = "SELECT BranchName FROM BranchMaster WHERE Status = 'Active' ORDER BY BranchName";
                                 $result = mysqli_query($link, $sql);
                                 
                                 if (!$result) {
