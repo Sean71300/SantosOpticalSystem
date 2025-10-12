@@ -165,9 +165,9 @@ if ($restrictedRole && !empty($_SESSION['branchcode'])) {
     }
 }
 
-// Branches list (used for Super Admin branch filter)
+// Branches list (used for Super Admin branch filter) - only active branches
 $branches = [];
-if ($rs = $conn->query('SELECT BranchCode, BranchName FROM BranchMaster ORDER BY BranchName')) {
+if ($rs = $conn->query("SELECT BranchCode, BranchName FROM BranchMaster WHERE Status = 'Active' ORDER BY BranchName")) {
     while ($row = $rs->fetch_assoc()) { $branches[] = $row; }
 }
 

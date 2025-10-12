@@ -120,7 +120,8 @@ if (isset($_POST['action'])) {
                     // leave numeric id
             }
 
-            $desc = sprintf('Restored %s: %s', $targetType, is_numeric($displayLabel) ? ('ID ' . $displayLabel) : $displayLabel);
+            $displayText = is_numeric($displayLabel) ? ('ID ' . $displayLabel) : $displayLabel;
+            $desc = sprintf('%s:%s, Restored.', $targetType, $displayText);
             ActivityTracker1::logActivity($_SESSION['id'], $targetID, $targetType, 3, $desc);
 
             $sql = "DELETE FROM archives WHERE ArchiveID = ?";
