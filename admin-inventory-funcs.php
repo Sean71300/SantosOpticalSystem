@@ -17,7 +17,7 @@ function getEmployeeID() {
 
 function displayBranchesWithCheckboxes() {
     $link = connect();
-    $sql = "SELECT BranchCode, BranchName FROM BranchMaster";
+    $sql = "SELECT BranchCode, BranchName FROM BranchMaster WHERE Status = 'Active' ORDER BY BranchName";
     $result = mysqli_query($link, $sql);
     
     echo '<div class="branch-selection-container">';
@@ -45,7 +45,7 @@ function displayBranchesWithCheckboxes() {
 
 function getBranches() { // For inventory show
     $link = connect();
-    $sql = "SELECT BranchName from BranchMaster";
+    $sql = "SELECT BranchName FROM BranchMaster WHERE Status = 'Active' ORDER BY BranchName";
     $result = mysqli_query($link, $sql);
     echo "<option class='form-select-sm' value='' selected>View All Branches</option>";
     while($row = mysqli_fetch_array($result)) {
@@ -55,7 +55,7 @@ function getBranches() { // For inventory show
 
 function getBranch() { // Function to get branches from the database
     $link = connect();
-    $sql = "SELECT * from BranchMaster";
+    $sql = "SELECT * from BranchMaster WHERE Status = 'Active' ORDER BY BranchName";
     $result = mysqli_query($link, $sql);
     while($row = mysqli_fetch_array($result)){
         echo "<option class='form-select-sm' value='".$row['BranchCode']."'>".$row['BranchName']."</option>";
@@ -135,7 +135,7 @@ function getInventory($sort = 'ProductID', $order = 'ASC')
                 JOIN brandMaster bm ON pm.BrandID = bm.BrandID
                 JOIN ProductBranchMaster pbm ON pm.ProductID = pbm.ProductID
                 JOIN BranchMaster b ON pbm.BranchCode = b.BranchCode
-                WHERE pbm.Avail_FL = 'Available' AND pm.Avail_FL = 'Available'
+                WHERE pbm.Avail_FL = 'Available' AND pm.Avail_FL = 'Available' AND b.Status = 'Active'
                 GROUP BY pm.ProductID, pm.CategoryType, sm.Description, bm.BrandName, 
                             pm.Model, pm.Material, pm.Price, pm.ProductImage, pm.Upd_by";
         
@@ -174,13 +174,13 @@ function getInventory($sort = 'ProductID', $order = 'ASC')
 
         mysqli_free_result($result);
     } else {
-        $sql = "SELECT b.BranchCode, pbm.*, pm.*, sm.Description AS ShapeDescription, bm.BrandName
-                FROM BranchMaster b
-                JOIN ProductBranchMaster pbm ON b.BranchCode = pbm.BranchCode
-                JOIN productMstr pm ON pbm.ProductID = pm.ProductID
-                JOIN shapeMaster sm ON pm.ShapeID = sm.ShapeID
-                JOIN brandMaster bm ON pm.BrandID = bm.BrandID
-                WHERE b.BranchName = ? AND pm.Avail_FL = 'Available' AND pbm.Avail_FL = 'Available'";
+    $sql = "SELECT b.BranchCode, pbm.*, pm.*, sm.Description AS ShapeDescription, bm.BrandName
+        FROM BranchMaster b
+        JOIN ProductBranchMaster pbm ON b.BranchCode = pbm.BranchCode
+        JOIN productMstr pm ON pbm.ProductID = pm.ProductID
+        JOIN shapeMaster sm ON pm.ShapeID = sm.ShapeID
+        JOIN brandMaster bm ON pm.BrandID = bm.BrandID
+        WHERE b.BranchName = ? AND pm.Avail_FL = 'Available' AND pbm.Avail_FL = 'Available' AND b.Status = 'Active'";
         
         switch($sort) {
             case 'ProductID': $sql .= " ORDER BY pm.ProductID"; break;
