@@ -304,6 +304,10 @@ $conn->close();
         .badge-product {
             background-color: #fd7e14;
         }
+        .badge-branch {
+            background-color: #0d6efd; /* bootstrap primary blue */
+            color: #fff;
+        }
         .badge-order {
             background-color: #d63384;
         }
@@ -434,7 +438,7 @@ $conn->close();
                                                     case 'employee': echo 'badge-employee'; break;
                                                     case 'product': echo 'badge-product'; break;
                                                     case 'order': echo 'badge-order'; break;
-                                                    case 'branch': echo 'badge-product'; break; /* reuse product badge color for branch */
+                                                    case 'branch': echo 'badge-branch'; break;
                                                     default: echo 'bg-secondary';
                                                 }
                                             ?> me-2">
