@@ -97,9 +97,31 @@ if (isset($_POST['action'])) {
                 }
             }
 
-            // Log the restore action
-            ActivityTracker1::logActivity($_SESSION['id'], $targetID, $targetType, 3,
-                                       "Restored $targetType from archives");
+            // Build a friendly label (name or ID) to include in the restore description
+            $displayLabel = $targetID;
+            switch ($targetType) {
+                case 'branch':
+                    $r = $conn->prepare('SELECT BranchName FROM BranchMaster WHERE BranchCode = ? LIMIT 1');
+                    if ($r) { $r->bind_param('i', $targetID); $r->execute(); $res = $r->get_result(); $row = $res->fetch_assoc(); if ($row && !empty($row['BranchName'])) $displayLabel = $row['BranchName']; $r->close(); }
+                    break;
+                case 'employee':
+                    $r = $conn->prepare('SELECT EmployeeName FROM employee WHERE EmployeeID = ? LIMIT 1');
+                    if ($r) { $r->bind_param('i', $targetID); $r->execute(); $res = $r->get_result(); $row = $res->fetch_assoc(); if ($row && !empty($row['EmployeeName'])) $displayLabel = $row['EmployeeName']; $r->close(); }
+                    break;
+                case 'customer':
+                    $r = $conn->prepare('SELECT CustomerName FROM customer WHERE CustomerID = ? LIMIT 1');
+                    if ($r) { $r->bind_param('i', $targetID); $r->execute(); $res = $r->get_result(); $row = $res->fetch_assoc(); if ($row && !empty($row['CustomerName'])) $displayLabel = $row['CustomerName']; $r->close(); }
+                    break;
+                case 'product':
+                    $r = $conn->prepare('SELECT Model FROM productMstr WHERE ProductID = ? LIMIT 1');
+                    if ($r) { $r->bind_param('i', $targetID); $r->execute(); $res = $r->get_result(); $row = $res->fetch_assoc(); if ($row && !empty($row['Model'])) $displayLabel = $row['Model']; $r->close(); }
+                    break;
+                default:
+                    // leave numeric id
+            }
+
+            $desc = sprintf('Restored %s: %s', $targetType, is_numeric($displayLabel) ? ('ID ' . $displayLabel) : $displayLabel);
+            ActivityTracker1::logActivity($_SESSION['id'], $targetID, $targetType, 3, $desc);
 
             $sql = "DELETE FROM archives WHERE ArchiveID = ?";
             $stmt = $conn->prepare($sql);
