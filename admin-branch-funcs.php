@@ -253,16 +253,41 @@ function deleteBranch() {
 function confirmDeleteBranch() {
     $link = connect();
     $branchCode = (int)($_POST['branchCode'] ?? 0);
+    // Archive the branch first (so it appears in archives list)
+    $archiveInserted = false;
+    $archiveID = function_exists('generate_ArchiveID') ? generate_ArchiveID() : null;
+    $empIdSess = isset($_SESSION['id']) ? $_SESSION['id'] : (isset($_SESSION['employee_id']) ? $_SESSION['employee_id'] : 0);
+    if ($archiveID !== null) {
+        $aSql = "INSERT INTO archives (ArchiveID, TargetID, EmployeeID, TargetType, ArchivedAt) VALUES (?, ?, ?, 'branch', NOW())";
+        $aStmt = mysqli_prepare($link, $aSql);
+        if ($aStmt) {
+            mysqli_stmt_bind_param($aStmt, 'iii', $archiveID, $branchCode, $empIdSess);
+            $archiveInserted = mysqli_stmt_execute($aStmt);
+            mysqli_stmt_close($aStmt);
+        }
+    } else {
+        $aSql = "INSERT INTO archives (TargetID, EmployeeID, TargetType, ArchivedAt) VALUES (?, ?, 'branch', NOW())";
+        $aStmt = mysqli_prepare($link, $aSql);
+        if ($aStmt) {
+            mysqli_stmt_bind_param($aStmt, 'ii', $branchCode, $empIdSess);
+            $archiveInserted = mysqli_stmt_execute($aStmt);
+            mysqli_stmt_close($aStmt);
+        }
+    }
+
     // Soft-delete: mark branch as Inactive instead of removing the row
     $sql = "UPDATE BranchMaster SET Status = 'Inactive' WHERE BranchCode = ?";
     $stmt = mysqli_prepare($link, $sql);
     if ($stmt) {
         mysqli_stmt_bind_param($stmt, 'i', $branchCode);
-        $ok = mysqli_stmt_execute($stmt);
+        $statusUpdated = mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
     } else {
-        $ok = false;
+        $statusUpdated = false;
     }
+
+    // Consider overall operation successful only if both archive inserted and status updated
+    $ok = ($archiveInserted && $statusUpdated);
 
     if ($ok && function_exists('log_action')) {
         $empId = isset($_SESSION['employee_id']) ? $_SESSION['employee_id'] : (isset($_SESSION['id']) ? $_SESSION['id'] : 0);
