@@ -405,6 +405,7 @@ $conn->close();
                             <option value="customer" <?php echo (isset($_GET['type']) && $_GET['type'] == 'customer') ? 'selected' : '' ?>>Customer</option>
                             <option value="employee" <?php echo (isset($_GET['type']) && $_GET['type'] == 'employee') ? 'selected' : '' ?>>Employee</option>
                             <option value="product" <?php echo (isset($_GET['type']) && $_GET['type'] == 'product') ? 'selected' : '' ?>>Product</option>
+                            <option value="branch" <?php echo (isset($_GET['type']) && $_GET['type'] == 'branch') ? 'selected' : '' ?>>Branch</option>
                             <!-- Order filter removed per request -->
                         </select>
                     </div>
@@ -433,6 +434,7 @@ $conn->close();
                                                     case 'employee': echo 'badge-employee'; break;
                                                     case 'product': echo 'badge-product'; break;
                                                     case 'order': echo 'badge-order'; break;
+                                                    case 'branch': echo 'badge-product'; break; /* reuse product badge color for branch */
                                                     default: echo 'bg-secondary';
                                                 }
                                             ?> me-2">
