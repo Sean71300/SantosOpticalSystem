@@ -87,13 +87,26 @@ function addBranch() {
     $branchName = trim($_POST['branchName'] ?? '');
     $branchLocation = trim($_POST['branchLocation'] ?? '');
     $contactNo = trim($_POST['contactNo'] ?? '');
+    // Generate a new BranchCode using the helper in setup.php. If it fails, fallback to MAX(BranchCode)+1
+    $branchCode = 0;
+    if (function_exists('generate_BranchCode')) {
+        $branchCode = (int)generate_BranchCode();
+    }
+    if (!$branchCode) {
+        // fallback: compute next code from DB
+        $tmp = mysqli_query($link, "SELECT IFNULL(MAX(BranchCode), 0) + 1 AS nextCode FROM BranchMaster");
+        if ($tmp) {
+            $r = mysqli_fetch_assoc($tmp);
+            $branchCode = (int)($r['nextCode'] ?? 0);
+        }
+    }
+    $status = 'Active';
 
-    $sql = "INSERT INTO BranchMaster (BranchName, BranchLocation, ContactNo) VALUES (?, ?, ?)";
+    $sql = "INSERT INTO BranchMaster (BranchCode, BranchName, BranchLocation, ContactNo, Status) VALUES (?, ?, ?, ?, ?)";
     $stmt = mysqli_prepare($link, $sql);
     if ($stmt) {
-        mysqli_stmt_bind_param($stmt, 'sss', $branchName, $branchLocation, $contactNo);
+        mysqli_stmt_bind_param($stmt, 'issss', $branchCode, $branchName, $branchLocation, $contactNo, $status);
         $ok = mysqli_stmt_execute($stmt);
-        $insertId = mysqli_insert_id($link);
         mysqli_stmt_close($stmt);
     } else {
         $ok = false;
@@ -102,7 +115,7 @@ function addBranch() {
     // Log action if logger exists
     if ($ok && function_exists('log_action')) {
         $empId = isset($_SESSION['employee_id']) ? $_SESSION['employee_id'] : (isset($_SESSION['id']) ? $_SESSION['id'] : 0);
-        if ($empId) { log_action($empId, $insertId, 'branch', 3, "Added branch: {$branchName}"); }
+        if ($empId) { log_action($empId, $branchCode, 'branch', 3, "Added branch: {$branchName}"); }
     }
 
     mysqli_close($link);

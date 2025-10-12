@@ -410,14 +410,14 @@
             $id1 = $id+1;
             $id2 = $id+2;
             $id3 = $id+3;           
-            $sql = "INSERT INTO BranchMaster
-                    (BranchCode,BranchName,BranchLocation,ContactNo)
-                    VALUES
-                    ('$id','Malabon Branch - Pascual St.','Pascual St, Malabon', '0288183480','Active'),
-                    ('$id1','Malabon Branch - Bayan','Bayan, Malabon', '0286321972','Active'),
-                    ('$id2','Manila Branch','Quiapo, Manila', '9328447068','Active'),
-                    ('$id3','Navotas Branch','Tangos, Navotas', '9658798565','Active')
-                    ";
+        $sql = "INSERT INTO BranchMaster
+            (BranchCode, BranchName, BranchLocation, ContactNo, Status)
+            VALUES
+            ('$id','Malabon Branch - Pascual St.','Pascual St, Malabon', '0288183480','Active'),
+            ('$id1','Malabon Branch - Bayan','Bayan, Malabon', '0286321972','Active'),
+            ('$id2','Manila Branch','Quiapo, Manila', '9328447068','Active'),
+            ('$id3','Navotas Branch','Tangos, Navotas', '9658798565','Active')
+            ";
 
             mysqli_query($conn, $sql);
         }
