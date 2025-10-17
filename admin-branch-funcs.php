@@ -305,4 +305,10 @@ function confirmDeleteBranch() {
     }
 }
 
+function displayBranch() {
+    $link = connect();
+    
+    
+}
+
 ?>
