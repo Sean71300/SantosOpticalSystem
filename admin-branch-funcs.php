@@ -61,8 +61,15 @@ function addBranchModal() {
                     .'</div>'
                     .'<div class="mb-3">'
                         .'<label for="branchLocation" class="form-label">Branch Location</label>'
-                        .'<input type="text" class="form-control" id="branchLocation" name="branchLocation" required>'
+                        .'<input type="text" class="form-control" id="branchLocation" name="branchLocation" required placeholder="Start typing address...">'
+                        .'<div class="form-text">Start typing to see address suggestions from Google Maps</div>'
                     .'</div>'
+                    .'<div class="mb-3">'
+                        .'<div id="mapPreview" style="height: 200px; width: 100%; border: 1px solid #ddd; border-radius: 4px; display: none;"></div>'
+                    .'</div>'
+                    .'<input type="hidden" id="latitude" name="latitude">'
+                    .'<input type="hidden" id="longitude" name="longitude">'
+                    .'<input type="hidden" id="fullAddress" name="fullAddress">' // Hidden fields to store selected address details
                     .'<div class="mb-3">'
                         .'<label for="contactNo" class="form-label">Contact Number</label>'
                         .'<input type="text" class="form-control" id="contactNo" name="contactNo" inputmode="numeric" pattern="[0-9]*" maxlength="15">'
@@ -77,6 +84,123 @@ function addBranchModal() {
         .'</div>'
     .'</div>'
 .'</div>';
+
+    echo '
+    <script>
+        function initGoogleMapsAutocomplete() {
+        const autocomplete = new google.maps.places.Autocomplete(
+            document.getElementById("branchLocation"),
+            {
+                types: ["establishment", "geocode"],
+                componentRestrictions: { country: "ph" } // Change to your country code
+            }
+        );
+
+        // Initialize map
+        const map = new google.maps.Map(document.getElementById("mapPreview"), {
+            center: { lat: 14.5995, lng: 120.9842 }, // Default center (Manila)
+            zoom: 13
+        });
+
+        const marker = new google.maps.Marker({
+            map: map,
+            anchorPoint: new google.maps.Point(0, -29)
+        });
+
+        // Listen for place selection
+        autocomplete.addListener("place_changed", function() {
+            const place = autocomplete.getPlace();
+            
+            if (!place.geometry) {
+                alert("No details available for: " + place.name);
+                return;
+            }
+
+            // Show map preview
+            document.getElementById("mapPreview").style.display = "block";
+
+            // Update map and marker
+            map.setCenter(place.geometry.location);
+            map.setZoom(17);
+            
+            marker.setPosition(place.geometry.location);
+            marker.setVisible(true);
+
+            // Populate hidden fields
+            document.getElementById("latitude").value = place.geometry.location.lat();
+            document.getElementById("longitude").value = place.geometry.location.lng();
+            document.getElementById("fullAddress").value = place.formatted_address;
+
+            // Optional: You can also extract address components
+            extractAddressComponents(place);
+        });
+
+        // Clear map when input is cleared
+        document.getElementById("branchLocation").addEventListener("input", function() {
+            if (this.value === "") {
+                document.getElementById("mapPreview").style.display = "none";
+                marker.setVisible(false);
+            }
+        });
+    }
+
+    function extractAddressComponents(place) {
+        let addressComponents = {
+            street: "",
+            city: "",
+            province: "",
+            country: "",
+            zipCode: ""
+        };
+
+        for (const component of place.address_components) {
+            const componentType = component.types[0];
+            
+            switch (componentType) {
+                case "street_number":
+                    addressComponents.street = component.long_name + " ";
+                    break;
+                case "route":
+                    addressComponents.street += component.long_name;
+                    break;
+                case "locality":
+                    addressComponents.city = component.long_name;
+                    break;
+                case "administrative_area_level_1":
+                    addressComponents.province = component.long_name;
+                    break;
+                case "country":
+                    addressComponents.country = component.long_name;
+                    break;
+                case "postal_code":
+                    addressComponents.zipCode = component.long_name;
+                    break;
+            }
+        }
+
+        console.log("Address Components:", addressComponents);
+        // You can use these components as needed
+    }
+
+    // Initialize when modal is shown
+    document.addEventListener("DOMContentLoaded", function() {
+        const addBranchModal = document.getElementById("addBranchModal");
+        if (addBranchModal) {
+            addBranchModal.addEventListener("shown.bs.modal", function() {
+                // Load Google Maps script if not already loaded
+                if (!window.google) {
+                    const script = document.createElement("script");
+                    script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyBfPI5kUaCUugAlg9iU0I-fhkOrqKqRtUA&libraries=places&callback=initGoogleMapsAutocomplete";
+                    script.async = true;
+                    script.defer = true;
+                    document.head.appendChild(script);
+                } else {
+                    initGoogleMapsAutocomplete();
+                }
+            });
+        }
+    });
+    </script>';
 }
 
 /**
@@ -86,7 +210,11 @@ function addBranch() {
     $link = connect();
     $branchName = trim($_POST['branchName'] ?? '');
     $branchLocation = trim($_POST['branchLocation'] ?? '');
+    $latitude = $_POST['latitude'];
+    $longitude = $_POST['longitude'];
+    $fullAddress = $_POST['fullAddress'];
     $contactNo = trim($_POST['contactNo'] ?? '');
+
     // Generate a new BranchCode using the helper in setup.php. If it fails, fallback to MAX(BranchCode)+1
     $branchCode = 0;
     if (function_exists('generate_BranchCode')) {
@@ -102,10 +230,10 @@ function addBranch() {
     }
     $status = 'Active';
 
-    $sql = "INSERT INTO BranchMaster (BranchCode, BranchName, BranchLocation, ContactNo, Status) VALUES (?, ?, ?, ?, ?)";
+    $sql = "INSERT INTO branches (branch_name, branch_location, contact_no, latitude, longitude, full_address) VALUES (?, ?, ?, ?, ?, ?)";
     $stmt = mysqli_prepare($link, $sql);
     if ($stmt) {
-        mysqli_stmt_bind_param($stmt, 'issss', $branchCode, $branchName, $branchLocation, $contactNo, $status);
+        mysqli_stmt_bind_param($stmt, 'sssdds', $branchName, $branchLocation, $contactNo, $latitude, $longitude, $fullAddress);
         $ok = mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
     } else {
