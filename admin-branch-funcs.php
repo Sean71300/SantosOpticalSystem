@@ -67,6 +67,13 @@ function addBranchModal() {
                     .'<div class="mb-3">'
                         .'<div id="mapPreview" style="height: 200px; width: 100%; border: 1px solid #ddd; border-radius: 4px; display: none;"></div>'
                     .'</div>'
+                    // Insert Google Maps Web Components demo snippet
+                    .'<!-- Google Maps Web Components snippet -->'
+                    .'<script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBfPI5kUaCUugAlg9iU0I-fhkOrqKqRtUA&callback=console.debug&libraries=maps,marker&v=beta"></script>'
+                    .'<link rel="stylesheet" href="./style.css"/>'
+                    .'<gmp-map center="14.5995,120.9842" zoom="13" map-id="DEMO_MAP_ID" style="display:block;height:200px;border:1px solid #ddd;border-radius:4px;">'
+                        .'<gmp-advanced-marker position="14.5995,120.9842" title="Selected location"></gmp-advanced-marker>'
+                    .'</gmp-map>'
                     .'<input type="hidden" id="latitude" name="latitude">'
                     .'<input type="hidden" id="longitude" name="longitude">'
                     .'<input type="hidden" id="fullAddress" name="fullAddress">' // Hidden fields to store selected address details
@@ -230,10 +237,10 @@ function addBranch() {
     }
     $status = 'Active';
 
-    $sql = "INSERT INTO branches (branch_name, branch_location, contact_no, latitude, longitude, full_address) VALUES (?, ?, ?, ?, ?, ?)";
+    $sql = "INSERT INTO branches (BranchCode, BranchName, BranchLocation, latitude, longitude, full_address, ContactNo, Status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
     $stmt = mysqli_prepare($link, $sql);
     if ($stmt) {
-        mysqli_stmt_bind_param($stmt, 'sssdds', $branchName, $branchLocation, $contactNo, $latitude, $longitude, $fullAddress);
+        mysqli_stmt_bind_param($stmt, 'sssdds', $branchCode, $branchName, $branchLocation, $contactNo, $latitude, $longitude, $fullAddress);
         $ok = mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
     } else {
