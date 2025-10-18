@@ -47,22 +47,31 @@ function displayBranches() {
  */
 function addBranchModal() {
     echo '<div class="modal fade" id="addBranchModal" tabindex="-1" aria-labelledby="addBranchModalLabel" aria-hidden="true">'
-        .'<div class="modal-dialog modal-dialog-centered">'
+        .'<div class="modal-dialog modal-dialog-centered modal-lg">'
         .'<div class="modal-content">'
             .'<div class="modal-header">'
                 .'<h5 class="modal-title" id="addBranchModalLabel">Add Branch</h5>'
                 .'<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>'
             .'</div>'
             .'<div class="modal-body">'
-                .'<form method="post">'
+                .'<form method="post" id="addBranchForm">'
                     .'<div class="mb-3">'
                         .'<label for="branchName" class="form-label">Branch Name</label>'
                         .'<input type="text" class="form-control" id="branchName" name="branchName" required>'
                     .'</div>'
                     .'<div class="mb-3">'
                         .'<label for="branchLocation" class="form-label">Branch Location</label>'
-                        .'<input type="text" class="form-control" id="branchLocation" name="branchLocation" required>'
+                        .'<input type="text" class="form-control" id="branchLocation" name="branchLocation" required placeholder="Start typing to search locations...">'
+                        .'<div class="form-text">Start typing to search and select from Google Maps suggestions.</div>'
                     .'</div>'
+                    .'<div class="mb-3">'
+                        .'<label class="form-label">Map Preview</label>'
+                        .'<div id="mapPreview" style="height: 300px; width: 100%; border: 1px solid #ddd; border-radius: 4px;"></div>'
+                        .'<div class="form-text">Selected location will be marked on the map.</div>'
+                    .'</div>'
+                    .'<input type="hidden" id="selectedLat" name="selectedLat">'
+                    .'<input type="hidden" id="selectedLng" name="selectedLng">'
+                    .'<input type="hidden" id="formattedAddress" name="formattedAddress">'
                     .'<div class="mb-3">'
                         .'<label for="contactNo" class="form-label">Contact Number</label>'
                         .'<input type="text" class="form-control" id="contactNo" name="contactNo" inputmode="numeric" pattern="[0-9]*" maxlength="15">'
@@ -77,6 +86,111 @@ function addBranchModal() {
         .'</div>'
     .'</div>'
 .'</div>';
+
+    // Add the JavaScript for Google Maps
+    echo '<script>
+    function initGoogleMaps() {
+        // Initialize the map
+        const map = new google.maps.Map(document.getElementById("mapPreview"), {
+            center: { lat: 14.5995, lng: 120.9842 }, // Default to Manila
+            zoom: 12,
+        });
+
+        // Initialize the autocomplete
+        const autocomplete = new google.maps.places.Autocomplete(
+            document.getElementById("branchLocation"),
+            {
+                types: ["establishment", "geocode"],
+                fields: ["geometry", "formatted_address", "name"],
+            }
+        );
+
+        // Create a marker
+        const marker = new google.maps.Marker({
+            map: map,
+            draggable: true,
+        });
+
+        // Listen for place selection
+        autocomplete.addListener("place_changed", () => {
+            const place = autocomplete.getPlace();
+
+            if (!place.geometry) {
+                console.log("No details available for input: " + place.name);
+                return;
+            }
+
+            // Update map and marker
+            map.setCenter(place.geometry.location);
+            map.setZoom(16);
+            marker.setPosition(place.geometry.location);
+            marker.setVisible(true);
+
+            // Update hidden fields
+            document.getElementById("selectedLat").value = place.geometry.location.lat();
+            document.getElementById("selectedLng").value = place.geometry.location.lng();
+            document.getElementById("formattedAddress").value = place.formatted_address;
+        });
+
+        // Allow marker dragging to adjust location
+        marker.addListener("dragend", () => {
+            const position = marker.getPosition();
+            document.getElementById("selectedLat").value = position.lat();
+            document.getElementById("selectedLng").value = position.lng();
+            
+            // Reverse geocode to get address
+            const geocoder = new google.maps.Geocoder();
+            geocoder.geocode({ location: position }, (results, status) => {
+                if (status === "OK" && results[0]) {
+                    document.getElementById("branchLocation").value = results[0].formatted_address;
+                    document.getElementById("formattedAddress").value = results[0].formatted_address;
+                }
+            });
+        });
+
+        // Also allow clicking on map to set location
+        map.addListener("click", (event) => {
+            const position = event.latLng;
+            marker.setPosition(position);
+            marker.setVisible(true);
+            
+            document.getElementById("selectedLat").value = position.lat();
+            document.getElementById("selectedLng").value = position.lng();
+            
+            // Reverse geocode
+            const geocoder = new google.maps.Geocoder();
+            geocoder.geocode({ location: position }, (results, status) => {
+                if (status === "OK" && results[0]) {
+                    document.getElementById("branchLocation").value = results[0].formatted_address;
+                    document.getElementById("formattedAddress").value = results[0].formatted_address;
+                }
+            });
+        });
+    }
+
+    // Load Google Maps API when modal is shown
+    document.addEventListener("DOMContentLoaded", function() {
+        const addBranchModal = document.getElementById("addBranchModal");
+        let mapsLoaded = false;
+
+        addBranchModal.addEventListener("show.bs.modal", function() {
+            if (!mapsLoaded) {
+                // Load Google Maps API
+                const script = document.createElement("script");
+                script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyBfPI5kUaCUugAlg9iU0I-fhkOrqKqRtUA&libraries=places&callback=initGoogleMaps";
+                script.async = true;
+                script.defer = true;
+                document.head.appendChild(script);
+                mapsLoaded = true;
+            } else {
+                // Re-initialize if already loaded
+                if (typeof initGoogleMaps === "function") {
+                    initGoogleMaps();
+                }
+            }
+        });
+    });
+    </script>';
 }
 
 /**
