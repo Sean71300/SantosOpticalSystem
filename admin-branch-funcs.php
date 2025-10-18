@@ -67,19 +67,13 @@ function addBranchModal() {
                     .'<div class="mb-3">'
                         .'<div id="mapPreview" style="height: 200px; width: 100%; border: 1px solid #ddd; border-radius: 4px; display: none;"></div>'
                     .'</div>'
-                    // Insert Google Maps Web Components demo snippet
-                    .'<!-- Google Maps Web Components snippet -->'
-                    .'<script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBfPI5kUaCUugAlg9iU0I-fhkOrqKqRtUA&callback=console.debug&libraries=maps,marker&v=beta"></script>'
-                    .'<link rel="stylesheet" href="./style.css"/>'
-                    .'<gmp-map center="14.5995,120.9842" zoom="13" map-id="DEMO_MAP_ID" style="display:block;height:200px;border:1px solid #ddd;border-radius:4px;">'
-                        .'<gmp-advanced-marker position="14.5995,120.9842" title="Selected location"></gmp-advanced-marker>'
-                    .'</gmp-map>'
+                    // (Removed Web Components snippet) - use Maps JS API with Places + Maps for autocomplete + map
                     .'<input type="hidden" id="latitude" name="latitude">'
                     .'<input type="hidden" id="longitude" name="longitude">'
                     .'<input type="hidden" id="fullAddress" name="fullAddress">' // Hidden fields to store selected address details
                     .'<div class="mb-3">'
                         .'<label for="contactNo" class="form-label">Contact Number</label>'
-                        .'<input type="text" class="form-control" id="contactNo" name="contactNo" inputmode="numeric" pattern="[0-9]*" maxlength="15">'
+                        .'<input type="text" class="form-control" id="contactNo" name="contactNo" inputmode="numeric" pattern="[0-9]*" maxlength="15" oninput="this.value=this.value.replace(/[^0-9]/g,\'\')">'
                         .'<div class="form-text">Numbers only.</div>'
                     .'</div>'
                     .'<div class="modal-footer">'
@@ -92,7 +86,7 @@ function addBranchModal() {
     .'</div>'
 .'</div>';
 
-    echo '
+    echo <<<'HTML'
     <script>
         function initGoogleMapsAutocomplete() {
         const autocomplete = new google.maps.places.Autocomplete(
@@ -189,7 +183,47 @@ function addBranchModal() {
         // You can use these components as needed
     }
 
-    // Initialize when modal is shown
+    // Initialize when modal is shown — load Maps API once and initialize both autocomplete and map
+    function initGoogleMaps() {
+        // Autocomplete
+        const input = document.getElementById("branchLocation");
+        const autocomplete = new google.maps.places.Autocomplete(input, { types: ["establishment","geocode"], componentRestrictions: { country: "ph" } });
+
+        // Map and marker
+        const mapDiv = document.getElementById("mapPreview");
+        const map = new google.maps.Map(mapDiv, { center: { lat: 14.5995, lng: 120.9842 }, zoom: 13 });
+        const marker = new google.maps.Marker({ map: map, draggable: true });
+
+        // When place selected from autocomplete
+        autocomplete.addListener('place_changed', function() {
+            const place = autocomplete.getPlace();
+            if (!place.geometry) { return; }
+            mapDiv.style.display = 'block';
+            map.setCenter(place.geometry.location);
+            map.setZoom(17);
+            marker.setPosition(place.geometry.location);
+            marker.setVisible(true);
+            document.getElementById('latitude').value = place.geometry.location.lat();
+            document.getElementById('longitude').value = place.geometry.location.lng();
+            document.getElementById('fullAddress').value = place.formatted_address || input.value;
+        });
+
+        // When marker dragged, update hidden fields
+        google.maps.event.addListener(marker, 'dragend', function() {
+            const pos = marker.getPosition();
+            document.getElementById('latitude').value = pos.lat();
+            document.getElementById('longitude').value = pos.lng();
+        });
+
+        // Clicking on map moves marker
+        map.addListener('click', function(e) {
+            marker.setPosition(e.latLng);
+            marker.setVisible(true);
+            document.getElementById('latitude').value = e.latLng.lat();
+            document.getElementById('longitude').value = e.latLng.lng();
+        });
+    }
+
     document.addEventListener("DOMContentLoaded", function() {
         const addBranchModal = document.getElementById("addBranchModal");
         if (addBranchModal) {
@@ -197,17 +231,18 @@ function addBranchModal() {
                 // Load Google Maps script if not already loaded
                 if (!window.google) {
                     const script = document.createElement("script");
-                    script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyBfPI5kUaCUugAlg9iU0I-fhkOrqKqRtUA&libraries=places&callback=initGoogleMapsAutocomplete";
+                    script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyBfPI5kUaCUugAlg9iU0I-fhkOrqKqRtUA&libraries=places&callback=initGoogleMaps";
                     script.async = true;
                     script.defer = true;
                     document.head.appendChild(script);
                 } else {
-                    initGoogleMapsAutocomplete();
+                    initGoogleMaps();
                 }
             });
         }
     });
-    </script>';
+    </script>
+    HTML;
 }
 
 /**
