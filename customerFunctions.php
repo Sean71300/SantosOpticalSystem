@@ -228,137 +228,8 @@
             echo '</div>';
             echo '</div>';
         }
-                echo '</div>';
-
-                // Add New Medical History modal and client-side JS (resizes attached image to 300x300)
-                echo <<<HTML
-                <!-- New Medical History Modal -->
-                <div class="modal fade" id="newMedicalModal" tabindex="-1" aria-labelledby="newMedicalModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="newMedicalModalLabel">Add Medical History</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <form id="newMedicalForm" enctype="multipart/form-data">
-                                    <input type="hidden" name="CustomerID" id="modalCustomerID" value="{$customerID}">
-                                    <div class="mb-3">
-                                        <label class="form-label">Visit Date</label>
-                                        <input type="date" name="visit_date" class="form-control">
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">Eye Condition</label>
-                                        <input type="text" name="eye_condition" class="form-control">
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">Additional Notes</label>
-                                        <textarea name="additional_notes" class="form-control"></textarea>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">Attach Image (optional)</label>
-                                        <input type="file" accept="image/*" id="medImageInput" class="form-control">
-                                        <div class="mt-2"><img id="medPreview" src="" alt="Preview" style="max-width:150px;max-height:150px;display:none;border:1px solid #ddd;padding:4px;"></div>
-                                    </div>
-                                </form>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                <button type="button" id="saveMedicalBtn" class="btn btn-primary">Save</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <script>
-                (function(){
-                    var newMedicalModalEl = document.getElementById('newMedicalModal');
-                    if (!newMedicalModalEl) return;
-                    var modal = new bootstrap.Modal(newMedicalModalEl);
-                    var triggerBtn = document.getElementById('newMedicalBtn');
-                    if (triggerBtn) {
-                        triggerBtn.addEventListener('click', function(e){
-                            var cid = this.getAttribute('data-customer-id') || '{$customerID}';
-                            var cidInput = document.getElementById('modalCustomerID');
-                            if (cidInput) cidInput.value = cid;
-                            var preview = document.getElementById('medPreview');
-                            if (preview) { preview.style.display = 'none'; preview.src = ''; }
-                            var fileIn = document.getElementById('medImageInput'); if (fileIn) fileIn.value = '';
-                            modal.show();
-                        });
-                    }
-
-                    var preview = document.getElementById('medPreview');
-                    var fileInput = document.getElementById('medImageInput');
-                    var lastBlob = null;
-                    if (fileInput) {
-                        fileInput.addEventListener('change', function(){
-                            var file = this.files && this.files[0];
-                            if(!file) return;
-                            var reader = new FileReader();
-                            reader.onload = function(evt){
-                                var img = new Image();
-                                img.onload = function(){
-                                    var canvas = document.createElement('canvas');
-                                    var size = 300;
-                                    canvas.width = size; canvas.height = size;
-                                    var ctx = canvas.getContext('2d');
-                                    ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,size,size);
-                                    var ratio = Math.min(size / img.width, size / img.height);
-                                    var w = img.width * ratio; var h = img.height * ratio;
-                                    var x = (size - w) / 2; var y = (size - h) / 2;
-                                    ctx.drawImage(img, x, y, w, h);
-                                    canvas.toBlob(function(blob){
-                                        lastBlob = blob;
-                                        if (preview) {
-                                            preview.src = URL.createObjectURL(blob);
-                                            preview.style.display = 'block';
-                                        }
-                                    }, 'image/png', 0.9);
-                                };
-                                img.src = evt.target.result;
-                            };
-                            reader.readAsDataURL(file);
-                        });
-                    }
-
-                    var saveBtn = document.getElementById('saveMedicalBtn');
-                    if (saveBtn) {
-                        saveBtn.addEventListener('click', function(){
-                            var form = document.getElementById('newMedicalForm');
-                            if (!form) return;
-                            var fd = new FormData();
-                            fd.append('action','addMedicalRecord');
-                            fd.append('CustomerID', document.getElementById('modalCustomerID').value);
-                            fd.append('visit_date', form.querySelector('[name="visit_date"]').value || '');
-                            fd.append('eye_condition', form.querySelector('[name="eye_condition"]').value || '');
-                            fd.append('additional_notes', form.querySelector('[name="additional_notes"]').value || '');
-                            if (lastBlob) {
-                                var filename = 'med_' + fd.get('CustomerID') + '_' + Date.now() + '.png';
-                                fd.append('medImage', lastBlob, filename);
-                            }
-                            fetch('customerFunctions.php', { method: 'POST', body: fd })
-                                .then(function(r){ return r.json(); })
-                                .then(function(data){
-                                    if (data && data.success) {
-                                        modal.hide();
-                                        // Refresh medical records area
-                                        fetch('customerFunctions.php?action=getCustomerMedicalRecords&customerID=' + encodeURIComponent(fd.get('CustomerID')) + '&embed=1')
-                                            .then(function(r){ return r.text(); })
-                                            .then(function(html){
-                                                var area = document.getElementById('medicalRecordsArea'); if (area) area.innerHTML = html;
-                                            });
-                                    } else {
-                                        alert(data && data.message ? data.message : 'Error saving medical record');
-                                    }
-                                }).catch(function(err){ console.error(err); alert('Upload failed'); });
-                        });
-                    }
-                })();
-                </script>
-HTML;
-
-                exit();
+        echo '</div>';
+        exit();
     }
 
     // Endpoint to return rendered medical records (so profile modal can load them)
@@ -366,60 +237,6 @@ HTML;
         header('Content-Type: text/html; charset=utf-8');
         $embed = isset($_GET['embed']) && $_GET['embed'] == '1';
         getMedicalRecords($_GET['customerID'], $embed);
-        exit();
-    }
-
-    // Endpoint to handle adding a new medical record (with optional image upload)
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'addMedicalRecord') {
-        header('Content-Type: application/json; charset=utf-8');
-        $customerID = isset($_POST['CustomerID']) ? $_POST['CustomerID'] : '';
-        $visit_date = isset($_POST['visit_date']) && $_POST['visit_date'] !== '' ? $_POST['visit_date'] : null;
-        $eye_condition = isset($_POST['eye_condition']) ? $_POST['eye_condition'] : '';
-        $additional_notes = isset($_POST['additional_notes']) ? $_POST['additional_notes'] : '';
-
-        $conn = connect();
-
-        // Ensure uploads directory exists
-        $uploadsDir = __DIR__ . DIRECTORY_SEPARATOR . 'Uploads' . DIRECTORY_SEPARATOR . 'medical_images';
-        if (!is_dir($uploadsDir)) { mkdir($uploadsDir, 0755, true); }
-
-        // Ensure medical_image column exists in customerMedicalHistory
-        $colCheck = mysqli_query($conn, "SHOW COLUMNS FROM customerMedicalHistory LIKE 'medical_image'");
-        if (mysqli_num_rows($colCheck) == 0) {
-            mysqli_query($conn, "ALTER TABLE customerMedicalHistory ADD COLUMN medical_image VARCHAR(255) NULL");
-        }
-
-        // Handle optional uploaded image
-        $imageFileName = '';
-        if (isset($_FILES['medImage']) && isset($_FILES['medImage']['error']) && $_FILES['medImage']['error'] === UPLOAD_ERR_OK) {
-            $tmpName = $_FILES['medImage']['tmp_name'];
-            $origName = basename($_FILES['medImage']['name']);
-            $ext = strtolower(pathinfo($origName, PATHINFO_EXTENSION));
-            $allowed = ['jpg','jpeg','png','gif','webp'];
-            if (in_array($ext, $allowed, true) && filesize($tmpName) <= 5 * 1024 * 1024) { // 5MB limit
-                $imageFileName = 'med_' . $customerID . '_' . time() . '.' . $ext;
-                $dest = $uploadsDir . DIRECTORY_SEPARATOR . $imageFileName;
-                if (!move_uploaded_file($tmpName, $dest)) {
-                    $imageFileName = '';
-                }
-            }
-        }
-
-        // Insert new medical history record
-        $historyID = generate_historyID();
-        $visit_date_sql = $visit_date ? "'" . mysqli_real_escape_string($conn, $visit_date) . "'" : "NULL";
-        $safe_eye = mysqli_real_escape_string($conn, $eye_condition);
-        $safe_notes = mysqli_real_escape_string($conn, $additional_notes);
-        $safe_image = mysqli_real_escape_string($conn, $imageFileName);
-
-        $sql = "INSERT INTO customerMedicalHistory (history_id, CustomerID, visit_date, eye_condition, additional_notes, medical_image) VALUES ('$historyID', '" . mysqli_real_escape_string($conn, $customerID) . "', $visit_date_sql, '$safe_eye', '$safe_notes', '$safe_image')";
-        $ok = mysqli_query($conn, $sql);
-        if ($ok) {
-            echo json_encode(['success' => true, 'message' => 'Medical record saved.']);
-        } else {
-            echo json_encode(['success' => false, 'message' => 'Database error: ' . mysqli_error($conn)]);
-        }
-        $conn->close();
         exit();
     }
 
@@ -462,65 +279,13 @@ HTML;
         $id = generate_CustomerID();   
         $upd_by = $_SESSION["full_name"];
         $employee_id = $_SESSION["id"];
-        // Ensure uploads directory exists
-        $uploadsDir = __DIR__ . DIRECTORY_SEPARATOR . 'Uploads' . DIRECTORY_SEPARATOR . 'customer_images';
-        if (!is_dir($uploadsDir)) { mkdir($uploadsDir, 0755, true); }
-
-        // Handle optional uploaded image
-        $imageFileName = '';
-        if (isset($_FILES['customerImage']) && $_FILES['customerImage']['error'] === UPLOAD_ERR_OK) {
-            $tmpName = $_FILES['customerImage']['tmp_name'];
-            $origName = basename($_FILES['customerImage']['name']);
-            $ext = strtolower(pathinfo($origName, PATHINFO_EXTENSION));
-            $allowed = ['jpg','jpeg','png','gif'];
-            if (in_array($ext, $allowed, true) && filesize($tmpName) <= 2 * 1024 * 1024) { // 2MB
-                $imageFileName = $id . '_' . time() . '.' . $ext;
-                $dest = $uploadsDir . DIRECTORY_SEPARATOR . $imageFileName;
-                if (!move_uploaded_file($tmpName, $dest)) {
-                    $imageFileName = '';
-                }
-            }
-        }
-
-        // Ensure CustomerImage column exists, add if not
-        $colCheck = mysqli_query($conn, "SHOW COLUMNS FROM customer LIKE 'CustomerImage'");
-        if (mysqli_num_rows($colCheck) == 0) {
-            mysqli_query($conn, "ALTER TABLE customer ADD COLUMN CustomerImage VARCHAR(255) DEFAULT ''");
-        }
-
         $sql = "INSERT INTO customer 
                 (CustomerID,CustomerName,CustomerAddress,CustomerContact,
-                CustomerInfo,Notes,Upd_by,Status,CustomerImage) 
+                CustomerInfo,Notes,Upd_by,Status) 
                 VALUES
-                ('$id', ?, ?, ?, ?, ?, ?, 'Active', ?)";
-
-        $stmt = $conn->prepare($sql);
-        if ($stmt) {
-            $stmt->bind_param('sssssss', $id, $name, $address, $phone, $info, $notes, $upd_by, $imageFileName);
-            // Note: first parameter is CustomerID already included; to keep minimal changes we will use a direct query fallback below if prepare fails
-            $stmt->close();
-            // fall back to safe insertion
-            $safeName = mysqli_real_escape_string($conn, $name);
-            $safeAddress = mysqli_real_escape_string($conn, $address);
-            $safePhone = mysqli_real_escape_string($conn, $phone);
-            $safeInfo = mysqli_real_escape_string($conn, $info);
-            $safeNotes = mysqli_real_escape_string($conn, $notes);
-            $safeUpdBy = mysqli_real_escape_string($conn, $upd_by);
-            $safeImage = mysqli_real_escape_string($conn, $imageFileName);
-            $sql2 = "INSERT INTO customer (CustomerID,CustomerName,CustomerAddress,CustomerContact,CustomerInfo,Notes,Upd_by,Status,CustomerImage) VALUES ('$id', '$safeName', '$safeAddress', '$safePhone', '$safeInfo', '$safeNotes', '$safeUpdBy', 'Active', '$safeImage')";
-            mysqli_query($conn, $sql2);
-        } else {
-            // Fallback to direct insert if prepare not supported
-            $safeName = mysqli_real_escape_string($conn, $name);
-            $safeAddress = mysqli_real_escape_string($conn, $address);
-            $safePhone = mysqli_real_escape_string($conn, $phone);
-            $safeInfo = mysqli_real_escape_string($conn, $info);
-            $safeNotes = mysqli_real_escape_string($conn, $notes);
-            $safeUpdBy = mysqli_real_escape_string($conn, $upd_by);
-            $safeImage = mysqli_real_escape_string($conn, $imageFileName);
-            $sql2 = "INSERT INTO customer (CustomerID,CustomerName,CustomerAddress,CustomerContact,CustomerInfo,Notes,Upd_by,Status,CustomerImage) VALUES ('$id', '$safeName', '$safeAddress', '$safePhone', '$safeInfo', '$safeNotes', '$safeUpdBy', 'Active', '$safeImage')";
-            mysqli_query($conn, $sql2);
-        }
+                ('$id','$name','$address','$phone','$info','$notes','$upd_by','Active')";
+        
+        mysqli_query($conn, $sql);
         GenerateLogs($employee_id,$id,$name);
     }
 

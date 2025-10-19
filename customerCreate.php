@@ -118,7 +118,7 @@ handleCancellation();
                 </div>
             <?php endif; ?>
             
-            <form method="post" id="customerCreate" enctype="multipart/form-data">
+            <form method="post" id="customerCreate">
                 <div class="row mb-4">
                     <div class="col-md-6">
                         <label class="form-label">Full Name</label>
@@ -154,14 +154,6 @@ handleCancellation();
                             echo htmlspecialchars($notes); 
                         ?></textarea>
                         <div class="form-text">Face shape, special requirements, etc.</div>
-                    </div>
-                </div>
-
-                <div class="row mb-4">
-                    <div class="col-md-6">
-                        <label class="form-label">Profile Image (optional)</label>
-                        <input type="file" class="form-control" name="customerImage" accept="image/*">
-                        <div class="form-text">Upload a JPG/PNG image. Max 2MB.</div>
                     </div>
                 </div>
                 

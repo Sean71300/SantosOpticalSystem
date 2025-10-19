@@ -26,44 +26,9 @@ $conn = connect();
 // Use prepared statement to avoid injection
 $upd_by = isset($_SESSION['full_name']) ? $_SESSION['full_name'] : '';
 try {
-    // Handle optional uploaded image
-    $imageFileName = '';
-    $uploadsDir = __DIR__ . DIRECTORY_SEPARATOR . 'Uploads' . DIRECTORY_SEPARATOR . 'customer_images';
-    if (!is_dir($uploadsDir)) { mkdir($uploadsDir, 0755, true); }
-    if (isset($_FILES['CustomerImage']) && $_FILES['CustomerImage']['error'] === UPLOAD_ERR_OK) {
-        $tmpName = $_FILES['CustomerImage']['tmp_name'];
-        $origName = basename($_FILES['CustomerImage']['name']);
-        $ext = strtolower(pathinfo($origName, PATHINFO_EXTENSION));
-        $allowed = ['jpg','jpeg','png','gif'];
-        if (in_array($ext, $allowed, true) && filesize($tmpName) <= 2 * 1024 * 1024) {
-            // get existing image to delete
-            $oldImg = '';
-            $r = $conn->prepare("SELECT CustomerImage FROM customer WHERE CustomerID = ? LIMIT 1");
-            if ($r) { $r->bind_param('s', $customerID); $r->execute(); $res = $r->get_result(); $row = $res->fetch_assoc(); if ($row) $oldImg = $row['CustomerImage']; $r->close(); }
-
-            $imageFileName = $customerID . '_' . time() . '.' . $ext;
-            $dest = $uploadsDir . DIRECTORY_SEPARATOR . $imageFileName;
-            if (move_uploaded_file($tmpName, $dest)) {
-                // remove old image if exists
-                if (!empty($oldImg)) {
-                    $oldPath = $uploadsDir . DIRECTORY_SEPARATOR . $oldImg;
-                    if (is_file($oldPath)) @unlink($oldPath);
-                }
-            } else {
-                $imageFileName = '';
-            }
-        }
-    }
-
-    if (!empty($imageFileName)) {
-        $stmt = $conn->prepare("UPDATE customer SET CustomerName = ?, CustomerAddress = ?, CustomerContact = ?, CustomerInfo = ?, Notes = ?, Upd_by = ?, CustomerImage = ? WHERE CustomerID = ?");
-        if (!$stmt) throw new Exception('Prepare failed: ' . $conn->error);
-        $stmt->bind_param('ssssssss', $name, $address, $contact, $info, $notes, $upd_by, $imageFileName, $customerID);
-    } else {
-        $stmt = $conn->prepare("UPDATE customer SET CustomerName = ?, CustomerAddress = ?, CustomerContact = ?, CustomerInfo = ?, Notes = ?, Upd_by = ? WHERE CustomerID = ?");
-        if (!$stmt) throw new Exception('Prepare failed: ' . $conn->error);
-        $stmt->bind_param('sssssss', $name, $address, $contact, $info, $notes, $upd_by, $customerID);
-    }
+    $stmt = $conn->prepare("UPDATE customer SET CustomerName = ?, CustomerAddress = ?, CustomerContact = ?, CustomerInfo = ?, Notes = ?, Upd_by = ? WHERE CustomerID = ?");
+    if (!$stmt) throw new Exception('Prepare failed: ' . $conn->error);
+    $stmt->bind_param('sssssss', $name, $address, $contact, $info, $notes, $upd_by, $customerID);
     $ok = $stmt->execute();
     if (!$ok) throw new Exception('Execute failed: ' . $stmt->error);
     $stmt->close();
