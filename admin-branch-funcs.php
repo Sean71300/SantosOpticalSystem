@@ -318,23 +318,28 @@ function editBranch() {
     .'</div>'
 .'</div>';
 
-    // In the editBranch() function, replace the JavaScript part with:
-    echo <<<'JS'
-    <script>
-    function initEditGoogleMaps() {
-        console.log('Initializing Google Maps for edit modal...');
-        
-        try {
-            const initialLat = ' . (!empty($lat) ? $lat : '14.5995') . ';
-            const initialLng = ' . (!empty($lng) ? $lng : '120.9842') . ';
-            const hasExistingCoords = ' . (!empty($lat) && !empty($lng) ? 'true' : 'false') . ';
+        // Prepare numeric values for JS
+        $initLat = !empty($lat) ? (float)$lat : 14.5995;
+        $initLng = !empty($lng) ? (float)$lng : 120.9842;
+        $hasCoords = (!empty($lat) && !empty($lng)) ? 'true' : 'false';
 
-            // Determine map center and initialize the map
-            const centerLatLng = hasExistingCoords ? { lat: parseFloat(initialLat), lng: parseFloat(initialLng) } : { lat: 14.5995, lng: 120.9842 };
-            const map = new google.maps.Map(document.getElementById("editMapPreview"), {
-                center: centerLatLng,
-                zoom: hasExistingCoords ? 16 : 12,
-            });
+        // In the editBranch() function, output JavaScript with interpolated PHP variables
+        echo <<<JS
+        <script>
+        function initEditGoogleMaps() {
+            console.log('Initializing Google Maps for edit modal...');
+        
+            try {
+                const initialLat = {$initLat};
+                const initialLng = {$initLng};
+                const hasExistingCoords = {$hasCoords};
+
+                // Determine map center and initialize the map
+                const centerLatLng = hasExistingCoords ? { lat: parseFloat(initialLat), lng: parseFloat(initialLng) } : { lat: 14.5995, lng: 120.9842 };
+                const map = new google.maps.Map(document.getElementById("editMapPreview"), {
+                    center: centerLatLng,
+                    zoom: hasExistingCoords ? 16 : 12,
+                });
 
             // Get the location input
             const locationInput = document.getElementById("branchLocationEdit");
