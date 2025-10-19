@@ -139,6 +139,21 @@ function getAllMedicalRecords($searchTerm = null) {
                 echo '</div>';
                 echo '</div>';
             }
+            // Image (if present)
+            if (!empty($row['image_path'])) {
+                $imgPath = htmlspecialchars($row['image_path']);
+                $jsImg = json_encode($row['image_path']);
+                echo '<div class="row mb-3">';
+                echo '<div class="col-12">';
+                echo '<label class="form-label">Image</label>';
+                echo '<div>';
+                echo '<a href="#" onclick="event.preventDefault(); showMedImage(' . $jsImg . ');">';
+                echo '<img src="' . $imgPath . '" style="max-width:160px; height:auto; cursor:pointer; border:1px solid #ddd; padding:4px;" alt="Medical image"/>';
+                echo '</a>';
+                echo '</div>';
+                echo '</div>';
+                echo '</div>';
+            }
             echo '</div>'; // Close medical-record-card
             }
             echo '</div>'; // Close form-container
@@ -254,5 +269,27 @@ function getAllMedicalRecords($searchTerm = null) {
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    function showMedImage(src) {
+        try {
+            var img = document.getElementById('medImageModalImg');
+            if (!img) return;
+            img.src = src;
+            var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('medImageModal'));
+            modal.show();
+        } catch (e) { console.error(e); }
+    }
+    </script>
+
+    <!-- Image viewer modal -->
+    <div class="modal fade" id="medImageModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-body text-center p-2">
+                    <img id="medImageModalImg" src="" style="max-width:100%; height:auto;"/>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
