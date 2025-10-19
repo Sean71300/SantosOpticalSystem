@@ -449,10 +449,33 @@
                     echo '</div>';
                     echo '</div>';
                 }
+
+                // Image (if present)
+                if (!empty($row['image_path'])) {
+                    $imgPath = htmlspecialchars($row['image_path']);
+                    $jsImg = json_encode($row['image_path']);
+                    echo '<div class="row mb-3">';
+                    echo '<div class="col-12">';
+                    echo '<label class="form-label">Image</label>';
+                    echo '<div>';
+                    echo '<a href="#" onclick="event.preventDefault();var src=' . $jsImg . '; var img=document.getElementById(\'medImageModalImg\'); if(img){ img.src = src; } var m = bootstrap.Modal.getOrCreateInstance(document.getElementById(\'medImageModal\')); m.show();">';
+                    echo '<img src="' . $imgPath . '" style="max-width:160px; height:auto; cursor:pointer; border:1px solid #ddd; padding:4px;" alt="Medical image"/>';
+                    echo '</a>';
+                    echo '</div>';
+                    echo '</div>';
+                    echo '</div>';
+                }
                 
                 echo '</div>'; // Close medical-record-card
             }
             if (!$embed) { echo '</div>'; } // Close form-container only when not embedded
+            // Image viewer modal (include inside returned content so it works when embedded)
+            echo '<div class="modal fade" id="medImageModal" tabindex="-1" aria-hidden="true">';
+            echo '<div class="modal-dialog modal-dialog-centered modal-lg">';
+            echo '<div class="modal-content">';
+            echo '<div class="modal-body text-center p-2">';
+            echo '<img id="medImageModalImg" src="" style="max-width:100%; height:auto;"/>'; 
+            echo '</div></div></div></div>';
         } else {
             if (!$embed) {
                 echo '<div class="d-flex justify-content-between align-items-center mb-4">';
