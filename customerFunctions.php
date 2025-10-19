@@ -228,8 +228,137 @@
             echo '</div>';
             echo '</div>';
         }
-        echo '</div>';
-        exit();
+                echo '</div>';
+
+                // Add New Medical History modal and client-side JS (resizes attached image to 300x300)
+                echo <<<HTML
+                <!-- New Medical History Modal -->
+                <div class="modal fade" id="newMedicalModal" tabindex="-1" aria-labelledby="newMedicalModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="newMedicalModalLabel">Add Medical History</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="newMedicalForm" enctype="multipart/form-data">
+                                    <input type="hidden" name="CustomerID" id="modalCustomerID" value="{$customerID}">
+                                    <div class="mb-3">
+                                        <label class="form-label">Visit Date</label>
+                                        <input type="date" name="visit_date" class="form-control">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Eye Condition</label>
+                                        <input type="text" name="eye_condition" class="form-control">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Additional Notes</label>
+                                        <textarea name="additional_notes" class="form-control"></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Attach Image (optional)</label>
+                                        <input type="file" accept="image/*" id="medImageInput" class="form-control">
+                                        <div class="mt-2"><img id="medPreview" src="" alt="Preview" style="max-width:150px;max-height:150px;display:none;border:1px solid #ddd;padding:4px;"></div>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="button" id="saveMedicalBtn" class="btn btn-primary">Save</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                (function(){
+                    var newMedicalModalEl = document.getElementById('newMedicalModal');
+                    if (!newMedicalModalEl) return;
+                    var modal = new bootstrap.Modal(newMedicalModalEl);
+                    var triggerBtn = document.getElementById('newMedicalBtn');
+                    if (triggerBtn) {
+                        triggerBtn.addEventListener('click', function(e){
+                            var cid = this.getAttribute('data-customer-id') || '{$customerID}';
+                            var cidInput = document.getElementById('modalCustomerID');
+                            if (cidInput) cidInput.value = cid;
+                            var preview = document.getElementById('medPreview');
+                            if (preview) { preview.style.display = 'none'; preview.src = ''; }
+                            var fileIn = document.getElementById('medImageInput'); if (fileIn) fileIn.value = '';
+                            modal.show();
+                        });
+                    }
+
+                    var preview = document.getElementById('medPreview');
+                    var fileInput = document.getElementById('medImageInput');
+                    var lastBlob = null;
+                    if (fileInput) {
+                        fileInput.addEventListener('change', function(){
+                            var file = this.files && this.files[0];
+                            if(!file) return;
+                            var reader = new FileReader();
+                            reader.onload = function(evt){
+                                var img = new Image();
+                                img.onload = function(){
+                                    var canvas = document.createElement('canvas');
+                                    var size = 300;
+                                    canvas.width = size; canvas.height = size;
+                                    var ctx = canvas.getContext('2d');
+                                    ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,size,size);
+                                    var ratio = Math.min(size / img.width, size / img.height);
+                                    var w = img.width * ratio; var h = img.height * ratio;
+                                    var x = (size - w) / 2; var y = (size - h) / 2;
+                                    ctx.drawImage(img, x, y, w, h);
+                                    canvas.toBlob(function(blob){
+                                        lastBlob = blob;
+                                        if (preview) {
+                                            preview.src = URL.createObjectURL(blob);
+                                            preview.style.display = 'block';
+                                        }
+                                    }, 'image/png', 0.9);
+                                };
+                                img.src = evt.target.result;
+                            };
+                            reader.readAsDataURL(file);
+                        });
+                    }
+
+                    var saveBtn = document.getElementById('saveMedicalBtn');
+                    if (saveBtn) {
+                        saveBtn.addEventListener('click', function(){
+                            var form = document.getElementById('newMedicalForm');
+                            if (!form) return;
+                            var fd = new FormData();
+                            fd.append('action','addMedicalRecord');
+                            fd.append('CustomerID', document.getElementById('modalCustomerID').value);
+                            fd.append('visit_date', form.querySelector('[name="visit_date"]').value || '');
+                            fd.append('eye_condition', form.querySelector('[name="eye_condition"]').value || '');
+                            fd.append('additional_notes', form.querySelector('[name="additional_notes"]').value || '');
+                            if (lastBlob) {
+                                var filename = 'med_' + fd.get('CustomerID') + '_' + Date.now() + '.png';
+                                fd.append('medImage', lastBlob, filename);
+                            }
+                            fetch('customerFunctions.php', { method: 'POST', body: fd })
+                                .then(function(r){ return r.json(); })
+                                .then(function(data){
+                                    if (data && data.success) {
+                                        modal.hide();
+                                        // Refresh medical records area
+                                        fetch('customerFunctions.php?action=getCustomerMedicalRecords&customerID=' + encodeURIComponent(fd.get('CustomerID')) + '&embed=1')
+                                            .then(function(r){ return r.text(); })
+                                            .then(function(html){
+                                                var area = document.getElementById('medicalRecordsArea'); if (area) area.innerHTML = html;
+                                            });
+                                    } else {
+                                        alert(data && data.message ? data.message : 'Error saving medical record');
+                                    }
+                                }).catch(function(err){ console.error(err); alert('Upload failed'); });
+                        });
+                    }
+                })();
+                </script>
+HTML;
+
+                exit();
     }
 
     // Endpoint to return rendered medical records (so profile modal can load them)
