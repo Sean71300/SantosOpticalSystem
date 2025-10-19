@@ -340,6 +340,8 @@ function editBranch() {
                     center: centerLatLng,
                     zoom: hasExistingCoords ? 16 : 12,
                 });
+                // expose for external resize attempts
+                window.editMapInstance = map;
 
             // Get the location input
             const locationInput = document.getElementById("branchLocationEdit");
@@ -420,6 +422,7 @@ function editBranch() {
             });
 
             // Sometimes maps render white when initialized inside a hidden modal — trigger a resize and re-center
+            // trigger resize after a short delay (longer on slower machines)
             setTimeout(function() {
                 try {
                     google.maps.event.trigger(map, 'resize');
@@ -427,7 +430,7 @@ function editBranch() {
                 } catch (e) {
                     console.error('Error during map resize/center:', e);
                 }
-            }, 200);
+            }, 500);
 
             console.log('Google Maps initialized successfully for edit modal');
         } catch (error) {
@@ -445,6 +448,21 @@ function editBranch() {
             } else {
                 console.error('loadGoogleMaps function not found');
             }
+            // Also attempt an extra resize after the modal is visible to ensure tiles are drawn
+            setTimeout(function() {
+                try {
+                    if (window.editMapInstance && window.google && window.google.maps) {
+                        google.maps.event.trigger(window.editMapInstance, 'resize');
+                        // attempt to recentre
+                        if (typeof window.editMapInstance.getCenter === 'function') {
+                            const c = window.editMapInstance.getCenter();
+                            window.editMapInstance.setCenter(c);
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error during post-show map resize:', e);
+                }
+            }, 700);
         });
     }
     </script>
