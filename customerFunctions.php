@@ -240,6 +240,60 @@
         exit();
     }
 
+    // Endpoint to handle adding a new medical record (with optional image upload)
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'addMedicalRecord') {
+        header('Content-Type: application/json; charset=utf-8');
+        $customerID = isset($_POST['CustomerID']) ? $_POST['CustomerID'] : '';
+        $visit_date = isset($_POST['visit_date']) && $_POST['visit_date'] !== '' ? $_POST['visit_date'] : null;
+        $eye_condition = isset($_POST['eye_condition']) ? $_POST['eye_condition'] : '';
+        $additional_notes = isset($_POST['additional_notes']) ? $_POST['additional_notes'] : '';
+
+        $conn = connect();
+
+        // Ensure uploads directory exists
+        $uploadsDir = __DIR__ . DIRECTORY_SEPARATOR . 'Uploads' . DIRECTORY_SEPARATOR . 'medical_images';
+        if (!is_dir($uploadsDir)) { mkdir($uploadsDir, 0755, true); }
+
+        // Ensure medical_image column exists in customerMedicalHistory
+        $colCheck = mysqli_query($conn, "SHOW COLUMNS FROM customerMedicalHistory LIKE 'medical_image'");
+        if (mysqli_num_rows($colCheck) == 0) {
+            mysqli_query($conn, "ALTER TABLE customerMedicalHistory ADD COLUMN medical_image VARCHAR(255) NULL");
+        }
+
+        // Handle optional uploaded image
+        $imageFileName = '';
+        if (isset($_FILES['medImage']) && isset($_FILES['medImage']['error']) && $_FILES['medImage']['error'] === UPLOAD_ERR_OK) {
+            $tmpName = $_FILES['medImage']['tmp_name'];
+            $origName = basename($_FILES['medImage']['name']);
+            $ext = strtolower(pathinfo($origName, PATHINFO_EXTENSION));
+            $allowed = ['jpg','jpeg','png','gif','webp'];
+            if (in_array($ext, $allowed, true) && filesize($tmpName) <= 5 * 1024 * 1024) { // 5MB limit
+                $imageFileName = 'med_' . $customerID . '_' . time() . '.' . $ext;
+                $dest = $uploadsDir . DIRECTORY_SEPARATOR . $imageFileName;
+                if (!move_uploaded_file($tmpName, $dest)) {
+                    $imageFileName = '';
+                }
+            }
+        }
+
+        // Insert new medical history record
+        $historyID = generate_historyID();
+        $visit_date_sql = $visit_date ? "'" . mysqli_real_escape_string($conn, $visit_date) . "'" : "NULL";
+        $safe_eye = mysqli_real_escape_string($conn, $eye_condition);
+        $safe_notes = mysqli_real_escape_string($conn, $additional_notes);
+        $safe_image = mysqli_real_escape_string($conn, $imageFileName);
+
+        $sql = "INSERT INTO customerMedicalHistory (history_id, CustomerID, visit_date, eye_condition, additional_notes, medical_image) VALUES ('$historyID', '" . mysqli_real_escape_string($conn, $customerID) . "', $visit_date_sql, '$safe_eye', '$safe_notes', '$safe_image')";
+        $ok = mysqli_query($conn, $sql);
+        if ($ok) {
+            echo json_encode(['success' => true, 'message' => 'Medical record saved.']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Database error: ' . mysqli_error($conn)]);
+        }
+        $conn->close();
+        exit();
+    }
+
     function handleCustomerForm() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $name = $_POST["name"];
