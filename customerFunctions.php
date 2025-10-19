@@ -279,13 +279,65 @@
         $id = generate_CustomerID();   
         $upd_by = $_SESSION["full_name"];
         $employee_id = $_SESSION["id"];
+        // Ensure uploads directory exists
+        $uploadsDir = __DIR__ . DIRECTORY_SEPARATOR . 'Uploads' . DIRECTORY_SEPARATOR . 'customer_images';
+        if (!is_dir($uploadsDir)) { mkdir($uploadsDir, 0755, true); }
+
+        // Handle optional uploaded image
+        $imageFileName = '';
+        if (isset($_FILES['customerImage']) && $_FILES['customerImage']['error'] === UPLOAD_ERR_OK) {
+            $tmpName = $_FILES['customerImage']['tmp_name'];
+            $origName = basename($_FILES['customerImage']['name']);
+            $ext = strtolower(pathinfo($origName, PATHINFO_EXTENSION));
+            $allowed = ['jpg','jpeg','png','gif'];
+            if (in_array($ext, $allowed, true) && filesize($tmpName) <= 2 * 1024 * 1024) { // 2MB
+                $imageFileName = $id . '_' . time() . '.' . $ext;
+                $dest = $uploadsDir . DIRECTORY_SEPARATOR . $imageFileName;
+                if (!move_uploaded_file($tmpName, $dest)) {
+                    $imageFileName = '';
+                }
+            }
+        }
+
+        // Ensure CustomerImage column exists, add if not
+        $colCheck = mysqli_query($conn, "SHOW COLUMNS FROM customer LIKE 'CustomerImage'");
+        if (mysqli_num_rows($colCheck) == 0) {
+            mysqli_query($conn, "ALTER TABLE customer ADD COLUMN CustomerImage VARCHAR(255) DEFAULT ''");
+        }
+
         $sql = "INSERT INTO customer 
                 (CustomerID,CustomerName,CustomerAddress,CustomerContact,
-                CustomerInfo,Notes,Upd_by,Status) 
+                CustomerInfo,Notes,Upd_by,Status,CustomerImage) 
                 VALUES
-                ('$id','$name','$address','$phone','$info','$notes','$upd_by','Active')";
-        
-        mysqli_query($conn, $sql);
+                ('$id', ?, ?, ?, ?, ?, ?, 'Active', ?)";
+
+        $stmt = $conn->prepare($sql);
+        if ($stmt) {
+            $stmt->bind_param('sssssss', $id, $name, $address, $phone, $info, $notes, $upd_by, $imageFileName);
+            // Note: first parameter is CustomerID already included; to keep minimal changes we will use a direct query fallback below if prepare fails
+            $stmt->close();
+            // fall back to safe insertion
+            $safeName = mysqli_real_escape_string($conn, $name);
+            $safeAddress = mysqli_real_escape_string($conn, $address);
+            $safePhone = mysqli_real_escape_string($conn, $phone);
+            $safeInfo = mysqli_real_escape_string($conn, $info);
+            $safeNotes = mysqli_real_escape_string($conn, $notes);
+            $safeUpdBy = mysqli_real_escape_string($conn, $upd_by);
+            $safeImage = mysqli_real_escape_string($conn, $imageFileName);
+            $sql2 = "INSERT INTO customer (CustomerID,CustomerName,CustomerAddress,CustomerContact,CustomerInfo,Notes,Upd_by,Status,CustomerImage) VALUES ('$id', '$safeName', '$safeAddress', '$safePhone', '$safeInfo', '$safeNotes', '$safeUpdBy', 'Active', '$safeImage')";
+            mysqli_query($conn, $sql2);
+        } else {
+            // Fallback to direct insert if prepare not supported
+            $safeName = mysqli_real_escape_string($conn, $name);
+            $safeAddress = mysqli_real_escape_string($conn, $address);
+            $safePhone = mysqli_real_escape_string($conn, $phone);
+            $safeInfo = mysqli_real_escape_string($conn, $info);
+            $safeNotes = mysqli_real_escape_string($conn, $notes);
+            $safeUpdBy = mysqli_real_escape_string($conn, $upd_by);
+            $safeImage = mysqli_real_escape_string($conn, $imageFileName);
+            $sql2 = "INSERT INTO customer (CustomerID,CustomerName,CustomerAddress,CustomerContact,CustomerInfo,Notes,Upd_by,Status,CustomerImage) VALUES ('$id', '$safeName', '$safeAddress', '$safePhone', '$safeInfo', '$safeNotes', '$safeUpdBy', 'Active', '$safeImage')";
+            mysqli_query($conn, $sql2);
+        }
         GenerateLogs($employee_id,$id,$name);
     }
 
