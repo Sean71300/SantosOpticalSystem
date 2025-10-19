@@ -182,7 +182,7 @@ function initGoogleMaps() {
 document.addEventListener('DOMContentLoaded', function() {
     const addBranchModal = document.getElementById('addBranchModal');
     if (addBranchModal) {
-        addBranchModal.addEventListener('show.bs.modal', function() {
+        addBranchModal.addEventListener('shown.bs.modal', function() {
             console.log('Add branch modal shown, loading Google Maps...');
             if (typeof loadGoogleMaps === 'function') {
                 loadGoogleMaps(initGoogleMaps);
@@ -329,9 +329,10 @@ function editBranch() {
             const initialLng = ' . (!empty($lng) ? $lng : '120.9842') . ';
             const hasExistingCoords = ' . (!empty($lat) && !empty($lng) ? 'true' : 'false') . ';
 
-            // Initialize the map
+            // Determine map center and initialize the map
+            const centerLatLng = hasExistingCoords ? { lat: parseFloat(initialLat), lng: parseFloat(initialLng) } : { lat: 14.5995, lng: 120.9842 };
             const map = new google.maps.Map(document.getElementById("editMapPreview"), {
-                center: hasExistingCoords ? { lat: parseFloat(initialLat), lng: parseFloat(initialLng) } : { lat: 14.5995, lng: 120.9842 },
+                center: centerLatLng,
                 zoom: hasExistingCoords ? 16 : 12,
             });
 
@@ -413,26 +414,34 @@ function editBranch() {
                 });
             });
 
+            // Sometimes maps render white when initialized inside a hidden modal — trigger a resize and re-center
+            setTimeout(function() {
+                try {
+                    google.maps.event.trigger(map, 'resize');
+                    map.setCenter(centerLatLng);
+                } catch (e) {
+                    console.error('Error during map resize/center:', e);
+                }
+            }, 200);
+
             console.log('Google Maps initialized successfully for edit modal');
         } catch (error) {
             console.error('Error initializing Google Maps for edit:', error);
         }
     }
 
-    // Initialize when modal is shown
-    document.addEventListener('DOMContentLoaded', function() {
-        const editBranchModal = document.getElementById('editBranchModal');
-        if (editBranchModal) {
-            editBranchModal.addEventListener('show.bs.modal', function() {
-                console.log('Edit branch modal shown, loading Google Maps...');
-                if (typeof loadGoogleMaps === 'function') {
-                    loadGoogleMaps(initEditGoogleMaps);
-                } else {
-                    console.error('loadGoogleMaps function not found');
-                }
-            });
-        }
-    });
+    // Attach listener directly to shown.bs.modal so the map is initialized after the modal is visible
+    const editBranchModal = document.getElementById('editBranchModal');
+    if (editBranchModal) {
+        editBranchModal.addEventListener('shown.bs.modal', function() {
+            console.log('Edit branch modal shown, loading Google Maps...');
+            if (typeof loadGoogleMaps === 'function') {
+                loadGoogleMaps(initEditGoogleMaps);
+            } else {
+                console.error('loadGoogleMaps function not found');
+            }
+        });
+    }
     </script>
     JS;
 }
