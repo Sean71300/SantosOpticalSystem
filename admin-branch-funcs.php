@@ -171,23 +171,8 @@ function addBranchModal() {
     // Load Google Maps API when modal is shown
     document.addEventListener("DOMContentLoaded", function() {
         const addBranchModal = document.getElementById("addBranchModal");
-        let mapsLoaded = false;
-
         addBranchModal.addEventListener("show.bs.modal", function() {
-            if (!mapsLoaded) {
-                // Load Google Maps API
-                const script = document.createElement("script");
-                script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyBfPI5kUaCUugAlg9iU0I-fhkOrqKqRtUA&libraries=places&callback=initGoogleMaps";
-                script.async = true;
-                script.defer = true;
-                document.head.appendChild(script);
-                mapsLoaded = true;
-            } else {
-                // Re-initialize if already loaded
-                if (typeof initGoogleMaps === "function") {
-                    initGoogleMaps();
-                }
-            }
+            loadGoogleMaps(initGoogleMaps);
         });
     });
     </script>';
@@ -201,6 +186,13 @@ function addBranch() {
     $branchName = trim($_POST['branchName'] ?? '');
     $branchLocation = trim($_POST['branchLocation'] ?? '');
     $contactNo = trim($_POST['contactNo'] ?? '');
+    $selectedLat = $_POST['selectedLat'] ?? '';
+    $selectedLng = $_POST['selectedLng'] ?? '';
+    $formattedAddress = $_POST['formattedAddress'] ?? '';
+
+    // Use formatted address if available, otherwise use entered location   
+    $finalLocation = !empty($formattedAddress) ? $formattedAddress : $branchLocation;
+
     // Generate a new BranchCode using the helper in setup.php. If it fails, fallback to MAX(BranchCode)+1
     $branchCode = 0;
     if (function_exists('generate_BranchCode')) {
@@ -216,10 +208,10 @@ function addBranch() {
     }
     $status = 'Active';
 
-    $sql = "INSERT INTO BranchMaster (BranchCode, BranchName, BranchLocation, ContactNo, Status) VALUES (?, ?, ?, ?, ?)";
+    $sql = "INSERT INTO BranchMaster (BranchCode, BranchName, BranchLocation, latitude, longitude, full_address, ContactNo, Status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
     $stmt = mysqli_prepare($link, $sql);
     if ($stmt) {
-        mysqli_stmt_bind_param($stmt, 'issss', $branchCode, $branchName, $branchLocation, $contactNo, $status);
+        mysqli_stmt_bind_param($stmt, 'issssss', $branchCode, $branchName, $finalLocation, $selectedLat, $selectedLng, $contactNo, $status);
         $ok = mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
     } else {
@@ -249,12 +241,12 @@ function addBranch() {
 function editBranch() {
     $link = connect();
     $branchCode = $_POST['branchCode'] ?? '';
-    $sql = "SELECT BranchCode, BranchName, BranchLocation, ContactNo FROM BranchMaster WHERE BranchCode = ? LIMIT 1";
-    $name = $location = $contact = '';
+    $sql = "SELECT BranchCode, BranchName, BranchLocation, ContactNo, Latitude, Longitude FROM BranchMaster WHERE BranchCode = ? LIMIT 1";
+    $name = $location = $contact = $lat = $lng = '';
     if ($stmt = mysqli_prepare($link, $sql)) {
         mysqli_stmt_bind_param($stmt, 'i', $branchCode);
         mysqli_stmt_execute($stmt);
-        mysqli_stmt_bind_result($stmt, $code, $name, $location, $contact);
+        mysqli_stmt_bind_result($stmt, $code, $name, $location, $contact, $lat, $lng);
         mysqli_stmt_fetch($stmt);
         mysqli_stmt_close($stmt);
     }
@@ -264,16 +256,18 @@ function editBranch() {
     $nameEsc = htmlspecialchars($name);
     $locEsc = htmlspecialchars($location);
     $contactEsc = htmlspecialchars($contact);
+    $latEsc = htmlspecialchars($lat);
+    $lngEsc = htmlspecialchars($lng);
 
-    echo '<div class="modal fade" id="editBranchModal" tabindex="-1" aria-labelledby="editBranchModalLabel" aria-hidden="true">'
-        .'<div class="modal-dialog modal-dialog-centered">'
+        echo '<div class="modal fade" id="editBranchModal" tabindex="-1" aria-labelledby="editBranchModalLabel" aria-hidden="true">'
+        .'<div class="modal-dialog modal-dialog-centered modal-lg">'
         .'<div class="modal-content">'
             .'<div class="modal-header">'
                 .'<h5 class="modal-title" id="editBranchModalLabel">Edit Branch</h5>'
                 .'<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>'
             .'</div>'
             .'<div class="modal-body">'
-                .'<form method="post">'
+                .'<form method="post" id="editBranchForm">'
                     .'<input type="hidden" name="branchCode" value="' . $codeEsc . '">'
                     .'<div class="mb-3">'
                         .'<label for="branchNameEdit" class="form-label">Branch Name</label>'
@@ -281,8 +275,17 @@ function editBranch() {
                     .'</div>'
                     .'<div class="mb-3">'
                         .'<label for="branchLocationEdit" class="form-label">Branch Location</label>'
-                        .'<input type="text" class="form-control" id="branchLocationEdit" name="branchLocation" value="' . $locEsc . '" required>'
+                        .'<input type="text" class="form-control" id="branchLocationEdit" name="branchLocation" value="' . $locEsc . '" required placeholder="Start typing to search locations...">'
+                        .'<div class="form-text">Start typing to search and select from Google Maps suggestions.</div>'
                     .'</div>'
+                    .'<div class="mb-3">'
+                        .'<label class="form-label">Map Preview</label>'
+                        .'<div id="editMapPreview" style="height: 300px; width: 100%; border: 1px solid #ddd; border-radius: 4px;"></div>'
+                        .'<div class="form-text">Selected location will be marked on the map.</div>'
+                    .'</div>'
+                    .'<input type="hidden" id="editSelectedLat" name="selectedLat" value="' . $latEsc . '">'
+                    .'<input type="hidden" id="editSelectedLng" name="selectedLng" value="' . $lngEsc . '">'
+                    .'<input type="hidden" id="editFormattedAddress" name="formattedAddress" value="' . $locEsc . '">'
                     .'<div class="mb-3">'
                         .'<label for="contactNoEdit" class="form-label">Contact Number</label>'
                         .'<input type="text" class="form-control" id="contactNoEdit" name="contactNo" value="' . $contactEsc . '" inputmode="numeric" pattern="[0-9]*" maxlength="15">'
@@ -296,6 +299,107 @@ function editBranch() {
         .'</div>'
     .'</div>'
 .'</div>';
+
+    // Add the JavaScript for Google Maps for edit modal
+    echo '<script>
+    function initEditGoogleMaps() {
+        const initialLat = ' . (!empty($lat) ? $lat : '14.5995') . ';
+        const initialLng = ' . (!empty($lng) ? $lng : '120.9842') . ';
+        const initialLocation = "' . $locEsc . '";
+        const hasExistingCoords = ' . (!empty($lat) && !empty($lng) ? 'true' : 'false') . ';
+
+        // Initialize the map
+        const map = new google.maps.Map(document.getElementById("editMapPreview"), {
+            center: hasExistingCoords ? { lat: initialLat, lng: initialLng } : { lat: 14.5995, lng: 120.9842 },
+            zoom: hasExistingCoords ? 16 : 12,
+        });
+
+        // Initialize the autocomplete
+        const autocomplete = new google.maps.places.Autocomplete(
+            document.getElementById("branchLocationEdit"),
+            {
+                types: ["establishment", "geocode"],
+                fields: ["geometry", "formatted_address", "name"],
+            }
+        );
+
+        // Create a marker
+        const marker = new google.maps.Marker({
+            map: map,
+            draggable: true,
+        });
+
+        // Set initial marker if coordinates exist
+        if (hasExistingCoords) {
+            marker.setPosition({ lat: initialLat, lng: initialLng });
+            marker.setVisible(true);
+        }
+
+        // Listen for place selection
+        autocomplete.addListener("place_changed", () => {
+            const place = autocomplete.getPlace();
+
+            if (!place.geometry) {
+                console.log("No details available for input: " + place.name);
+                return;
+            }
+
+            // Update map and marker
+            map.setCenter(place.geometry.location);
+            map.setZoom(16);
+            marker.setPosition(place.geometry.location);
+            marker.setVisible(true);
+
+            // Update hidden fields
+            document.getElementById("editSelectedLat").value = place.geometry.location.lat();
+            document.getElementById("editSelectedLng").value = place.geometry.location.lng();
+            document.getElementById("editFormattedAddress").value = place.formatted_address;
+        });
+
+        // Allow marker dragging to adjust location
+        marker.addListener("dragend", () => {
+            const position = marker.getPosition();
+            document.getElementById("editSelectedLat").value = position.lat();
+            document.getElementById("editSelectedLng").value = position.lng();
+            
+            // Reverse geocode to get address
+            const geocoder = new google.maps.Geocoder();
+            geocoder.geocode({ location: position }, (results, status) => {
+                if (status === "OK" && results[0]) {
+                    document.getElementById("branchLocationEdit").value = results[0].formatted_address;
+                    document.getElementById("editFormattedAddress").value = results[0].formatted_address;
+                }
+            });
+        });
+
+        // Also allow clicking on map to set location
+        map.addListener("click", (event) => {
+            const position = event.latLng;
+            marker.setPosition(position);
+            marker.setVisible(true);
+            
+            document.getElementById("editSelectedLat").value = position.lat();
+            document.getElementById("editSelectedLng").value = position.lng();
+            
+            // Reverse geocode
+            const geocoder = new google.maps.Geocoder();
+            geocoder.geocode({ location: position }, (results, status) => {
+                if (status === "OK" && results[0]) {
+                    document.getElementById("branchLocationEdit").value = results[0].formatted_address;
+                    document.getElementById("editFormattedAddress").value = results[0].formatted_address;
+                }
+            });
+        });
+    }
+
+    // Load Google Maps API when edit modal is shown
+    document.addEventListener("DOMContentLoaded", function() {
+        const editBranchModal = document.getElementById("editBranchModal");
+        editBranchModal.addEventListener("show.bs.modal", function() {
+            loadGoogleMaps(initEditGoogleMaps);
+        });
+    });
+    </script>';
 }
 
 /**
@@ -307,11 +411,18 @@ function confirmEditBranch() {
     $branchName = trim($_POST['branchName'] ?? '');
     $branchLocation = trim($_POST['branchLocation'] ?? '');
     $contactNo = trim($_POST['contactNo'] ?? '');
+    $selectedLat = $_POST['selectedLat'] ?? '';
+    $selectedLng = $_POST['selectedLng'] ?? '';
+    $formattedAddress = $_POST['formattedAddress'] ?? '';
 
-    $sql = "UPDATE BranchMaster SET BranchName = ?, BranchLocation = ?, ContactNo = ? WHERE BranchCode = ?";
+    // Use formatted address if available, otherwise use the location input
+    $finalLocation = !empty($formattedAddress) ? $formattedAddress : $branchLocation;
+
+    // Update the SQL to include coordinates
+    $sql = "UPDATE BranchMaster SET BranchName = ?, BranchLocation = ?, ContactNo = ?, Latitude = ?, Longitude = ? WHERE BranchCode = ?";
     $stmt = mysqli_prepare($link, $sql);
     if ($stmt) {
-        mysqli_stmt_bind_param($stmt, 'sssi', $branchName, $branchLocation, $contactNo, $branchCode);
+        mysqli_stmt_bind_param($stmt, 'sssssi', $branchName, $finalLocation, $contactNo, $selectedLat, $selectedLng, $branchCode);
         $ok = mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
     } else {
