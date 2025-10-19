@@ -303,7 +303,7 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                         <h5 class="modal-title" id="addMedicalRecordModalLabel">Add New Medical Record</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <form id="medicalRecordForm" method="post" action="medical-records-funcs.php">
+                    <form id="medicalRecordForm" method="post" action="medical-records-funcs.php" enctype="multipart/form-data">
                         <div class="modal-body">
                             <input type="hidden" name="customerID" id="modalCustomerID">
                             
@@ -646,6 +646,17 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                                                     <textarea name="additional_notes" class="form-control" rows="3"></textarea>
                                                 </div>
                                             </div>
+                                            <div class="row mb-2">
+                                                <div class="col-12">
+                                                    <label class="form-label">Image (optional)</label>
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <button type="button" id="addImageBtnInline_${cid}" class="btn btn-outline-secondary btn-sm">Add Image</button>
+                                                        <span id="imageNameInline_${cid}" class="text-muted"></span>
+                                                    </div>
+                                                    <input type="file" name="image" id="imageInputInline_${cid}" accept="image/*" style="display:none">
+                                                    <div><img id="imagePreviewInline_${cid}" src="" style="max-width:180px; display:none; margin-top:8px;"/></div>
+                                                </div>
+                                            </div>
                                             <div class="d-flex gap-2 justify-content-end">
                                                 <button type="button" id="cancelAddInline" class="btn btn-secondary">Cancel</button>
                                                 <button type="submit" class="btn btn-primary">Save Record</button>
@@ -655,6 +666,24 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                                 const container = document.createElement('div');
                                 container.innerHTML = formHtml;
                                 area.prepend(container);
+                                // Wire up Add Image button & preview for this inline form
+                                try {
+                                    const imgBtn = container.querySelector('#addImageBtnInline_' + cid);
+                                    const imgInput = container.querySelector('#imageInputInline_' + cid);
+                                    const imgName = container.querySelector('#imageNameInline_' + cid);
+                                    const imgPreview = container.querySelector('#imagePreviewInline_' + cid);
+                                    if (imgBtn && imgInput) {
+                                        imgBtn.addEventListener('click', function(ev){ ev.preventDefault(); imgInput.click(); });
+                                        imgInput.addEventListener('change', function(ev){
+                                            const f = this.files && this.files[0];
+                                            if (!f) { imgName.textContent = ''; imgPreview.style.display = 'none'; imgPreview.src = ''; return; }
+                                            imgName.textContent = f.name;
+                                            const reader = new FileReader();
+                                            reader.onload = function(e){ imgPreview.src = e.target.result; imgPreview.style.display = 'block'; };
+                                            reader.readAsDataURL(f);
+                                        });
+                                    }
+                                } catch (e) { console.error('Image wiring failed', e); }
                             });
                         }
                     })
@@ -807,7 +836,7 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                 const formHtml = `
                     <div class="card mb-3 p-3" id="addRecordInline">
                         <h5>Add Medical Record</h5>
-                        <form id="medicalRecordFormInline" method="post" action="medical-records-funcs.php">
+                        <form id="medicalRecordFormInline" method="post" action="medical-records-funcs.php" enctype="multipart/form-data">
                             <input type="hidden" name="customerID" value="${customerID}">
                             <div class="row mb-2">
                                 <div class="col-12">
@@ -902,6 +931,17 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                                     <textarea name="additional_notes" class="form-control" rows="3"></textarea>
                                 </div>
                             </div>
+                            <div class="row mb-2">
+                                <div class="col-12">
+                                    <label class="form-label">Image (optional)</label>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <button type="button" id="addImageBtnInline_${customerID}" class="btn btn-outline-secondary btn-sm">Add Image</button>
+                                        <span id="imageNameInline_${customerID}" class="text-muted"></span>
+                                    </div>
+                                    <input type="file" name="image" id="imageInputInline_${customerID}" accept="image/*" style="display:none">
+                                    <div><img id="imagePreviewInline_${customerID}" src="" style="max-width:180px; display:none; margin-top:8px;"/></div>
+                                </div>
+                            </div>
 
                             <div class="d-flex gap-2 justify-content-end">
                                 <button type="button" id="cancelAddInline" class="btn btn-secondary">Cancel</button>
@@ -915,6 +955,25 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                 const container = document.createElement('div');
                 container.innerHTML = formHtml;
                 area.prepend(container);
+                // Wire up Add Image button & preview for this delegated inline form
+                try {
+                    const cid = customerID;
+                    const imgBtn = container.querySelector('#addImageBtnInline_' + cid);
+                    const imgInput = container.querySelector('#imageInputInline_' + cid);
+                    const imgName = container.querySelector('#imageNameInline_' + cid);
+                    const imgPreview = container.querySelector('#imagePreviewInline_' + cid);
+                    if (imgBtn && imgInput) {
+                        imgBtn.addEventListener('click', function(ev){ ev.preventDefault(); imgInput.click(); });
+                        imgInput.addEventListener('change', function(ev){
+                            const f = this.files && this.files[0];
+                            if (!f) { imgName.textContent = ''; imgPreview.style.display = 'none'; imgPreview.src = ''; return; }
+                            imgName.textContent = f.name;
+                            const reader = new FileReader();
+                            reader.onload = function(e){ imgPreview.src = e.target.result; imgPreview.style.display = 'block'; };
+                            reader.readAsDataURL(f);
+                        });
+                    }
+                } catch(e){ console.error('Image wiring failed (delegated)', e); }
                 // focus first input but delay slightly and avoid focusing while profile modal is aria-hidden
                 setTimeout(() => {
                     const firstInput = document.querySelector('#medicalRecordFormInline input[name="visit_date"]');

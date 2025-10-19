@@ -25,19 +25,43 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $customerID = $_POST['customerID'];
     $visit_date = $_POST['visit_date'];
     
+    // Handle optional uploaded image: validate and generate target filename (do not move yet)
+    $imageTmp = null;
+    $imageRel = null;
+    if (isset($_FILES['image']) && !empty($_FILES['image']['name'])) {
+        $f = $_FILES['image'];
+        $allowed = ['image/jpeg','image/png','image/gif','image/webp'];
+        if ($f['error'] === UPLOAD_ERR_OK && in_array($f['type'], $allowed, true)) {
+            $ext = pathinfo($f['name'], PATHINFO_EXTENSION);
+            $safeName = uniqid('med_', true) . '.' . preg_replace('/[^a-zA-Z0-9]/', '', $ext);
+            $imageRel = 'Uploads/uploads/medical/' . $safeName;
+            $imageTmp = $f['tmp_name'];
+        }
+    }
+
     // Prepare the SQL statement
     $conn = connect();
     $historyID = generate_historyID();
-
     $sql = "INSERT INTO customerMedicalHistory (
             history_id, CustomerID, visit_date, eye_condition, systemic_diseases,
             visual_acuity_right, visual_acuity_left, intraocular_pressure_right,
             intraocular_pressure_left, refraction_right, refraction_left,
             pupillary_distance, current_medications, allergies, family_eye_history,
-            previous_eye_surgeries, corneal_topography, fundus_examination, additional_notes
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            previous_eye_surgeries, corneal_topography, fundus_examination, additional_notes, image_path
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     $stmt = $conn->prepare($sql);
+    $retried = false;
+    if (!$stmt) {
+        // If prepare failed and image column missing, attempt to add it and retry once
+        $colCheck = $conn->query("SHOW COLUMNS FROM customerMedicalHistory LIKE 'image_path'");
+        if ($colCheck && $colCheck->num_rows == 0) {
+            $conn->query("ALTER TABLE customerMedicalHistory ADD COLUMN image_path VARCHAR(1024) NULL AFTER additional_notes");
+            $retried = true;
+            $stmt = $conn->prepare($sql);
+        }
+    }
+
     if ($stmt) {
         // Assign POST values to variables first because bind_param requires variables (passed by reference)
         $v_history_id = $historyID;
@@ -58,11 +82,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $v_previous_eye_surgeries = $_POST['previous_eye_surgeries'] ?? '';
         $v_corneal_topography = $_POST['corneal_topography'] ?? '';
         $v_fundus_examination = $_POST['fundus_examination'] ?? '';
-        $v_additional_notes = $_POST['additional_notes'] ?? '';
+    $v_additional_notes = $_POST['additional_notes'] ?? '';
+    $v_image_path = $imageRel;
 
-        // Bind all parameters as strings to avoid type mismatch issues
+        // Bind all parameters as strings to avoid type mismatch issues (now 20 params including image_path)
         $stmt->bind_param(
-            str_repeat('s', 19),
+            str_repeat('s', 20),
             $v_history_id,
             $v_customer_id,
             $v_visit_date,
@@ -81,7 +106,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $v_previous_eye_surgeries,
             $v_corneal_topography,
             $v_fundus_examination,
-            $v_additional_notes
+            $v_additional_notes,
+            $v_image_path
         );
 
         if ($stmt->execute()) {
@@ -89,6 +115,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $employee_id = $_SESSION["id"] ?? null;
             if ($employee_id) {
                 GenerateLogs($employee_id, $customerID, "Added medical record");
+            }
+
+            // If an image was uploaded, move it from tmp to the uploads directory now that DB insert succeeded
+            if (!empty($imageTmp) && !empty($imageRel)) {
+                $targetFull = __DIR__ . DIRECTORY_SEPARATOR . str_replace(['/', "\\"], DIRECTORY_SEPARATOR, $imageRel);
+                $targetDir = dirname($targetFull);
+                if (!is_dir($targetDir)) {
+                    @mkdir($targetDir, 0755, true);
+                }
+                if (!@move_uploaded_file($imageTmp, $targetFull)) {
+                    error_log("Failed to move uploaded medical image to $targetFull");
+                }
             }
 
             // If request is AJAX, return JSON; otherwise redirect back
@@ -112,6 +150,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             exit();
         }
     } else {
+        // If the prepared statement failed, attempt to ensure the database schema supports an image column.
+        // Add `image_path` column if it doesn't exist, then try again.
+        $colCheck = $conn->query("SHOW COLUMNS FROM customerMedicalHistory LIKE 'image_path'");
+        if ($colCheck && $colCheck->num_rows == 0) {
+            $conn->query("ALTER TABLE customerMedicalHistory ADD COLUMN image_path VARCHAR(1024) NULL AFTER additional_notes");
+        }
         if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
             header('Content-Type: application/json; charset=utf-8');
             echo json_encode(['success' => false, 'message' => 'Prepare failed: ' . $conn->error]);
@@ -130,6 +174,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Redirect if accessed directly by browser
     header("Location: customerRecords.php");
     exit();
+}
+
+// Helper: handle uploaded image (optional). Returns relative path or null.
+// NOTE: image handling is managed inline above; keep helper for backward compatibility (no-op)
+function handleUploadedImage($fieldName = 'image') {
+    return null;
 }
 
 function GenerateLogs($employee_id, $customerID, $action) {
