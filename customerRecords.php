@@ -1009,7 +1009,7 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                     const el = document.getElementById('addRecordInline'); if (el) el.remove();
                     // refresh medical records area
                     const customerID = fd.get('customerID');
-                    fetch('customerFunctions.php?action=getCustomerMedicalRecords&customerID=' + encodeURIComponent(customerID))
+                    fetch('customerFunctions.php?action=getCustomerMedicalRecords&customerID=' + encodeURIComponent(customerID) + '&embed=1')
                         .then(r=>r.text()).then(html=>{ const area = document.getElementById('medicalRecordsArea'); if (area) area.innerHTML = html; })
                         .catch(e=>console.error('Failed to refresh medical records', e));
                 })
