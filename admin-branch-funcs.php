@@ -208,7 +208,7 @@ function addBranch() {
     }
     $status = 'Active';
 
-    $sql = "INSERT INTO BranchMaster (BranchCode, BranchName, BranchLocation, latitude, longitude, full_address, ContactNo, Status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    $sql = "INSERT INTO BranchMaster (BranchCode, BranchName, BranchLocation, latitude, longitude, ContactNo, Status) VALUES (?, ?, ?, ?, ?, ?, ?)";
     $stmt = mysqli_prepare($link, $sql);
     if ($stmt) {
         mysqli_stmt_bind_param($stmt, 'issssss', $branchCode, $branchName, $finalLocation, $selectedLat, $selectedLng, $contactNo, $status);
