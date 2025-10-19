@@ -87,95 +87,130 @@ function addBranchModal() {
     .'</div>'
 .'</div>';
 
-    // Add the JavaScript for Google Maps
-    echo '<script>
-    function initGoogleMaps() {
-        // Initialize the map
-        const map = new google.maps.Map(document.getElementById("mapPreview"), {
-            center: { lat: 14.5995, lng: 120.9842 }, // Default to Manila
-            zoom: 12,
-        });
+    // Add the JavaScript for Google Maps (use nowdoc to avoid PHP quoting issues)
+    echo <<<'JS'
+<script>
+function initGoogleMaps() {
+    // Initialize the map
+    const map = new google.maps.Map(document.getElementById("mapPreview"), {
+        center: { lat: 14.5995, lng: 120.9842 }, // Default to Manila
+        zoom: 12,
+    });
 
-        // Initialize the autocomplete
-        const autocomplete = new google.maps.places.Autocomplete(
-            document.getElementById("branchLocation"),
-            {
-                types: ["establishment", "geocode"],
-                fields: ["geometry", "formatted_address", "name"],
+    // Initialize the autocomplete
+    const autocomplete = new google.maps.places.Autocomplete(
+        document.getElementById("branchLocation"),
+        {
+            types: ["establishment", "geocode"],
+            fields: ["geometry", "formatted_address", "name"],
+        }
+    );
+
+    // Create a marker
+    const marker = new google.maps.Marker({
+        map: map,
+        draggable: true,
+    });
+
+    // Listen for place selection
+    autocomplete.addListener("place_changed", () => {
+        const place = autocomplete.getPlace();
+
+        if (!place.geometry) {
+            console.log("No details available for input: " + (place.name || '')); 
+            return;
+        }
+
+        // Update map and marker
+        map.setCenter(place.geometry.location);
+        map.setZoom(16);
+        marker.setPosition(place.geometry.location);
+        marker.setVisible(true);
+
+        // Update hidden fields
+        document.getElementById("selectedLat").value = place.geometry.location.lat();
+        document.getElementById("selectedLng").value = place.geometry.location.lng();
+        document.getElementById("formattedAddress").value = place.formatted_address || '';
+    });
+
+    // Allow marker dragging to adjust location
+    marker.addListener("dragend", () => {
+        const position = marker.getPosition();
+        document.getElementById("selectedLat").value = position.lat();
+        document.getElementById("selectedLng").value = position.lng();
+        
+        // Reverse geocode to get address
+        const geocoder = new google.maps.Geocoder();
+        geocoder.geocode({ location: position }, (results, status) => {
+            if (status === "OK" && results[0]) {
+                document.getElementById("branchLocation").value = results[0].formatted_address;
+                document.getElementById("formattedAddress").value = results[0].formatted_address;
             }
-        );
-
-        // Create a marker
-        const marker = new google.maps.Marker({
-            map: map,
-            draggable: true,
         });
+    });
 
-        // Listen for place selection
-        autocomplete.addListener("place_changed", () => {
-            const place = autocomplete.getPlace();
-
-            if (!place.geometry) {
-                console.log("No details available for input: " + place.name);
-                return;
+    // Also allow clicking on map to set location
+    map.addListener("click", (event) => {
+        const position = event.latLng;
+        marker.setPosition(position);
+        marker.setVisible(true);
+        
+        document.getElementById("selectedLat").value = position.lat();
+        document.getElementById("selectedLng").value = position.lng();
+        
+        // Reverse geocode
+        const geocoder = new google.maps.Geocoder();
+        geocoder.geocode({ location: position }, (results, status) => {
+            if (status === "OK" && results[0]) {
+                document.getElementById("branchLocation").value = results[0].formatted_address;
+                document.getElementById("formattedAddress").value = results[0].formatted_address;
             }
-
-            // Update map and marker
-            map.setCenter(place.geometry.location);
-            map.setZoom(16);
-            marker.setPosition(place.geometry.location);
-            marker.setVisible(true);
-
-            // Update hidden fields
-            document.getElementById("selectedLat").value = place.geometry.location.lat();
-            document.getElementById("selectedLng").value = place.geometry.location.lng();
-            document.getElementById("formattedAddress").value = place.formatted_address;
         });
+    });
+}
 
-        // Allow marker dragging to adjust location
-        marker.addListener("dragend", () => {
-            const position = marker.getPosition();
-            document.getElementById("selectedLat").value = position.lat();
-            document.getElementById("selectedLng").value = position.lng();
-            
-            // Reverse geocode to get address
-            const geocoder = new google.maps.Geocoder();
-            geocoder.geocode({ location: position }, (results, status) => {
-                if (status === "OK" && results[0]) {
-                    document.getElementById("branchLocation").value = results[0].formatted_address;
-                    document.getElementById("formattedAddress").value = results[0].formatted_address;
-                }
-            });
-        });
+// Robustly load Google Maps API when modal is shown or input focused
+// Uses shown.bs.modal so map sizing works and adds an input-focus fallback
+(function(){
+    // Prevent multiple initializations
+    let addBranchMapsRequested = false;
 
-        // Also allow clicking on map to set location
-        map.addListener("click", (event) => {
-            const position = event.latLng;
-            marker.setPosition(position);
-            marker.setVisible(true);
-            
-            document.getElementById("selectedLat").value = position.lat();
-            document.getElementById("selectedLng").value = position.lng();
-            
-            // Reverse geocode
-            const geocoder = new google.maps.Geocoder();
-            geocoder.geocode({ location: position }, (results, status) => {
-                if (status === "OK" && results[0]) {
-                    document.getElementById("branchLocation").value = results[0].formatted_address;
-                    document.getElementById("formattedAddress").value = results[0].formatted_address;
+    function requestMapsOnce() {
+        if (addBranchMapsRequested) return;
+        addBranchMapsRequested = true;
+        if (typeof loadGoogleMaps === "function") {
+            loadGoogleMaps(initGoogleMaps);
+        } else {
+            // If loader not yet present, try again shortly (should be loaded from google-maps-api.js)
+            const t = setInterval(function() {
+                if (typeof loadGoogleMaps === "function") {
+                    clearInterval(t);
+                    loadGoogleMaps(initGoogleMaps);
                 }
-            });
+            }, 200);
+            // give up after a few seconds to avoid infinite loop
+            setTimeout(function(){ clearInterval(t); }, 8000);
+        }
+    }
+
+    // If modal exists attach to shown.bs.modal (fires after animation and when element is visible)
+    const addBranchModalEl = document.getElementById("addBranchModal");
+    if (addBranchModalEl) {
+        addBranchModalEl.addEventListener("shown.bs.modal", function() {
+            requestMapsOnce();
         });
     }
 
-    // Load Google Maps API when modal is shown
-    document.addEventListener("DOMContentLoaded", function() {
-        const addBranchModal = document.getElementById("addBranchModal");
-        addBranchModal.addEventListener("show.bs.modal", function() {
-            loadGoogleMaps(initGoogleMaps);
-        });
-    });
-    </script>';
+    // Also attach a focus listener to the location input as a fallback
+    const locInput = document.getElementById("branchLocation");
+    if (locInput) {
+        locInput.addEventListener("focus", function() {
+            requestMapsOnce();
+        }, { once: true });
+    }
+})();
+</script>
+JS;
 }
 
 /**
