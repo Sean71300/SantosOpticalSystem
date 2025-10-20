@@ -9,6 +9,7 @@
             $isOptometrist = false;
             $roleId = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0;
             $isAdmin = ($roleId === 1);
+            $isEmployee = ($roleId === 2);
             $isOptometrist = ($roleId === 3);
             $isSuperAdmin = ($roleId === 4);
             
@@ -38,12 +39,12 @@
                     <td>$row[CustomerContact]</td>
                     <td>";
                         
-                    if ($isAdmin || $isSuperAdmin)
+                    if ($isAdmin || $isSuperAdmin || $isEmployee)
                         {
                             // Admins can view profile but should not be able to remove when role is Admin (roleid === 1)
                             echo "<button class='btn btn-primary btn-sm profile-btn' data-customer-id='{$row['CustomerID']}'>Profile</button>";
-                            if ($isSuperAdmin) {
-                                // Only Super Admins can remove
+                            if ($isSuperAdmin || $isEmployee) {
+                                // Super Admins and Employees can remove
                                 echo " <button class='btn btn-danger btn-sm delete-btn' data-customer-id='{$row['CustomerID']}' data-customer-name='".htmlspecialchars($row['CustomerName'], ENT_QUOTES)."'>Remove</button>";
                             }
 

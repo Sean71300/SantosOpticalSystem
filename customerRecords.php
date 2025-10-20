@@ -125,7 +125,7 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                         <?php elseif ($isAdmin): ?>
                             <li>As an Administrator you may view customer profiles (read-only). Editing and removal are restricted.</li>
                         <?php else: ?>
-                            <li>To check their orders, click the Orders button at the 'Actions' column.</li>
+                            <li>Employees can add, view, edit and remove customers. To check their orders, click the Orders button at the 'Actions' column.</li>
                         <?php endif; ?>
                         <li>Click any column header to sort the table in ascending/descending order.</li>
                     </ul>
