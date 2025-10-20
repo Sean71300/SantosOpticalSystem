@@ -191,6 +191,8 @@ function getAllMedicalRecords($searchTerm = null) {
         body {
             background-color: #f5f7fa;
             display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
         .sidebar {
             background-color: white;
@@ -233,6 +235,7 @@ function getAllMedicalRecords($searchTerm = null) {
             margin-left: 250px;
             padding: 20px;
             width: calc(100% - 250px);
+            flex: 1;
         }
         .table-container {
             background-color: white;
@@ -257,16 +260,26 @@ function getAllMedicalRecords($searchTerm = null) {
     </style>
 </head>
 <body>
-    <?php include "sidebar.php"?>
+    <header>
+        <?php include "Navigation.php"?>
+    </header>
 
-    <div class="main-content">
-        <div class="form-container">
-            <?php
-            $searchTerm = $_GET['search'] ?? null;
-            getAllMedicalRecords($searchTerm); 
-            ?>
+    <div class="container-fluid">
+        <div class="row">
+            <?php include "sidebar.php"?>
+
+            <div class="main-content">
+                <div class="form-container">
+                    <?php
+                    $searchTerm = $_GET['search'] ?? null;
+                    getAllMedicalRecords($searchTerm); 
+                    ?>
+                </div>
+            </div>
         </div>
     </div>
+
+    <?php include 'footer.php'; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
