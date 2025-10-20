@@ -40,12 +40,13 @@
                         
                     if ($isAdmin || $isSuperAdmin)
                         {
-                            echo 
-                            "
-                                <button class='btn btn-primary btn-sm profile-btn' data-customer-id='{$row['CustomerID']}'>Profile</button>
-                                <button class='btn btn-danger btn-sm delete-btn' data-customer-id='{$row['CustomerID']}' data-customer-name='".htmlspecialchars($row['CustomerName'], ENT_QUOTES)."'>Remove</button>
+                            // Admins can view profile but should not be able to remove when role is Admin (roleid === 1)
+                            echo "<button class='btn btn-primary btn-sm profile-btn' data-customer-id='{$row['CustomerID']}'>Profile</button>";
+                            if ($isSuperAdmin) {
+                                // Only Super Admins can remove
+                                echo " <button class='btn btn-danger btn-sm delete-btn' data-customer-id='{$row['CustomerID']}' data-customer-name='".htmlspecialchars($row['CustomerName'], ENT_QUOTES)."'>Remove</button>";
+                            }
 
-                            ";
                         }
                     else if ($isOptometrist) {
                         echo 
@@ -154,21 +155,26 @@
 
         // Layout: two columns when Super Admin or Optometrist; otherwise simple single column
         echo '<div class="container-fluid">';
-        if ($isSuperAdmin || $isOptometrist) {
+            if ($isSuperAdmin || $isOptometrist) {
             echo '<div class="row">';
             // LEFT: Customer info + Orders (wider 2:3 ratio)
             echo '<div class="col-lg-5 col-md-5">';
             echo '<form id="profileForm">';
             echo '<input type="hidden" name="CustomerID" value="'.htmlspecialchars($row['CustomerID']).'">';
             echo '<div class="row">';
+            // Determine if current viewer is Admin (roleid === 1), if so render readonly fields
+            $viewerRole = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0;
+            $readonly = ($viewerRole === 1) ? 'readonly' : '';
+            $disabled = ($viewerRole === 1) ? 'disabled' : '';
+
             echo '<div class="col-md-6">';
-            echo '<div class="mb-3"><label class="form-label">Name</label><input type="text" name="CustomerName" class="form-control" value="'.htmlspecialchars($row['CustomerName']).'"></div>';
-            echo '<div class="mb-3"><label class="form-label">Address</label><input type="text" name="CustomerAddress" class="form-control" value="'.htmlspecialchars($row['CustomerAddress']).'"></div>';
-            echo '<div class="mb-3"><label class="form-label">Contact</label><input type="text" name="CustomerContact" class="form-control" value="'.htmlspecialchars($row['CustomerContact']).'"></div>';
+            echo '<div class="mb-3"><label class="form-label">Name</label><input type="text" name="CustomerName" class="form-control" value="'.htmlspecialchars($row['CustomerName']).'" '.$readonly.'></div>';
+            echo '<div class="mb-3"><label class="form-label">Address</label><input type="text" name="CustomerAddress" class="form-control" value="'.htmlspecialchars($row['CustomerAddress']).'" '.$readonly.'></div>';
+            echo '<div class="mb-3"><label class="form-label">Contact</label><input type="text" name="CustomerContact" class="form-control" value="'.htmlspecialchars($row['CustomerContact']).'" '.$readonly.'></div>';
             echo '</div>';
             echo '<div class="col-md-6">';
-            echo '<div class="mb-3"><label class="form-label">Info</label><textarea name="CustomerInfo" class="form-control">'.htmlspecialchars($row['CustomerInfo']).'</textarea></div>';
-            echo '<div class="mb-3"><label class="form-label">Notes</label><textarea name="Notes" class="form-control">'.htmlspecialchars($row['Notes']).'</textarea></div>';
+            echo '<div class="mb-3"><label class="form-label">Info</label><textarea name="CustomerInfo" class="form-control" '.$readonly.'>'.htmlspecialchars($row['CustomerInfo']).'</textarea></div>';
+            echo '<div class="mb-3"><label class="form-label">Notes</label><textarea name="Notes" class="form-control" '.$readonly.'>'.htmlspecialchars($row['Notes']).'</textarea></div>';
             echo '</div>';
             echo '</div>';
             echo '</form>';

@@ -105,7 +105,8 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
             <div class="table-container">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h1><i class="fas fa-user-plus ms-2"></i> Customer Records</h1>
-                    <?php $rid = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0; if (in_array($rid, [1,4], true)) : ?>
+                    <?php $rid = isset($_SESSION['roleid']) ? (int)$_SESSION['roleid'] : 0; // Do not show add button to Admin (roleid === 1)
+                          if ($rid !== 1 && $rid !== 0) : ?>
                     <button class="btn btn-primary" id="newCustomerBtn" type="button">
                         <i class="fas fa-plus me-2"></i> New Customer
                     </button>
@@ -119,8 +120,10 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                         <?php 
                         $isAdmin = isset($_SESSION['roleid']) && $_SESSION['roleid'] === 1; 
                         $isSuperAdmin = isset($_SESSION['roleid']) && $_SESSION['roleid'] === 4; 
-                        if ($isAdmin || $isSuperAdmin): ?>
+                        if ($isSuperAdmin): ?>
                             <li>To view and edit a customer, open the Profile; you can also Remove the customer from the 'Actions' column.</li>
+                        <?php elseif ($isAdmin): ?>
+                            <li>As an Administrator you may view customer profiles (read-only). Editing and removal are restricted.</li>
                         <?php else: ?>
                             <li>To check their orders, click the Orders button at the 'Actions' column.</li>
                         <?php endif; ?>
@@ -249,7 +252,11 @@ $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <?php // Only show Save button to non-admin users (admins can only view)
+                              $isAdmin = isset($_SESSION['roleid']) && $_SESSION['roleid'] === 1;
+                              if (!$isAdmin): ?>
                         <button type="button" id="saveProfileBtn" class="btn btn-primary">Save</button>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
